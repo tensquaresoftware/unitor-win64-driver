@@ -1,0 +1,101 @@
+# generated: 2026-08-04T21:38:31Z
+# last_updated: 2026-08-04T21:38:31Z
+# project: unitor-win64-driver
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+#
+# SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
+# READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
+# NEXT: create-story for 1-1-scaffold-bridge-project-and-windows-build-gate
+#
+# DEFERRED (do not block sprint):
+#   AQ-1…AQ-4 (architecture spine)
+#   OQ-1 VirtualMIDI MSI Tobias — Public Installer redistributable release gate only
+#   OQ-2 latency/jitter thresholds — after Epic 5 measurements
+#   OQ-3 Authenticode personal vs org — before first public release
+#
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; sprint-status surfaces open ones
+
+generated: "2026-08-04T21:38:31Z"
+last_updated: "2026-08-04T21:38:31Z"
+project: unitor-win64-driver
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_bmad-output/implementation-artifacts"
+
+development_status:
+  # Epic 1: First Working MT4 MIDI
+  epic-1: backlog
+  1-1-scaffold-bridge-project-and-windows-build-gate: backlog
+  1-2-declarative-mt4-deviceprofile: backlog
+  1-3-winusb-bind-path-and-transport-open: backlog
+  1-4-devicesession-and-emagic-cable-mapper-usermode: backlog
+  1-5-virtualmidi-backend-and-stable-mt4-port-names: backlog
+  1-6-notes-and-cc-round-trip-on-all-ports: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Studio Transport and SysEx
+  epic-2: backlog
+  2-1-midi-clock-and-transport-realtime: backlog
+  2-2-mtc-quarter-frame-and-full-frame: backlog
+  2-3-transparent-sysex-transport-with-burst-buffering: backlog
+  2-4-matrix-control-minimum-sysex-pass-vectors: backlog
+  2-5-session-longevity-design-for-4h-studio-use: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Daily Studio Resilience
+  epic-3: backlog
+  3-1-auto-start-without-daily-administrator: backlog
+  3-2-hot-plug-recovery-without-windows-reboot: backlog
+  3-3-multi-client-daw-plus-showmidi: backlog
+  3-4-two-mt4-units-with-stable-distinguishable-names: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Community Install and Trust
+  epic-4: backlog
+  4-1-public-installer-meeting-ad-12-ux-bar: backlog
+  4-2-end-user-documentation-for-first-midi-and-sysex: backlog
+  4-3-technical-docs-and-three-way-license-honesty: backlog
+  4-4-authenticode-policy-and-smartscreen-honesty: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: MIDI Path Proof (Studio-Done Gate)
+  epic-5: backlog
+  5-1-in-repo-midi-path-harness-scaffold: backlog
+  5-2-publish-measurement-method-and-baseline-tables: backlog
+  5-3-studio-done-gate-decision-record-for-timing-anchors: backlog
+  epic-5-retrospective: optional
