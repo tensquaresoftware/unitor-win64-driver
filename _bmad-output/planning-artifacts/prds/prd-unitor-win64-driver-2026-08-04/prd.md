@@ -1,6 +1,6 @@
 ---
 title: "PRD: unitor-win64-driver"
-status: draft
+status: final
 created: 2026-08-04
 updated: 2026-08-04
 project: unitor-win64-driver
@@ -15,7 +15,7 @@ authenticode_policy: strongly-recommended-v1
 
 ## 0. Document Purpose
 
-This PRD turns the ready Product Brief `brief-unitor-win64-driver-2026-08-04` into testable requirements for Architecture, UX naming details, epics, and implementation. It defines **what** V1 must deliver and how acceptance is judged. It does **not** reopen locked product decisions (platform, usermode stack, VirtualMIDI as V1 backend, MIT license, MT4-validated scope, SysEx required). Mechanism depth (WinUSB binding details, DeviceProfile shape, Exact port-string spelling for multi-MT4, measurement harness design) belongs in Architecture / UX or in `addendum.md`.
+This PRD turns the ready Product Brief `brief-unitor-win64-driver-2026-08-04` into testable requirements for Architecture, UX naming details, epics, and implementation. It defines **what** V1 must deliver and how acceptance is judged. Locked product decisions are in §11 — this PRD does **not** reopen them. Mechanism depth (WinUSB binding details, DeviceProfile shape, exact multi-MT4 port-string spelling, measurement harness design) belongs in Architecture / UX or in `addendum.md`.
 
 Audience: Guillaume (product owner / builder), future Architecture and epic authors, and community contributors who need a clear acceptance bar.
 
@@ -27,7 +27,7 @@ Traceability: every major requirement maps to the brief’s locked decisions and
 
 V1 ships a community-facing, MIT-licensed **usermode bridge**: WinUSB transport, an original Emagic protocol reimplementation (informed by public Linux references — no GPL sources vendored), and virtual MIDI ports via **VirtualMIDI** (Tobias Erichsen). Users install once, plug in the MT4, and find stable **MT4 Port N** endpoints suitable for studio performance MIDI **and** real SysEx editor/librarian traffic — including first-party validation of **Matrix-Control** on Windows.
 
-Differentiation is honesty and operability for orphaned hardware: measurable timing discipline, multi-hour stability, auto-start, multi-client use, multi-MT4 design, friendly install, and clear licensing — not invented feature moats.
+Differentiation is honesty and operability for orphaned hardware: measurable timing discipline, multi-hour stability, auto-start, multi-client use, multi-MT4 design, friendly install, and clear licensing — not invented feature moats. V1 aims to be a **serious open-source hardware-support project**, not a throwaway MVP that only enumerates ports.
 
 ## 2. Target User
 
@@ -38,7 +38,11 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 - **Functional:** Keep working through a long session (~4 hours) and after unplug/replug without rebooting Windows.
 - **Emotional:** Trust that a forgotten interface is usable again without Driver Hell or shady unsigned stacks presented as “the only way.”
 - **Social / community:** Benefit from (and later contribute to) a serious OSS hardware-support project under Ten Square Software.
-- **Contextual (first-party):** Validate Matrix-Control on Windows against a real MT4 over the same bridge community users will run.
+- **Contextual (first-party):** Validate Matrix-Control on Windows against a real MT4 over the same bridge that community users will run.
+
+### 2.1b Secondary audience (post-MVP / community)
+
+- **Contributors and testers** who help validate cousin DeviceProfiles (AMT8 / Unitor8) when hardware is available — V1 must not block them structurally, but does not promise working cousin products.
 
 ### 2.2 Non-Users (v1)
 
@@ -91,8 +95,8 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 - **Matrix-Control** — Ten Square first-party SysEx validation target; **not** a runtime dependency of the Bridge.
 - **Validation Matrix** — Locked V1 host set: **Ableton Live 12**, **Reason Studios 12**, **Matrix-Control**, **ShowMIDI**, on **Windows 10 x64** (mandatory) and **Windows 11 x64**.
 - **MIDI Path** — End-to-end path used for latency/jitter measurement through the Bridge and Virtual Ports — **not** ASIO audio buffer size.
-- **VirtualMIDI** — Tobias Erichsen’s proprietary virtual MIDI SDK/driver stack used as the V1 Virtual Port backend.
-- **Windows MIDI Services** — Microsoft MIDI stack; allowed as a future second backend (Win11-oriented); **not** the V1-only target.
+- **VirtualMIDI** — Tobias Erichsen’s proprietary virtual MIDI **SDK** and driver stack used as the V1 Virtual Port backend. The Bridge creates and destroys Virtual Ports **programmatically via the SDK**; end users need not manage Virtual Ports solely through the VirtualMIDI end-user UI. The VirtualMIDI **driver must be present** on the machine. Licensing, evaluation vs redistribution paths, and author clearance: `addendum.md` §VirtualMIDI licensing; release gate OQ-1.
+- **Windows MIDI Services** — Microsoft MIDI stack; allowed as a future **second backend on Windows 11 only**; **not** the V1 target (Win10 is mandatory).
 - **Auto-Start** — Bridge starts with Windows and/or on MT4 USB arrival so the user need not launch it manually before every session.
 - **Hot-Plug Recovery** — After unplug/replug, usable Virtual Ports return without a Windows reboot; host rescan or supervised Bridge restart is acceptable.
 - **Public Installer** — End-user installer intended for community redistribution (subject to VirtualMIDI author clearance).
@@ -102,7 +106,7 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 
 ### 4.1 Device Binding and Bridge Runtime
 
-**Description:** The user binds the MT4 to WinUSB through a guided install path and runs a C++ usermode Bridge that keeps a live session with the device. Realizes UJ-1, UJ-4.
+**Description:** The user binds the MT4 to WinUSB through a guided install path and runs a **C++17** usermode Bridge that keeps a live session with the device. Realizes UJ-1, UJ-4.
 
 **Functional Requirements:**
 
@@ -111,16 +115,17 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 The installer or documented install path binds MT4 (`VID 086A` / `PID 0003`) to Microsoft WinUSB for end users without requiring Zadig as the primary path. Realizes UJ-1.
 
 **Consequences (testable):**
-- After successful install on a clean Win10 x64 and Win11 x64 machine, Device Manager shows the MT4 bound as intended by the install docs (WinUSB association).
+- After successful install on a clean Win10 x64 and Win11 x64 machine, Device Manager shows the MT4 associated with WinUSB per the install specification (exact Device Manager node/class string named in Architecture / install docs).
 - Zadig may remain a developer fallback; user docs do not present it as the primary community path.
 
 #### FR-2: Usermode Bridge session
 
-The Bridge opens and maintains a WinUSB session with a connected MT4 and performs Emagic cable multiplex/demultiplex in usermode. Realizes UJ-1.
+The Bridge opens and maintains a WinUSB session with a connected MT4 and performs Emagic cable multiplex/demultiplex in usermode (**C++17**). Realizes UJ-1.
 
 **Consequences (testable):**
 - With Bridge running and MT4 connected, Validation Matrix hosts can open Virtual Ports and exchange MIDI.
 - No custom kernel MIDI driver is required for V1 operation.
+- Virtual Ports are created/destroyed by the Bridge through the VirtualMIDI SDK (driver present as prerequisite).
 
 #### FR-3: Auto-Start
 
@@ -166,21 +171,24 @@ The Bridge transports notes, CC, and common channel/system messages between MT4 
 **Consequences (testable):**
 - Note and CC round-trips succeed on each of the 2 IN / 4 OUT ports in the Validation Matrix DAWs.
 
-#### FR-7: MIDI clock
+#### FR-7: MIDI clock and MTC
 
-MIDI clock/transport-related timing messages required for sequencing use are carried in V1. Realizes UJ-1.
+MIDI clock, transport realtime (Start / Stop / Continue), and **MIDI Time Code (MTC)** required for sequencing and sync use are carried in V1. Realizes UJ-1.
 
 **Consequences (testable):**
-- A Validation Matrix DAW can slave or observe MIDI clock through an MT4 Virtual Port without Bridge-induced dropouts under the session-stability scenario (see NFR-R1).
+- A Validation Matrix DAW can slave or observe **MIDI clock (0xF8)** and **Start / Stop / Continue** through an MT4 Virtual Port without Bridge-induced dropouts under the session-stability scenario (see NFR-R1).
+- **MTC** quarter-frame and full-frame messages used for sync are carried without Bridge-induced dropouts under the same stability scenario.
+- MTC is in scope because future driver users reasonably need timecode sync; it is not optional “nice to have” for V1 transport coverage.
 
 #### FR-8: SysEx as a V1 requirement
 
-SysEx is a required V1 capability, sized for real editor/librarian use including Matrix-Control. Realizes UJ-2.
+SysEx is a required V1 capability, sized for real editor/librarian use including Matrix-Control (Oberheim Matrix SysEx transparently carried — the Bridge does not interpret Oberheim framing). Realizes UJ-2.
 
 **Consequences (testable):**
-- Matrix-Control can complete representative dump/restore or editor exchanges over the Bridge on Win10 x64 and Win11 x64.
-- Bursty/large SysEx does not require a Bridge restart for normal librarian completion.
+- Matrix-Control can complete the **minimum SysEx pass vectors** in §10 (and detailed in `addendum.md` / `matrix-control-sysex-extract.md`) on Win10 x64 and Win11 x64.
+- Bursty/large SysEx does not require a Bridge restart for normal librarian completion. See **NFR-R3**.
 - Matrix-Control is not bundled as a runtime dependency of the Bridge.
+- Non-patch SysEx on the wire during a dump must not permanently block a valid subsequent patch frame (mixed-wire tolerance).
 
 ### 4.4 Multi-Client and Multi-Instance
 
@@ -193,7 +201,7 @@ SysEx is a required V1 capability, sized for real editor/librarian use including
 A DAW and a MIDI utility can use Virtual Ports concurrently without exclusive-lock dead ends. Realizes UJ-2.
 
 **Consequences (testable):**
-- Ableton Live 12 (or Reason Studios 12) and ShowMIDI open the same relevant Virtual Ports concurrently and both observe MIDI activity as designed by VirtualMIDI multi-client behavior.
+- Ableton Live 12 (or Reason Studios 12) and ShowMIDI open the same relevant Virtual Ports concurrently and both observe MIDI activity per VirtualMIDI multi-client semantics.
 - `[ASSUMPTION: VirtualMIDI multi-client semantics meet this requirement; Architecture confirms and documents any host-specific caveats.]`
 
 #### FR-10: Multi-MT4 instances
@@ -228,12 +236,12 @@ After MT4 unplug and replug, usable Virtual Ports return without a Windows reboo
 
 #### FR-12: User-friendly Public Installer bar
 
-The Public Installer feels closer to a polished macOS installer than a developer toolchain: short steps, visible progress, clear success, explicit VirtualMIDI prerequisite handling, minimal jargon. Realizes UJ-1.
+The Public Installer feels closer to a polished macOS installer than a developer toolchain: short steps, visible progress, clear success, explicit VirtualMIDI prerequisite handling, minimal jargon. `[ASSUMPTION: “macOS-class installer” means few steps, clear progress, obvious success, minimal jargon — Architecture/UX supply a short acceptance checklist.]` Realizes UJ-1.
 
 **Consequences (testable):**
 - One-time Administrator elevation at install is acceptable; daily use is not.
-- Install covers WinUSB association + Bridge + Auto-Start wiring + VirtualMIDI prerequisite messaging.
-- Shipping a redistributable Public Installer that embeds/redistributes VirtualMIDI requires prior author clearance (release gate).
+- Install covers WinUSB association + Bridge + Auto-Start wiring + VirtualMIDI prerequisite messaging (driver present; eval vs licensed MSI paths documented).
+- Shipping a redistributable Public Installer that embeds/redistributes VirtualMIDI requires prior author clearance (release gate for the installer only — not a blocker for PRD finalization or Architecture start).
 
 #### FR-13: User documentation
 
@@ -260,13 +268,13 @@ Authenticode signing is strongly recommended for public builds but is **not** a 
 
 ### 4.7 Extensibility Without Scope Creep
 
-**Description:** Architecture must absorb future DeviceProfiles without rewriting the Bridge core. Realizes secondary-user promise.
+**Description:** Architecture must absorb future DeviceProfiles without rewriting the Bridge core. Realizes the §2.1b secondary-audience promise.
 
 **Functional Requirements:**
 
 #### FR-16: Multi-DeviceProfile readiness
 
-V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AMT8/Unitor8 are not promised without hardware. Realizes secondary-user path.
+V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AMT8/Unitor8 are not promised without hardware. Realizes the §2.1b secondary-audience path.
 
 **Consequences (testable):**
 - Architecture review can point to a DeviceProfile boundary for per-PID masks/capabilities.
@@ -290,8 +298,8 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 
 - Platforms: Windows 10 and 11, 64-bit (Win10 mandatory in Validation Matrix).
 - Hardware: MT4 (`086A:0003`), 2 IN / 4 OUT, multi-instance design for two units.
-- Stack orientation (product-level): WinUSB + C++ usermode Bridge + VirtualMIDI Virtual Ports.
-- MIDI: channel messages + MIDI clock + SysEx (required).
+- Stack orientation (product-level): WinUSB + **C++17** usermode Bridge + VirtualMIDI SDK Virtual Ports.
+- MIDI: channel messages + MIDI clock + **Start/Stop/Continue** + **MTC** + SysEx (required).
 - Auto-Start, Hot-Plug Recovery, multi-client (DAW + ShowMIDI).
 - Public Installer UX bar + user/technical docs + honest licensing.
 - First-party SysEx validation via Matrix-Control.
@@ -301,18 +309,13 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 
 ### 6.2 Out of Scope for MVP
 
-- Advanced Unitor features (Patch, LTC/VITC, Fast Mode/AMT) — deferred.
-- Cascaded multi-interface stacks — deferred / likely never as a soft promise.
-- Cousin DeviceProfiles as guaranteed products — post-MVP hardware-gated workstreams.
-- Windows MIDI Services as V1 backend — post-MVP optional second backend (Win11).
-- Kernel custom driver — rejected for V1.
-- MIDI 2.0 claims — deferred indefinitely for this hardware generation.
+Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin DeviceProfiles remain post-MVP, hardware-gated workstreams only.
 
 ## 7. Success Metrics
 
 **Primary**
 
-- **SM-1 Studio MIDI operability:** On Win10 x64 and Win11 x64, Ableton Live 12 and Reason Studios 12 can select MT4 Virtual Ports and exchange notes/CC/clock for a normal session. Validates FR-4, FR-6, FR-7.
+- **SM-1 Studio MIDI operability:** On Win10 x64 and Win11 x64, Ableton Live 12 and Reason Studios 12 can select MT4 Virtual Ports and exchange notes/CC/clock (**including Start/Stop/Continue and MTC**) for a normal session. Validates FR-4, FR-6, FR-7.
 - **SM-2 SysEx operability:** Matrix-Control completes representative SysEx editor/librarian exchanges over the Bridge on both OS targets. Validates FR-8.
 - **SM-3 Session stability:** Continuous studio/editor use for about **4 hours** (including SysEx Session activity) without requiring a Bridge restart for normal use. Validates FR-6–FR-8, NFR-R1.
 - **SM-4 Hot-Plug Recovery:** Unplug/replug restores usable ports without Windows reboot (rescan/supervised restart OK). Validates FR-11.
@@ -322,7 +325,7 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 **Secondary**
 
 - **SM-7 Multi-client:** Ableton Live 12 (or Reason Studios 12) + ShowMIDI concurrent use works per FR-9.
-- **SM-8 Multi-MT4 design:** Two-unit support exists in design; physical dual-unit proof when hardware available; otherwise honest docs. Validates FR-10, FR-5.
+- **SM-8 Multi-MT4 design:** Two-unit support exists in design; physical dual-unit proof when hardware is available; otherwise honest docs. Validates FR-10, FR-5.
 - **SM-9 Studio-Done Gate (timing):** Published MIDI Path measurement method exists; provisional targets confirmed or revised before calling timing “done.” Validates NFR-P1, NFR-P2.
 
 **Counter-metrics (do not optimize)**
@@ -330,14 +333,15 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 - **SM-C1 Feature breadth over reliability:** Do not count cousin-device checkboxes or advanced Unitor modes as success if they jeopardize MT4 SysEx/stability.
 - **SM-C2 ASIO buffer as MIDI proof:** Do not treat audio buffer size as evidence of MIDI Path latency/jitter.
 - **SM-C3 “Ports sometimes visible” MVP:** Partial enumeration without stable SysEx + Auto-Start + docs is not success.
+- **SM-C4 Jitter as usermode alibi:** Excessive jitter must not be excused merely because the path is usermode; measure and treat it as a first-class Studio-Done concern.
 
 ## 8. Cross-Cutting NFRs
 
 ### Performance (provisional → Studio-Done Gate)
 
-- **NFR-P1 Latency (provisional):** Bridge-added end-to-end latency on the MIDI Path aims for **low single-digit milliseconds at p99** beyond the host USB path. `[ASSUMPTION: planning anchor from brief; replace after harness measurement.]`
-- **NFR-P2 Jitter (provisional):** Jitter on the MIDI Path aims for **sub-millisecond to low-millisecond** behavior suitable for studio clock/sequencing in the Validation Matrix DAWs. `[ASSUMPTION: planning anchor from brief; replace after harness measurement.]`
-- **NFR-P3 Measurement method:** Latency/jitter claims must use a reproducible **MIDI Path** method (loopback and/or host-observable MIDI timing), with published host/buffer settings — **not** ASIO buffer size. V1 timing is not Studio-Done until measurement exists and thresholds are confirmed or explicitly revised in this PRD / release notes.
+- **NFR-P1 Latency (provisional):** Bridge-added end-to-end latency on the MIDI Path aims for a **healthy target of ≤ 4–5 ms at p99** beyond the host USB path. A provisional **do-not-ship-worse ceiling** is about **8–10 ms at p99**; shipping above that ceiling requires an explicit product decision. `[ASSUMPTION: planning anchors from Finalize; replace after harness measurement under Studio-Done Gate.]`
+- **NFR-P2 Jitter (provisional):** Jitter on the MIDI Path aims for **≤ 1–2 ms at p99**, suitable for studio clock/sequencing in the Validation Matrix DAWs. **Excessive jitter is not an alibi for the usermode path.** `[ASSUMPTION: planning anchors from Finalize; replace after harness measurement under Studio-Done Gate.]`
+- **NFR-P3 Measurement method:** Latency/jitter claims must use a reproducible **MIDI Path** method (loopback and/or host-observable MIDI timing), with published host/buffer settings — **not** ASIO buffer size. Harness design belongs in Architecture. V1 timing is not Studio-Done until measurement exists and thresholds are confirmed or explicitly revised in this PRD / release notes.
 
 ### Reliability
 
@@ -366,8 +370,8 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 
 | Risk / dependency | Impact | Mitigation |
 | --- | --- | --- |
-| VirtualMIDI redistribution / MSI terms | Blocks Public Installer | Early author contact; eval path vs redistributable path documented; clearance is a release gate |
-| Usermode latency/jitter | Studio credibility | Provisional NFRs + Studio-Done Gate + MIDI Path harness |
+| VirtualMIDI redistribution / MSI terms | Blocks redistributable Public Installer only (not PRD/Architecture) | Outreach to Tobias Erichsen **sent** (2026-08); **no reply yet**; owner **Guillaume**; eval path vs licensed MSI documented; clearance is a **release gate** |
+| Usermode latency/jitter | Studio credibility | Explicit provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms) + Studio-Done Gate + MIDI Path harness; jitter non-alibi |
 | Large/bursty SysEx | Matrix-Control / editors fail | Explicit SysEx acceptance tests; buffering |
 | Scarce Emagic protocol docs | Implementation risk | Linux reference (no copy) + USB captures if needed |
 | SmartScreen / unsigned builds | Users abandon download | Authenticode strongly recommended; document if deferred |
@@ -388,11 +392,20 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 | Timing harness | MIDI Path method (TBD in Architecture) | Win10 x64 (min) | Required for Studio-Done Gate |
 
 Pass rules:
-- Each DAW row: open ports, notes/CC, clock smoke on both OS targets.
-- Matrix-Control: representative SysEx exchange on both OS targets.
+- Each DAW row: open ports, notes/CC, clock + Start/Stop/Continue + MTC smoke on both OS targets.
+- Matrix-Control **minimum SysEx pass vectors** (grounded in Matrix-Control source; Oberheim Matrix-1000 primary):
+  1. **Device Inquiry** round-trip (`F0 7E 7F 06 01 F7` → Universal reply including Oberheim/Matrix identity).
+  2. **Single patch dump:** request (`F0 10 06 04 01 <patch> F7`, 7 B) → response patch frame (**275 B**).
+  3. **Master dump:** request (`F0 10 06 04 03 00 F7`) → master frame (**351 B**).
+  4. **Edit-buffer / patch push:** outbound **275 B** patch write (slot `01` and/or edit-buffer `0D`) completes without Bridge restart.
+  5. **Live editor stream:** sustained short remote edits (**7 B** param / **9 B** matrix-mod) with normal Matrix-Control spacing; no Bridge restart.
+  6. **Optional stress:** bank export/import path ≈ **100×** sequential 275 B patch frames (~28 KB inbound dump series) when hardware and time are available.
+  7. **Mixed-wire tolerance:** non-patch SysEx during a dump must not permanently block a later valid patch frame.
 - ShowMIDI + one DAW: concurrent observation without exclusive-lock failure.
 - Stability sample: ~4h including SysEx activity on at least Win10 x64.
 - Hot-plug: one documented recovery drill without Windows reboot.
+
+Detail and opcodes: `addendum.md` §Matrix-Control SysEx pass vectors; extract notes: `matrix-control-sysex-extract.md`.
 
 ## 11. Constraints and Guardrails (Locked Product Decisions)
 
@@ -401,35 +414,39 @@ Inherited from brief — **do not reopen** unless a blocking risk is documented:
 | Topic | Decision |
 | --- | --- |
 | Platforms | Windows 10 and 11, 64-bit — Win10 required |
-| Solution type | Usermode (WinUSB + C++ Bridge) — no custom kernel driver in V1 |
-| MIDI backend V1 | VirtualMIDI SDK — Windows MIDI Services = v2 / second backend |
+| Solution type | Usermode (WinUSB + **C++17** Bridge) — no custom kernel driver in V1 |
+| MIDI backend V1 | VirtualMIDI **SDK** (programmatic ports) — Windows MIDI Services = optional second backend **(Win11 only)** later |
 | License | MIT (original reimplementation) |
 | Hardware V1 | MT4 validated; multi-DeviceProfile + multi-instance from day one |
-| MIDI content | Channel + clock + SysEx (required) |
+| MIDI content | Channel + clock + **Start/Stop/Continue** + **MTC** + SysEx (required) |
 | Port naming | Stable macOS-like MT4 Port N; distinguishable multi-MT4 |
 | Quality | conventions.md + lint-touched.py when C++ exists |
 | Public facade | Ten Square Software |
 | Authenticode | Strongly recommended; not a hard gate if certificate lags |
+| Independence | Backend abstraction for future backends; **no** home-grown kernel VirtualMIDI Plan B in V1 |
 
 ## 12. Open Questions
 
-1. Exact VirtualMIDI evaluation vs redistribution / installer bundling terms after author contact (**blocker for Public Installer**).
-2. Final numeric latency/jitter thresholds after MIDI Path harness measurement (replace provisional NFR-P1/P2); harness design details in Architecture.
-3. Authenticode certificate path/cost (personal vs org Ten Square Software) and timing vs first public build.
-4. Availability of original Emagic protocol documentation vs reference+capture fallback only.
-5. CI/CD detail across macOS-primary development and Windows 10 x64 build/USB/DAW/SysEx validation (build CI minimum already required).
-6. Exact multi-MT4 Port Name disambiguation spelling (product rule locked; Architecture/UX).
-7. Confirm VirtualMIDI multi-client behavior meets FR-9 with Ableton Live 12 / Reason Studios 12 + ShowMIDI; document caveats.
-8. Representative Matrix-Control SysEx test vectors (which dumps/editor operations define “pass”).
+| ID | Topic | Class | Owner | Status / next action |
+| --- | --- | --- | --- | --- |
+| OQ-1 | VirtualMIDI evaluation vs redistribution / MSI terms after author contact | **Release gate** (Public Installer only — **not** a PRD or Architecture blocker) | Guillaume | Outreach **sent**; **no reply yet**. Wait for reply / document terms. Eval path remains viable for development. |
+| OQ-2 | Final latency/jitter thresholds after MIDI Path harness (replace provisional NFR-P1/P2) | Studio-Done Gate; harness → Architecture | Guillaume + Architecture | Keep provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms). Measure MIDI Path, then confirm or revise. |
+| OQ-3 | Authenticode certificate path/cost (personal vs org Ten Square Software) and timing vs first public build | Deferred — not a hard V1 gate | Guillaume | Revisit **before the first tagged public community release** (unsigned OK only with SmartScreen docs per FR-15). |
+| OQ-4 | Original Emagic protocol documentation vs Linux reference + USB capture fallback | Architecture orientation | Architecture | Defer; not a PRD phase-blocker. |
+| OQ-5 | CI/CD detail (macOS edit / Windows validate); Windows build CI minimum | Architecture | Architecture | Defer detail; NFR-D3 already requires Windows build CI minimum. |
+| OQ-6 | Exact multi-MT4 Port Name disambiguation spelling | Architecture / UX | Architecture / UX | Product rule locked; spelling deferred. |
+| OQ-7 | Confirm VirtualMIDI multi-client meets FR-9 (DAW + ShowMIDI) | Architecture confirm | Architecture | Assumption retained until confirmed; document host caveats. |
+| OQ-8 | Matrix-Control SysEx pass vectors | **Provisionally closed** from Matrix-Control source extract | Guillaume | Minimum vectors locked in §10 + addendum. Refine if Matrix-Control changes; bank stress remains optional. |
 
 ## 13. Assumptions Index
 
-- `[ASSUMPTION]` NFR-P1/P2 provisional timing anchors (low single-digit ms bridge-added p99 latency; sub-ms to low-ms jitter) until harness locks numbers (Studio-Done Gate).
+- `[ASSUMPTION]` NFR-P1/P2 provisional timing anchors (healthy ≤4–5 ms p99 bridge-added latency; ≤1–2 ms p99 jitter; do-not-ship-worse ~8–10 ms p99) until harness locks numbers (Studio-Done Gate).
 - `[ASSUMPTION]` IN vs OUT appear as separate selectable endpoints as Windows UI requires.
-- `[ASSUMPTION]` “macOS-class installer” means few steps, clear progress, obvious success, minimal jargon — tooling is Architecture.
+- `[ASSUMPTION]` “macOS-class installer” means few steps, clear progress, obvious success, minimal jargon — tooling and a short acceptance checklist are Architecture/UX.
 - `[ASSUMPTION]` VirtualMIDI multi-client semantics can satisfy FR-9; Architecture confirms.
-- `[ASSUMPTION]` Reason product marketing name “Reason Studios 12” refers to the Reason 12 DAW line used for validation (confirm exact SKU string in docs if needed).
+- `[ASSUMPTION]` Validation matrix label **Reason Studios 12** refers to the Reason 12 DAW product line (exact SKU string confirmable in user-facing docs later if needed).
 - `[ASSUMPTION]` ShowMIDI remains available and suitable as the V1 multi-client utility; if unavailable, substitute is a PRD change.
+- `[ASSUMPTION]` Matrix-Control SysEx pass vectors in §10 match current Matrix-Control Oberheim Matrix-1000 traffic; Guillaume may refine sizes/timeouts without reopening SysEx-as-required.
 
 ## 14. Traceability to Brief
 

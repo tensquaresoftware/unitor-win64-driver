@@ -18,22 +18,23 @@ Pointers for Architecture — locked product decisions live in `prd.md` §11 / b
 
 - **Transport:** WinUSB (`winusb.sys` + `winusb.dll`); INF and/or Zadig during development; installer-driven for end users.
 - **Protocol:** single Emagic cable mapper; `DeviceProfile` holds per-PID masks, interface number, and optional capability flags (Patch/LTC/etc. off in V1).
-- **Multi-instance:** multiple MT4 devices concurrently (separate sessions and port sets); distinct from Emagic cascade topologies.
-- **MIDI backends:** VirtualMIDI for V1 (Win10+11); abstract layer so Windows MIDI Services can follow as a second backend (Win11-oriented).
+- **Multi-instance / port naming:** per `prd.md` FR-5, FR-10, §11 — exact multi-MT4 strings in Architecture/UX.
+- **MIDI backends:** VirtualMIDI **SDK** for V1 (programmatic port create/destroy; Win10+11); abstract layer so Windows MIDI Services can follow as a second backend (**Win11 only**).
 - **Reference only:** Linux `sound/usb/midi.c` and `quirks-table.h` — reimplement under MIT; no vendored GPL.
+- **External integration proof (not a fork base):** https://github.com/aaron1a12/virtual-midi demonstrates VirtualMIDI SDK integration is possible; it is **GPL** with a vendored SDK — useful as existence proof only; **do not fork** as the project base.
 - **Pattern inspiration:** Prodikeys64 (WinUSB + virtual MIDI).
-- **Port naming:** macOS-like `MT4 Port N`; stable across sessions; per-unit disambiguation when multiple MT4s are present (exact strings in Architecture/UX).
 
 ## VirtualMIDI licensing (research snapshot)
 
 From Tobias Erichsen’s VirtualMIDI SDK materials (paraphrase; confirm with author):
 
 - SDK is for evaluation/integration; **not** freeware.
+- The Bridge is expected to create/destroy ports **via the SDK API** (not rely solely on the end-user VirtualMIDI application UI).
 - Software linking to the SDK **may not be distributed** without prior clearance.
-- Without a commercial licence, evaluation typically expects a pre-installed loopMIDI/rtpMIDI (driver present).
+- Without a commercial license, evaluation typically expects a pre-installed loopMIDI/rtpMIDI (driver present).
 - Licensees can obtain an MSI / merge module to integrate the driver into application setup.
 - Project MIT license does **not** cover this dependency.
-- Author outreach is a **release gate** for any redistributable Public Installer.
+- Author outreach is a **release gate** for any redistributable Public Installer — **not** a blocker for PRD finalization or Architecture start. Contact status and owner: `prd.md` OQ-1.
 
 Useful URLs:
 - https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html
@@ -44,8 +45,10 @@ Useful URLs:
 | Idea | Status | Rationale |
 | --- | --- | --- |
 | Custom KMDF / PortCls MIDI driver | Rejected for V1 | Signing + complexity vs community ship |
+| Home-grown kernel “VirtualMIDI Plan B” (equivalent driver) | Deferred / rejected for V1 | Too long for V1; independence via backend abstraction + possible Windows MIDI Services later |
 | Windows MIDI Services as only V1 backend | Rejected | Not a Win10 solution; Win10 is mandatory |
 | Vendor GPL Linux sources into tree | Rejected | Would force GPL; conflicts with MIT intent |
+| Fork `aaron1a12/virtual-midi` as project base | Rejected | GPL + vendored SDK; use only as integration existence proof |
 | Guarantee AMT8/Unitor8 in V1 | Rejected | No test hardware commitment |
 | MIDI-OX as primary Validation Matrix utility | Deferred/replaced | PRD locks **ShowMIDI** as the V1 multi-client utility |
 
@@ -73,29 +76,40 @@ Quality gate when C++ exists: `python scripts/quality/lint-touched.py` per `conv
 
 ## Latency planning context (for Studio-Done Gate)
 
+Background for Architecture and harness design — normative thresholds and Studio-Done Gate policy: `prd.md` NFR-P1–P3, SM-9, OQ-2.
+
 - USB full-speed class MIDI historically ties to ~1 ms frame timing.
 - Studio control/sequencing often tolerates small single-digit ms end-to-end; feel and clock stability depend more on **jitter** than absolute latency alone.
 - Public historical USB-MIDI figures are order-of-magnitude only (class devices / older OS stacks) — not contractual SLAs for Emagic bulk + VirtualMIDI.
-- PRD provisional targets: bridge-added p99 latency in low single-digit ms; jitter sub-ms to low-ms; always publish MIDI Path method.
+- Always measure the **MIDI Path** (not ASIO buffer size); harness design in Architecture.
 
 ## Installer UX bar (product intent)
 
-End-user install should feel closer to a polished macOS installer than to a developer toolchain: short steps, visible progress, clear success, explicit VirtualMIDI prerequisite messaging, minimal jargon. One-time admin elevation for install is expected; daily use is not. Implementation technology is left to Architecture.
+Normative requirement: `prd.md` FR-12. Implementation technology is left to Architecture.
 
 ## Validation Matrix lock (PRD session)
 
-Locked during PRD Fast path (2026-08-04):
+Locked during PRD Fast path (2026-08-04). Canonical host/OS table and pass rules: `prd.md` §10.
 
-| Role | Product |
-| --- | --- |
-| DAW | Ableton Live 12 |
-| DAW | Reason Studios 12 |
-| SysEx | Matrix-Control |
-| Utility | ShowMIDI |
-| OS | Windows 10 x64 (mandatory) + Windows 11 x64 |
+## Matrix-Control SysEx pass vectors (grounded extract)
 
-Timing policy: provisional anchors + measurement harness gate before Studio-Done (not hard-final numbers in first draft).
+Normative minimum pass vectors and mixed-wire tolerance: `prd.md` §10. This section provides grounded extract detail for Architecture and test design.
+
+Source: Matrix-Control repo (`SysExConstants.h`, encoders, bank import/export). Full extract: `matrix-control-sysex-extract.md`.
+
+**Protocol family:** Oberheim Matrix (`F0 10 06 …`); Matrix-Control does **not** speak Emagic framing — the Bridge must carry these frames transparently.
+
+| Vector | Shape (summary) | Approx size |
+| --- | --- | --- |
+| Device Inquiry | `F0 7E 7F 06 01 F7` → Universal reply | 6 → 15 B |
+| Single patch dump | Request `04 01 <patch>` → response opcode `01` | 7 → **275 B** |
+| Master dump | Request `04 03 00` → response `03 03` | → **351 B** |
+| Patch / edit-buffer push | Outbound `01` (slot) or `0D` (edit buffer) | **275 B** |
+| Live edits | Remote param `06` / matrix-mod `0B` | **7 B** / **9 B** |
+| Bank stress (optional) | ~100× sequential patch dumps / restores | ~28 KB series |
+
+Packed payloads: patch **134 B**, master **172 B** (nibble-encoded on the wire). Primary validation target: **Matrix-1000**; Matrix-6/6R member bytes are provisional in Matrix-Control.
 
 ## Windows MIDI Services landscape note
 
-As of early 2026 public messaging, Windows MIDI Services GA focus is Windows 11. It does not replace WinUSB + Emagic protocol decode for this hardware. Relevant later as an optional Virtual Port backend on Win11 — not a Win10 V1 substitute.
+As of early 2026 public messaging, Windows MIDI Services GA focus is Windows 11. It does not replace WinUSB + Emagic protocol decode for this hardware. Relevant later as an optional Virtual Port backend on **Win11 only** — not a Win10 V1 substitute.
