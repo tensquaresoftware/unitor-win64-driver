@@ -1,0 +1,44 @@
+---
+description: Quality gate — light principles; metrics enforced by scripts/quality/lint-touched.py
+alwaysApply: false
+globs: "**/*.{h,hpp,cpp,cc,cxx}"
+---
+
+# Code quality gate (unitor-win64-driver)
+
+Short guidance. **Numbers are enforced by the analyser**, not by an agent redesign loop.
+
+## Principles
+
+- **KISS** — simplest design that meets the current need.
+- **YAGNI** — only what the story requires; no hooks “for later”.
+- **WET → DRY** — duplicating once is OK; factorize when the pattern is stable (~2nd–3rd time).
+- **Boy Scout (scoped)** — improve the zone changed for the ticket; do **not** clean an entire large file because one line moved.
+- **English everywhere** in code and comments.
+- **Naming** — camelCase locals/methods; PascalCase types; `kPascalCase` constants; instance members `name_`. Names must reveal intent.
+- **Names over narrative comments** — rename or extract instead of narrating *what*; comments only for *why* / non-obvious constraints (including dated MIDI/USB timing exceptions).
+
+## Thresholds (source of truth = analyser)
+
+| Metric | Max |
+|---|---|
+| Function (protocol / core) | ~40 lines |
+| Function (USB / platform glue) | ~50 lines |
+| Parameters (our code) | 4 |
+| Cyclomatic complexity | 10 (glue up to 12 if justified) |
+| Nesting depth | 4 |
+| Useful `.cpp` file | ~400 lines |
+
+Win32 / third-party APIs are not rewritten to satisfy parameter counts. Historical debt outside the diff is a separate chore.
+
+## Hot MIDI / USB path
+
+In transfer callbacks and encode/decode loops on the latency-sensitive path: no unbounded alloc, no dangerous locks, no logging that risks jitter. **Safety wins** over metrics — document a dated `NOLINT` / exception rather than obscure the critical path.
+
+## Definition of done
+
+1. Project compiles (when a target exists).
+2. Relevant tests pass (when they exist).
+3. `python scripts/quality/lint-touched.py` passes on touched C++ under gate scopes.
+
+If the analyser fails → fix the finding. **No** mandatory DESIGN → AUTO-REVIEW redesign loop.

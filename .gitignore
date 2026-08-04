@@ -1,0 +1,39 @@
+# Build outputs
+Builds/
+build/
+builds/
+out/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+*.user
+*.suo
+*.sdf
+*.opensdf
+.vs/
+.vscode/*
+!.vscode/extensions.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# BMad personal overrides
+_bmad/config.user.toml
+_bmad/custom/*.user.toml
+
+# Local scratch (not product docs)
+_local/
+
+# IDE / tooling
+.idea/
+*.code-workspace

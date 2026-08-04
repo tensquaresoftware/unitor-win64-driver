@@ -1,0 +1,42 @@
+---
+description: Mandatory Contexte de la Story opening for create/dev/quick-dev/code-review BMad commands
+alwaysApply: true
+---
+
+# BMad — amorce « Contexte de la Story » (NON NÉGOCIABLE)
+
+## Scope
+
+Applies on **first activation** of:
+
+- `bmad-create-story`
+- `bmad-dev-story`
+- `bmad-quick-dev`
+- `bmad-code-review`
+
+Does **not** apply to other BMad commands.
+
+## Hard gate — first user-facing content
+
+After optional `rename_chat` and skill setup, the **very first text Guillaume sees** MUST be:
+
+```
+## Contexte de la Story
+
+<one synthetic French sentence>
+```
+
+Rules:
+
+1. **One sentence** (two short max if unavoidable).
+2. Plain French — pass « Reformule en langage naturel, sans jargon excessif ».
+3. Product / usage level — not the implementation plan.
+4. Keep hardware/protocol English names as-is (**MT4**, **WinUSB**, **MIDI**, …).
+5. Forbidden in this blurb: file paths, AC IDs, class names, bullet lists, English sentence dumps that are not product labels.
+6. No story ID yet → still use the heading; summarize the requested change.
+
+Then continue the normal workflow.
+
+## Do not repeat
+
+If this conversation already contains `## Contexte de la Story`, do not emit it again.

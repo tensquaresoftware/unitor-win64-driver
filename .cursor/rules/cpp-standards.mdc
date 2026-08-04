@@ -1,0 +1,55 @@
+---
+description: Conventions C++17 pour fichiers source (usermode Windows MIDI/USB)
+globs: "**/*.{h,hpp,cpp,cc,cxx}"
+alwaysApply: false
+---
+
+# C++ Standards
+
+Source complète : `conventions.md` §6–§7. En cas de litige → `conventions.md` fait foi.
+
+## Langue du code
+
+- **Anglais uniquement** dans le code : noms, commentaires.
+
+## Fichiers sous `src/`
+
+- Noms de fichiers en **PascalCase**, alignés sur le type principal : `DeviceProfile.h`, `EmagicMidiMapper.cpp`
+- Sous-dossiers en **kebab-case** : `src/protocol/`, `src/platform/`
+
+## Naming
+
+- Variables / méthodes : `lowerCamelCase`
+- Classes / namespaces : `PascalCase`
+- Enums : `enum class`, valeurs préfixées `k` (`DeviceModel::kMt4`)
+- Constantes publiques : `kMaxPacketSize`
+- Membres privés : suffixe `_` (`deviceHandle_`)
+- Pas de magic numbers → constantes nommées
+
+## Formatage (Allman)
+
+- 4 espaces, pas de tabulations
+- Accolade ouvrante sur nouvelle ligne
+- `const` avant le type : `const Thing&`
+- Pointeurs : espace après le type `SomeObject* p`
+- `nullptr` uniquement
+- `#pragma once` en première ligne des headers
+
+## Includes
+
+1. Headers système C++
+2. Headers OS / third-party (WinUSB, MIDI, …)
+3. Headers projet (chemins depuis la racine CMake, jamais `../../../`)
+
+Séparer chaque groupe par une ligne vide. Forward declarations dans `.h`, includes complets dans `.cpp`.
+
+## Architecture
+
+- Protocole / mapping câbles indépendant des backends WinUSB et MIDI virtuel
+- Préférer `DeviceProfile` déclaratif par PID plutôt que des forks par modèle
+- Glue plateforme aux bords ; le cœur ne dépend pas de l’installeur / UI
+
+## Chemin MIDI / USB sensible
+
+- Callbacks de transfert / boucles encode-decode : pas d’allocation non bornée, pas de verrous dangereux, pas de logs qui risquent la gigue
+- Si conflit avec les métriques §3 → la sûreté timing gagne (exception datée)

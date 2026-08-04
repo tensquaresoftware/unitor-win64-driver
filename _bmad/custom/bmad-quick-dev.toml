@@ -1,0 +1,18 @@
+# Team override for bmad-quick-dev — rename-once + clarity amorce.
+
+[workflow]
+
+activation_steps_prepend = [
+  "Charger et appliquer d’abord file:{project-root}/_bmad/custom/clarity-bar-fr.md et file:{project-root}/.cursor/rules/bmad-clarity-bar.mdc, puis file:{project-root}/.cursor/rules/bmad-story-context-amorce.mdc et file:{project-root}/.cursor/rules/bmad-agent-chat-titles.mdc.",
+  "HARD GATE amorce : après rename_chat (une seule fois si le titre ne commence pas déjà par « BMad — », rule bmad-agent-chat-titles) le PREMIER contenu visible pour Guillaume DOIT être « ## Contexte de la Story » + UNE phrase synthétique en français clair. Interdit d’ouvrir par un salut, En bref, ou des questions avant ce bloc. Si « Contexte de la Story » est déjà apparu plus tôt dans cette conversation, ne pas le répéter.",
+]
+
+persistent_facts = [
+  "file:{project-root}/_bmad/custom/clarity-bar-fr.md",
+  "file:{project-root}/.cursor/rules/bmad-clarity-bar.mdc",
+  "file:{project-root}/.cursor/rules/bmad-story-context-amorce.mdc",
+  "file:{project-root}/.cursor/rules/bmad-agent-chat-titles.mdc",
+  "Amorce Quick Dev : premier message = ## Contexte de la Story + une phrase claire ; ne pas répéter aux tours suivants.",
+  "Rename-once : si le titre Agents commence déjà par « BMad — », ne jamais rappeler rename_chat.",
+  "Doublons de titre : python scripts/dev/resolve-bmad-chat-title.py \"BASE\" avant rename_chat.",
+]

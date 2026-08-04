@@ -1,0 +1,50 @@
+---
+description: Environnement unitor-win64-driver, Git, BMad, fichiers de référence
+alwaysApply: true
+---
+
+# unitor-win64-driver — Contexte projet
+
+Source complète : `conventions.md`. Brief produit : `docs/dev/prompt-demarrage-projet-bmad.md`.
+
+## Environnement
+
+- Développement principal : macOS Tahoe + Cursor ; validation matérielle / build cible : **Windows 10/11 64 bits**
+- Langage cible : **C++17** usermode (WinUSB + pont MIDI) — stack exacte à trancher en architecture BMad
+- Builds attendus sous `builds/` — **pas** `build/` à la racine
+- IDE / agent : **Cursor Pro+**
+- Dossiers et fichiers projet en **kebab-case** (`scripts/`, `docs/dev/`, `conventions.md`, …)
+- Exception : sources C++ sous `src/` en **PascalCase** (`DeviceProfile.h`, …)
+
+## Git
+
+- Commits **uniquement sur demande explicite** de Guillaume
+- Messages de commit et issues GitHub en **anglais**
+
+## BMad Method
+
+- Versionné : `_bmad/`, `_bmad/custom/config.toml` (chat FR, docs EN), `_bmad-output/`
+- Override perso (souvent gitignored) : `_bmad/config.user.toml`, `_bmad/custom/config.user.toml`
+- Skills Cursor : `.agents/skills/`
+
+## Fichiers clés
+
+- `conventions.md` — instructions personnelles + §3 porte qualité (autoritaire)
+- `scripts/quality/lint-touched.py` — analyseur sur le diff C++ (critère de fin de tâche)
+- `docs/dev/software-development-quality-principles.md` — glossaire des principes
+- `docs/dev/prompt-demarrage-projet-bmad.md` — brief MT4 / WinUSB / protocole Emagic
+
+## Nommage
+
+- **Dossiers** : kebab-case (`scripts/quality/`, `docs/dev/`, `src/…`)
+- **Fichiers** (hors C++) : kebab-case (`conventions.md`, `lint-touched.py`)
+- **Sources C++** sous `src/` : **PascalCase** (`DeviceProfile.h`, `EmagicMidiMapper.cpp`)
+- Docs de process et brief de démarrage sous `docs/dev/`
+- Pas de `PascalCase` / `snake_case` pour les dossiers ; pas de dossier `Documentation/`
+
+## Interdits fréquents
+
+- Pas de français dans le code source
+- Pas de pilote kernel custom sauf décision d’architecture contraire
+- Pas d’abstraction « pour plus tard » (AMT8 / Unitor8) hors `DeviceProfile` déclaratif
+- Ne pas élargir le ticket pour rembourser toute la dette historique
