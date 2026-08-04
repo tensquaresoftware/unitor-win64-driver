@@ -1,8 +1,5 @@
 # Prompt BMad — démarrage de l’étude unitor-win64-driver
 
-> À coller tel quel dans une conversation Cursor fraîche avec BMad (ex. `bmad-help`, puis brainstorming / brief / PRD / architecture selon la reco du skill).  
-> Langue du chat : français. Artifacts générés (brief, PRD, architecture, stories) : **anglais**.
-
 ---
 
 ## Consigne à BMad
@@ -12,7 +9,7 @@ Démarre un **projet greenfield** avec la méthode BMad pour `unitor-win64-drive
 Parcours souhaité (adapte si `bmad-help` propose mieux, mais ne saute pas l’essentiel) :
 
 1. **Analyst / Brainstorming** — consolider ce brief en Project Brief formel ; lister les inconnues restantes (doc protocole Emagic, captures USB, licence VirtualMIDI pour redistribution).
-2. **PM** — MVP réaliste et backlog post-MVP (AMT8 / Unitor8, éventuelle v2 Win11 / second backend).
+2. **PM** — MVP réaliste et backlog post-MVP (AMT8 / Unitor8 / Unitor8 mk2, éventuelle v2 Win11 / second backend).
 3. **Architecte** — trancher la stack C++ usermode, le plan de réimplémentation protocole (référence Linux, pas copie GPL), le backend MIDI virtuel pour **Windows 10**, le découpage `DeviceProfile`.
 4. **Découpage** en epics/stories avec revues `bmad-code-review` dans le workflow habituel.
 
@@ -38,7 +35,7 @@ Lire en priorité dans le dépôt :
 
 ## Contexte produit
 
-**Problème.** Les interfaces USB MIDI Emagic de la famille Unitor (Unitor8, AMT8, MT4) n’ont jamais reçu de pilote Windows 64 bits officiel (dernier paquet vendeur : Windows XP 32 bits). Sous Windows 10/11 le périphérique s’énumère en USB, mais le pilote de classe générique ne comprend pas le **mapping propriétaire des câbles MIDI Emagic** → aucun port MIDI utilisable dans les DAW.
+**Problème.** Les interfaces USB MIDI Emagic de la famille Unitor (MT4, AMT8, Unitor8, Unitor8 mk2) n’ont jamais reçu de pilote Windows 64 bits officiel (dernier paquet vendeur : Windows XP 32 bits). Sous Windows 10/11 le périphérique s’énumère en USB, mais le pilote de classe générique ne comprend pas le **mapping propriétaire des câbles MIDI Emagic** → aucun port MIDI utilisable dans les DAW.
 
 **Objectif.** Fournir un pont logiciel communautaire pour faire fonctionner au moins le **MT4** sur Windows 10/11 64 bits, avec une architecture extensible aux cousins AMT8 / Unitor8.
 
@@ -126,12 +123,12 @@ WDK + attestation signing Secure Boot + expertise noyau = disproportionné et fr
 
 - Patch / LTC / VITC / Fast Mode / AMT
 - Cascades multi-interfaces (fragile même sous ALSA)
-- Support garanti AMT8 / Unitor8 sans matériel de test
+- Support garanti AMT8 / Unitor8 / Unitor8 mk2 sans matériel de test
 - Cible « Windows MIDI Services only »
 
 **Post-MVP**
 
-- Profils AMT8 / Unitor8 = stories de **validation matérielle** (dépendance externe explicite)
+- Profils AMT8 / Unitor8 / Unitor8 mk2 = stories de **validation matérielle** (dépendance externe explicite)
 - Éventuelle **v2 Win11** ou **second backend** Windows MIDI Services
 
 ---

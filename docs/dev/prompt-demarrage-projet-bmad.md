@@ -103,7 +103,7 @@ La cohérence du numéro d'interface (`ifnum = 2`) entre les trois modèles est 
 
 Avec ce découpage, l'ajout du support AMT8 après la V1 ne serait pas une story de développement (le code de mapping des câbles serait déjà générique), mais **une story de validation matérielle** : ajout de l'entrée `DeviceProfile` pour le PID `0002`, campagne de tests sur du matériel AMT8 réel (que je ne possède pas actuellement — nécessite soit une acquisition, soit un partenariat avec un testeur communautaire possédant cet appareil), et ajustements empiriques si des écarts de comportement apparaissent en pratique.
 
-Quid de la Unitor8 mk2 ?
+Quid de la Unitor8 mk2 ? Possibilité de rendre mon driver compatible avec ce modèle plus récent ?
 
 ## Impact sur le scope BMad
 
