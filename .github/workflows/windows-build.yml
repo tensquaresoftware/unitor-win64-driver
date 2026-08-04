@@ -1,0 +1,38 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Record toolchain versions
+        shell: pwsh
+        run: |
+          Write-Host "=== CMake ==="
+          cmake --version
+          Write-Host "=== Visual Studio (vswhere) ==="
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+            -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property displayName,installationVersion,installationPath
+
+      - name: Configure (builds/)
+        run: cmake -S . -B builds/ci -A x64
+
+      - name: Build
+        run: cmake --build builds/ci --config Release
+
+      - name: Confirm Bridge artifact
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path builds/ci -Recurse -Filter Bridge.exe -ErrorAction Stop |
+            Select-Object -First 1
+          if (-not $exe) { throw "Bridge.exe not found under builds/ci" }
+          Write-Host "Built: $($exe.FullName)"
