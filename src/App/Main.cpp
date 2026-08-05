@@ -1,6 +1,8 @@
 // Bridge process entry — user-session host (not a Windows Service).
 
 #include "Device/DeviceSession.h"
+#include "Device/DeviceSessionManager.h"
+#include "Midi/VirtualMidiBackend.h"
 #include "Profile/DeviceProfile.h"
 #include "Protocol/EmagicCableMapper.h"
 #include "Usb/WinUsbTransport.h"
@@ -278,6 +280,83 @@ int runMapperTests()
     return 0;
 }
 
+bool expectExactName(const std::string& actual, const char* expected, const char* label)
+{
+    if (actual != expected)
+    {
+        std::cerr << "Port name test failed (" << label << "): got \"" << actual
+                  << "\", expected \"" << expected << "\"\n";
+        return false;
+    }
+    return true;
+}
+
+bool testFormatPortDisplayNames()
+{
+    return expectExactName(formatPortDisplayName(1, 1), "MT4 Port 1", "K=1 Port 1")
+        && expectExactName(formatPortDisplayName(1, 2), "MT4 Port 2", "K=1 Port 2")
+        && expectExactName(formatPortDisplayName(1, 3), "MT4 Port 3", "K=1 Port 3")
+        && expectExactName(formatPortDisplayName(1, 4), "MT4 Port 4", "K=1 Port 4")
+        && expectExactName(formatPortDisplayName(2, 3), "MT4 #2 Port 3", "K=2 Port 3");
+}
+
+bool testBuiltMt4PortNameSet()
+{
+    const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
+    if (mt4 == nullptr)
+    {
+        std::cerr << "MT4 DeviceProfile not found for port-name tests\n";
+        return false;
+    }
+
+    DeviceSessionManager manager;
+    PortNameSet names;
+    std::string error;
+    if (!manager.buildPortNameSet(*mt4, names, error))
+    {
+        std::cerr << "buildPortNameSet failed: " << error << '\n';
+        return false;
+    }
+
+    if (names.inCount != 2 || names.outCount != 4)
+    {
+        std::cerr << "PortNameSet counts mismatch (expected 2 IN / 4 OUT)\n";
+        return false;
+    }
+
+    return expectExactName(names.inNames[0], "MT4 Port 1", "IN 1")
+        && expectExactName(names.inNames[1], "MT4 Port 2", "IN 2")
+        && expectExactName(names.outNames[0], "MT4 Port 1", "OUT 1")
+        && expectExactName(names.outNames[1], "MT4 Port 2", "OUT 2")
+        && expectExactName(names.outNames[2], "MT4 Port 3", "OUT 3")
+        && expectExactName(names.outNames[3], "MT4 Port 4", "OUT 4");
+}
+
+int runPortNameTests()
+{
+    if (!testFormatPortDisplayNames() || !testBuiltMt4PortNameSet())
+    {
+        return 1;
+    }
+
+    std::cout << "Port name tests passed\n";
+    return 0;
+}
+
+void printExpectedPortDiagnostics(const PortNameSet& names)
+{
+    std::cout << "Expected Virtual Ports: " << names.inCount << " IN / " << names.outCount
+              << " OUT\n";
+    for (std::size_t index = 0; index < names.inCount; ++index)
+    {
+        std::cout << "  IN  " << names.inNames[index] << '\n';
+    }
+    for (std::size_t index = 0; index < names.outCount; ++index)
+    {
+        std::cout << "  OUT " << names.outNames[index] << '\n';
+    }
+}
+
 int startMt4Session(bool allowZadigFallback)
 {
     const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
@@ -287,21 +366,36 @@ int startMt4Session(bool allowZadigFallback)
         return 1;
     }
 
-    DeviceSession session;
-    WinUsbOpenOptions options;
-    options.allowZadigFallback = allowZadigFallback;
-
+    DeviceSessionManager manager;
+    PortNameSet names;
     std::string error;
-    if (!session.Start(*mt4, error, options) || !session.IsRunning())
+    if (!manager.buildPortNameSet(*mt4, names, error))
+    {
+        std::cerr << "Port name build failed: " << error << '\n';
+        return 1;
+    }
+
+    printExpectedPortDiagnostics(names);
+
+    VirtualMidiBackend midiBackend;
+    DeviceSession session;
+
+    DeviceSessionStartRequest request;
+    request.profile = mt4;
+    request.midiBackend = &midiBackend;
+    request.portNames = &names;
+    request.openOptions.allowZadigFallback = allowZadigFallback;
+
+    if (!session.Start(request, error) || !session.IsRunning())
     {
         std::cerr << "DeviceSession start failed: "
                   << (error.empty() ? "unknown error" : error) << '\n';
         return 1;
     }
 
-    std::cout << "DeviceSession started for MT4\n";
+    std::cout << "DeviceSession started for MT4 with Virtual Ports\n";
     session.Stop();
-    std::cout << "DeviceSession stopped\n";
+    std::cout << "DeviceSession stopped (Virtual Ports destroyed)\n";
     return 0;
 }
 
@@ -342,6 +436,11 @@ int main(int argc, char* argv[])
     if (hasFlag(argc, argv, "--test-mapper"))
     {
         return runMapperTests();
+    }
+
+    if (hasFlag(argc, argv, "--test-port-names"))
+    {
+        return runPortNameTests();
     }
 
     const bool allowZadigFallback = hasFlag(argc, argv, "--dev-zadig");

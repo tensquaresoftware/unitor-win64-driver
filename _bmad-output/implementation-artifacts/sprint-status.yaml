@@ -1,5 +1,5 @@
 # generated: 2026-08-04T21:38:31Z
-# last_updated: 2026-08-05T08:15:39Z
+# last_updated: 2026-08-05T10:40:00Z
 # project: unitor-win64-driver
 # project_key: NOKEY
 # tracking_system: file-system
@@ -7,7 +7,7 @@
 #
 # SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
 # READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
-# NEXT: create-story / ready-for-dev for 1-5-virtualmidi-backend-and-stable-mt4-port-names
+# NEXT: create-story / ready-for-dev for 1-6-notes-and-cc-round-trip-on-all-ports
 #
 # DEFERRED (do not block sprint):
 #   AQ-1…AQ-4 (architecture spine)
@@ -51,7 +51,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-05T08:15:39Z"
+last_updated: "2026-08-05T10:40:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -64,7 +64,7 @@ development_status:
   1-2-declarative-mt4-deviceprofile: done
   1-3-winusb-bind-path-and-transport-open: done
   1-4-devicesession-and-emagic-cable-mapper-usermode: done
-  1-5-virtualmidi-backend-and-stable-mt4-port-names: backlog
+  1-5-virtualmidi-backend-and-stable-mt4-port-names: done
   1-6-notes-and-cc-round-trip-on-all-ports: backlog
   epic-1-retrospective: optional
 

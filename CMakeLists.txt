@@ -15,6 +15,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(Bridge
     src/App/Main.cpp
     src/Device/DeviceSession.cpp
+    src/Device/DeviceSessionManager.cpp
+    src/Midi/VirtualMidiBackend.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Usb/WinUsbTransport.cpp

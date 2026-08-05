@@ -30,25 +30,68 @@ void DeviceSession::sendFinishMagicBestEffort() noexcept
     (void)transport_.WriteBulk(kEmagicFinishMagic, kEmagicFinishMagicSize, ignored);
 }
 
-bool DeviceSession::Start(
+void DeviceSession::destroyPortsBestEffort() noexcept
+{
+    if (midiBackend_ != nullptr)
+    {
+        midiBackend_->DestroyPortSet();
+    }
+}
+
+bool DeviceSession::portNamesMatchProfile(
     const DeviceProfile& profile,
-    std::string& errorOut,
-    WinUsbOpenOptions options)
+    const PortNameSet& portNames,
+    std::string& errorOut) const
+{
+    const std::size_t expectedIn = countProductPorts(profile.inCables);
+    const std::size_t expectedOut = countProductPorts(profile.outCables);
+    if (portNames.inCount != expectedIn || portNames.outCount != expectedOut)
+    {
+        errorOut =
+            "DeviceSession PortNameSet counts do not match DeviceProfile product ports";
+        return false;
+    }
+    return true;
+}
+
+bool DeviceSession::Start(const DeviceSessionStartRequest& request, std::string& errorOut)
 {
     Stop();
 
-    if (!transport_.Open(profile, errorOut, options))
+    if (request.profile == nullptr || request.midiBackend == nullptr || request.portNames == nullptr)
+    {
+        errorOut = "DeviceSession Start requires profile, MidiBackend, and PortNameSet";
+        return false;
+    }
+
+    if (!portNamesMatchProfile(*request.profile, *request.portNames, errorOut))
     {
         return false;
     }
 
-    mapper_ = std::make_unique<EmagicCableMapper>(profile);
+    midiBackend_ = request.midiBackend;
+
+    if (!transport_.Open(*request.profile, errorOut, request.openOptions))
+    {
+        midiBackend_ = nullptr;
+        return false;
+    }
+
+    mapper_ = std::make_unique<EmagicCableMapper>(*request.profile);
 
     if (!sendInitMagic(errorOut))
     {
         const std::string initError = errorOut;
         Stop();
         errorOut = "DeviceSession init magic write failed: " + initError;
+        return false;
+    }
+
+    if (!midiBackend_->CreatePortSet(*request.portNames, errorOut))
+    {
+        const std::string portError = errorOut;
+        Stop();
+        errorOut = "DeviceSession Virtual Port create failed: " + portError;
         return false;
     }
 
@@ -59,6 +102,9 @@ bool DeviceSession::Start(
 
 void DeviceSession::Stop() noexcept
 {
+    // AD-9: destroy ports first, then Emagic finish + transport close.
+    destroyPortsBestEffort();
+
     if (running_ || transport_.IsOpen())
     {
         sendFinishMagicBestEffort();
@@ -66,10 +112,11 @@ void DeviceSession::Stop() noexcept
 
     transport_.Close();
     mapper_.reset();
+    midiBackend_ = nullptr;
     running_ = false;
 }
 
 bool DeviceSession::IsRunning() const noexcept
 {
-    return running_ && transport_.IsOpen() && mapper_ != nullptr;
+    return running_ && transport_.IsOpen() && mapper_ != nullptr && midiBackend_ != nullptr;
 }
