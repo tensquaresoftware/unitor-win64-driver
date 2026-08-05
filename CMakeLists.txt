@@ -14,6 +14,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(Bridge
     src/App/Main.cpp
+    src/Profile/DeviceProfile.cpp
 )
 
 target_include_directories(Bridge
