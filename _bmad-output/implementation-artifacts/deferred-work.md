@@ -1,5 +1,10 @@
 # Deferred work
 
+## Deferred from: code review of 2-4-matrix-control-minimum-sysex-pass-vectors.md (2026-08-05)
+
+- Update `deferred-work.md` with open 2.3 Win10 SysEx blanks after the Matrix-Control lab (story Task 2+) — not required for Task 1 checklist-only delivery.
+- Epic 1 smoke guide does not yet point operators to `docs/tests/smoke-epic2-matrix-control-mt4.md` — nice-to-have navigation; not a Task 1 acceptance gap.
+
 ## Deferred from: code review of 2-3-transparent-sysex-transport-with-burst-buffering.md (2026-08-05)
 
 - Incomplete SysEx under hold cap with no `0xF7`: no idle-timeout / session failure in 2.3 — AC4 for this story = oversize, queue overflow, nested `0xF0` abandon; revisit if Win10 lab shows hangs.

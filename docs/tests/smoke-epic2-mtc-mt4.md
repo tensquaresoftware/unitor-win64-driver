@@ -30,7 +30,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 
 - Timing Clock / Start-Stop-Continue → story 2.1 (`smoke-epic2-clock-mt4.md`)
 - Transparent SysEx librarian / burst buffering → story 2.3 (`smoke-epic2-sysex-mt4.md`)
-- Matrix-Control minimum SysEx vectors → story 2.4
+- Matrix-Control minimum SysEx vectors → story 2.4 (`smoke-epic2-matrix-control-mt4.md`)
 - ~4 h longevity → story 2.5
 - Latency / jitter Studio-Done numbers → Epic 5
 - SMPTE user-bits / MMC / MTC cueing variants beyond full-frame sync

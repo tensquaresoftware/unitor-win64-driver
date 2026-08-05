@@ -29,7 +29,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 
 - MTC quarter-frame / full-frame → story 2.2 (`smoke-epic2-mtc-mt4.md`)
 - Transparent SysEx librarian / burst buffering → story 2.3 (`smoke-epic2-sysex-mt4.md`)
-- Matrix-Control minimum SysEx vectors → story 2.4
+- Matrix-Control minimum SysEx vectors → story 2.4 (`smoke-epic2-matrix-control-mt4.md`)
 - ~4 h longevity → story 2.5
 - Latency / jitter Studio-Done numbers → Epic 5
 - ShowMIDI alone as sole clock-slave proof when a Validation Matrix DAW is available

@@ -11,7 +11,7 @@ updated: 2026-08-05
 
 Use this checklist to prove **librarian-sized SysEx** (including Oberheim Matrix-shaped frames) through MT4 Virtual Ports in both directions, with enough burst buffering that a short bank-export-scale sequence completes **without Bridge restart**.
 
-Clock / transport proof lives in `docs/tests/smoke-epic2-clock-mt4.md` (story 2.1). MTC proof lives in `docs/tests/smoke-epic2-mtc-mt4.md` (story 2.2). This document owns **SysEx transport + short burst buffering only**.
+Clock / transport proof lives in `docs/tests/smoke-epic2-clock-mt4.md` (story 2.1). MTC proof lives in `docs/tests/smoke-epic2-mtc-mt4.md` (story 2.2). Matrix-Control locked minimum vectors live in `docs/tests/smoke-epic2-matrix-control-mt4.md` (story 2.4). This document owns **SysEx transport + short burst buffering only**.
 
 Mark each validation line **Pass** or **Fail**. On Fail, write English notes with **Port N / cable / direction**.
 
@@ -29,7 +29,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 
 - Timing Clock / Start-Stop-Continue → story 2.1 (`smoke-epic2-clock-mt4.md`)
 - MTC quarter-frame / full-frame sync → story 2.2 (`smoke-epic2-mtc-mt4.md`)
-- Matrix-Control **locked minimum pass-vector table** (Inquiry + patch + master + push + live edits + mixed-wire) → story **2.4**
+- Matrix-Control **locked minimum pass-vector table** (Inquiry + patch + master + push + live edits + mixed-wire) → story **2.4** (`smoke-epic2-matrix-control-mt4.md`)
 - ~4 h longevity / soak sample → story **2.5**
 - Latency / jitter Studio-Done numbers → Epic 5
 - Linking Matrix-Control as a Bridge runtime dependency (forbidden — CAP-8)
@@ -94,7 +94,7 @@ Expect Pass, including Catch2 `[framer][sysex]`, `[mapper][sysex]`, and `[queue]
 | Claim | Owner |
 |---|---|
 | Transparent SysEx pipe + burst buffering (this checklist) | **2.3** (this doc) |
-| Matrix-Control locked minimum vectors (Inquiry + patch + master + push + live edits + mixed-wire) | **2.4** |
+| Matrix-Control locked minimum vectors (Inquiry + patch + master + push + live edits + mixed-wire) | **2.4** (`smoke-epic2-matrix-control-mt4.md`) |
 | ~4 h longevity design / soak sample | **2.5** |
 | Full-frame MTC sync | **2.2** (`smoke-epic2-mtc-mt4.md`) |
 | MIDI Path latency/jitter harness | Epic **5** |

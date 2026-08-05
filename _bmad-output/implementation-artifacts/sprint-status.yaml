@@ -1,5 +1,5 @@
 # generated: 2026-08-04T21:38:31Z
-# last_updated: 2026-08-05T22:30:00Z
+# last_updated: 2026-08-05T23:10:00Z
 # project: unitor-win64-driver
 # project_key: NOKEY
 # tracking_system: file-system
@@ -7,7 +7,7 @@
 #
 # SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
 # READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
-# NEXT: create-story 2-4 Matrix-Control min SysEx vectors; Win10 lab still pending for 2-1 clock / 2-2 MTC / 2-3 SysEx
+# NEXT: Win10 Matrix-Control lab for 2-4; Win10 lab still pending for 2-1 clock / 2-2 MTC / 2-3 SysEx
 #
 # DEFERRED (do not block sprint):
 #   AQ-1…AQ-4 (architecture spine)
@@ -51,7 +51,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-05T22:30:00Z"
+last_updated: "2026-08-05T23:10:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -73,7 +73,7 @@ development_status:
   2-1-midi-clock-and-transport-realtime: review
   2-2-mtc-quarter-frame-and-full-frame: review
   2-3-transparent-sysex-transport-with-burst-buffering: done
-  2-4-matrix-control-minimum-sysex-pass-vectors: backlog
+  2-4-matrix-control-minimum-sysex-pass-vectors: in-progress
   2-5-session-longevity-design-for-4h-studio-use: backlog
   epic-2-retrospective: optional
 
