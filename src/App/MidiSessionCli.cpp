@@ -71,33 +71,107 @@ void printExpectedPortDiagnostics(const PortNameSet& names)
     }
 }
 
+void printDeviceHostCounters(const DeviceHostCounterSnapshot& snapshot)
+{
+    std::cout << "device-host counters: bulk_in_bytes=" << snapshot.bulkBytes
+              << " demux_spans=" << snapshot.demuxSpans
+              << " send_ok_msgs=" << snapshot.sendOk
+              << " send_fail_msgs=" << snapshot.sendFail << '\n'
+              << std::flush;
+}
+
+bool shouldPrintDeviceHostCounters(
+    const DeviceHostCounterSnapshot& previous,
+    const DeviceHostCounterSnapshot& current)
+{
+    if (current.sendFail != previous.sendFail)
+    {
+        return true;
+    }
+    if (previous.bulkBytes == 0 && current.bulkBytes > 0)
+    {
+        return true;
+    }
+    if (current.sendOk > previous.sendOk)
+    {
+        if (current.sendOk == 1)
+        {
+            return true;
+        }
+        return (current.sendOk / 25) > (previous.sendOk / 25);
+    }
+    return false;
+}
+
+bool pollMidiSessionOnce(
+    DeviceSession& session,
+    DeviceHostCounterSnapshot& lastCounters,
+    std::chrono::steady_clock::time_point& lastHeartbeat,
+    int& exitCode)
+{
+    std::string pumpError;
+    if (session.TakePumpFailure(pumpError))
+    {
+        printDeviceHostCounters(session.CopyDeviceHostCounters());
+        std::cerr << "MIDI I/O pump failed: " << pumpError << '\n';
+        exitCode = 1;
+        return false;
+    }
+    if (!session.IsRunning())
+    {
+        printDeviceHostCounters(session.CopyDeviceHostCounters());
+        std::cerr << "MIDI I/O session ended unexpectedly\n";
+        exitCode = 1;
+        return false;
+    }
+
+    const DeviceHostCounterSnapshot counters = session.CopyDeviceHostCounters();
+    if (shouldPrintDeviceHostCounters(lastCounters, counters))
+    {
+        printDeviceHostCounters(counters);
+        lastCounters = counters;
+    }
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - lastHeartbeat >= std::chrono::seconds(3))
+    {
+        printDeviceHostCounters(counters);
+        lastCounters = counters;
+        lastHeartbeat = now;
+    }
+    return true;
+}
+
 int waitForMidiSessionCancel(DeviceSession& session)
 {
+    DeviceHostCounterSnapshot lastCounters = {};
+    auto lastHeartbeat = std::chrono::steady_clock::now();
+    int exitCode = 0;
     while (!g_cancelRequested.load())
     {
-        std::string pumpError;
-        if (session.TakePumpFailure(pumpError))
+        if (!pollMidiSessionOnce(session, lastCounters, lastHeartbeat, exitCode))
         {
-            std::cerr << "MIDI I/O pump failed: " << pumpError << '\n';
             session.Stop();
             std::cout << "MIDI I/O stopped\n";
-            return 1;
-        }
-        if (!session.IsRunning())
-        {
-            std::cerr << "MIDI I/O session ended unexpectedly\n";
-            session.Stop();
-            std::cout << "MIDI I/O stopped\n";
-            return 1;
+            return exitCode;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
+    printDeviceHostCounters(session.CopyDeviceHostCounters());
     session.Stop();
     std::cout << "MIDI I/O stopped\n";
     return 0;
 }
 } // namespace
+
+void printSessionStartedBanner()
+{
+    std::cout << "DeviceSession started for MT4 with Virtual Ports\n";
+    std::cout << "MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)\n";
+    std::cout << "device-host counters will print in this window on USB IN activity"
+                 " (same thread as this message)\n";
+}
 
 int runMt4MidiSession(bool allowZadigFallback)
 {
@@ -142,7 +216,6 @@ int runMt4MidiSession(bool allowZadigFallback)
         return 1;
     }
 
-    std::cout << "DeviceSession started for MT4 with Virtual Ports\n";
-    std::cout << "MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)\n";
+    printSessionStartedBanner();
     return waitForMidiSessionCancel(session);
 }

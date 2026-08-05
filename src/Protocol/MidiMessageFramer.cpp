@@ -1,0 +1,190 @@
+#include "Protocol/MidiMessageFramer.h"
+
+namespace
+{
+constexpr std::size_t kMaxSysexHoldBytes = 1024;
+
+bool isRealtimeStatus(uint8_t status) noexcept
+{
+    return status >= 0xF8;
+}
+
+bool isSystemExclusiveStart(uint8_t status) noexcept
+{
+    return status == 0xF0;
+}
+
+bool isSystemExclusiveEnd(uint8_t status) noexcept
+{
+    return status == 0xF7;
+}
+} // namespace
+
+void MidiMessageFramer::Reset() noexcept
+{
+    buffer_.clear();
+    runningStatus_ = 0;
+    expectedLength_ = 0;
+    inSysex_ = false;
+}
+
+void MidiMessageFramer::emitBuffer(const MidiFramedMessageSink& sink)
+{
+    if (buffer_.empty() || !sink)
+    {
+        return;
+    }
+    sink(buffer_.data(), buffer_.size());
+    buffer_.clear();
+    expectedLength_ = 0;
+}
+
+std::size_t MidiMessageFramer::channelDataLength(uint8_t status) noexcept
+{
+    if (status >= 0xF0)
+    {
+        if (status == 0xF1 || status == 0xF3)
+        {
+            return 2; // status + 1 data
+        }
+        if (status == 0xF2)
+        {
+            return 3; // status + 2 data
+        }
+        if (status == 0xF6)
+        {
+            return 1; // status only
+        }
+        return 0;
+    }
+
+    const uint8_t high = static_cast<uint8_t>(status & 0xF0);
+    if (high == 0xC0 || high == 0xD0)
+    {
+        return 2; // status + 1 data
+    }
+    return 3; // status + 2 data
+}
+
+void MidiMessageFramer::beginChannelOrSystem(uint8_t status)
+{
+    const std::size_t length = channelDataLength(status);
+    if (length == 0)
+    {
+        // Undefined / unsupported system-common status: drop and resync.
+        buffer_.clear();
+        expectedLength_ = 0;
+        inSysex_ = false;
+        return;
+    }
+
+    buffer_.clear();
+    buffer_.push_back(status);
+    inSysex_ = false;
+    expectedLength_ = length;
+    if (status < 0xF0)
+    {
+        runningStatus_ = status;
+    }
+    else
+    {
+        runningStatus_ = 0;
+    }
+}
+
+void MidiMessageFramer::handleStatusByte(uint8_t status, const MidiFramedMessageSink& sink)
+{
+    if (isRealtimeStatus(status))
+    {
+        const uint8_t realtime = status;
+        if (sink)
+        {
+            sink(&realtime, 1);
+        }
+        return;
+    }
+
+    if (isSystemExclusiveStart(status))
+    {
+        buffer_.clear();
+        buffer_.push_back(status);
+        inSysex_ = true;
+        expectedLength_ = 0;
+        runningStatus_ = 0;
+        return;
+    }
+
+    if (isSystemExclusiveEnd(status))
+    {
+        if (inSysex_)
+        {
+            buffer_.push_back(status);
+            emitBuffer(sink);
+            inSysex_ = false;
+        }
+        return;
+    }
+
+    beginChannelOrSystem(status);
+    if (expectedLength_ == 1)
+    {
+        emitBuffer(sink);
+    }
+}
+
+void MidiMessageFramer::handleDataByte(uint8_t data, const MidiFramedMessageSink& sink)
+{
+    if (inSysex_)
+    {
+        if (buffer_.size() >= kMaxSysexHoldBytes)
+        {
+            Reset();
+            return;
+        }
+        buffer_.push_back(data);
+        return;
+    }
+
+    if (buffer_.empty())
+    {
+        if (runningStatus_ == 0)
+        {
+            return;
+        }
+        beginChannelOrSystem(runningStatus_);
+        buffer_.push_back(data);
+    }
+    else
+    {
+        buffer_.push_back(data);
+    }
+
+    if (expectedLength_ > 0 && buffer_.size() >= expectedLength_)
+    {
+        emitBuffer(sink);
+    }
+}
+
+void MidiMessageFramer::Push(
+    const uint8_t* bytes,
+    std::size_t byteCount,
+    const MidiFramedMessageSink& sink)
+{
+    if (bytes == nullptr || byteCount == 0)
+    {
+        return;
+    }
+
+    for (std::size_t index = 0; index < byteCount; ++index)
+    {
+        const uint8_t value = bytes[index];
+        if (value & 0x80)
+        {
+            handleStatusByte(value, sink);
+        }
+        else
+        {
+            handleDataByte(value, sink);
+        }
+    }
+}

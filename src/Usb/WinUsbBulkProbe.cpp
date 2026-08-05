@@ -20,17 +20,25 @@ struct BulkOutWrite
     std::size_t size = 0;
 };
 
-bool writeStaticOut(const BulkOutWrite& write, std::string& errorOut)
+bool setPipeTimeoutMs(
+    WINUSB_INTERFACE_HANDLE iface,
+    UCHAR pipeId,
+    ULONG timeoutMs,
+    std::string& errorOut)
 {
-    ULONG timeoutMs = 3000;
     if (!WinUsb_SetPipePolicy(
-            write.iface,
-            write.outPipe,
-            PIPE_TRANSFER_TIMEOUT,
-            sizeof(timeoutMs),
-            &timeoutMs))
+            iface, pipeId, PIPE_TRANSFER_TIMEOUT, sizeof(timeoutMs), &timeoutMs))
     {
         errorOut = formatWin32Error("SetPipePolicy timeout", GetLastError());
+        return false;
+    }
+    return true;
+}
+
+bool writeStaticOut(const BulkOutWrite& write, std::string& errorOut)
+{
+    if (!setPipeTimeoutMs(write.iface, write.outPipe, 3000, errorOut))
+    {
         return false;
     }
     if (!prepareEmagicBulkPipes(write.iface, write.outPipe, 0, errorOut))
@@ -55,7 +63,10 @@ bool writeStaticOut(const BulkOutWrite& write, std::string& errorOut)
     return true;
 }
 
-bool findBulkOut(WINUSB_INTERFACE_HANDLE iface, UCHAR& outPipe)
+bool findBulkPipe(
+    WINUSB_INTERFACE_HANDLE iface,
+    bool wantIn,
+    UCHAR& pipeOut)
 {
     USB_INTERFACE_DESCRIPTOR desc = {};
     if (!WinUsb_QueryInterfaceSettings(iface, 0, &desc))
@@ -69,38 +80,82 @@ bool findBulkOut(WINUSB_INTERFACE_HANDLE iface, UCHAR& outPipe)
         {
             return false;
         }
-        if (pipe.PipeType == UsbdPipeTypeBulk && (pipe.PipeId & 0x80) == 0)
+        const bool isBulk = pipe.PipeType == UsbdPipeTypeBulk;
+        const bool isIn = (pipe.PipeId & 0x80) != 0;
+        if (isBulk && isIn == wantIn)
         {
-            outPipe = pipe.PipeId;
+            pipeOut = pipe.PipeId;
             return true;
         }
     }
     return false;
 }
 
+std::size_t drainBulkIn(
+    WINUSB_INTERFACE_HANDLE iface,
+    UCHAR inPipe,
+    std::size_t maxPackets)
+{
+    std::string ignored;
+    (void)setPipeTimeoutMs(iface, inPipe, 200, ignored);
+
+    std::size_t total = 0;
+    UCHAR buffer[512] = {};
+    for (std::size_t packet = 0; packet < maxPackets; ++packet)
+    {
+        ULONG transferred = 0;
+        if (!WinUsb_ReadPipe(
+                iface,
+                inPipe,
+                buffer,
+                sizeof(buffer),
+                &transferred,
+                nullptr)
+            || transferred == 0)
+        {
+            break;
+        }
+        total += transferred;
+    }
+    return total;
+}
+
+struct ProbeOpenResult
+{
+    WinUsbHandles* handles = nullptr;
+    UCHAR outPipe = 0;
+    UCHAR inPipe = 0;
+};
+
 bool openProbeHandles(
     const DeviceProfile& profile,
-    WinUsbHandles& handles,
-    UCHAR& outPipe,
+    ProbeOpenResult& result,
     std::string& errorOut)
 {
-    if (!openZadigFallback(profile, handles, errorOut))
+    if (result.handles == nullptr)
+    {
+        errorOut = "Probe open result handles pointer is null";
+        return false;
+    }
+    if (!openZadigFallback(profile, *result.handles, errorOut))
     {
         return false;
     }
     UCHAR ifnum = 0;
-    if (!queryInterfaceNumber(handles.winUsb, ifnum, errorOut))
+    if (!queryInterfaceNumber(result.handles->winUsb, ifnum, errorOut))
     {
         return false;
     }
-    if (!findBulkOut(handles.winUsb, outPipe))
+    if (!findBulkPipe(result.handles->winUsb, false, result.outPipe)
+        || !findBulkPipe(result.handles->winUsb, true, result.inPipe))
     {
-        errorOut = "No bulk OUT on profile interface";
+        errorOut = "No bulk IN/OUT pair on profile interface";
         return false;
     }
     std::cout << "Open OK (ifnum=" << static_cast<unsigned>(ifnum)
-              << " associated=" << handles.associatedCount << " out=0x" << std::hex
-              << static_cast<unsigned>(outPipe) << std::dec << ")\n";
+              << " associated=" << result.handles->associatedCount << " out=0x"
+              << std::hex << static_cast<unsigned>(result.outPipe) << " in=0x"
+              << static_cast<unsigned>(result.inPipe) << std::dec << ")\n";
     return true;
 }
 
@@ -127,8 +182,16 @@ int runMt4UsbBulkProbe(std::string& errorOut)
     }
 
     WinUsbHandles handles;
-    UCHAR outPipe = 0;
-    if (!openProbeHandles(*mt4, handles, outPipe, errorOut))
+    ProbeOpenResult opened;
+    opened.handles = &handles;
+    if (!openProbeHandles(*mt4, opened, errorOut))
+    {
+        closeWinUsbHandles(handles);
+        return 1;
+    }
+
+    if (!prepareEmagicBulkPipes(
+            handles.winUsb, opened.outPipe, opened.inPipe, errorOut))
     {
         closeWinUsbHandles(handles);
         return 1;
@@ -136,7 +199,7 @@ int runMt4UsbBulkProbe(std::string& errorOut)
 
     std::cout << "writing Emagic init magic...\n";
     BulkOutWrite initWrite{
-        handles.winUsb, outPipe, kEmagicInitMagic, kEmagicInitMagicSize};
+        handles.winUsb, opened.outPipe, kEmagicInitMagic, kEmagicInitMagicSize};
     if (!writeStaticOut(initWrite, errorOut))
     {
         closeWinUsbHandles(handles);
@@ -144,7 +207,10 @@ int runMt4UsbBulkProbe(std::string& errorOut)
     }
 
     std::cout << "init magic write OK\n";
-    writeFinishBestEffort(handles.winUsb, outPipe);
+    const std::size_t drained = drainBulkIn(handles.winUsb, opened.inPipe, 8);
+    std::cout << "drained " << drained << " bulk IN byte(s) after init\n";
+
+    writeFinishBestEffort(handles.winUsb, opened.outPipe);
     closeWinUsbHandles(handles);
     errorOut.clear();
     return 0;

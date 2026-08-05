@@ -2,7 +2,6 @@
 
 #ifdef _WIN32
 
-#include "Protocol/EmagicCableMapper.h"
 #include "Usb/WinUsbOpenDetail.h"
 #include "Usb/WinUsbOpenSupport.h"
 
@@ -38,11 +37,12 @@ bool isBulkInPipe(const WINUSB_PIPE_INFORMATION& pipe) noexcept
 struct BulkPipeClaim
 {
     unsigned char pipeId = 0;
+    std::uint16_t maxPacketSize = 0;
     bool found = false;
 };
 
 bool claimUniqueBulkPipe(
-    unsigned char pipeId,
+    const WINUSB_PIPE_INFORMATION& pipe,
     BulkPipeClaim& claim,
     const char* ambiguousMessage,
     std::string& errorOut)
@@ -52,7 +52,8 @@ bool claimUniqueBulkPipe(
         errorOut = ambiguousMessage;
         return false;
     }
-    claim.pipeId = pipeId;
+    claim.pipeId = pipe.PipeId;
+    claim.maxPacketSize = pipe.MaximumPacketSize;
     claim.found = true;
     return true;
 }
@@ -66,7 +67,7 @@ bool considerBulkEndpoint(
     if (isBulkOutPipe(pipe))
     {
         return claimUniqueBulkPipe(
-            pipe.PipeId,
+            pipe,
             outClaim,
             "Opened WinUSB interface has ambiguous bulk OUT pipes",
             errorOut);
@@ -74,7 +75,7 @@ bool considerBulkEndpoint(
     if (isBulkInPipe(pipe))
     {
         return claimUniqueBulkPipe(
-            pipe.PipeId,
+            pipe,
             inClaim,
             "Opened WinUSB interface has ambiguous bulk IN pipes",
             errorOut);
@@ -93,43 +94,9 @@ void WinUsbTransport::clearPipeState() noexcept
 {
     bulkOutPipeId_ = 0;
     bulkInPipeId_ = 0;
+    bulkInMaxPacketSize_ = 0;
     pipesReady_ = false;
     lastReadTimedOut_ = false;
-}
-
-bool WinUsbTransport::applyBulkTransferTimeouts(std::string& errorOut)
-{
-    // Bound blocking ReadBulk / WriteBulk so DeviceSession Stop can progress.
-    // 100ms was too short for Emagic init magic on some lab hosts (Boot Camp) —
-    // Win32 error 121 (ERROR_SEM_TIMEOUT) on the first bulk OUT.
-    constexpr ULONG kBulkTransferTimeoutMs = 3000;
-    ULONG timeoutMs = kBulkTransferTimeoutMs;
-    if (!WinUsb_SetPipePolicy(
-            static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
-            bulkInPipeId_,
-            PIPE_TRANSFER_TIMEOUT,
-            sizeof(timeoutMs),
-            &timeoutMs))
-    {
-        errorOut = formatWin32Error(
-            "WinUsb_SetPipePolicy(PIPE_TRANSFER_TIMEOUT) failed for Emagic bulk IN",
-            GetLastError());
-        return false;
-    }
-    timeoutMs = kBulkTransferTimeoutMs;
-    if (!WinUsb_SetPipePolicy(
-            static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
-            bulkOutPipeId_,
-            PIPE_TRANSFER_TIMEOUT,
-            sizeof(timeoutMs),
-            &timeoutMs))
-    {
-        errorOut = formatWin32Error(
-            "WinUsb_SetPipePolicy(PIPE_TRANSFER_TIMEOUT) failed for Emagic bulk OUT",
-            GetLastError());
-        return false;
-    }
-    return true;
 }
 
 bool WinUsbTransport::prepareBulkPipes(std::string& errorOut)
@@ -183,6 +150,12 @@ bool WinUsbTransport::discoverBulkPipes(std::string& errorOut)
 
     bulkOutPipeId_ = outClaim.pipeId;
     bulkInPipeId_ = inClaim.pipeId;
+    bulkInMaxPacketSize_ = inClaim.maxPacketSize;
+    if (bulkInMaxPacketSize_ == 0)
+    {
+        errorOut = "Opened WinUSB bulk IN pipe reports MaximumPacketSize 0";
+        return false;
+    }
     pipesReady_ = true;
     return true;
 }
@@ -239,6 +212,11 @@ bool WinUsbTransport::Open(
 bool WinUsbTransport::LastReadTimedOut() const noexcept
 {
     return lastReadTimedOut_;
+}
+
+std::size_t WinUsbTransport::BulkInReadCapacity() const noexcept
+{
+    return bulkInMaxPacketSize_ != 0 ? bulkInMaxPacketSize_ : 64;
 }
 
 void WinUsbTransport::Close() noexcept
@@ -314,24 +292,6 @@ bool WinUsbTransport::WriteBulk(
         return false;
     }
 
-    errorOut.clear();
-    return true;
-}
-
-bool WinUsbTransport::WriteEmagicInitSequence(std::string& errorOut)
-{
-    std::string ignored;
-    if (!WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut))
-    {
-        const std::string firstError = errorOut;
-        (void)WriteBulk(kEmagicFinishMagic, kEmagicFinishMagicSize, ignored);
-        if (!WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut))
-        {
-            errorOut = firstError + "; retry after finish also failed: " + errorOut;
-            return false;
-        }
-    }
-    (void)WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, ignored);
     errorOut.clear();
     return true;
 }
@@ -417,18 +377,17 @@ bool WinUsbTransport::LastReadTimedOut() const noexcept
     return lastReadTimedOut_;
 }
 
+std::size_t WinUsbTransport::BulkInReadCapacity() const noexcept
+{
+    return 64;
+}
+
 bool WinUsbTransport::WriteBulk(
     const uint8_t* /*data*/,
     std::size_t /*size*/,
     std::string& errorOut)
 {
     errorOut = "WinUSB WriteBulk requires Windows";
-    return false;
-}
-
-bool WinUsbTransport::WriteEmagicInitSequence(std::string& errorOut)
-{
-    errorOut = "WinUSB WriteEmagicInitSequence requires Windows";
     return false;
 }
 

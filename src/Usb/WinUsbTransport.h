@@ -49,8 +49,16 @@ public:
         std::size_t& bytesRead,
         std::string& errorOut);
 
-    // Emagic "get version" init: required first OUT, drain IN, best-effort second OUT.
-    bool WriteEmagicInitSequence(std::string& errorOut);
+    // Emagic wake: init (+ drain IN reply) then Set Computer Mode so DIN→USB IN works.
+    // drainedBytesOut receives total bulk IN bytes read during init drains (may be 0).
+    bool WriteEmagicInitSequence(
+        std::string& errorOut,
+        std::size_t* drainedBytesOut = nullptr);
+
+    // Host read size for bulk IN (endpoint wMaxPacketSize). Prefer this over a large
+    // buffer: Emagic pads full packets with 0xFF, so a 512-byte ReadBulk never sees a
+    // short packet and times out with 0 bytes under default WinUSB coalescing.
+    std::size_t BulkInReadCapacity() const noexcept;
 
     // True when the last ReadBulk failed because PIPE_TRANSFER_TIMEOUT elapsed.
     bool LastReadTimedOut() const noexcept;
@@ -59,7 +67,16 @@ private:
 #ifdef _WIN32
     bool discoverBulkPipes(std::string& errorOut);
     bool applyBulkTransferTimeouts(std::string& errorOut);
+    bool setBulkTransferTimeoutMs(std::uint32_t timeoutMs, std::string& errorOut);
+    bool setPipeTransferTimeoutMs(
+        unsigned char pipeId,
+        std::uint32_t timeoutMs,
+        const char* failureContext,
+        std::string& errorOut);
     bool prepareBulkPipes(std::string& errorOut);
+    bool writeInitMagicWithFinishRetry(std::string& errorOut);
+    bool armShortInDrainTimeout(std::string& errorOut);
+    std::size_t drainBulkInUntilIdle(std::size_t maxPackets);
     void clearPipeState() noexcept;
 
     void* deviceHandle_ = nullptr;   // HANDLE
@@ -69,6 +86,7 @@ private:
     std::size_t winUsbAssociatedCount_ = 0;
     unsigned char bulkOutPipeId_ = 0;
     unsigned char bulkInPipeId_ = 0;
+    std::uint16_t bulkInMaxPacketSize_ = 0;
     bool pipesReady_ = false;
     bool lastReadTimedOut_ = false;
 #else

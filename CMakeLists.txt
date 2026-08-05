@@ -15,13 +15,19 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(Bridge
     src/App/Main.cpp
     src/App/MapperSmoke.cpp
+    src/App/FramerSmoke.cpp
     src/App/MidiSessionCli.cpp
     src/Device/DeviceSession.cpp
+    src/Device/DeviceSessionDeviceHost.cpp
     src/Device/DeviceSessionManager.cpp
+    src/Device/DeviceHostCounters.cpp
+    src/Device/DeviceSessionSupport.cpp
     src/Midi/VirtualMidiBackend.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
+    src/Protocol/MidiMessageFramer.cpp
     src/Usb/WinUsbTransport.cpp
+    src/Usb/WinUsbTransportInit.cpp
 )
 
 target_include_directories(Bridge

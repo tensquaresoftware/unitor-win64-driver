@@ -1,36 +1,63 @@
 #include "Device/DeviceSession.h"
+#include "Device/DeviceSessionSupport.h"
 
+#include <iostream>
 #include <sstream>
 #include <system_error>
-#include <utility>
-#include <vector>
 
 namespace
 {
-constexpr std::size_t kBulkIoBufferCapacity = 512;
 constexpr std::size_t kEncodeBufferCapacity = 4096;
-
-std::string formatPortCableFailure(
-    const char* direction,
-    std::size_t portIndex,
-    uint8_t cableIndex,
-    const std::string& detail)
-{
-    std::ostringstream stream;
-    stream << direction << " failed on Port " << (portIndex + 1)
-           << " (cable index " << static_cast<unsigned>(cableIndex) << "): " << detail;
-    return stream.str();
 }
-} // namespace
 
 DeviceSession::~DeviceSession()
 {
     Stop();
 }
 
+bool DeviceSession::sendComputerModeChannelKick(std::string& errorOut)
+{
+    if (mapper_ == nullptr)
+    {
+        errorOut = "Computer-mode channel kick requires EmagicCableMapper";
+        return false;
+    }
+
+    // MT4 manual: channel MIDI on USB enters Computer Mode; SysEx/realtime do not.
+    // SoundDiver sends a harmless controller at startup for the same reason.
+    const uint8_t cc7Quiet[] = {0xB0, 0x07, 0x00};
+    uint8_t framed[64] = {};
+    EncodeBuffer buffer{framed, sizeof(framed), 0};
+    EncodeRequest request{0, cc7Quiet, sizeof(cc7Quiet)};
+    if (!mapper_->EncodeToDevice(request, buffer, errorOut))
+    {
+        return false;
+    }
+    if (!transport_.WriteBulk(framed, buffer.size, errorOut))
+    {
+        errorOut = "Computer-mode channel kick WriteBulk failed: " + errorOut;
+        return false;
+    }
+    return true;
+}
+
 bool DeviceSession::sendInitMagic(std::string& errorOut)
 {
-    return transport_.WriteEmagicInitSequence(errorOut);
+    std::size_t drainedBytes = 0;
+    if (!transport_.WriteEmagicInitSequence(errorOut, &drainedBytes))
+    {
+        return false;
+    }
+    if (!sendComputerModeChannelKick(errorOut))
+    {
+        return false;
+    }
+    std::cout << "Emagic init/computer-mode: drained " << drainedBytes
+              << " bulk IN byte(s); read capacity="
+              << transport_.BulkInReadCapacity()
+              << "; channel CC kick sent (manual Computer Mode)\n"
+              << std::flush;
+    return true;
 }
 
 void DeviceSession::sendFinishMagicBestEffort() noexcept
@@ -118,6 +145,11 @@ bool DeviceSession::TakePumpFailure(std::string& errorOut)
     return true;
 }
 
+DeviceHostCounterSnapshot DeviceSession::CopyDeviceHostCounters() const noexcept
+{
+    return deviceHostCounters_.Snapshot();
+}
+
 void DeviceSession::hostToDeviceThunk(
     void* context,
     std::size_t outPortIndex,
@@ -196,118 +228,7 @@ bool DeviceSession::encodeHostMidiLocked(
     return true;
 }
 
-void DeviceSession::forwardDeviceMidi(
-    uint8_t cableIndex,
-    const uint8_t* midiBytes,
-    std::size_t byteCount)
-{
-    if (stopPump_.load() || midiBackend_ == nullptr || midiBytes == nullptr || byteCount == 0)
-    {
-        return;
-    }
-
-    const std::size_t inPortIndex = findInPortIndex(cableIndex);
-    if (inPortIndex >= inPortCount_)
-    {
-        // Non-product / Broadcast cables are ignored (no Virtual Port).
-        return;
-    }
-
-    std::string error;
-    if (!midiBackend_->SendToHost(inPortIndex, midiBytes, byteCount, error))
-    {
-        recordPumpFailure(
-            formatPortCableFailure("Device→host SendToHost", inPortIndex, cableIndex, error));
-    }
-}
-
-void DeviceSession::readerLoop()
-{
-    uint8_t readBuffer[kBulkIoBufferCapacity] = {};
-
-    while (!stopPump_.load())
-    {
-        std::size_t bytesRead = 0;
-        std::string error;
-        const bool readOk =
-            transport_.ReadBulk(readBuffer, sizeof(readBuffer), bytesRead, error);
-
-        if (stopPump_.load())
-        {
-            break;
-        }
-        if (!readOk && transport_.LastReadTimedOut())
-        {
-            continue;
-        }
-        if (!readOk)
-        {
-            recordPumpFailure("Device→host ReadBulk failed: " + error);
-            break;
-        }
-        if (bytesRead == 0)
-        {
-            continue;
-        }
-        if (!processBulkRead(readBuffer, bytesRead, error))
-        {
-            recordPumpFailure("Device→host DecodeFromDevice failed: " + error);
-            break;
-        }
-    }
-}
-
-bool DeviceSession::processBulkRead(
-    const uint8_t* readBuffer,
-    std::size_t bytesRead,
-    std::string& errorOut)
-{
-    std::vector<std::pair<uint8_t, std::vector<uint8_t>>> pending;
-    {
-        std::lock_guard<std::mutex> lock(usbIoMutex_);
-        if (stopPump_.load() || mapper_ == nullptr || midiBackend_ == nullptr)
-        {
-            return true;
-        }
-
-        if (!mapper_->DecodeFromDevice(
-                readBuffer,
-                bytesRead,
-                [this, &pending](uint8_t cableIndex, const uint8_t* midi, std::size_t n) {
-                    appendPendingProductMidi(pending, cableIndex, midi, n);
-                },
-                errorOut))
-        {
-            return false;
-        }
-    }
-
-    for (const auto& entry : pending)
-    {
-        if (stopPump_.load())
-        {
-            break;
-        }
-        forwardDeviceMidi(entry.first, entry.second.data(), entry.second.size());
-    }
-    return true;
-}
-
-void DeviceSession::appendPendingProductMidi(
-    std::vector<std::pair<uint8_t, std::vector<uint8_t>>>& pending,
-    uint8_t cableIndex,
-    const uint8_t* midi,
-    std::size_t n)
-{
-    if (stopPump_.load() || midi == nullptr || n == 0
-        || findInPortIndex(cableIndex) >= inPortCount_)
-    {
-        return;
-    }
-    pending.emplace_back(cableIndex, std::vector<uint8_t>(midi, midi + n));
-}
-
-bool DeviceSession::openTransportAndInit(
+bool DeviceSession::openTransportOnly(
     const DeviceSessionStartRequest& request,
     std::string& errorOut)
 {
@@ -317,11 +238,6 @@ bool DeviceSession::openTransportAndInit(
     }
 
     mapper_ = std::make_unique<EmagicCableMapper>(*request.profile);
-    if (!sendInitMagic(errorOut))
-    {
-        errorOut = "DeviceSession init magic write failed: " + errorOut;
-        return false;
-    }
     return true;
 }
 
@@ -343,6 +259,9 @@ bool DeviceSession::startPump(std::string& errorOut)
         std::lock_guard<std::mutex> lock(pumpErrorMutex_);
         pumpError_.clear();
     }
+
+    deviceHostCounters_.Reset();
+    resetInFramers();
 
     stopPump_.store(false);
     // Accept host→device as soon as the sink is live (before Start returns).
@@ -395,8 +314,18 @@ bool DeviceSession::Start(const DeviceSessionStartRequest& request, std::string&
 
     midiBackend_ = request.midiBackend;
 
-    if (!openTransportAndInit(request, errorOut))
+    // Init + drain + Set Computer Mode BEFORE the reader thread so the reply is
+    // not racing a second ReadBulk (ALSA: MT4 enters computer mode after reply,
+    // or immediately via Set Computer Mode SysEx).
+    if (!openTransportOnly(request, errorOut))
     {
+        Stop();
+        return false;
+    }
+
+    if (!sendInitMagic(errorOut))
+    {
+        errorOut = "DeviceSession init magic write failed: " + errorOut;
         Stop();
         return false;
     }
@@ -415,6 +344,7 @@ void DeviceSession::Stop() noexcept
 {
     // Join reader before Close so in-flight ReadBulk can finish via IN timeout.
     stopPumpAndJoin();
+    resetInFramers();
 
     {
         std::lock_guard<std::mutex> lock(usbIoMutex_);
