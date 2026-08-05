@@ -109,25 +109,74 @@ bool testEncodeSwitchedNote(EmagicCableMapper& mapper, uint8_t cable, std::ostre
         err);
 }
 
-bool testEncodeOutCables(EmagicCableMapper& mapper, std::ostream& err)
+bool testEncodeFirstCable0HasF5(EmagicCableMapper& mapper, std::ostream& err)
 {
     const uint8_t noteOn[] = {kNoteOnStatus, kMiddleC, kNoteVelocity};
-    const uint8_t expectedCable0[] = {
+    const uint8_t expectedFirstCable0[] = {
+        kEmagicPortSwitch,
+        0x01,
+        kNoteOnStatus,
+        kMiddleC,
+        kNoteVelocity,
+        kEmagicEndOfValidData};
+    return encodeAndExpect(
+        mapper,
+        EncodeExpectCase{
+            0,
+            noteOn,
+            sizeof(noteOn),
+            expectedFirstCable0,
+            sizeof(expectedFirstCable0),
+            "encode note cable 0 first F5"},
+        err);
+}
+
+bool testEncodeStickyCable0OmitsF5(EmagicCableMapper& mapper, std::ostream& err)
+{
+    const uint8_t noteOn[] = {kNoteOnStatus, kMiddleC, kNoteVelocity};
+    const uint8_t expectedStickyCable0[] = {
         kNoteOnStatus, kMiddleC, kNoteVelocity, kEmagicEndOfValidData};
-    if (!encodeAndExpect(
-            mapper,
-            EncodeExpectCase{
-                0,
-                noteOn,
-                sizeof(noteOn),
-                expectedCable0,
-                sizeof(expectedCable0),
-                "encode note cable 0"},
-            err))
+    return encodeAndExpect(
+        mapper,
+        EncodeExpectCase{
+            0,
+            noteOn,
+            sizeof(noteOn),
+            expectedStickyCable0,
+            sizeof(expectedStickyCable0),
+            "encode note cable 0 sticky"},
+        err);
+}
+
+bool testEncodeReturnToCable0HasF5(EmagicCableMapper& mapper, std::ostream& err)
+{
+    const uint8_t noteOn[] = {kNoteOnStatus, kMiddleC, kNoteVelocity};
+    const uint8_t expectedReturnCable0[] = {
+        kEmagicPortSwitch,
+        0x01,
+        kNoteOnStatus,
+        kMiddleC,
+        kNoteVelocity,
+        kEmagicEndOfValidData};
+    return encodeAndExpect(
+        mapper,
+        EncodeExpectCase{
+            0,
+            noteOn,
+            sizeof(noteOn),
+            expectedReturnCable0,
+            sizeof(expectedReturnCable0),
+            "encode note cable 0 after other out"},
+        err);
+}
+
+bool testEncodeOutCables(EmagicCableMapper& mapper, std::ostream& err)
+{
+    if (!testEncodeFirstCable0HasF5(mapper, err)
+        || !testEncodeStickyCable0OmitsF5(mapper, err))
     {
         return false;
     }
-
     for (uint8_t cable = 1; cable <= 3; ++cable)
     {
         if (!testEncodeSwitchedNote(mapper, cable, err))
@@ -135,14 +184,19 @@ bool testEncodeOutCables(EmagicCableMapper& mapper, std::ostream& err)
             return false;
         }
     }
-    return true;
+    return testEncodeReturnToCable0HasF5(mapper, err);
 }
 
 bool testEncodeControlChange(EmagicCableMapper& mapper, std::ostream& err)
 {
     const uint8_t cc[] = {kControlChangeStatus, kCcModulation, kCcValue};
     const uint8_t expectedCable0[] = {
-        kControlChangeStatus, kCcModulation, kCcValue, kEmagicEndOfValidData};
+        kEmagicPortSwitch,
+        0x01,
+        kControlChangeStatus,
+        kCcModulation,
+        kCcValue,
+        kEmagicEndOfValidData};
     if (!encodeAndExpect(
             mapper,
             EncodeExpectCase{
