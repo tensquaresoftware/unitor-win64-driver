@@ -19,6 +19,12 @@ inline constexpr uint8_t kEmagicInitMagic[] = {
 inline constexpr std::size_t kEmagicInitMagicSize =
     sizeof(kEmagicInitMagic) / sizeof(kEmagicInitMagic[0]);
 
+// Immediate computer-mode switch (ALSA/lab): does not require reading an init reply.
+inline constexpr uint8_t kEmagicSetComputerModeMagic[] = {
+    0xF0, 0x00, 0x20, 0x31, 0x64, 0x0F, 0x00, 0x7F, 0xF7};
+inline constexpr std::size_t kEmagicSetComputerModeMagicSize =
+    sizeof(kEmagicSetComputerModeMagic) / sizeof(kEmagicSetComputerModeMagic[0]);
+
 inline constexpr uint8_t kEmagicFinishMagic[] = {
     0xF0, 0x00, 0x20, 0x31, 0x64, 0x10, 0x00, 0x7F, 0x40, 0xF7};
 inline constexpr std::size_t kEmagicFinishMagicSize =
@@ -74,7 +80,8 @@ private:
         const MidiCableSink& sink);
 
     DeviceProfile profile_;
-    uint8_t currentOutCable_ = 0;
+    // Invalid until first encode so Out 1 (cable 0) always emits an initial F5.
+    uint8_t currentOutCable_ = 0xFF;
     uint8_t currentInCable_ = 0;
     bool seenF5_ = false;
 };

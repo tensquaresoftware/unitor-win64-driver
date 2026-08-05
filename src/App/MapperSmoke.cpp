@@ -1,6 +1,7 @@
 // Synthetic EmagicCableMapper encode/decode smoke (--test-mapper).
 
 #include "App/MapperSmoke.h"
+#include "App/FramerSmoke.h"
 
 #include "Profile/DeviceProfile.h"
 #include "Protocol/EmagicCableMapper.h"
@@ -93,24 +94,70 @@ bool testEncodeSwitchedNote(EmagicCableMapper& mapper, uint8_t cable)
             "encode note switched cable"});
 }
 
-bool testEncodeOutCables(EmagicCableMapper& mapper)
+bool testEncodeFirstCable0HasF5(EmagicCableMapper& mapper)
 {
     const uint8_t noteOn[] = {kNoteOnStatus, kMiddleC, kNoteVelocity};
-    const uint8_t expectedCable0[] = {
+    const uint8_t expectedFirstCable0[] = {
+        kEmagicPortSwitch,
+        0x01,
+        kNoteOnStatus,
+        kMiddleC,
+        kNoteVelocity,
+        kEmagicEndOfValidData};
+    return encodeAndExpect(
+        mapper,
+        EncodeExpectCase{
+            0,
+            noteOn,
+            sizeof(noteOn),
+            expectedFirstCable0,
+            sizeof(expectedFirstCable0),
+            "encode note cable 0 first F5"});
+}
+
+bool testEncodeStickyCable0OmitsF5(EmagicCableMapper& mapper)
+{
+    const uint8_t noteOn[] = {kNoteOnStatus, kMiddleC, kNoteVelocity};
+    const uint8_t expectedStickyCable0[] = {
         kNoteOnStatus, kMiddleC, kNoteVelocity, kEmagicEndOfValidData};
-    if (!encodeAndExpect(
-            mapper,
-            EncodeExpectCase{
-                0,
-                noteOn,
-                sizeof(noteOn),
-                expectedCable0,
-                sizeof(expectedCable0),
-                "encode note cable 0"}))
+    return encodeAndExpect(
+        mapper,
+        EncodeExpectCase{
+            0,
+            noteOn,
+            sizeof(noteOn),
+            expectedStickyCable0,
+            sizeof(expectedStickyCable0),
+            "encode note cable 0 sticky"});
+}
+
+bool testEncodeReturnToCable0HasF5(EmagicCableMapper& mapper)
+{
+    const uint8_t noteOn[] = {kNoteOnStatus, kMiddleC, kNoteVelocity};
+    const uint8_t expectedReturnCable0[] = {
+        kEmagicPortSwitch,
+        0x01,
+        kNoteOnStatus,
+        kMiddleC,
+        kNoteVelocity,
+        kEmagicEndOfValidData};
+    return encodeAndExpect(
+        mapper,
+        EncodeExpectCase{
+            0,
+            noteOn,
+            sizeof(noteOn),
+            expectedReturnCable0,
+            sizeof(expectedReturnCable0),
+            "encode note cable 0 after other out"});
+}
+
+bool testEncodeOutCables(EmagicCableMapper& mapper)
+{
+    if (!testEncodeFirstCable0HasF5(mapper) || !testEncodeStickyCable0OmitsF5(mapper))
     {
         return false;
     }
-
     for (uint8_t cable = 1; cable <= 3; ++cable)
     {
         if (!testEncodeSwitchedNote(mapper, cable))
@@ -118,14 +165,19 @@ bool testEncodeOutCables(EmagicCableMapper& mapper)
             return false;
         }
     }
-    return true;
+    return testEncodeReturnToCable0HasF5(mapper);
 }
 
 bool testEncodeControlChange(EmagicCableMapper& mapper)
 {
     const uint8_t cc[] = {kControlChangeStatus, kCcModulation, kCcValue};
     const uint8_t expectedCable0[] = {
-        kControlChangeStatus, kCcModulation, kCcValue, kEmagicEndOfValidData};
+        kEmagicPortSwitch,
+        0x01,
+        kControlChangeStatus,
+        kCcModulation,
+        kCcValue,
+        kEmagicEndOfValidData};
     if (!encodeAndExpect(
             mapper,
             EncodeExpectCase{
@@ -283,31 +335,13 @@ int runMapperTests()
     }
 
     EmagicCableMapper encodeMapper(*mt4);
-    if (!testEncodeOutCables(encodeMapper))
-    {
-        return 1;
-    }
-
     EmagicCableMapper ccEncodeMapper(*mt4);
-    if (!testEncodeControlChange(ccEncodeMapper))
-    {
-        return 1;
-    }
-
     EmagicCableMapper decodeMapper(*mt4);
-    if (!testDecodeSynthetic(decodeMapper))
-    {
-        return 1;
-    }
-
     EmagicCableMapper ccDecodeMapper(*mt4);
-    if (!testDecodeControlChange(ccDecodeMapper))
-    {
-        return 1;
-    }
-
     EmagicCableMapper splitMapper(*mt4);
-    if (!testDecodeSplitF5(splitMapper))
+    if (!testEncodeOutCables(encodeMapper) || !testEncodeControlChange(ccEncodeMapper)
+        || !testDecodeSynthetic(decodeMapper) || !testDecodeControlChange(ccDecodeMapper)
+        || !testDecodeSplitF5(splitMapper) || !runFramerTests())
     {
         return 1;
     }
