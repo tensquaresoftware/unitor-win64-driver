@@ -55,6 +55,18 @@ TEST_CASE("mapper smoke split F5 across two DecodeFromDevice calls", "[mapper]")
     requireSmokeOk(runEmagicMapperSmokeDecodeSplitF5(requireMt4Profile(), err), err);
 }
 
+TEST_CASE("mapper smoke encode Timing Clock Continue and Stop", "[mapper]")
+{
+    std::ostringstream err;
+    requireSmokeOk(runEmagicMapperSmokeEncodeClockTransport(requireMt4Profile(), err), err);
+}
+
+TEST_CASE("mapper smoke decode Timing Clock and Start", "[mapper]")
+{
+    std::ostringstream err;
+    requireSmokeOk(runEmagicMapperSmokeDecodeClockTransport(requireMt4Profile(), err), err);
+}
+
 TEST_CASE("EncodeToDevice rejects non-product OUT cable", "[mapper]")
 {
     const DeviceProfile& mt4 = requireMt4Profile();

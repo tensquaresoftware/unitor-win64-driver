@@ -407,6 +407,14 @@ bool runAllEmagicMapperSmokeTests(std::ostream& out, std::ostream& err)
     {
         return false;
     }
+    if (!runEmagicMapperSmokeEncodeClockTransport(*mt4, err))
+    {
+        return false;
+    }
+    if (!runEmagicMapperSmokeDecodeClockTransport(*mt4, err))
+    {
+        return false;
+    }
 
     out << "Mapper synthetic tests passed\n";
     return true;

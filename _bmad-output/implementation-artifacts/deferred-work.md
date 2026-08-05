@@ -68,3 +68,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-unit-tests-without-hardware.md`
   summary: Add a unit test for encode when buffer fits MIDI but has no room for trailing 0xFF pad.
   evidence: `appendTrailingPad` silently omits the end marker when capacity is exhausted; current smoke always uses a large buffer that always expects 0xFF.
+
+## Deferred from: code review of 2-1-midi-clock-and-transport-realtime.md (2026-08-05)
+
+- Dense-clock / transport path may stall when `processBulkRead` holds `usbIoMutex_` across decode while host→device Encode+WriteBulk needs the same lock — revisit only if short DAW clock smoke shows Bridge-induced dropouts (story 2.1 AC); already noted in Epic 1 CR deferred-work.

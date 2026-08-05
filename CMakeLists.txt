@@ -26,9 +26,11 @@ add_executable(Bridge
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp
+    src/Protocol/EmagicMapperRealtimeSmoke.cpp
     src/Protocol/MidiMessageFramer.cpp
     src/Usb/WinUsbTransport.cpp
     src/Usb/WinUsbTransportInit.cpp
+    src/Usb/WinUsbBulkProbe.cpp
 )
 
 target_include_directories(Bridge
@@ -39,7 +41,6 @@ target_include_directories(Bridge
 if(WIN32)
     target_sources(Bridge PRIVATE
         src/Midi/VirtualMidiWinSupport.cpp
-        src/Usb/WinUsbBulkProbe.cpp
         src/Usb/WinUsbOpenDetail.cpp
         src/Usb/WinUsbOpenSupport.cpp
     )
@@ -64,9 +65,12 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(BridgeTests
     tests/DeviceProfileTests.cpp
     tests/EmagicCableMapperTests.cpp
+    tests/MidiMessageFramerTests.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp
+    src/Protocol/EmagicMapperRealtimeSmoke.cpp
+    src/Protocol/MidiMessageFramer.cpp
 )
 
 target_include_directories(BridgeTests

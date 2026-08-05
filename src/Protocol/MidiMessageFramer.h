@@ -1,4 +1,4 @@
-// Frames raw MIDI byte spans into complete commands for VirtualMIDI SendToHost.
+// Frames raw MIDI byte spans into complete commands for host SendToHost.
 
 #pragma once
 
