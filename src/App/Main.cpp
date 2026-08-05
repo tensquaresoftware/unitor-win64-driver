@@ -5,6 +5,7 @@
 #include "Device/DeviceSessionManager.h"
 #include "Midi/MidiBackend.h"
 #include "Profile/DeviceProfile.h"
+#include "Usb/WinUsbBulkProbe.h"
 #include "Usb/WinUsbTransport.h"
 
 #include <cstring>
@@ -187,6 +188,18 @@ int main(int argc, char* argv[])
     }
 
     const bool allowZadigFallback = hasFlag(argc, argv, "--dev-zadig");
+
+    if (hasFlag(argc, argv, "--probe-usb"))
+    {
+        std::string probeError;
+        const int probeResult = runMt4UsbBulkProbe(probeError);
+        if (probeResult != 0)
+        {
+            std::cerr << "USB bulk probe failed: "
+                      << (probeError.empty() ? "unknown error" : probeError) << '\n';
+        }
+        return probeResult;
+    }
 
     // --run-midi is an alias kept behind the same Start wiring as --start-session.
     if (hasFlag(argc, argv, "--start-session") || hasFlag(argc, argv, "--run-midi"))

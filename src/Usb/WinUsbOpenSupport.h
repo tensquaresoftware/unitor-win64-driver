@@ -13,7 +13,26 @@ void closeWinUsbHandles(WinUsbHandles& handles) noexcept;
 
 std::string formatWin32Error(const char* context, DWORD errorCode);
 
-std::string buildCompositeHardwareId(const DeviceProfile& profile);
+bool queryInterfaceNumber(
+    WINUSB_INTERFACE_HANDLE winUsb,
+    UCHAR& interfaceNumberOut,
+    std::string& errorOut);
+
+bool prepareEmagicBulkPipes(
+    WINUSB_INTERFACE_HANDLE iface,
+    UCHAR bulkOutPipeId,
+    UCHAR bulkInPipeId,
+    std::string& errorOut);
+
+struct RetainAssociatedRequest
+{
+    WINUSB_INTERFACE_HANDLE winUsbRoot = nullptr;
+    uint8_t ifnum = 0;
+    WinUsbHandles* claimedOut = nullptr;
+    WINUSB_INTERFACE_HANDLE* matchOut = nullptr;
+};
+
+bool retainAssociatedForIfnum(RetainAssociatedRequest& request, std::string& errorOut);
 
 bool deviceMatchesHardwareId(
     HDEVINFO deviceInfo,

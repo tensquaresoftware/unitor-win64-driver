@@ -17,8 +17,9 @@ inline constexpr const char* kMt4WinUsbDeviceInterfaceGuid =
 
 struct WinUsbOpenOptions
 {
-    // Contributor escape hatch for Zadig-bound machines without the project GUID.
-    // Default builds remain GUID-first and fail closed when the GUID is missing.
+    // Contributor escape hatch for Zadig-bound / Boot Camp lab machines.
+    // When true, open HWID/Zadig-first (same path as --probe-usb); GUID is backup.
+    // Default builds remain GUID-only and fail closed when the GUID is missing.
     bool allowZadigFallback = false;
 };
 
@@ -48,6 +49,9 @@ public:
         std::size_t& bytesRead,
         std::string& errorOut);
 
+    // Emagic "get version" init: required first OUT, drain IN, best-effort second OUT.
+    bool WriteEmagicInitSequence(std::string& errorOut);
+
     // True when the last ReadBulk failed because PIPE_TRANSFER_TIMEOUT elapsed.
     bool LastReadTimedOut() const noexcept;
 
@@ -55,10 +59,14 @@ private:
 #ifdef _WIN32
     bool discoverBulkPipes(std::string& errorOut);
     bool applyBulkTransferTimeouts(std::string& errorOut);
+    bool prepareBulkPipes(std::string& errorOut);
     void clearPipeState() noexcept;
 
     void* deviceHandle_ = nullptr;   // HANDLE
-    void* winUsbHandle_ = nullptr;   // WINUSB_INTERFACE_HANDLE
+    void* winUsbHandle_ = nullptr;   // WINUSB_INTERFACE_HANDLE (ifnum match)
+    void* winUsbRootHandle_ = nullptr; // WINUSB_INTERFACE_HANDLE from Initialize
+    void* winUsbAssociated_[8] = {};
+    std::size_t winUsbAssociatedCount_ = 0;
     unsigned char bulkOutPipeId_ = 0;
     unsigned char bulkInPipeId_ = 0;
     bool pipesReady_ = false;

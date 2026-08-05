@@ -32,6 +32,7 @@ target_include_directories(Bridge
 if(WIN32)
     target_sources(Bridge PRIVATE
         src/Midi/VirtualMidiWinSupport.cpp
+        src/Usb/WinUsbBulkProbe.cpp
         src/Usb/WinUsbOpenDetail.cpp
         src/Usb/WinUsbOpenSupport.cpp
     )

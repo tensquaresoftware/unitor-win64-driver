@@ -30,9 +30,7 @@ DeviceSession::~DeviceSession()
 
 bool DeviceSession::sendInitMagic(std::string& errorOut)
 {
-    // Linux sends the Unitor "get version" magic twice after OUT endpoint open.
-    return transport_.WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut)
-        && transport_.WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut);
+    return transport_.WriteEmagicInitSequence(errorOut);
 }
 
 void DeviceSession::sendFinishMagicBestEffort() noexcept

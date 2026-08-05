@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-#include <cstdio>
+#include <cstddef>
 #include <sstream>
 #include <vector>
 
@@ -12,10 +12,21 @@
 
 void closeWinUsbHandles(WinUsbHandles& handles) noexcept
 {
-    if (handles.winUsb != nullptr)
+    for (std::size_t index = 0; index < handles.associatedCount; ++index)
     {
-        WinUsb_Free(handles.winUsb);
-        handles.winUsb = nullptr;
+        if (handles.associated[index] != nullptr)
+        {
+            WinUsb_Free(handles.associated[index]);
+            handles.associated[index] = nullptr;
+        }
+    }
+    handles.associatedCount = 0;
+    handles.winUsb = nullptr;
+
+    if (handles.winUsbRoot != nullptr)
+    {
+        WinUsb_Free(handles.winUsbRoot);
+        handles.winUsbRoot = nullptr;
     }
 
     if (handles.device != INVALID_HANDLE_VALUE && handles.device != nullptr)
@@ -32,15 +43,48 @@ std::string formatWin32Error(const char* context, DWORD errorCode)
     return stream.str();
 }
 
-namespace
+bool queryInterfaceNumber(
+    WINUSB_INTERFACE_HANDLE winUsb,
+    UCHAR& interfaceNumberOut,
+    std::string& errorOut)
 {
-void appendHex4(std::ostringstream& stream, uint16_t value)
-{
-    char buffer[8] = {};
-    std::snprintf(buffer, sizeof(buffer), "%04X", static_cast<unsigned>(value));
-    stream << buffer;
+    USB_INTERFACE_DESCRIPTOR descriptor = {};
+    if (!WinUsb_QueryInterfaceSettings(winUsb, 0, &descriptor))
+    {
+        errorOut = formatWin32Error(
+            "WinUsb_QueryInterfaceSettings failed", GetLastError());
+        return false;
+    }
+
+    interfaceNumberOut = descriptor.bInterfaceNumber;
+    return true;
 }
 
+bool prepareEmagicBulkPipes(
+    WINUSB_INTERFACE_HANDLE iface,
+    UCHAR bulkOutPipeId,
+    UCHAR bulkInPipeId,
+    std::string& errorOut)
+{
+    UCHAR autoClear = TRUE;
+    if (!WinUsb_SetPipePolicy(
+            iface, bulkOutPipeId, AUTO_CLEAR_STALL, sizeof(autoClear), &autoClear))
+    {
+        errorOut = formatWin32Error(
+            "WinUsb_SetPipePolicy(AUTO_CLEAR_STALL) failed for Emagic bulk OUT",
+            GetLastError());
+        return false;
+    }
+    if (bulkInPipeId != 0)
+    {
+        (void)WinUsb_SetPipePolicy(
+            iface, bulkInPipeId, AUTO_CLEAR_STALL, sizeof(autoClear), &autoClear);
+    }
+    return true;
+}
+
+namespace
+{
 std::wstring utf8ToWide(const std::string& text)
 {
     return std::wstring(text.begin(), text.end());
@@ -58,13 +102,19 @@ bool hardwareIdEntryMatches(const wchar_t* entry, const std::wstring& needle)
         return true;
     }
 
-    // REV-tolerant: USB\VID_xxxx&PID_yyyy&REV_....&MI_zz still matches profile MI.
     const auto miPos = needle.rfind(L"&MI_");
     if (miPos == std::wstring::npos)
     {
-        return false;
+        // Parent / whole-device needle USB\VID_xxxx&PID_yyyy: allow &REV_… but not &MI_.
+        const std::wstring revPrefix = needle + L"&REV_";
+        if (_wcsnicmp(entry, revPrefix.c_str(), revPrefix.size()) != 0)
+        {
+            return false;
+        }
+        return wcsstr(entry, L"&MI_") == nullptr;
     }
 
+    // REV-tolerant: USB\VID_xxxx&PID_yyyy&REV_....&MI_zz still matches profile MI.
     const std::wstring vidPid = needle.substr(0, miPos);
     const std::wstring miToken = needle.substr(miPos);
     if (_wcsnicmp(entry, vidPid.c_str(), vidPid.size()) != 0)
@@ -90,23 +140,6 @@ bool hardwareIdListContains(
         cursor += wcslen(cursor) + 1;
     }
     return false;
-}
-
-bool queryInterfaceNumber(
-    WINUSB_INTERFACE_HANDLE winUsb,
-    UCHAR& interfaceNumberOut,
-    std::string& errorOut)
-{
-    USB_INTERFACE_DESCRIPTOR descriptor = {};
-    if (!WinUsb_QueryInterfaceSettings(winUsb, 0, &descriptor))
-    {
-        errorOut = formatWin32Error(
-            "WinUsb_QueryInterfaceSettings failed", GetLastError());
-        return false;
-    }
-
-    interfaceNumberOut = descriptor.bInterfaceNumber;
-    return true;
 }
 
 bool queryRegGuidValue(
@@ -188,20 +221,6 @@ bool collectGuidsFromKey(HKEY key, std::vector<GUID>& guidsOut)
 }
 } // namespace
 
-std::string buildCompositeHardwareId(const DeviceProfile& profile)
-{
-    std::ostringstream stream;
-    stream << "USB\\VID_";
-    appendHex4(stream, profile.vid);
-    stream << "&PID_";
-    appendHex4(stream, profile.pid);
-    stream << "&MI_";
-    char mi[8] = {};
-    std::snprintf(mi, sizeof(mi), "%02X", static_cast<unsigned>(profile.ifnum));
-    stream << mi;
-    return stream.str();
-}
-
 bool deviceMatchesHardwareId(
     HDEVINFO deviceInfo,
     SP_DEVINFO_DATA& devInfo,
@@ -258,36 +277,36 @@ bool initializeFromDevicePath(
         return false;
     }
 
-    WINUSB_INTERFACE_HANDLE winUsb = nullptr;
-    if (!WinUsb_Initialize(device, &winUsb))
+    WINUSB_INTERFACE_HANDLE winUsbRoot = nullptr;
+    if (!WinUsb_Initialize(device, &winUsbRoot))
     {
         errorOut = formatWin32Error("WinUsb_Initialize failed", GetLastError());
         CloseHandle(device);
         return false;
     }
 
-    UCHAR interfaceNumber = 0;
-    if (!queryInterfaceNumber(winUsb, interfaceNumber, errorOut))
+    WINUSB_INTERFACE_HANDLE winUsbMatch = nullptr;
+    WinUsbHandles claimed = {};
+    RetainAssociatedRequest retain{winUsbRoot, profile.ifnum, &claimed, &winUsbMatch};
+    if (!retainAssociatedForIfnum(retain, errorOut))
     {
-        WinUsb_Free(winUsb);
-        CloseHandle(device);
-        return false;
-    }
-
-    if (interfaceNumber != profile.ifnum)
-    {
-        std::ostringstream stream;
-        stream << "Bound USB interface number " << static_cast<unsigned>(interfaceNumber)
-               << " does not match DeviceProfile ifnum "
-               << static_cast<unsigned>(profile.ifnum);
-        errorOut = stream.str();
-        WinUsb_Free(winUsb);
+        for (std::size_t index = 0; index < claimed.associatedCount; ++index)
+        {
+            WinUsb_Free(claimed.associated[index]);
+        }
+        WinUsb_Free(winUsbRoot);
         CloseHandle(device);
         return false;
     }
 
     handles.device = device;
-    handles.winUsb = winUsb;
+    handles.winUsbRoot = winUsbRoot;
+    handles.winUsb = winUsbMatch;
+    handles.associatedCount = claimed.associatedCount;
+    for (std::size_t index = 0; index < claimed.associatedCount; ++index)
+    {
+        handles.associated[index] = claimed.associated[index];
+    }
     return true;
 }
 
@@ -353,7 +372,7 @@ bool readDeviceInterfaceGuidsFromRegistry(
 
     collectGuidsFromKey(deviceKey, guidsOut);
 
-    HKEY parametersKey = INVALID_HANDLE_VALUE;
+    HKEY parametersKey = nullptr;
     if (RegOpenKeyExW(
             deviceKey,
             L"Device Parameters",

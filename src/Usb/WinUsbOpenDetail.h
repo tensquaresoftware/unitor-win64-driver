@@ -14,12 +14,19 @@
 
 #include "Profile/DeviceProfile.h"
 
+#include <cstddef>
 #include <string>
 
 struct WinUsbHandles
 {
     HANDLE device = INVALID_HANDLE_VALUE;
+    // Handle from WinUsb_Initialize (must stay open while associated handles are used).
+    WINUSB_INTERFACE_HANDLE winUsbRoot = nullptr;
+    // Interface matching DeviceProfile::ifnum (root or an associated handle).
     WINUSB_INTERFACE_HANDLE winUsb = nullptr;
+    // All associated interfaces kept open (MT4 needs siblings claimed for bulk OUT).
+    WINUSB_INTERFACE_HANDLE associated[8] = {};
+    std::size_t associatedCount = 0;
 };
 
 bool openByDeviceInterfaceGuid(
@@ -32,5 +39,16 @@ bool openZadigFallback(
     const DeviceProfile& profile,
     WinUsbHandles& handles,
     std::string& errorOut);
+
+struct WinUsbOpenRequest
+{
+    const DeviceProfile* profile = nullptr;
+    const GUID* projectGuid = nullptr;
+    bool preferZadig = false;
+    WinUsbHandles* handles = nullptr;
+};
+
+// preferZadig: HWID/Zadig first (lab --dev-zadig); else GUID-only fail-closed.
+bool openWinUsbHandles(WinUsbOpenRequest& request, std::string& errorOut);
 
 #endif // _WIN32

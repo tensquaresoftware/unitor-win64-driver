@@ -4,10 +4,40 @@
 
 #include "Usb/WinUsbOpenSupport.h"
 
+#include <cstdio>
+#include <sstream>
 #include <vector>
 
 namespace
 {
+void appendHex4(std::ostringstream& stream, uint16_t value)
+{
+    char buffer[8] = {};
+    std::snprintf(buffer, sizeof(buffer), "%04X", static_cast<unsigned>(value));
+    stream << buffer;
+}
+
+std::string buildParentHardwareId(const DeviceProfile& profile)
+{
+    std::ostringstream stream;
+    stream << "USB\\VID_";
+    appendHex4(stream, profile.vid);
+    stream << "&PID_";
+    appendHex4(stream, profile.pid);
+    return stream.str();
+}
+
+std::string buildCompositeHardwareId(const DeviceProfile& profile)
+{
+    std::ostringstream stream;
+    stream << buildParentHardwareId(profile);
+    stream << "&MI_";
+    char mi[8] = {};
+    std::snprintf(mi, sizeof(mi), "%02X", static_cast<unsigned>(profile.ifnum));
+    stream << mi;
+    return stream.str();
+}
+
 struct CandidateContext
 {
     HDEVINFO deviceInfo;
@@ -174,7 +204,10 @@ bool openZadigFallback(
     WinUsbHandles& handles,
     std::string& errorOut)
 {
-    const std::string hardwareId = buildCompositeHardwareId(profile);
+    // Prefer composite MI_xx nodes; some lab binds (Zadig on Class_FF parent) only
+    // expose USB\VID_xxxx&PID_yyyy without &MI_.
+    const std::string compositeId = buildCompositeHardwareId(profile);
+    const std::string parentId = buildParentHardwareId(profile);
 
     HDEVINFO deviceInfo = SetupDiGetClassDevsW(
         nullptr, L"USB", nullptr, DIGCF_PRESENT | DIGCF_ALLCLASSES);
@@ -187,7 +220,13 @@ bool openZadigFallback(
 
     SP_DEVINFO_DATA chosenDevInfo = {};
     chosenDevInfo.cbSize = sizeof(chosenDevInfo);
-    const int match = findUniqueHardwareIdDevice(deviceInfo, hardwareId, chosenDevInfo);
+    std::string hardwareId = compositeId;
+    int match = findUniqueHardwareIdDevice(deviceInfo, compositeId, chosenDevInfo);
+    if (match == 0)
+    {
+        hardwareId = parentId;
+        match = findUniqueHardwareIdDevice(deviceInfo, parentId, chosenDevInfo);
+    }
     if (match != 1)
     {
         SetupDiDestroyDeviceInfoList(deviceInfo);
@@ -209,6 +248,138 @@ bool openZadigFallback(
         return false;
     }
     return true;
+}
+
+namespace
+{
+bool looksLikeIfnumMismatch(const std::string& message)
+{
+    return message.find("does not match DeviceProfile ifnum") != std::string::npos;
+}
+
+void rejectGuidOpenFailure(const std::string& guidError, std::string& errorOut)
+{
+    if (looksLikeIfnumMismatch(guidError)
+        || guidError.find("refusing ambiguous open") != std::string::npos)
+    {
+        errorOut = guidError;
+        return;
+    }
+
+    errorOut =
+        "WinUSB device interface GUID not available or open failed: " + guidError
+        + ". Bind MT4 with installer/mt4-winusb.inf (see docs/dev/winusb-bind.md).";
+}
+} // namespace
+
+bool openWinUsbHandles(WinUsbOpenRequest& request, std::string& errorOut)
+{
+    if (request.profile == nullptr || request.projectGuid == nullptr
+        || request.handles == nullptr)
+    {
+        errorOut = "openWinUsbHandles requires profile, GUID, and handles";
+        return false;
+    }
+
+    if (request.preferZadig)
+    {
+        if (openZadigFallback(*request.profile, *request.handles, errorOut))
+        {
+            return true;
+        }
+        const std::string zadigError = errorOut;
+        if (openByDeviceInterfaceGuid(
+                *request.projectGuid, *request.profile, *request.handles, errorOut))
+        {
+            return true;
+        }
+        errorOut =
+            "Zadig-first open failed (" + zadigError
+            + "); GUID open also failed: " + errorOut;
+        return false;
+    }
+
+    if (openByDeviceInterfaceGuid(
+            *request.projectGuid, *request.profile, *request.handles, errorOut))
+    {
+        return true;
+    }
+    rejectGuidOpenFailure(errorOut, errorOut);
+    return false;
+}
+
+bool claimOneAssociated(RetainAssociatedRequest& request, std::string& errorOut)
+{
+    for (UCHAR associatedIndex = 0;; ++associatedIndex)
+    {
+        WINUSB_INTERFACE_HANDLE associated = nullptr;
+        if (!WinUsb_GetAssociatedInterface(
+                request.winUsbRoot, associatedIndex, &associated))
+        {
+            const DWORD err = GetLastError();
+            if (err == ERROR_NO_MORE_ITEMS || err == ERROR_INVALID_PARAMETER)
+            {
+                return true;
+            }
+            errorOut = formatWin32Error("WinUsb_GetAssociatedInterface failed", err);
+            return false;
+        }
+
+        if (request.claimedOut->associatedCount
+            >= sizeof(request.claimedOut->associated)
+                / sizeof(request.claimedOut->associated[0]))
+        {
+            WinUsb_Free(associated);
+            errorOut = "Too many associated WinUSB interfaces to retain";
+            return false;
+        }
+
+        request.claimedOut->associated[request.claimedOut->associatedCount++] =
+            associated;
+
+        UCHAR associatedIfnum = 0;
+        if (!queryInterfaceNumber(associated, associatedIfnum, errorOut))
+        {
+            return false;
+        }
+        if (associatedIfnum == request.ifnum)
+        {
+            *request.matchOut = associated;
+        }
+    }
+}
+
+bool retainAssociatedForIfnum(RetainAssociatedRequest& request, std::string& errorOut)
+{
+    *request.matchOut = nullptr;
+    request.claimedOut->associatedCount = 0;
+
+    UCHAR rootIfnum = 0;
+    if (!queryInterfaceNumber(request.winUsbRoot, rootIfnum, errorOut))
+    {
+        return false;
+    }
+    if (rootIfnum == request.ifnum)
+    {
+        *request.matchOut = request.winUsbRoot;
+    }
+
+    if (!claimOneAssociated(request, errorOut))
+    {
+        return false;
+    }
+    if (*request.matchOut != nullptr)
+    {
+        return true;
+    }
+
+    std::ostringstream stream;
+    stream << "Bound USB interface number " << static_cast<unsigned>(rootIfnum)
+           << " does not match DeviceProfile ifnum "
+           << static_cast<unsigned>(request.ifnum)
+           << " (no matching associated interface)";
+    errorOut = stream.str();
+    return false;
 }
 
 #endif // _WIN32

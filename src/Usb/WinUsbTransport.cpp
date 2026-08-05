@@ -2,6 +2,7 @@
 
 #ifdef _WIN32
 
+#include "Protocol/EmagicCableMapper.h"
 #include "Usb/WinUsbOpenDetail.h"
 #include "Usb/WinUsbOpenSupport.h"
 
@@ -20,11 +21,6 @@ bool parseProjectDeviceInterfaceGuid(GUID& guidOut, std::string& errorOut)
         return false;
     }
     return true;
-}
-
-bool looksLikeIfnumMismatch(const std::string& message)
-{
-    return message.find("does not match DeviceProfile ifnum") != std::string::npos;
 }
 
 bool isBulkOutPipe(const WINUSB_PIPE_INFORMATION& pipe) noexcept
@@ -86,19 +82,6 @@ bool considerBulkEndpoint(
     return true;
 }
 
-void rejectGuidOpenFailure(const std::string& guidError, std::string& errorOut)
-{
-    if (looksLikeIfnumMismatch(guidError)
-        || guidError.find("refusing ambiguous open") != std::string::npos)
-    {
-        errorOut = guidError;
-        return;
-    }
-
-    errorOut =
-        "WinUSB device interface GUID not available or open failed: " + guidError
-        + ". Bind MT4 with installer/mt4-winusb.inf (see docs/dev/winusb-bind.md).";
-}
 } // namespace
 
 WinUsbTransport::~WinUsbTransport()
@@ -116,9 +99,10 @@ void WinUsbTransport::clearPipeState() noexcept
 
 bool WinUsbTransport::applyBulkTransferTimeouts(std::string& errorOut)
 {
-    // Bound blocking ReadBulk / WriteBulk so DeviceSession Stop can progress
-    // (Story 1.4 deferred Close vs in-flight I/O; Epic 1 pump makes OUT timeouts required).
-    constexpr ULONG kBulkTransferTimeoutMs = 100;
+    // Bound blocking ReadBulk / WriteBulk so DeviceSession Stop can progress.
+    // 100ms was too short for Emagic init magic on some lab hosts (Boot Camp) —
+    // Win32 error 121 (ERROR_SEM_TIMEOUT) on the first bulk OUT.
+    constexpr ULONG kBulkTransferTimeoutMs = 3000;
     ULONG timeoutMs = kBulkTransferTimeoutMs;
     if (!WinUsb_SetPipePolicy(
             static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
@@ -146,6 +130,15 @@ bool WinUsbTransport::applyBulkTransferTimeouts(std::string& errorOut)
         return false;
     }
     return true;
+}
+
+bool WinUsbTransport::prepareBulkPipes(std::string& errorOut)
+{
+    return prepareEmagicBulkPipes(
+        static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
+        bulkOutPipeId_,
+        bulkInPipeId_,
+        errorOut);
 }
 
 bool WinUsbTransport::discoverBulkPipes(std::string& errorOut)
@@ -208,27 +201,32 @@ bool WinUsbTransport::Open(
     }
 
     WinUsbHandles handles;
-    if (!openByDeviceInterfaceGuid(projectGuid, profile, handles, errorOut))
+    WinUsbOpenRequest openRequest;
+    openRequest.profile = &profile;
+    openRequest.projectGuid = &projectGuid;
+    openRequest.preferZadig = options.allowZadigFallback;
+    openRequest.handles = &handles;
+    if (!openWinUsbHandles(openRequest, errorOut))
     {
-        const std::string guidError = errorOut;
-        if (!options.allowZadigFallback)
-        {
-            rejectGuidOpenFailure(guidError, errorOut);
-            return false;
-        }
-
-        if (!openZadigFallback(profile, handles, errorOut))
-        {
-            errorOut =
-                "GUID-first open failed (" + guidError
-                + "); Zadig fallback also failed: " + errorOut;
-            return false;
-        }
+        return false;
     }
 
     deviceHandle_ = handles.device;
     winUsbHandle_ = handles.winUsb;
-    if (!discoverBulkPipes(errorOut) || !applyBulkTransferTimeouts(errorOut))
+    winUsbRootHandle_ = handles.winUsbRoot;
+    winUsbAssociatedCount_ = handles.associatedCount;
+    for (std::size_t index = 0; index < handles.associatedCount; ++index)
+    {
+        winUsbAssociated_[index] = handles.associated[index];
+    }
+    handles.associatedCount = 0;
+    handles.winUsb = nullptr;
+    handles.winUsbRoot = nullptr;
+    handles.device = INVALID_HANDLE_VALUE;
+
+    if (!discoverBulkPipes(errorOut)
+        || !applyBulkTransferTimeouts(errorOut)
+        || !prepareBulkPipes(errorOut))
     {
         Close();
         return false;
@@ -247,10 +245,21 @@ void WinUsbTransport::Close() noexcept
 {
     clearPipeState();
 
-    if (winUsbHandle_ != nullptr)
+    for (std::size_t index = 0; index < winUsbAssociatedCount_; ++index)
     {
-        WinUsb_Free(static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_));
-        winUsbHandle_ = nullptr;
+        if (winUsbAssociated_[index] != nullptr)
+        {
+            WinUsb_Free(static_cast<WINUSB_INTERFACE_HANDLE>(winUsbAssociated_[index]));
+            winUsbAssociated_[index] = nullptr;
+        }
+    }
+    winUsbAssociatedCount_ = 0;
+    winUsbHandle_ = nullptr;
+
+    if (winUsbRootHandle_ != nullptr)
+    {
+        WinUsb_Free(static_cast<WINUSB_INTERFACE_HANDLE>(winUsbRootHandle_));
+        winUsbRootHandle_ = nullptr;
     }
 
     if (deviceHandle_ != nullptr && deviceHandle_ != INVALID_HANDLE_VALUE)
@@ -305,6 +314,24 @@ bool WinUsbTransport::WriteBulk(
         return false;
     }
 
+    errorOut.clear();
+    return true;
+}
+
+bool WinUsbTransport::WriteEmagicInitSequence(std::string& errorOut)
+{
+    std::string ignored;
+    if (!WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut))
+    {
+        const std::string firstError = errorOut;
+        (void)WriteBulk(kEmagicFinishMagic, kEmagicFinishMagicSize, ignored);
+        if (!WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut))
+        {
+            errorOut = firstError + "; retry after finish also failed: " + errorOut;
+            return false;
+        }
+    }
+    (void)WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, ignored);
     errorOut.clear();
     return true;
 }
@@ -396,6 +423,12 @@ bool WinUsbTransport::WriteBulk(
     std::string& errorOut)
 {
     errorOut = "WinUSB WriteBulk requires Windows";
+    return false;
+}
+
+bool WinUsbTransport::WriteEmagicInitSequence(std::string& errorOut)
+{
+    errorOut = "WinUSB WriteEmagicInitSequence requires Windows";
     return false;
 }
 
