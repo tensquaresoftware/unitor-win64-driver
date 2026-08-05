@@ -1,6 +1,11 @@
 // Bridge process entry — user-session host (not a Windows Service).
 
 #include "Profile/DeviceProfile.h"
+#include "Usb/WinUsbTransport.h"
+
+#include <cstring>
+#include <iostream>
+#include <string>
 
 namespace
 {
@@ -37,9 +42,20 @@ bool matchesMt4ProductCableOrder(const DeviceProfile& profile) noexcept
         && outIndices[2] == 2
         && outIndices[3] == 3;
 }
-} // namespace
 
-int main()
+bool hasFlag(int argc, char* argv[], const char* flag) noexcept
+{
+    for (int index = 1; index < argc; ++index)
+    {
+        if (std::strcmp(argv[index], flag) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+int runProfileSmoke()
 {
     const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
     if (mt4 == nullptr
@@ -56,4 +72,46 @@ int main()
     }
 
     return 0;
+}
+
+int openMt4Device(bool allowZadigFallback)
+{
+    const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
+    if (mt4 == nullptr)
+    {
+        std::cerr << "MT4 DeviceProfile not found\n";
+        return 1;
+    }
+
+    WinUsbTransport transport;
+    WinUsbOpenOptions options;
+    options.allowZadigFallback = allowZadigFallback;
+
+    std::string error;
+    if (!transport.Open(*mt4, error, options) || !transport.IsOpen())
+    {
+        std::cerr << "WinUSB open failed: "
+                  << (error.empty() ? "unknown error" : error) << '\n';
+        return 1;
+    }
+
+    return 0;
+}
+} // namespace
+
+int main(int argc, char* argv[])
+{
+    const int profileResult = runProfileSmoke();
+    if (profileResult != 0)
+    {
+        return profileResult;
+    }
+
+    if (!hasFlag(argc, argv, "--open-device"))
+    {
+        return 0;
+    }
+
+    const bool allowZadigFallback = hasFlag(argc, argv, "--dev-zadig");
+    return openMt4Device(allowZadigFallback);
 }

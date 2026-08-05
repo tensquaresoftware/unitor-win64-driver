@@ -15,9 +15,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(Bridge
     src/App/Main.cpp
     src/Profile/DeviceProfile.cpp
+    src/Usb/WinUsbTransport.cpp
 )
 
 target_include_directories(Bridge
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
+
+if(WIN32)
+    target_sources(Bridge PRIVATE
+        src/Usb/WinUsbOpenDetail.cpp
+        src/Usb/WinUsbOpenSupport.cpp
+    )
+    target_link_libraries(Bridge
+        PRIVATE
+            setupapi
+            winusb
+            ole32
+    )
+endif()

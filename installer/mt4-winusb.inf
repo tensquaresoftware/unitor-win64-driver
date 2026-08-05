@@ -1,0 +1,39 @@
+; MT4 WinUSB bind package (contributor / guided install).
+; Targets composite MIDI interface MI_02 (DeviceProfile ifnum = 2).
+; DeviceInterfaceGUIDs must match Usb/WinUsbTransport.h byte-for-byte.
+; No WDF/WinUSB co-installer DLLs — in-box winusb.inf on Win10/11.
+
+[Version]
+Signature   = "$Windows NT$"
+Class       = USBDevice
+ClassGUID   = {88BAE032-5A81-49f0-BC3D-A4FF138216D6}
+Provider    = %ManufacturerName%
+DriverVer   = 08/05/2026,0.1.0.0
+PnpLockdown = 1
+
+[Manufacturer]
+%ManufacturerName% = Standard,NTamd64,NTarm64
+
+[Standard.NTamd64]
+%DeviceName% = USB_Install, USB\VID_086A&PID_0003&MI_02
+
+[Standard.NTarm64]
+%DeviceName% = USB_Install, USB\VID_086A&PID_0003&MI_02
+
+[USB_Install]
+Include = winusb.inf
+Needs   = WINUSB.NT
+
+[USB_Install.Services]
+Include = winusb.inf
+Needs   = WINUSB.NT.Services
+
+[USB_Install.HW]
+AddReg = Dev_AddReg
+
+[Dev_AddReg]
+HKR,,DeviceInterfaceGUIDs,0x10000,"{aa209017-cf8a-49ad-a0e7-701187ff7e05}"
+
+[Strings]
+ManufacturerName = "Ten Square Software"
+DeviceName = "Emagic MT4 (WinUSB)"
