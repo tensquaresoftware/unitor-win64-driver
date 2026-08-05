@@ -29,6 +29,7 @@ Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, 
 
 - Horloge MIDI, MTC, SysEx, hot-plug, multi-client, installateur public.
 - **Horloge / Start-Stop-Continue** : checklist dédiée dans [`smoke-epic2-clock-mt4.md`](smoke-epic2-clock-mt4.md) (story 2.1) — ce guide Epic 1 reste notes/CC uniquement.
+- **MTC** : checklist dédiée dans [`smoke-epic2-mtc-mt4.md`](smoke-epic2-mtc-mt4.md) (story 2.2).
 
 **Retour labo (2026-08-05, Boot Camp MacBook Pro 2014)**
 
@@ -459,6 +460,7 @@ Remplis après les tests (même partiels).
 
 - Prêt à enchaîner Epic 2 côté usage notes/CC : **oui** (smoke notes/CC tous ports vert au retest soir)
 - Smoke horloge / transport (story 2.1) : suivre [`smoke-epic2-clock-mt4.md`](smoke-epic2-clock-mt4.md)
+- Smoke MTC quarter-frame / full-frame (story 2.2) : suivre [`smoke-epic2-mtc-mt4.md`](smoke-epic2-mtc-mt4.md)
 - Réserves en une phrase : multi-OUT strictement parallèle (6.3) et fermeture croix (9) encore optionnels ; compteurs console à revalider après flush `cerr`.
 
 **Ce qui a le mieux marché**

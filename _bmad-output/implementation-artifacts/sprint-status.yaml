@@ -1,5 +1,5 @@
 # generated: 2026-08-04T21:38:31Z
-# last_updated: 2026-08-05T21:35:00Z
+# last_updated: 2026-08-05T21:40:00Z
 # project: unitor-win64-driver
 # project_key: NOKEY
 # tracking_system: file-system
@@ -7,7 +7,7 @@
 #
 # SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
 # READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
-# NEXT: Win10 DAW clock/transport lab for 2-1 (then mark done); 2-2 backlog
+# NEXT: Win10 DAW clock lab for 2-1; Win10 MTC lab for 2-2 (both review / synthetic green)
 #
 # DEFERRED (do not block sprint):
 #   AQ-1…AQ-4 (architecture spine)
@@ -51,7 +51,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-05T21:35:00Z"
+last_updated: "2026-08-05T22:15:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -71,7 +71,7 @@ development_status:
   # Epic 2: Studio Transport and SysEx
   epic-2: in-progress
   2-1-midi-clock-and-transport-realtime: review
-  2-2-mtc-quarter-frame-and-full-frame: backlog
+  2-2-mtc-quarter-frame-and-full-frame: review
   2-3-transparent-sysex-transport-with-burst-buffering: backlog
   2-4-matrix-control-minimum-sysex-pass-vectors: backlog
   2-5-session-longevity-design-for-4h-studio-use: backlog

@@ -11,7 +11,7 @@ updated: 2026-08-05
 
 Use this checklist to prove **Timing Clock** (`0xF8`) and **Start / Continue / Stop** (`0xFA` / `0xFB` / `0xFC`) through MT4 Virtual Ports under a short sequencing smoke.
 
-Epic 1 notes/CC must already pass on at least one IN and one OUT. That baseline lives in `docs/tests/smoke-epic1-mt4.md`. This document owns clock/transport only.
+Epic 1 notes/CC must already pass on at least one IN and one OUT. That baseline lives in `docs/tests/smoke-epic1-mt4.md`. This document owns clock/transport only. MTC quarter-frame / full-frame proof lives in `docs/tests/smoke-epic2-mtc-mt4.md` (story 2.2).
 
 Mark each validation line **Pass** or **Fail**. On Fail, write English notes with **Port N / cable / direction**.
 
@@ -27,7 +27,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 
 **Out of scope**
 
-- MTC quarter-frame / full-frame → story 2.2
+- MTC quarter-frame / full-frame → story 2.2 (`smoke-epic2-mtc-mt4.md`)
 - Transparent SysEx / Matrix-Control → stories 2.3 / 2.4
 - ~4 h longevity → story 2.5
 - Latency / jitter Studio-Done numbers → Epic 5

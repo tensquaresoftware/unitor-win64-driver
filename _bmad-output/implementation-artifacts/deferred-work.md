@@ -72,3 +72,7 @@
 ## Deferred from: code review of 2-1-midi-clock-and-transport-realtime.md (2026-08-05)
 
 - Dense-clock / transport path may stall when `processBulkRead` holds `usbIoMutex_` across decode while host→device Encode+WriteBulk needs the same lock — revisit only if short DAW clock smoke shows Bridge-induced dropouts (story 2.1 AC); already noted in Epic 1 CR deferred-work.
+
+## Deferred from: code review of 2-2-mtc-quarter-frame-and-full-frame.md (2026-08-05)
+
+- Duplicated MTC quarter-frame / full-frame vectors in `FramerMtcSmoke.cpp` vs `tests/MidiMessageFramerTests.cpp` can drift; same dual-harness pattern as story 2.1 realtime — consolidate shared helpers when touching the framer test factory again.

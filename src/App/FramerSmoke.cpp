@@ -241,13 +241,34 @@ bool testFramerRealtimePreservesRunningStatus()
     }
     return true;
 }
+
+using FramerTestFn = bool (*)();
+
+bool runFramerCoreTests()
+{
+    const FramerTestFn tests[] = {
+        testFramerPartialNoteAcrossPushes,
+        testFramerTwoNotesOnePush,
+        testFramerRunningStatus,
+        testFramerLoneTimingClock,
+        testFramerTransportRealtime,
+        testFramerClockInterleavedMidNote,
+        testFramerRealtimeDuringSysexHold,
+        testFramerRealtimePreservesRunningStatus};
+    for (FramerTestFn test : tests)
+    {
+        if (!test())
+        {
+            return false;
+        }
+    }
+    return true;
+}
 } // namespace
+
+bool runFramerMtcTests();
 
 bool runFramerTests()
 {
-    return testFramerPartialNoteAcrossPushes() && testFramerTwoNotesOnePush()
-        && testFramerRunningStatus() && testFramerLoneTimingClock()
-        && testFramerTransportRealtime() && testFramerClockInterleavedMidNote()
-        && testFramerRealtimeDuringSysexHold()
-        && testFramerRealtimePreservesRunningStatus();
+    return runFramerCoreTests() && runFramerMtcTests();
 }

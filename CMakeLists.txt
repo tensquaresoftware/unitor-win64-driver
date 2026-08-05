@@ -16,6 +16,7 @@ add_executable(Bridge
     src/App/Main.cpp
     src/App/MapperSmoke.cpp
     src/App/FramerSmoke.cpp
+    src/App/FramerMtcSmoke.cpp
     src/App/MidiSessionCli.cpp
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionDeviceHost.cpp
@@ -27,6 +28,7 @@ add_executable(Bridge
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp
     src/Protocol/EmagicMapperRealtimeSmoke.cpp
+    src/Protocol/EmagicMapperMtcSmoke.cpp
     src/Protocol/MidiMessageFramer.cpp
     src/Usb/WinUsbTransport.cpp
     src/Usb/WinUsbTransportInit.cpp
@@ -70,6 +72,7 @@ add_executable(BridgeTests
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp
     src/Protocol/EmagicMapperRealtimeSmoke.cpp
+    src/Protocol/EmagicMapperMtcSmoke.cpp
     src/Protocol/MidiMessageFramer.cpp
 )
 

@@ -387,33 +387,24 @@ bool runAllEmagicMapperSmokeTests(std::ostream& out, std::ostream& err)
         return false;
     }
 
-    if (!runEmagicMapperSmokeEncodeOutCables(*mt4, err))
+    using SmokeFn = bool (*)(const DeviceProfile&, std::ostream&);
+    const SmokeFn runners[] = {
+        runEmagicMapperSmokeEncodeOutCables,
+        runEmagicMapperSmokeEncodeControlChange,
+        runEmagicMapperSmokeDecodeSynthetic,
+        runEmagicMapperSmokeDecodeControlChange,
+        runEmagicMapperSmokeDecodeSplitF5,
+        runEmagicMapperSmokeEncodeClockTransport,
+        runEmagicMapperSmokeDecodeClockTransport,
+        runEmagicMapperSmokeEncodeMtc,
+        runEmagicMapperSmokeDecodeMtc};
+
+    for (SmokeFn runner : runners)
     {
-        return false;
-    }
-    if (!runEmagicMapperSmokeEncodeControlChange(*mt4, err))
-    {
-        return false;
-    }
-    if (!runEmagicMapperSmokeDecodeSynthetic(*mt4, err))
-    {
-        return false;
-    }
-    if (!runEmagicMapperSmokeDecodeControlChange(*mt4, err))
-    {
-        return false;
-    }
-    if (!runEmagicMapperSmokeDecodeSplitF5(*mt4, err))
-    {
-        return false;
-    }
-    if (!runEmagicMapperSmokeEncodeClockTransport(*mt4, err))
-    {
-        return false;
-    }
-    if (!runEmagicMapperSmokeDecodeClockTransport(*mt4, err))
-    {
-        return false;
+        if (!runner(*mt4, err))
+        {
+            return false;
+        }
     }
 
     out << "Mapper synthetic tests passed\n";
