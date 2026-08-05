@@ -31,6 +31,7 @@ bool VirtualMidiBackend::SendToHost(
 
 void VirtualMidiBackend::SetHostToDeviceSink(HostToDeviceSink sink, void* context) noexcept
 {
+    std::lock_guard<std::mutex> lock(hostToDeviceMutex_);
     hostToDeviceSink_ = sink;
     hostToDeviceContext_ = context;
 }
@@ -265,8 +266,15 @@ void VirtualMidiBackend::forwardHostToDevice(
     const uint8_t* midiBytes,
     std::size_t byteCount) noexcept
 {
-    const HostToDeviceSink sink = hostToDeviceSink_;
-    void* context = hostToDeviceContext_;
+    HostToDeviceSink sink = nullptr;
+    void* context = nullptr;
+    {
+        // Copy under the mutex, then release before calling into DeviceSession so
+        // Stop (usbIoMutex_ → SetHostToDeviceSink) cannot deadlock with this path.
+        std::lock_guard<std::mutex> lock(hostToDeviceMutex_);
+        sink = hostToDeviceSink_;
+        context = hostToDeviceContext_;
+    }
     if (sink == nullptr || midiBytes == nullptr || byteCount == 0)
     {
         return;
@@ -378,6 +386,7 @@ bool VirtualMidiBackend::SendToHost(
 
 void VirtualMidiBackend::SetHostToDeviceSink(HostToDeviceSink sink, void* context) noexcept
 {
+    std::lock_guard<std::mutex> lock(hostToDeviceMutex_);
     hostToDeviceSink_ = sink;
     hostToDeviceContext_ = context;
 }

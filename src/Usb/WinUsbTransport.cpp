@@ -114,12 +114,12 @@ void WinUsbTransport::clearPipeState() noexcept
     lastReadTimedOut_ = false;
 }
 
-bool WinUsbTransport::applyBulkInTransferTimeout(std::string& errorOut)
+bool WinUsbTransport::applyBulkTransferTimeouts(std::string& errorOut)
 {
-    // Bound blocking ReadBulk so DeviceSession Stop can observe stopPump_ between reads
-    // (Story 1.4 deferred Close vs in-flight I/O). 100 ms is tens–hundreds of ms.
-    constexpr ULONG kBulkInTransferTimeoutMs = 100;
-    ULONG timeoutMs = kBulkInTransferTimeoutMs;
+    // Bound blocking ReadBulk / WriteBulk so DeviceSession Stop can progress
+    // (Story 1.4 deferred Close vs in-flight I/O; Epic 1 pump makes OUT timeouts required).
+    constexpr ULONG kBulkTransferTimeoutMs = 100;
+    ULONG timeoutMs = kBulkTransferTimeoutMs;
     if (!WinUsb_SetPipePolicy(
             static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
             bulkInPipeId_,
@@ -129,6 +129,19 @@ bool WinUsbTransport::applyBulkInTransferTimeout(std::string& errorOut)
     {
         errorOut = formatWin32Error(
             "WinUsb_SetPipePolicy(PIPE_TRANSFER_TIMEOUT) failed for Emagic bulk IN",
+            GetLastError());
+        return false;
+    }
+    timeoutMs = kBulkTransferTimeoutMs;
+    if (!WinUsb_SetPipePolicy(
+            static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
+            bulkOutPipeId_,
+            PIPE_TRANSFER_TIMEOUT,
+            sizeof(timeoutMs),
+            &timeoutMs))
+    {
+        errorOut = formatWin32Error(
+            "WinUsb_SetPipePolicy(PIPE_TRANSFER_TIMEOUT) failed for Emagic bulk OUT",
             GetLastError());
         return false;
     }
@@ -215,7 +228,7 @@ bool WinUsbTransport::Open(
 
     deviceHandle_ = handles.device;
     winUsbHandle_ = handles.winUsb;
-    if (!discoverBulkPipes(errorOut) || !applyBulkInTransferTimeout(errorOut))
+    if (!discoverBulkPipes(errorOut) || !applyBulkTransferTimeouts(errorOut))
     {
         Close();
         return false;

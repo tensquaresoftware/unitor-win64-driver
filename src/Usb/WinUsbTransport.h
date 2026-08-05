@@ -54,7 +54,7 @@ public:
 private:
 #ifdef _WIN32
     bool discoverBulkPipes(std::string& errorOut);
-    bool applyBulkInTransferTimeout(std::string& errorOut);
+    bool applyBulkTransferTimeouts(std::string& errorOut);
     void clearPipeState() noexcept;
 
     void* deviceHandle_ = nullptr;   // HANDLE

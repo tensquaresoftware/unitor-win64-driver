@@ -9,6 +9,7 @@
 #endif
 
 #include <cstddef>
+#include <mutex>
 
 class VirtualMidiBackend : public MidiBackend
 {
@@ -90,5 +91,7 @@ private:
 
     HostToDeviceSink hostToDeviceSink_ = nullptr;
     void* hostToDeviceContext_ = nullptr;
+    // Guards sink + context pair (session thread vs teVirtualMIDI OUT callbacks).
+    mutable std::mutex hostToDeviceMutex_;
     bool portsCreated_ = false;
 };

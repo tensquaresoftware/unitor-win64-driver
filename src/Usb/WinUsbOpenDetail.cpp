@@ -79,6 +79,34 @@ bool tryOpenMatchedDeviceGuids(MatchedDeviceOpenArgs& args, std::string& errorOu
 
     return false;
 }
+
+// Returns 1 and fills chosenOut on a unique HWID match; 0 if none; -1 if ambiguous.
+int findUniqueHardwareIdDevice(
+    HDEVINFO deviceInfo,
+    const std::string& hardwareId,
+    SP_DEVINFO_DATA& chosenOut)
+{
+    SP_DEVINFO_DATA devInfo = {};
+    devInfo.cbSize = sizeof(devInfo);
+    int matchCount = 0;
+    for (DWORD index = 0; SetupDiEnumDeviceInfo(deviceInfo, index, &devInfo); ++index)
+    {
+        if (!deviceMatchesHardwareId(deviceInfo, devInfo, hardwareId))
+        {
+            continue;
+        }
+        ++matchCount;
+        if (matchCount == 1)
+        {
+            chosenOut = devInfo;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    return matchCount == 1 ? 1 : 0;
+}
 } // namespace
 
 bool openByDeviceInterfaceGuidFiltered(GuidOpenRequest& request, std::string& errorOut)
@@ -157,30 +185,30 @@ bool openZadigFallback(
         return false;
     }
 
-    SP_DEVINFO_DATA devInfo = {};
-    devInfo.cbSize = sizeof(devInfo);
-    std::string lastError =
-        "No USB device matching profile hardware ID for Zadig fallback";
-
-    for (DWORD index = 0; SetupDiEnumDeviceInfo(deviceInfo, index, &devInfo); ++index)
+    SP_DEVINFO_DATA chosenDevInfo = {};
+    chosenDevInfo.cbSize = sizeof(chosenDevInfo);
+    const int match = findUniqueHardwareIdDevice(deviceInfo, hardwareId, chosenDevInfo);
+    if (match != 1)
     {
-        if (!deviceMatchesHardwareId(deviceInfo, devInfo, hardwareId))
-        {
-            continue;
-        }
-
-        MatchedDeviceOpenArgs args{
-            deviceInfo, &devInfo, &profile, &hardwareId, &handles};
-        if (tryOpenMatchedDeviceGuids(args, lastError))
-        {
-            SetupDiDestroyDeviceInfoList(deviceInfo);
-            return true;
-        }
+        SetupDiDestroyDeviceInfoList(deviceInfo);
+        errorOut = match < 0
+            ? "Multiple USB devices match profile hardware ID for Zadig fallback; "
+              "refusing ambiguous open"
+            : "No USB device matching profile hardware ID for Zadig fallback";
+        return false;
     }
 
+    std::string lastError;
+    MatchedDeviceOpenArgs args{
+        deviceInfo, &chosenDevInfo, &profile, &hardwareId, &handles};
+    const bool opened = tryOpenMatchedDeviceGuids(args, lastError);
     SetupDiDestroyDeviceInfoList(deviceInfo);
-    errorOut = lastError;
-    return false;
+    if (!opened)
+    {
+        errorOut = lastError;
+        return false;
+    }
+    return true;
 }
 
 #endif // _WIN32

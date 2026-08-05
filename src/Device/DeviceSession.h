@@ -104,7 +104,8 @@ private:
     WinUsbTransport transport_;
     std::unique_ptr<EmagicCableMapper> mapper_;
     MidiBackend* midiBackend_ = nullptr;
-    bool running_ = false;
+    // Polled from the CLI thread while Start/Stop/reader mutate session state.
+    std::atomic<bool> running_{false};
 
     std::thread readerThread_;
     std::atomic<bool> stopPump_{true};

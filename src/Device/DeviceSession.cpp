@@ -31,15 +31,8 @@ DeviceSession::~DeviceSession()
 bool DeviceSession::sendInitMagic(std::string& errorOut)
 {
     // Linux sends the Unitor "get version" magic twice after OUT endpoint open.
-    if (!transport_.WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut))
-    {
-        return false;
-    }
-    if (!transport_.WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut))
-    {
-        return false;
-    }
-    return true;
+    return transport_.WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut)
+        && transport_.WriteBulk(kEmagicInitMagic, kEmagicInitMagicSize, errorOut);
 }
 
 void DeviceSession::sendFinishMagicBestEffort() noexcept
@@ -151,14 +144,18 @@ void DeviceSession::handleHostMidi(
         return;
     }
 
+    // Hold usbIoMutex_ through encode + WriteBulk so concurrent OUT callbacks
+    // cannot interleave Emagic F5 frames, and Stop cannot Close mid-write.
     uint8_t encodeBytes[kEncodeBufferCapacity] = {};
     HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
+    std::lock_guard<std::mutex> lock(usbIoMutex_);
+    if (!encodeHostMidiLocked(outPortIndex, midiBytes, byteCount, scratch))
     {
-        std::lock_guard<std::mutex> lock(usbIoMutex_);
-        if (!encodeHostMidiLocked(outPortIndex, midiBytes, byteCount, scratch))
-        {
-            return;
-        }
+        return;
+    }
+    if (stopPump_.load() || !running_.load())
+    {
+        return;
     }
 
     std::string error;
@@ -175,7 +172,7 @@ bool DeviceSession::encodeHostMidiLocked(
     std::size_t byteCount,
     HostEncodeScratch& scratch)
 {
-    if (stopPump_.load() || !running_ || mapper_ == nullptr || midiBackend_ == nullptr)
+    if (stopPump_.load() || !running_.load() || mapper_ == nullptr || midiBackend_ == nullptr)
     {
         return false;
     }
@@ -351,7 +348,7 @@ bool DeviceSession::startPump(std::string& errorOut)
 
     stopPump_.store(false);
     // Accept host→device as soon as the sink is live (before Start returns).
-    running_ = true;
+    running_.store(true);
     midiBackend_->SetHostToDeviceSink(&DeviceSession::hostToDeviceThunk, this);
 
     try
@@ -361,7 +358,7 @@ bool DeviceSession::startPump(std::string& errorOut)
     catch (const std::system_error& ex)
     {
         stopPump_.store(true);
-        running_ = false;
+        running_.store(false);
         {
             std::lock_guard<std::mutex> lock(usbIoMutex_);
             midiBackend_->SetHostToDeviceSink(nullptr, nullptr);
@@ -418,34 +415,39 @@ bool DeviceSession::Start(const DeviceSessionStartRequest& request, std::string&
 
 void DeviceSession::Stop() noexcept
 {
-    // Join reader before Close / DestroyPortSet so in-flight ReadBulk can finish via timeout.
+    // Join reader before Close so in-flight ReadBulk can finish via IN timeout.
     stopPumpAndJoin();
 
-    std::lock_guard<std::mutex> lock(usbIoMutex_);
-
-    // Clear sink under the I/O lock so an in-flight host callback finishes or sees nullptr.
-    if (midiBackend_ != nullptr)
     {
-        midiBackend_->SetHostToDeviceSink(nullptr, nullptr);
+        std::lock_guard<std::mutex> lock(usbIoMutex_);
+        // Drop sink + running_ before DestroyPortSet so callbacks finish WriteBulk
+        // under this lock or bail without touching a closed transport.
+        if (midiBackend_ != nullptr)
+        {
+            midiBackend_->SetHostToDeviceSink(nullptr, nullptr);
+        }
+        running_.store(false);
     }
 
+    // DestroyPortSet outside usbIoMutex_: teVirtualMIDI may wait for OUT callbacks.
     destroyPortsBestEffort();
 
-    if (running_ || transport_.IsOpen())
     {
-        sendFinishMagicBestEffort();
+        std::lock_guard<std::mutex> lock(usbIoMutex_);
+        if (transport_.IsOpen())
+        {
+            sendFinishMagicBestEffort();
+        }
+        transport_.Close();
+        mapper_.reset();
+        midiBackend_ = nullptr;
+        inPortCount_ = 0;
+        outPortCount_ = 0;
     }
-
-    transport_.Close();
-    mapper_.reset();
-    midiBackend_ = nullptr;
-    running_ = false;
-    inPortCount_ = 0;
-    outPortCount_ = 0;
 }
 
 bool DeviceSession::IsRunning() const noexcept
 {
-    return running_ && !stopPump_.load() && transport_.IsOpen() && mapper_ != nullptr
+    return running_.load() && !stopPump_.load() && transport_.IsOpen() && mapper_ != nullptr
         && midiBackend_ != nullptr;
 }
