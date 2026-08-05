@@ -1,5 +1,17 @@
 # Deferred work
 
+## Deferred from: story 2-5 session longevity design (2026-08-05)
+
+Open soak risks for SM-3 / NFR-R1 (`docs/tests/smoke-epic2-longevity-mt4.md`). None measured Fail this turn (Win10 ~4 h sample still blank). Do **not** treat them as “usermode destiny” if the sample hits them.
+
+- Incomplete SysEx under hold with no `F7` (no idle timeout) — observe during soak; add idle-timeout / English session failure only if hang is real.
+- CTRL_CLOSE may kill before `Stop` → orphan Virtual Ports — prefer Ctrl+C for sample teardown; raise priority if the shared soak path uses window-close.
+- `processBulkRead` holds `usbIoMutex_` across decode — observe under multi-hour clock/SysEx load; fix only with evidence.
+- Console heartbeat every ~3 s (at least ~4800 lines / 4 h if redirected) — throttle only if redirected logs become unusable.
+- Win10 x64 ~4 h sample matrix blank until lab wall-clock time — design + plan landed; blank ≠ Pass; optional 30–60 min interim does not close SM-3 alone.
+
+Design note already captured in the longevity guide (not an open deferral): after pump fail, ports stay up until CLI ~50 ms poll `Stop` — expected Fail→Stop.
+
 ## Deferred from: code review of 2-4-matrix-control-minimum-sysex-pass-vectors.md (2026-08-05)
 
 - Update `deferred-work.md` with open 2.3 Win10 SysEx blanks after the Matrix-Control lab (story Task 2+) — not required for Task 1 checklist-only delivery.

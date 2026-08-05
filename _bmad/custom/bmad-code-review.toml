@@ -15,4 +15,6 @@ persistent_facts = [
   "Amorce code-review : premier message = ## Contexte de la Story + une phrase claire ; ne pas répéter aux tours suivants.",
   "Rename-once : si le titre Agents commence déjà par « BMad — », ne jamais rappeler rename_chat.",
   "Doublons de titre : python scripts/dev/resolve-bmad-chat-title.py \"BASE\" avant rename_chat.",
+  "HARD GATE choix HALT : dès qu’un numéro est attendu (patch findings, décision, next steps), le message DOIT se terminer par le bloc complet 1/2/3… en verbes du quotidien + Recommandation BMad. Interdit « réponds 1/2/3 » ou « on reste sur ta réponse » sans réécrire les options. Après notif sous-agent / digression, si le choix est encore ouvert → répéter le bloc entier en bas.",
+  "Après step-04 Present : si des patch findings existent, le tour se termine UNIQUEMENT par le bloc « Comment traiter les correctifs » (3 options si story file, sinon 2) + Recommandation BMad — pas de suite de workflow avant le numéro de Guillaume.",
 ]

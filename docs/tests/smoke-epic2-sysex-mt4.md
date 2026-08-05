@@ -30,7 +30,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 - Timing Clock / Start-Stop-Continue → story 2.1 (`smoke-epic2-clock-mt4.md`)
 - MTC quarter-frame / full-frame sync → story 2.2 (`smoke-epic2-mtc-mt4.md`)
 - Matrix-Control **locked minimum pass-vector table** (Inquiry + patch + master + push + live edits + mixed-wire) → story **2.4** (`smoke-epic2-matrix-control-mt4.md`)
-- ~4 h longevity / soak sample → story **2.5**
+- ~4 h longevity / soak sample → story **2.5** (`smoke-epic2-longevity-mt4.md`)
 - Latency / jitter Studio-Done numbers → Epic 5
 - Linking Matrix-Control as a Bridge runtime dependency (forbidden — CAP-8)
 - Building a SysEx librarian UI or Oberheim parser in the Bridge
@@ -95,7 +95,7 @@ Expect Pass, including Catch2 `[framer][sysex]`, `[mapper][sysex]`, and `[queue]
 |---|---|
 | Transparent SysEx pipe + burst buffering (this checklist) | **2.3** (this doc) |
 | Matrix-Control locked minimum vectors (Inquiry + patch + master + push + live edits + mixed-wire) | **2.4** (`smoke-epic2-matrix-control-mt4.md`) |
-| ~4 h longevity design / soak sample | **2.5** |
+| ~4 h longevity design / soak sample | **2.5** (`smoke-epic2-longevity-mt4.md`) |
 | Full-frame MTC sync | **2.2** (`smoke-epic2-mtc-mt4.md`) |
 | MIDI Path latency/jitter harness | Epic **5** |
 

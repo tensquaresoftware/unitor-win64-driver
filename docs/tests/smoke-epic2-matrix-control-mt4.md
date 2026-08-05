@@ -48,7 +48,7 @@ On Fail, write English notes with **Port N / cable / direction / validation-matr
 - Transparent SysEx pipe + short burst buffering already shipped in story **2.3** (`smoke-epic2-sysex-mt4.md`)
 - Timing Clock / Start-Stop-Continue → story 2.1 (`smoke-epic2-clock-mt4.md`)
 - MTC quarter-frame / full-frame → story 2.2 (`smoke-epic2-mtc-mt4.md`)
-- ~4 h longevity / soak sample → story **2.5**
+- ~4 h longevity / soak sample → story **2.5** (`smoke-epic2-longevity-mt4.md`)
 - Latency / jitter Studio-Done numbers → Epic **5**
 - Linking Matrix-Control as a Bridge runtime dependency (forbidden — CAP-8)
 - Oberheim parser / checksum validator / SysexEngine in the Bridge
@@ -144,7 +144,7 @@ Expect Pass, including Catch2 `[framer][sysex]`, `[mapper][sysex]`, `[queue][sys
 |---|---|
 | Transparent SysEx pipe + short burst buffering | **2.3** (`smoke-epic2-sysex-mt4.md`) |
 | Matrix-Control locked minimum vectors (this checklist) | **2.4** (this doc) |
-| ~4 h longevity design / soak sample | **2.5** |
+| ~4 h longevity design / soak sample | **2.5** (`smoke-epic2-longevity-mt4.md`) |
 | Timing Clock / Start-Stop-Continue | **2.1** (`smoke-epic2-clock-mt4.md`) |
 | Full-frame / quarter-frame MTC sync | **2.2** (`smoke-epic2-mtc-mt4.md`) |
 | MIDI Path latency/jitter harness | Epic **5** |
@@ -161,5 +161,5 @@ Task-1 provisional snapshot (does **not** close SM-2 / Task 5 Windows lab regres
 | Win10 x64 optional bank stress (#6) | |
 | Win11 x64 (when available; else Skip/N/A) | |
 | No Matrix-Control linked into Bridge build (CAP-8) | Pass provisional (no refs in `src/` / `CMakeLists.txt`, 2026-08-05) — re-confirm at Task 5 |
-| No claim of ~4 h longevity (→ 2.5) | Confirmed |
+| No claim of ~4 h longevity (→ 2.5 / `smoke-epic2-longevity-mt4.md`) | Confirmed |
 | No Studio-Done latency numbers (→ Epic 5) | Confirmed |

@@ -25,6 +25,7 @@ Si un message nécessiterait encore « Reformule en langage naturel, sans jargon
 4. Terme technique d’ingénierie indispensable → **glose courte** à la première occurrence.
 5. Chemins / IDs / symboles → **ligne complémentaire en bas**, jamais dans la phrase porteuse de sens.
 6. **Question / décision** → question claire seule + options en verbes du quotidien + **Recommandation BMad**.
+7. **HALT / choix numérotés** → le **dernier bloc** du message = options **complètes** (`1` / `2` / `3`… + verbes du quotidien) + **Recommandation BMad**. Interdit « réponds 1/2/3 » ou « on reste sur ta réponse » sans réécrire les options. Après digression / notif sous-agent : si le choix est encore ouvert → **répéter le bloc entier**.
 
 ## Forbidden
 
@@ -38,5 +39,6 @@ Si un message nécessiterait encore « Reformule en langage naturel, sans jargon
 1. Compréhensible en ~20 s sans connaître les noms de fichiers ?
 2. Phrase-test « Reformule… » → je **ne** reformulerais **pas** ?
 3. Si décision : options quotidiennes + Recommandation BMad aussi claire que le reste ?
+4. Si un numéro est attendu : le bloc `1` / `2` / `3`… est-il **en bas du message**, complet, sans renvoyer à un tour précédent ?
 
 Any fail → rewrite before sending.

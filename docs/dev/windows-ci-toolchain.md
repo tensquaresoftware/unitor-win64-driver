@@ -86,6 +86,7 @@ Keep these on a Windows 10/11 x64 machine with hardware / DAW as needed:
 - VirtualMIDI port visibility and DAW round-trip
 - SysEx, clock, and long soak sessions
 - Epic 1 hardware smoke checklist: `docs/tests/smoke-epic1-mt4.md`
+- Story **2.5** ~4 h longevity sample (SM-3 / NFR-R1): `docs/tests/smoke-epic2-longevity-mt4.md` — **lab-only evidence**, not a CI job
 
 ## Matrix-Control: reused vs omitted
 

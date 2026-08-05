@@ -95,7 +95,7 @@ Without `--open-device` / `--start-session` / `--run-midi`, Bridge only runs the
 | *(none)* | Profile smoke only — does not open WinUSB |
 | `--open-device` | GUID-first WinUSB open; fail closed with English stderr on error |
 | `--dev-zadig` | With `--open-device` or session flags: allow Zadig fallback if the project GUID is absent |
-| `--start-session` | Open MT4, create `MT4 Port N` Virtual Ports, run notes/CC pump (Ctrl+C to stop) |
+| `--start-session` | Open MT4, create `MT4 Port N` Virtual Ports, run notes/CC pump (Ctrl+C to stop). Leave this running for the ~4 h longevity soak (`docs/tests/smoke-epic2-longevity-mt4.md`) |
 | `--run-midi` | Alias of `--start-session` |
 
 Example (contributor Zadig machine, open only):

@@ -74,6 +74,15 @@ Variante utile :
 3. Si options : les numéroter avec des **verbes du quotidien**.
 4. Toujours terminer par **Recommandation BMad**.
 
+### HALT / choix numérotés (NON NÉGOCIABLE)
+
+Quand le workflow attend un numéro (`1` / `2` / `3`…) — revue de code, décision story, suite de sprint, etc. :
+
+1. Le **dernier bloc visible** du message DOIT être les options **complètes** (numéro + verbe du quotidien + courte glose) puis **Recommandation BMad**.
+2. **Interdit** de renvoyer à « les choix ci-dessus », « réponds 1 / 2 / 3 », ou « on reste sur ta réponse » **sans réécrire** le bloc entier.
+3. Même après une digression, une notif système, un sous-agent, ou un message « rien à faire de plus » : si un choix est encore en attente, **répéter le bloc complet** dans ce tour.
+4. Ne jamais enterrer les options au milieu d’un long résumé — résumé d’abord, **choix en bas**.
+
 ### Exemple bon (décision)
 
 **En bref**  
@@ -111,6 +120,7 @@ Soit on s’appuie sur un SDK propriétaire déjà éprouvé, soit sur l’API M
 4. Les options se distinguent-elles avec des **verbes du quotidien** ?
 5. La phrase-test donne-t-elle « Non, je ne reformulerais pas » ?
 6. Si question/décision : la **Recommandation BMad** est-elle présente et claire ?
+7. Si un numéro est attendu : le bloc `1` / `2` / `3`… est-il **en bas du message**, **complet**, sans renvoyer à un tour précédent ?
 
 Si un seul point échoue → **réécrire**.
 
