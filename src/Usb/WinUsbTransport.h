@@ -1,10 +1,12 @@
-// WinUSB transport open/close — GUID-first device interface enumeration (AD-12).
+// WinUSB transport open/close + bulk I/O — GUID-first device interface enumeration (AD-12).
 // Usb may include Profile; Profile must never include WinUSB headers.
 
 #pragma once
 
 #include "Profile/DeviceProfile.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 // Single source of truth for the project WinUSB DeviceInterfaceGUID.
@@ -38,10 +40,24 @@ public:
     void Close() noexcept;
     bool IsOpen() const noexcept;
 
+    // Synchronous bulk OUT/IN on discovered Emagic MIDI pipes (after successful Open).
+    bool WriteBulk(const uint8_t* data, std::size_t size, std::string& errorOut);
+    bool ReadBulk(
+        uint8_t* buffer,
+        std::size_t capacity,
+        std::size_t& bytesRead,
+        std::string& errorOut);
+
 private:
 #ifdef _WIN32
+    bool discoverBulkPipes(std::string& errorOut);
+    void clearPipeState() noexcept;
+
     void* deviceHandle_ = nullptr;   // HANDLE
     void* winUsbHandle_ = nullptr;   // WINUSB_INTERFACE_HANDLE
+    unsigned char bulkOutPipeId_ = 0;
+    unsigned char bulkInPipeId_ = 0;
+    bool pipesReady_ = false;
 #else
     bool open_ = false;
 #endif

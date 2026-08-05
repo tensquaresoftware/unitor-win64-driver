@@ -1,5 +1,5 @@
 // Declarative per-PID hardware profile (USB identity, Emagic cable masks, capabilities).
-// Profile layer must not depend on WinUSB or VirtualMIDI headers.
+// Profile layer stays free of platform USB and virtual-MIDI SDK headers.
 
 #pragma once
 
