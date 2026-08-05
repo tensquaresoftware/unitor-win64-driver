@@ -37,3 +37,7 @@ _local/
 # IDE / tooling
 .idea/
 *.code-workspace
+
+# Lab-signed WinUSB catalog (regenerate with installer/sign-lab-package.ps1)
+installer/*.cat
+installer/*.cdf
