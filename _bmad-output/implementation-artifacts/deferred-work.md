@@ -1,25 +1,38 @@
 # Deferred work
 
+## Deferred from: quick-dev spec-epic1-in-mute-and-out1-f5.md (2026-08-05)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-epic1-in-mute-and-out1-f5.md`
+  summary: SysEx over 1024 bytes is dropped silently by MidiMessageFramer with no counter bump
+  evidence: Epic 1 notes/CC smoke only; full SysEx observability belongs with Epic 2
+- source_spec: `_bmad-output/implementation-artifacts/spec-epic1-in-mute-and-out1-f5.md`
+  summary: Reader-thread device-host counter lines race CLI std::cout without a shared lock
+  evidence: Surfaced in review; pre-existing multi-writer console pattern, not unique to counters
+- source_spec: `_bmad-output/implementation-artifacts/spec-epic1-in-mute-and-out1-f5.md`
+  summary: After framer Reset, bare running-status data bytes are dropped until a new status byte
+  evidence: Standard MIDI cold-start behavior; DIN devices usually send status after reconnect
+
 ## Deferred from: code review (Epic 1 integration, 2026-08-05)
 
-- MIDI demux→host framer still absent; 1.6 pump now escalates incomplete spans via `recordPumpFailure` / session stop — still open, aggravated by integration (was 1-6).
+- MIDI demux→host framer still absent; 1.6 pump now escalates incomplete spans via `recordPumpFailure` / session stop — **patched** 2026-08-05 evening (`MidiMessageFramer` before `SendToHost`; lab notes/CC OK).
 - CTRL_CLOSE_EVENT still only sets cancel flag; Windows may kill before `Stop` finishes port/USB teardown — still open (was 1-6); raise priority before any public/shareable session path.
 - Epic 1 integration CR (2026-08-05) **patched**: host→device WriteBulk under `usbIoMutex_`, VirtualMIDI sink mutex, bulk OUT `PIPE_TRANSFER_TIMEOUT`, atomic `running_`, Zadig multi-match refuse, bind docs `--start-session`/`--run-midi`. Remaining lifecycle edge: orphan ports after hard crash / CTRL_CLOSE kill (was 1-5 / 1-6).
 - After `recordPumpFailure`, Virtual Ports stay up until CLI ~50 ms poll calls `Stop`; host→device encode silently no-ops in that window.
 - `processBulkRead` holds `usbIoMutex_` across full `DecodeFromDevice` + allocations — busy IN can stall host→device encode (latency under load; not a wrong-cable bug once WriteBulk is locked).
 - Zadig fallback opens the first hardware-ID match without counting multiple MT4s — ambiguous multi-unit open (Epic 3 / multi-device; primary GUID path already refuses `matchCount != 1`).
 - Partial `CreatePortSet` errors omit which `MT4 Port N` / IN·OUT failed.
-- First host→device encode on Port 1 may omit F5 when mapper `currentOutCable_` starts at 0 (Port 1 == cable 0); **hardware confirmed 2026-08-05** (Boot Camp): first notes on Out 1 lit all four Out LEDs; later Out 1 OK after other ports used; CC7 Out 1 was OK.
-- **P0 lab 2026-08-05**: device DIN In 1/2 LEDs blink (notes+CC from Mac) but Ableton on PC sees no traffic on virtual `MT4 Port 1/2` IN — bulk IN → demux → `SendToHost` path (and/or Live monitor setup) not proven.
-- Hardware notes/CC **full** round-trip on all 2 IN + 4 OUT — still open (was 1-6); PC→device largely OK; device→host missing.
+- First host→device encode on Port 1 may omit F5 when mapper `currentOutCable_` starts at 0 (Port 1 == cable 0); **patched** 2026-08-05 evening (`currentOutCable_=0xFF` sentinel); **hardware retest OK** (first Out 1 notes no longer fan all Out LEDs).
+- **P0 lab 2026-08-05**: device DIN In 1/2 LEDs blink but Ableton silent on virtual IN — **patched** evening. Root cause: WinUSB `ReadBulk` used a 512-byte buffer while Emagic sends full `wMaxPacketSize` packets (lab: 32) padded with `0xFF`, so reads timed out with 0 bytes; fix reads at endpoint max packet size. Also: init IN drain before further OUT, Set Computer Mode + channel CC kick, `MidiMessageFramer` before `SendToHost`. **Hardware OK**: notes+CC on In 1/2 in Ableton (C3, CC7).
+- Hardware notes/CC **full** round-trip on all 2 IN + 4 OUT — **lab OK** 2026-08-05 evening (notes then CC); keep section 6.3 parallel multi-OUT optional.
 - Identical IN/OUT `MT4 Port N` teVirtualMIDI collision — **patched** in lab session (merged bidirectional create); keep an eye on DAW IN/OUT pairing.
 - Shared `MidiBackend` across concurrent `DeviceSession` instances not rejected — still open (was 1-5 / Epic 3).
+- Device-host counter lines were invisible in PowerShell during successful retest (reader-thread `cout` buffering) — **patched** to `cerr` + flush + Start hint (re-confirm next session).
 
 ## Deferred from: code review of 1-6-notes-and-cc-round-trip-on-all-ports.md (2026-08-05)
 
 - Hardware AC1/AC2 round-trip proof (notes+CC on all 2 IN + 4 OUT via ShowMIDI/DAW) — deferred: infra OK for story close; Windows smoke remains a manual checklist.
 - CTRL_CLOSE_EVENT may terminate the process before `DeviceSession::Stop()` finishes closing Virtual Ports and WinUSB.
-- Device→host path can forward raw Emagic demux spans that are not complete MIDI messages (no message framer in 1.6).
+- Device→host path can forward raw Emagic demux spans that are not complete MIDI messages (no message framer in 1.6) — **patched** 2026-08-05 (`MidiMessageFramer`).
 - `SendToHost` does not reject payloads above teVirtualMIDI default max Sysex length — revisit with Epic 2 SysEx.
 
 ## Deferred from: code review of 1-5-virtualmidi-backend-and-stable-mt4-port-names.md (2026-08-05)

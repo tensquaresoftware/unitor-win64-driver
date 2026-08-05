@@ -7,6 +7,7 @@ created: 2026-08-05
 updated: 2026-08-05
 ---
 
+
 # Guide de smoke — Epic 1 (MT4 sous Windows)
 
 Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, lancer le Bridge, voir les ports `MT4 Port N`, faire passer des notes et des CC dans les deux sens.
@@ -35,9 +36,11 @@ Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, 
 | Bind | **Cas B** (Zadig / INF lab sur nœud parent sans `MI_02`) + Bridge `--dev-zadig` |
 | Sections 1–3 | ✅ open / probe USB |
 | Section 4 | ✅ session + **2 IN / 4 OUT** visibles dans Ableton Live 12 |
-| Section 5 (boîtier → PC) | ❌ LEDs In physiques OK ; **aucun** note/CC dans Live sur les ports IN virtuels |
-| Section 6 (PC → boîtier) | ✅ globalement (notes + CC7) ; 1er envoi notes sur Out 1 a un instant allumé **les 4** LEDs Out (voir §6) |
-| Section 8 | ✅ Ctrl+C → Patch rouge, USB orange éteint, ports Live en orange (déconnectés) |
+| Section 5 (boîtier → PC) | ✅ notes + CC sur **In 1 et In 2** → Ableton (`MT4 Port 1/2`) ; pitch/CC fidèles (lab : C3, CC7) ; root cause WinUSB ReadBulk = `wMaxPacketSize` (32) |
+| Section 6 (PC → boîtier) | ✅ notes + CC sur Out 1…4 ; **retest** 1er envoi Out 1 OK après sentinel `F5` |
+| Section 8 | ✅ Ctrl+C → Patch rouge, ports Live/PC désactivés (délai ~timeout bulk IN ~3 s possible) |
+
+**Compteurs console** : lignes `device-host counters: …` dans **le même PowerShell** où tourne `Bridge.exe` (pas Ableton). Affichées par le **thread principal** de la CLI (comme les messages Start) : heartbeat ~3 s (y compris des zéros), puis dès qu’il y a du bulk IN, et encore au Stop. Au démarrage, une ligne `Emagic init/computer-mode: drained N bulk IN byte(s)` confirme le drain après le SysEx de réveil.
 
 **Ne pas enchaîner** `--probe-usb` puis `--start-session` sans rebuild récent : le probe réveille le boîtier ; la session doit pouvoir le reréveiller (finish + retry). Pour le smoke MIDI, lance **uniquement** `--start-session --dev-zadig`.
 
@@ -311,8 +314,8 @@ Objectif : ce qui entre dans le MT4 apparaît sur `MT4 Port 1` / `MT4 Port 2` da
 
 Validation Port 1 IN :
 
-- Notes visibles : ❌
-- CC visibles : ❌
+- Notes visibles : ✅ (retest soir 2026-08-05)
+- CC visibles : ✅
 
 ### 5.3 Tester Port 2
 
@@ -322,8 +325,8 @@ Validation Port 1 IN :
 
 Validation Port 2 IN :
 
-- Notes visibles : ❌
-- CC visibles : ❌
+- Notes visibles : ✅ (retest soir 2026-08-05)
+- CC visibles : ✅
 
 ### 5.4 Contrôle anti-mélange (rapide)
 
@@ -331,14 +334,12 @@ Sans rien brancher sur l’IN 2, jouer sur l’IN 1 : le trafic ne doit **pas** 
 
 Validation :
 
-- Pas de « fantômes » sur l’autre port IN : non testé (aucun trafic virtuel reçu)
+- Pas de « fantômes » sur l’autre port IN : ✅ (smoke tous ports, notes puis CC)
 
 📌 Remarques GD (lab 2026-08-05) :
 
-- Source = clip MIDI Ableton sur **Mac** → câble DIN → **In 1** puis **In 2** du MT4 (PC Boot Camp).
-- LEDs rouges **In 1 / In 2** du MT4 clignotent (notes + CC7) : le boîtier **reçoit** bien le DIN.
-- Ableton Live 12 sur le **PC** écoute `MT4 Port 1` / `2` (Track coché) : **aucune** note/CC n’apparaît.
-- Conclusion smoke : chemin **physique OK**, chemin **Bridge USB bulk IN → port virtuel IN** non prouvé (bug ou config Live à isoler ensuite). Priorité correctif / debug après ce guide.
+- **Premier passage** : LEDs In OK, silence Live sur IN virtuels → P0.
+- **Retest soir** (après framer + chemin device→host) : notes puis CC OK sur **tous** les ports IN/OUT concernés ; plus de silence boîtier→PC.
 
 
 
@@ -382,10 +383,8 @@ Validation multi-OUT :
 📌 Remarques GD (lab 2026-08-05) :
 
 - Émission = clips Ableton Live 12 **sur le PC** → ports OUT `MT4 Port N` (Track coché).
-- **CC7** : LED verte Out **N** seule pour chaque port 1…4 — OK.
-- **Notes** : Out 2 / 3 / 4 → LED Out correspondante seule — OK.
-- **Notes Out 1 (1er essai de la session)** : les **4** LEDs vertes Out ont clignoté ensemble ; **retest** notes Out 1 plus tard → seule Out 1. Cohérent avec l’omission connue du sélecteur de câble Emagic (`F5`) quand le mapper croit déjà être sur le câble 0 après init.
-- Critère Epic 1 PC→boîtier : **largement OK** ; edge Out 1 au premier envoi = dette connue à corriger.
+- **Premier passage** : notes Out 1 (1er essai) allumaient les 4 LEDs Out (omission `F5`) ; CC7 et Out 2–4 OK.
+- **Retest soir** (sentinel `currentOutCable_` / `F5`) : notes + CC OK sur Out 1…4, y compris premier envoi Out 1.
 
 
 
@@ -415,7 +414,7 @@ Validation :
 Objectif : ranger les ports virtuels et l’USB proprement.
 
 1. Remets le focus sur la fenêtre console du Bridge.
-2. Appuie sur **Ctrl+C** (une fois, puis attends).
+2. Appuie sur **Ctrl+C** (une fois, puis attends jusqu’à ~3 s : le thread USB IN peut finir un `ReadBulk` borné avant de joindre).
 3. Le processus doit se terminer.
 4. Dans ShowMIDI / DAW, **rafraîchis** la liste des ports : les `MT4 Port N` de cette session doivent **disparaître** (ou ne plus être sélectionnables comme ports live).
 
@@ -425,7 +424,7 @@ Validation :
 - Ports `MT4 Port N` disparus après arrêt : ✅ (Live : intitulés passent en **orange** = interface déconnectée)
 - LED MT4 : Patch **rouge** allumée, USB **orange** éteinte : ✅
 
-📌 Remarques GD : Teardown aligné avec le comportement macOS (retour mode Patch).
+📌 Remarques GD : Teardown aligné avec macOS (retour mode Patch). Retest soir : délai avant prise en compte Ctrl+C possible (~timeout bulk IN) ; LEDs + ports Live OK.
 
 
 
@@ -457,36 +456,37 @@ Remplis après les tests (même partiels).
 
 **Verdict personnel**
 
-- Prêt à enchaîner Epic 2 côté usage notes/CC : **avec réserves**
-- Réserves en une phrase : boîtier→PC virtuel muet ; premier envoi notes Out 1 douteux (F5).
+- Prêt à enchaîner Epic 2 côté usage notes/CC : **oui** (smoke notes/CC tous ports vert au retest soir)
+- Réserves en une phrase : multi-OUT strictement parallèle (6.3) et fermeture croix (9) encore optionnels ; compteurs console à revalider après flush `cerr`.
 
 **Ce qui a le mieux marché**
 
 - WinUSB lab (cas B) + init magic + session VirtualMIDI.
 - 2 IN / 4 OUT nommés `MT4 Port N` dans Ableton Live 12.
-- PC→boîtier notes/CC (surtout Out 2–4 et CC sur tous les Out).
-- Arrêt Ctrl+C propre (LEDs + ports Live).
+- **Round-trip notes/CC** boîtier↔PC sur les ports testés (retest soir).
+- Arrêt Ctrl+C (LEDs + ports Live), avec délai USB possible.
 
 **Ce qui a bloqué ou surpris**
 
-- DIN In 1/2 : LEDs MT4 OK, **silence** dans Live sur les IN virtuels.
-- Premier envoi **notes** sur Out 1 : 4 LEDs Out allumées ; retest OK.
-- Messages console avec tiret typographique (`ÔÇö`) sous PowerShell — corrigé en ASCII.
-- loopMIDI vide alors que Live voit les ports (attendu : Bridge ≠ UI loopMIDI).
+- Premier passage : DIN In OK / silence Live IN ; 1er notes Out 1 → 4 LEDs (corrigés le soir).
+- Compteurs `device-host` non vus au retest (probable buffer `cout` thread lecteur) — corrigé vers `cerr` + flush.
+- Messages console avec tiret typographique — corrigé en ASCII plus tôt.
+- loopMIDI vide alors que Live voit les ports (attendu).
 
 **À retester / à corriger ensuite**
 
-1. **P0** — chemin device→host (bulk IN → demux → `SendToHost` → ports IN virtuels) ; confirmer aussi armement / monitoring Live.
-2. **P1** — forcer un `F5` (ou reset `currentOutCable_`) après init pour Out 1 au premier encode.
+1. ~~P0 device→host~~ — **OK retest soir**.
+2. ~~P1 F5 Out 1~~ — **OK retest soir**.
 3. Multi-OUT strictement parallèle (section 6.3) non fait.
 4. Section 9 (fermeture croix / ports orphelins) non testée.
+5. Confirmer lignes `device-host counters:` visibles dans PowerShell après rebuild flush.
 
 **Fichiers / logs utiles** (chemins, captures, messages console)
 
 - Capture Ableton MIDI I/O : 2× `MT4 Port 1/2` IN + 4× OUT Track ON.
-- Console : `DeviceSession started…` / `MIDI I/O running…` / Ctrl+C → stopped.
+- Console Bridge (PowerShell) : `DeviceSession started…` / `MIDI I/O running…` / éventuellement `device-host counters:…` / Ctrl+C → stopped.
 
-📌 Remarques GD (bilan) : Premier smoke matériel Epic 1 **sympathique** : socle session OK ; round-trip complet **pas** encore vert (IN virtuel).
+📌 Remarques GD (bilan) : Smoke matériel Epic 1 notes/CC **vert** au second passage labo ; Epic 2 possible côté usage de base.
 
 
 
@@ -507,8 +507,10 @@ Remplis après les tests (même partiels).
 | Aucun port `MT4 Port N` dans loopMIDI | **Normal** — Bridge crée les ports via teVirtualMIDI ; regarde Ableton / ShowMIDI. |
 | Aucun port `MT4 Port N` dans la DAW | La session n’a pas démarré ; ou DAW ouverte **avant** sans refresh. |
 | Ports présents mais silence total (PC→boîtier) | Mauvais câble ; mauvais port OUT ; Track non coché dans Live. |
-| LEDs In MT4 OK, silence dans la DAW (boîtier→PC) | Chemin Bridge device→host suspect (lab 2026-08-05) ; vérifier aussi piste Live armée / monitoring sur l’entrée `MT4 Port N`. |
-| 1er envoi notes Out 1 allume plusieurs LEDs Out | Dette F5 / `currentOutCable_` après init ; retester après avoir utiliséé un autre Out. |
+| LEDs In MT4 OK, silence dans la DAW (boîtier→PC) | Ancien P0 (lab matin) — **corrigé** au retest soir ; si ça revient : rebuild + vérifier piste Live armée sur `MT4 Port N`. |
+| 1er envoi notes Out 1 allume plusieurs LEDs Out | Ancien P1 F5 — **corrigé** (sentinel câble OUT) ; retester session fraîche. |
+| Pas de ligne `device-host counters:` | Même fenêtre PowerShell que `Bridge.exe` ; rebuild avec print sur `cerr` + flush ; message d’annonce au Start. |
+| Ctrl+C lent (~quelques secondes) | Attendu : timeout bulk IN (~3 s) avant join du thread lecteur. |
 | Notes OK sur un port, mélangées sur plusieurs OUT | Noter ports + séquence — bug multi-OUT d’intégration ; si ça revient, **❌** prioritaire. |
 | Session qui meurt toute seule | Copier le message anglais de la console (échec pompe / SendToHost / WriteBulk). |
 | Ports qui restent après Ctrl+C | Noter ; éventuellement relancer Windows avant le prochain essai. |
