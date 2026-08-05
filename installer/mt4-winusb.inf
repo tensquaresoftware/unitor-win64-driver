@@ -9,6 +9,7 @@ Class       = USBDevice
 ClassGUID   = {88BAE032-5A81-49f0-BC3D-A4FF138216D6}
 Provider    = %ManufacturerName%
 DriverVer   = 08/05/2026,0.1.0.0
+CatalogFile = mt4-winusb.cat
 PnpLockdown = 1
 
 [Manufacturer]
@@ -16,9 +17,13 @@ PnpLockdown = 1
 
 [Standard.NTamd64]
 %DeviceName% = USB_Install, USB\VID_086A&PID_0003&MI_02
+%DeviceName% = USB_Install, USB\VID_086A&PID_0003
+%DeviceName% = USB_Install, USB\VID_086A&PID_0003&REV_0001
 
 [Standard.NTarm64]
 %DeviceName% = USB_Install, USB\VID_086A&PID_0003&MI_02
+%DeviceName% = USB_Install, USB\VID_086A&PID_0003
+%DeviceName% = USB_Install, USB\VID_086A&PID_0003&REV_0001
 
 [USB_Install]
 Include = winusb.inf
