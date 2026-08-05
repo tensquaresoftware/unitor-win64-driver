@@ -27,6 +27,11 @@ std::string formatVirtualMidiLastError(const char* action)
     {
         stream << ": " << kMissingDriverFixPath;
     }
+    else if (code == ERROR_ALIAS_EXISTS)
+    {
+        stream << ": a VirtualMIDI port with this display name already exists "
+                  "(close loopMIDI entries or a leftover Bridge session, then retry)";
+    }
     return stream.str();
 }
 
@@ -94,6 +99,128 @@ bool validateVirtualMidiPortNameSet(const PortNameSet& names, std::string& error
         }
     }
     return true;
+}
+
+namespace
+{
+constexpr DWORD kInPortFlags = kTeVmFlagsParseTx | kTeVmFlagsInstantiateTx;
+constexpr DWORD kOutPortFlags = kTeVmFlagsParseRx | kTeVmFlagsInstantiateRx;
+
+std::size_t findMergedPlanIndex(
+    const MergedVirtualMidiPlan* plans,
+    std::size_t planCount,
+    const std::string& name)
+{
+    for (std::size_t index = 0; index < planCount; ++index)
+    {
+        if (plans[index].name != nullptr && *plans[index].name == name)
+        {
+            return index;
+        }
+    }
+    return planCount;
+}
+
+struct AppendMergedPlanArgs
+{
+    MergedVirtualMidiPlan* plans = nullptr;
+    std::size_t* planCount = nullptr;
+    const std::string* name = nullptr;
+    DWORD flags = 0;
+    int inIndex = -1;
+    int outIndex = -1;
+};
+
+bool appendMergedPlan(AppendMergedPlanArgs& args, std::string& errorOut)
+{
+    if (args.plans == nullptr || args.planCount == nullptr || args.name == nullptr)
+    {
+        errorOut = "VirtualMIDI appendMergedPlan received null fields";
+        return false;
+    }
+    if (*args.planCount >= kMaxMergedVirtualMidiPlans)
+    {
+        errorOut = "VirtualMIDI merged port plan exceeds capacity";
+        return false;
+    }
+    args.plans[*args.planCount].name = args.name;
+    args.plans[*args.planCount].flags = args.flags;
+    args.plans[*args.planCount].inIndex = args.inIndex;
+    args.plans[*args.planCount].outIndex = args.outIndex;
+    ++(*args.planCount);
+    return true;
+}
+
+bool mergeInPortNames(
+    const PortNameSet& names,
+    MergedVirtualMidiPlan* plans,
+    std::size_t& planCount,
+    std::string& errorOut)
+{
+    for (std::size_t index = 0; index < names.inCount; ++index)
+    {
+        const std::size_t planIndex =
+            findMergedPlanIndex(plans, planCount, names.inNames[index]);
+        if (planIndex == planCount)
+        {
+            AppendMergedPlanArgs args;
+            args.plans = plans;
+            args.planCount = &planCount;
+            args.name = &names.inNames[index];
+            args.flags = kInPortFlags;
+            args.inIndex = static_cast<int>(index);
+            if (!appendMergedPlan(args, errorOut))
+            {
+                return false;
+            }
+            continue;
+        }
+        plans[planIndex].flags |= kInPortFlags;
+        plans[planIndex].inIndex = static_cast<int>(index);
+    }
+    return true;
+}
+
+bool mergeOutPortNames(
+    const PortNameSet& names,
+    MergedVirtualMidiPlan* plans,
+    std::size_t& planCount,
+    std::string& errorOut)
+{
+    for (std::size_t index = 0; index < names.outCount; ++index)
+    {
+        const std::size_t planIndex =
+            findMergedPlanIndex(plans, planCount, names.outNames[index]);
+        if (planIndex == planCount)
+        {
+            AppendMergedPlanArgs args;
+            args.plans = plans;
+            args.planCount = &planCount;
+            args.name = &names.outNames[index];
+            args.flags = kOutPortFlags;
+            args.outIndex = static_cast<int>(index);
+            if (!appendMergedPlan(args, errorOut))
+            {
+                return false;
+            }
+            continue;
+        }
+        plans[planIndex].flags |= kOutPortFlags;
+        plans[planIndex].outIndex = static_cast<int>(index);
+    }
+    return true;
+}
+} // namespace
+
+bool buildMergedVirtualMidiPlans(
+    const PortNameSet& names,
+    MergedVirtualMidiPlan* plans,
+    std::size_t& planCount,
+    std::string& errorOut)
+{
+    planCount = 0;
+    return mergeInPortNames(names, plans, planCount, errorOut)
+        && mergeOutPortNames(names, plans, planCount, errorOut);
 }
 
 #endif // _WIN32

@@ -6,6 +6,8 @@
 
 #ifdef _WIN32
 #include "Midi/TeVirtualMidiApi.h"
+
+struct MergedVirtualMidiPlan;
 #endif
 
 #include <cstddef>
@@ -48,22 +50,10 @@ private:
         TeVmMidiPortHandle* handleOut = nullptr;
     };
 
-    struct PortGroupCreate
-    {
-        const std::string* names = nullptr;
-        std::size_t count = 0;
-        DWORD flags = 0;
-        TeVmMidiPortHandle* handlesOut = nullptr;
-        TeVmMidiDataCallback callback = nullptr;
-        OutPortCookie* cookies = nullptr;
-    };
-
     bool ensureApiLoaded(std::string& errorOut);
     bool createDirectionalPort(const PortCreateRequest& request, std::string& errorOut);
-    bool createPortGroup(
-        const PortGroupCreate& group,
-        std::size_t& countOut,
-        std::string& errorOut);
+    bool createOneMergedPort(const MergedVirtualMidiPlan& plan, std::string& errorOut);
+    bool createMergedPortSet(const PortNameSet& names, std::string& errorOut);
     void closeAllPorts() noexcept;
     void unloadApi() noexcept;
     void forwardHostToDevice(

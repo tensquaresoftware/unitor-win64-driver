@@ -161,23 +161,39 @@ void VirtualMidiBackend::unloadApi() noexcept
 void VirtualMidiBackend::closeAllPorts() noexcept
 {
     // Never call closePort_ from outMidiDataCallback — teVirtualMIDI deadlock risk.
+    // IN/OUT may share one handle for the same AD-5 display name — close each once.
     if (closePort_ != nullptr)
     {
+        TeVmMidiPortHandle unique[
+            kMaxMidiBackendInPorts + kMaxMidiBackendOutPorts] = {};
+        std::size_t uniqueCount = 0;
+        auto remember = [&](TeVmMidiPortHandle handle) {
+            if (handle == nullptr)
+            {
+                return;
+            }
+            for (std::size_t index = 0; index < uniqueCount; ++index)
+            {
+                if (unique[index] == handle)
+                {
+                    return;
+                }
+            }
+            unique[uniqueCount++] = handle;
+        };
         for (std::size_t index = 0; index < inPortCount_; ++index)
         {
-            if (inPorts_[index] != nullptr)
-            {
-                closePort_(inPorts_[index]);
-                inPorts_[index] = nullptr;
-            }
+            remember(inPorts_[index]);
+            inPorts_[index] = nullptr;
         }
         for (std::size_t index = 0; index < outPortCount_; ++index)
         {
-            if (outPorts_[index] != nullptr)
-            {
-                closePort_(outPorts_[index]);
-                outPorts_[index] = nullptr;
-            }
+            remember(outPorts_[index]);
+            outPorts_[index] = nullptr;
+        }
+        for (std::size_t index = 0; index < uniqueCount; ++index)
+        {
+            closePort_(unique[index]);
         }
     }
 
@@ -224,39 +240,58 @@ bool VirtualMidiBackend::createDirectionalPort(
     return true;
 }
 
-bool VirtualMidiBackend::createPortGroup(
-    const PortGroupCreate& group,
-    std::size_t& countOut,
+bool VirtualMidiBackend::createOneMergedPort(
+    const MergedVirtualMidiPlan& plan,
     std::string& errorOut)
 {
-    if (group.names == nullptr || group.handlesOut == nullptr)
+    TeVmMidiPortHandle handle = nullptr;
+    PortCreateRequest request;
+    request.utf8Name = plan.name;
+    request.flags = plan.flags;
+    request.handleOut = &handle;
+    if (plan.outIndex >= 0)
     {
-        errorOut = "VirtualMIDI createPortGroup received null buffers";
+        const std::size_t outIndex = static_cast<std::size_t>(plan.outIndex);
+        outCookies_[outIndex].backend = this;
+        outCookies_[outIndex].outPortIndex = outIndex;
+        request.callback = &VirtualMidiBackend::outMidiDataCallback;
+        request.callbackInstance =
+            reinterpret_cast<DWORD_PTR>(&outCookies_[outIndex]);
+    }
+    if (!createDirectionalPort(request, errorOut))
+    {
+        return false;
+    }
+    if (plan.inIndex >= 0)
+    {
+        inPorts_[static_cast<std::size_t>(plan.inIndex)] = handle;
+    }
+    if (plan.outIndex >= 0)
+    {
+        outPorts_[static_cast<std::size_t>(plan.outIndex)] = handle;
+    }
+    return true;
+}
+
+bool VirtualMidiBackend::createMergedPortSet(
+    const PortNameSet& names,
+    std::string& errorOut)
+{
+    MergedVirtualMidiPlan plans[kMaxMergedVirtualMidiPlans];
+    std::size_t planCount = 0;
+    if (!buildMergedVirtualMidiPlans(names, plans, planCount, errorOut))
+    {
         return false;
     }
 
-    for (std::size_t index = 0; index < group.count; ++index)
+    inPortCount_ = names.inCount;
+    outPortCount_ = names.outCount;
+    for (std::size_t index = 0; index < planCount; ++index)
     {
-        PortCreateRequest request;
-        request.utf8Name = &group.names[index];
-        request.flags = group.flags;
-        request.callback = group.callback;
-        request.callbackInstance = 0;
-        request.handleOut = &group.handlesOut[countOut];
-
-        if (group.cookies != nullptr)
-        {
-            group.cookies[index].backend = this;
-            group.cookies[index].outPortIndex = index;
-            request.callbackInstance =
-                reinterpret_cast<DWORD_PTR>(&group.cookies[index]);
-        }
-
-        if (!createDirectionalPort(request, errorOut))
+        if (!createOneMergedPort(plans[index], errorOut))
         {
             return false;
         }
-        ++countOut;
     }
     return true;
 }
@@ -308,21 +343,9 @@ bool VirtualMidiBackend::CreatePortSet(const PortNameSet& names, std::string& er
         return false;
     }
 
-    // Product IN → apps see MIDI IN (TX). Product OUT → MIDI OUT (RX + callback).
-    constexpr DWORD kInFlags = kTeVmFlagsParseTx | kTeVmFlagsInstantiateTx;
-    constexpr DWORD kOutFlags = kTeVmFlagsParseRx | kTeVmFlagsInstantiateRx;
-
-    const PortGroupCreate inGroup{
-        names.inNames, names.inCount, kInFlags, inPorts_, nullptr, nullptr};
-    const PortGroupCreate outGroup{
-        names.outNames,
-        names.outCount,
-        kOutFlags,
-        outPorts_,
-        &VirtualMidiBackend::outMidiDataCallback,
-        outCookies_};
-    if (!createPortGroup(inGroup, inPortCount_, errorOut)
-        || !createPortGroup(outGroup, outPortCount_, errorOut))
+    // teVirtualMIDI requires unique display names. AD-5 reuses "MT4 Port N" on IN
+    // and OUT — create one port per distinct name with combined TX/RX flags.
+    if (!createMergedPortSet(names, errorOut))
     {
         closeAllPorts();
         return false;
