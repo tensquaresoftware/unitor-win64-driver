@@ -9,6 +9,7 @@ After a successful bind on Windows 10 x64 or Windows 11 x64:
 - Device Manager shows the MT4 MIDI interface associated with WinUSB
 - Registry exposes DeviceInterfaceGUID `{aa209017-cf8a-49ad-a0e7-701187ff7e05}`
 - Bridge can open the device with `Bridge --open-device`
+- With VirtualMIDI installed, Bridge can create stable `MT4 Port N` endpoints and run notes/CC with `--start-session` / `--run-midi`
 
 Hardware ID targeted by the package:
 
@@ -60,7 +61,7 @@ No WDF/WinUSB co-installer DLLs are shipped (Win10/11 in-box WinUSB).
 {aa209017-cf8a-49ad-a0e7-701187ff7e05}
 ```
 
-4. From a build of Bridge:
+4. From a build of Bridge — open-only smoke:
 
 ```text
 Bridge.exe --open-device
@@ -69,7 +70,23 @@ Bridge.exe --open-device
 - Exit code `0` and no stderr diagnostic ⇒ open succeeded (`IsOpen()` true).
 - Non-zero exit + English stderr ⇒ fail closed (missing bind, wrong interface, or API error). Never treat empty I/O as success.
 
-Without `--open-device`, Bridge only runs the DeviceProfile smoke checks and exits `0` on success (no USB open).
+5. Epic 1 MIDI path (requires teVirtualMIDI / loopMIDI so `teVirtualMIDI.dll` is present):
+
+```text
+Bridge.exe --start-session
+```
+
+or equivalently:
+
+```text
+Bridge.exe --run-midi
+```
+
+- Creates 2 IN + 4 OUT Virtual Ports named `MT4 Port 1` … `MT4 Port 4`
+- Runs the notes/CC pump until Ctrl+C (or console close)
+- Fail closed with English stderr if WinUSB open or VirtualMIDI is missing
+
+Without `--open-device` / `--start-session` / `--run-midi`, Bridge only runs the DeviceProfile smoke checks and exits `0` on success (no USB open, no Virtual Ports).
 
 ## Bridge flags
 
@@ -77,12 +94,20 @@ Without `--open-device`, Bridge only runs the DeviceProfile smoke checks and exi
 |---|---|
 | *(none)* | Profile smoke only — does not open WinUSB |
 | `--open-device` | GUID-first WinUSB open; fail closed with English stderr on error |
-| `--dev-zadig` | With `--open-device`: allow Zadig fallback if the project GUID is absent |
+| `--dev-zadig` | With `--open-device` or session flags: allow Zadig fallback if the project GUID is absent |
+| `--start-session` | Open MT4, create `MT4 Port N` Virtual Ports, run notes/CC pump (Ctrl+C to stop) |
+| `--run-midi` | Alias of `--start-session` |
 
-Example (contributor Zadig machine):
+Example (contributor Zadig machine, open only):
 
 ```text
 Bridge.exe --open-device --dev-zadig
+```
+
+Example (notes/CC session with Zadig fallback):
+
+```text
+Bridge.exe --start-session --dev-zadig
 ```
 
 Default builds still prefer the project GUID and fail closed without `--dev-zadig` when the GUID is missing.
@@ -95,8 +120,10 @@ If you use Zadig:
 
 1. Bind WinUSB to composite interface **MI_02** (not a random sibling interface).
 2. Prefer installing so a DeviceInterfaceGUID is present (Zadig usually writes one).
-3. Open with `Bridge.exe --open-device --dev-zadig` so the Bridge may fall back when `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` is missing.
+3. Open with `Bridge.exe --open-device --dev-zadig` (or `--start-session --dev-zadig`) so the Bridge may fall back when `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` is missing.
 4. Revert to the INF package before validating community install docs or Story 4.1 installer UX.
+
+Zadig fallback refuses to open when **more than one** USB device matches the MT4 hardware ID (same fail-closed rule as the GUID path).
 
 ## Signing note
 
