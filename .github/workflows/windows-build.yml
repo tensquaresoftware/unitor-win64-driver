@@ -82,6 +82,9 @@ jobs:
           if (-not $exe) { throw "Bridge.exe not found under builds/ci" }
           Write-Host "Built: $($exe.FullName)"
 
+      - name: Run BridgeTests
+        run: ctest --test-dir builds/ci -C Release --output-on-failure
+
   ci-success:
     name: ci-success
     needs: [quality-gate, build]
@@ -93,4 +96,4 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: All CI legs passed
-        run: echo "quality-gate and build passed; merge gate green."
+        run: echo "quality-gate, build, and BridgeTests passed; merge gate green."

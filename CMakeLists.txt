@@ -25,6 +25,7 @@ add_executable(Bridge
     src/Midi/VirtualMidiBackend.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
+    src/Protocol/EmagicMapperSmokeSupport.cpp
     src/Protocol/MidiMessageFramer.cpp
     src/Usb/WinUsbTransport.cpp
     src/Usb/WinUsbTransportInit.cpp
@@ -49,3 +50,35 @@ if(WIN32)
             ole32
     )
 endif()
+
+# --- BridgeTests: Profile + Protocol only (no WinUSB / VirtualMIDI) ---
+include(FetchContent)
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        f7cfc885ba68c317d20cbbfa6b8aa8ecbcbde19f # v3.8.0
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(Catch2)
+
+add_executable(BridgeTests
+    tests/DeviceProfileTests.cpp
+    tests/EmagicCableMapperTests.cpp
+    src/Profile/DeviceProfile.cpp
+    src/Protocol/EmagicCableMapper.cpp
+    src/Protocol/EmagicMapperSmokeSupport.cpp
+)
+
+target_include_directories(BridgeTests
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
+target_link_libraries(BridgeTests
+    PRIVATE
+        Catch2::Catch2WithMain
+)
+
+enable_testing()
+# TARGET_FILE resolves per-config output dirs (e.g. builds/ci/Release on VS).
+add_test(NAME BridgeTests COMMAND $<TARGET_FILE:BridgeTests>)

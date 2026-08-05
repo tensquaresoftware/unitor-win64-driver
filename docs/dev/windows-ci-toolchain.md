@@ -16,7 +16,7 @@ Pinned merge gate for the Bridge usermode host (WinUSB + VirtualMIDI). Windows x
 | Job | Runner | Role |
 |---|---|---|
 | `quality-gate` | `ubuntu-latest` | `scripts/quality/lint-touched.py` on the PR/push C++ diff (`conventions.md` §3) |
-| `build` | `windows-2022` (not `windows-latest`) | Runs after `quality-gate`; CMake configure + Release build; assert `Bridge.exe` under `builds/ci` |
+| `build` | `windows-2022` (not `windows-latest`) | After `quality-gate`: CMake configure + Release build; assert `Bridge.exe`; run `BridgeTests` via `ctest` (failure fails the job) |
 | `ci-success` | `ubuntu-latest` | Green only when both upstream jobs succeed (`always()` + explicit success checks) |
 
 Also: `permissions: contents: read`, and `concurrency` cancels superseded runs on the same PR/branch.
@@ -26,9 +26,12 @@ Also: `permissions: contents: read`, and `concurrency` cancels superseded runs o
 ```text
 cmake -S . -B builds/ci -A x64
 cmake --build builds/ci --config Release
+ctest --test-dir builds/ci -C Release --output-on-failure
 ```
 
 CMake minimum (project): 3.20. Generator: left to CMake auto-detect on the runner (Visual Studio 2022 on `windows-2022`). Do not hard-pin VS 18 / 2026 generators for V1.
+
+Configure fetches Catch2 (pinned commit `f7cfc885…` / tag `v3.8.0` via FetchContent) for the `BridgeTests` target. Network access on the runner is required for the first configure (or a warm CMake cache).
 
 ### Quality gate (CI)
 
@@ -37,16 +40,25 @@ CMake minimum (project): 3.20. Generator: left to CMake auto-detect on the runne
 - Dependencies: `python3 -m pip install -r scripts/quality/requirements.txt`
 - Do **not** use `--all` as a failing CI gate (anti-drift on touched hunks only).
 
+### What CI covers (automated)
+
+- Touched-diff C++ quality lint (`quality-gate`)
+- Windows x64 Release build of `Bridge.exe`
+- Lean unit tests (`BridgeTests`): synthetic checks of MT4 `DeviceProfile` + `EmagicCableMapper` (+ shared mapper smoke vectors) — **no** live MT4 hardware, WinUSB, VirtualMIDI, or DAW
+
 ## Local checks
 
-### Windows x64 build
+### Windows x64 build + unit tests
 
 ```text
 cmake -S . -B builds/debug -A x64
 cmake --build builds/debug --config Debug
+ctest --test-dir builds/debug -C Debug --output-on-failure
 ```
 
 Outputs must stay under `builds/`. Never use repo-root `build/` as the documented out directory.
+
+Optional CLI smoke (same mapper vectors as unit tests): `Bridge.exe --test-mapper`
 
 ### Quality lint (any OS with git + Python)
 
@@ -75,16 +87,6 @@ Keep these on a Windows 10/11 x64 machine with hardware / DAW as needed:
 - SysEx, clock, and long soak sessions
 - Epic 1 hardware smoke checklist: `docs/tests/smoke-epic1-mt4.md`
 
-## Deferred: C++ unit tests without hardware
-
-No CMake `Tests` target yet. Pure-logic candidates for a follow-up ticket (not this pipeline):
-
-- `src/Protocol/EmagicCableMapper.*` — Emagic F5 cable encode/decode
-- `src/Profile/DeviceProfile.*` — declarative VID/PID / port profile
-- `src/App/MapperSmoke.*` — existing synthetic mapper smoke (`--test-mapper`)
-
-Tracked in `_bmad-output/implementation-artifacts/deferred-work.md`.
-
 ## Matrix-Control: reused vs omitted
 
 | Reused (adapted) | Omitted on purpose |
@@ -93,3 +95,4 @@ Tracked in `_bmad-output/implementation-artifacts/deferred-work.md`.
 | `ci-success` as sole merge signal | Draft-PR fast tier / `ci-full` label |
 | `actions/checkout@v5` | JUCE checkout / plugin presets |
 | Push/PR base resolution for lint | `release.yml` / Authenticode packaging |
+| Catch2 `BridgeTests` in `build` job | Hardware / DAW automation |

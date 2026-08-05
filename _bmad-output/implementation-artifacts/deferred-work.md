@@ -58,3 +58,13 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-ci-cd-windows-pipeline.md`
   summary: Add lean C++ unit tests without hardware (EmagicCableMapper, DeviceProfile, MapperSmoke) plus a CMake Tests target and CI job.
   evidence: CI/CD ticket deliberately deferred the test factory — no Tests target today; keep the merge gate lean until the pure-logic surface is wired.
+
+## Deferred from: spec-unit-tests-without-hardware.md (2026-08-05)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-unit-tests-without-hardware.md`
+  summary: Cache Catch2 / `_deps` across Windows CI runs to cut configure+compile time on clean runners.
+  evidence: Every clean `windows-2022` job re-fetches and rebuilds Catch2; not required for the lean merge gate but adds flaky network time.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-unit-tests-without-hardware.md`
+  summary: Add a unit test for encode when buffer fits MIDI but has no room for trailing 0xFF pad.
+  evidence: `appendTrailingPad` silently omits the end marker when capacity is exhausted; current smoke always uses a large buffer that always expects 0xFF.
