@@ -267,8 +267,9 @@ bool runFramerCoreTests()
 } // namespace
 
 bool runFramerMtcTests();
+bool runFramerSysexTests();
 
 bool runFramerTests()
 {
-    return runFramerCoreTests() && runFramerMtcTests();
+    return runFramerCoreTests() && runFramerMtcTests() && runFramerSysexTests();
 }

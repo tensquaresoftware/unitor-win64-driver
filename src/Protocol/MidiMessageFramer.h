@@ -7,6 +7,10 @@
 #include <functional>
 #include <vector>
 
+// Hard SysEx hold cap (device→host). V1 Matrix frames (275 / 351 B) fit; do not
+// grow unbounded. Oversize hits are counted — not silent drops.
+inline constexpr std::size_t kMaxSysexHoldBytes = 1024;
+
 using MidiFramedMessageSink =
     std::function<void(const uint8_t* midiBytes, std::size_t byteCount)>;
 
@@ -18,6 +22,10 @@ public:
         const uint8_t* bytes,
         std::size_t byteCount,
         const MidiFramedMessageSink& sink);
+
+    // Oversize SysEx that hit kMaxSysexHoldBytes (English-diagnosable failure path).
+    std::uint64_t OversizeSysexRejectCount() const noexcept;
+    std::uint64_t ConsumeOversizeSysexRejectCount() noexcept;
 
 private:
     void emitBuffer(const MidiFramedMessageSink& sink);
@@ -38,6 +46,7 @@ private:
     uint8_t runningStatus_ = 0;
     std::size_t expectedLength_ = 0;
     bool inSysex_ = false;
+    std::uint64_t oversizeSysexRejectCount_ = 0;
 
     // MTC quarter-frame (0xF1) may interrupt an incomplete channel message or an
     // open SysEx hold without aborting them. Unlike one-byte realtime (>= 0xF8),

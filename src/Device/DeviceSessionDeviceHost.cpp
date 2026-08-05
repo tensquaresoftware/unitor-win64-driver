@@ -1,6 +1,7 @@
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionSupport.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -35,6 +36,23 @@ void DeviceSession::sendFramedToHost(
     deviceHostCounters_.AddSendOk();
 }
 
+void DeviceSession::noteFramerOversizeRejects(
+    std::size_t inPortIndex,
+    uint8_t cableIndex,
+    std::uint64_t rejectCount)
+{
+    if (rejectCount == 0)
+    {
+        return;
+    }
+    recordPumpFailure(formatPortCableFailure(
+        "Device→host SysEx incomplete or corrupt",
+        inPortIndex,
+        cableIndex,
+        "dump rejected (oversize hold cap and/or nested F0 restart; kMaxSysexHoldBytes="
+            + std::to_string(kMaxSysexHoldBytes) + ")"));
+}
+
 void DeviceSession::forwardDeviceMidi(
     uint8_t cableIndex,
     const uint8_t* midiBytes,
@@ -58,6 +76,23 @@ void DeviceSession::forwardDeviceMidi(
         [this, inPortIndex, cableIndex](const uint8_t* framed, std::size_t framedSize) {
             sendFramedToHost(inPortIndex, cableIndex, framed, framedSize);
         });
+
+    const std::uint64_t rejects = inFramers_[inPortIndex].ConsumeOversizeSysexRejectCount();
+    if (rejects > 0)
+    {
+        noteFramerOversizeRejects(inPortIndex, cableIndex, rejects);
+    }
+}
+
+void DeviceSession::failReaderOnReadBulkError(const std::string& error)
+{
+    const std::size_t discarded = clearHostOutboundQueue();
+    std::string detail = "Device→host ReadBulk failed: " + error;
+    if (discarded > 0)
+    {
+        detail += "; discarded " + std::to_string(discarded) + " queued host→device message(s)";
+    }
+    recordPumpFailure(detail);
 }
 
 void DeviceSession::readerLoop()
@@ -75,29 +110,27 @@ void DeviceSession::readerLoop()
         std::size_t bytesRead = 0;
         std::string error;
         const bool readOk = transport_.ReadBulk(readBuffer, capacity, bytesRead, error);
-
         if (stopPump_.load())
         {
             break;
         }
         if (!readOk && transport_.LastReadTimedOut())
         {
+            drainHostOutbound();
             continue;
         }
         if (!readOk)
         {
-            recordPumpFailure("Device→host ReadBulk failed: " + error);
+            failReaderOnReadBulkError(error);
             break;
         }
-        if (bytesRead == 0)
+        if (bytesRead == 0 || processBulkRead(readBuffer, bytesRead, error))
         {
+            drainHostOutbound();
             continue;
         }
-        if (!processBulkRead(readBuffer, bytesRead, error))
-        {
-            recordPumpFailure("Device→host DecodeFromDevice failed: " + error);
-            break;
-        }
+        recordPumpFailure("Device→host DecodeFromDevice failed: " + error);
+        break;
     }
 }
 

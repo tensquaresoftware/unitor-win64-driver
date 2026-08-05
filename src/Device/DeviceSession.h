@@ -8,6 +8,7 @@
 #include "Protocol/EmagicCableMapper.h"
 #include "Protocol/MidiMessageFramer.h"
 #include "Device/DeviceHostCounters.h"
+#include "Device/HostOutboundQueue.h"
 #include "Usb/WinUsbTransport.h"
 
 #include <atomic>
@@ -69,6 +70,7 @@ private:
     bool startPump(std::string& errorOut);
     void stopPumpAndJoin() noexcept;
     void readerLoop();
+    void failReaderOnReadBulkError(const std::string& error);
     bool processBulkRead(
         const uint8_t* readBuffer,
         std::size_t bytesRead,
@@ -85,6 +87,12 @@ private:
         const uint8_t* midiBytes,
         std::size_t byteCount,
         HostEncodeScratch& scratch);
+    void drainHostOutbound();
+    void drainHostOutboundLocked();
+    void failHostOutboundDrain(const std::string& reason);
+    bool writeHostOutboundItem(const HostOutboundItem& item, HostEncodeScratch& scratch);
+    // Clears queued host→device work; returns how many messages were discarded.
+    std::size_t clearHostOutboundQueue() noexcept;
     void appendPendingProductMidi(
         std::vector<std::pair<uint8_t, std::vector<uint8_t>>>& pending,
         uint8_t cableIndex,
@@ -103,6 +111,10 @@ private:
         uint8_t cableIndex,
         const uint8_t* midiBytes,
         std::size_t byteCount);
+    void noteFramerOversizeRejects(
+        std::size_t inPortIndex,
+        uint8_t cableIndex,
+        std::uint64_t rejectCount);
     void noteBulkReadCounters(std::size_t bulkBytes, std::size_t demuxSpans);
     void recordPumpFailure(const std::string& message);
     std::size_t findInPortIndex(uint8_t cableIndex) const noexcept;
@@ -133,4 +145,6 @@ private:
 
     MidiMessageFramer inFramers_[kMaxMidiBackendInPorts];
     DeviceHostCounters deviceHostCounters_;
+    HostOutboundQueue hostOutbound_;
+    std::mutex hostOutboundMutex_;
 };

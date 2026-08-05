@@ -17,18 +17,22 @@ add_executable(Bridge
     src/App/MapperSmoke.cpp
     src/App/FramerSmoke.cpp
     src/App/FramerMtcSmoke.cpp
+    src/App/FramerSysexSmoke.cpp
     src/App/MidiSessionCli.cpp
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionDeviceHost.cpp
+    src/Device/DeviceSessionHostOutbound.cpp
     src/Device/DeviceSessionManager.cpp
     src/Device/DeviceHostCounters.cpp
     src/Device/DeviceSessionSupport.cpp
+    src/Device/HostOutboundQueue.cpp
     src/Midi/VirtualMidiBackend.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp
     src/Protocol/EmagicMapperRealtimeSmoke.cpp
     src/Protocol/EmagicMapperMtcSmoke.cpp
+    src/Protocol/EmagicMapperSysexSmoke.cpp
     src/Protocol/MidiMessageFramer.cpp
     src/Usb/WinUsbTransport.cpp
     src/Usb/WinUsbTransportInit.cpp
@@ -68,11 +72,16 @@ add_executable(BridgeTests
     tests/DeviceProfileTests.cpp
     tests/EmagicCableMapperTests.cpp
     tests/MidiMessageFramerTests.cpp
+    tests/MidiMessageFramerSysexTests.cpp
+    tests/HostOutboundQueueTests.cpp
+    tests/TeVirtualMidiLimitsTests.cpp
+    src/Device/HostOutboundQueue.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp
     src/Protocol/EmagicMapperRealtimeSmoke.cpp
     src/Protocol/EmagicMapperMtcSmoke.cpp
+    src/Protocol/EmagicMapperSysexSmoke.cpp
     src/Protocol/MidiMessageFramer.cpp
 )
 

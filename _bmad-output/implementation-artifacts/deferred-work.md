@@ -1,10 +1,19 @@
 # Deferred work
 
+## Deferred from: code review of 2-3-transparent-sysex-transport-with-burst-buffering.md (2026-08-05)
+
+- Incomplete SysEx under hold cap with no `0xF7`: no idle-timeout / session failure in 2.3 — AC4 for this story = oversize, queue overflow, nested `0xF0` abandon; revisit if Win10 lab shows hangs.
+- Win10 SysEx hardware matrix / bilan blank — deferred as manual lab gate (same honesty bar as 2.1/2.2); not a code blocker for this review.
+- No DeviceSession pump-level burst integration test in 2.3 — AC2 accepted as queue unit tests + framer/mapper smokes + Win10 lab checklist.
+- Trailing bytes after oversize SysEx `Reset()` in the same `Push` span are dropped without an extra reject count (framer cold-start after abort; corrupt-stream edge).
+- After the first device→host `SendToHost` failure, remaining demuxed frames from the same bulk read are skipped once `stopPump_` is set (general pump-fail semantics; not unique to SysEx).
+
 ## Deferred from: quick-dev spec-epic1-in-mute-and-out1-f5.md (2026-08-05)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-epic1-in-mute-and-out1-f5.md`
-  summary: SysEx over 1024 bytes is dropped silently by MidiMessageFramer with no counter bump
-  evidence: Epic 1 notes/CC smoke only; full SysEx observability belongs with Epic 2
+  summary: SysEx over 1024 bytes is dropped silently by MidiMessageFramer with no counter bump — **raised in story 2.3** (`ConsumeOversizeSysexRejectCount` + session English failure)
+  evidence: Epic 1 notes/CC smoke only; full SysEx observability belongs with Epic 2; closed by 2.3 observability path
+  status: resolved-by-2-3
 - source_spec: `_bmad-output/implementation-artifacts/spec-epic1-in-mute-and-out1-f5.md`
   summary: Reader-thread device-host counter lines race CLI std::cout without a shared lock
   evidence: Surfaced in review; pre-existing multi-writer console pattern, not unique to counters
@@ -33,7 +42,7 @@
 - Hardware AC1/AC2 round-trip proof (notes+CC on all 2 IN + 4 OUT via ShowMIDI/DAW) — deferred: infra OK for story close; Windows smoke remains a manual checklist.
 - CTRL_CLOSE_EVENT may terminate the process before `DeviceSession::Stop()` finishes closing Virtual Ports and WinUSB.
 - Device→host path can forward raw Emagic demux spans that are not complete MIDI messages (no message framer in 1.6) — **patched** 2026-08-05 (`MidiMessageFramer`).
-- `SendToHost` does not reject payloads above teVirtualMIDI default max Sysex length — revisit with Epic 2 SysEx.
+- `SendToHost` does not reject payloads above teVirtualMIDI default max Sysex length — **raised in story 2.3** (reject above 65535 with English diagnostic).
 
 ## Deferred from: code review of 1-5-virtualmidi-backend-and-stable-mt4-port-names.md (2026-08-05)
 

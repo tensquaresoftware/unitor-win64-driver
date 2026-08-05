@@ -79,6 +79,18 @@ TEST_CASE("mapper smoke decode MTC quarter-frame and full-frame", "[mapper][mtc]
     requireSmokeOk(runEmagicMapperSmokeDecodeMtc(requireMt4Profile(), err), err);
 }
 
+TEST_CASE("mapper smoke encode librarian-sized SysEx opaque carry", "[mapper][sysex]")
+{
+    std::ostringstream err;
+    requireSmokeOk(runEmagicMapperSmokeEncodeSysex(requireMt4Profile(), err), err);
+}
+
+TEST_CASE("mapper smoke decode librarian-sized SysEx opaque carry", "[mapper][sysex]")
+{
+    std::ostringstream err;
+    requireSmokeOk(runEmagicMapperSmokeDecodeSysex(requireMt4Profile(), err), err);
+}
+
 TEST_CASE("EncodeToDevice rejects non-product OUT cable", "[mapper]")
 {
     const DeviceProfile& mt4 = requireMt4Profile();

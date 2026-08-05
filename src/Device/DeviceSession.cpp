@@ -5,11 +5,6 @@
 #include <sstream>
 #include <system_error>
 
-namespace
-{
-constexpr std::size_t kEncodeBufferCapacity = 4096;
-}
-
 DeviceSession::~DeviceSession()
 {
     Stop();
@@ -150,84 +145,6 @@ DeviceHostCounterSnapshot DeviceSession::CopyDeviceHostCounters() const noexcept
     return deviceHostCounters_.Snapshot();
 }
 
-void DeviceSession::hostToDeviceThunk(
-    void* context,
-    std::size_t outPortIndex,
-    const uint8_t* midiBytes,
-    std::size_t byteCount)
-{
-    auto* session = static_cast<DeviceSession*>(context);
-    if (session == nullptr)
-    {
-        return;
-    }
-    session->handleHostMidi(outPortIndex, midiBytes, byteCount);
-}
-
-void DeviceSession::handleHostMidi(
-    std::size_t outPortIndex,
-    const uint8_t* midiBytes,
-    std::size_t byteCount)
-{
-    if (midiBytes == nullptr || byteCount == 0)
-    {
-        return;
-    }
-
-    // Hold usbIoMutex_ through encode + WriteBulk so concurrent OUT callbacks
-    // cannot interleave Emagic F5 frames, and Stop cannot Close mid-write.
-    uint8_t encodeBytes[kEncodeBufferCapacity] = {};
-    HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
-    std::lock_guard<std::mutex> lock(usbIoMutex_);
-    if (!encodeHostMidiLocked(outPortIndex, midiBytes, byteCount, scratch))
-    {
-        return;
-    }
-    if (stopPump_.load() || !running_.load())
-    {
-        return;
-    }
-
-    std::string error;
-    if (!transport_.WriteBulk(scratch.bytes, scratch.size, error))
-    {
-        recordPumpFailure(formatPortCableFailure(
-            "Host→device WriteBulk", outPortIndex, scratch.cableIndex, error));
-    }
-}
-
-bool DeviceSession::encodeHostMidiLocked(
-    std::size_t outPortIndex,
-    const uint8_t* midiBytes,
-    std::size_t byteCount,
-    HostEncodeScratch& scratch)
-{
-    if (stopPump_.load() || !running_.load() || mapper_ == nullptr || midiBackend_ == nullptr)
-    {
-        return false;
-    }
-    if (outPortIndex >= outPortCount_)
-    {
-        std::ostringstream stream;
-        stream << "Host→device rejected invalid OUT port index " << outPortIndex;
-        recordPumpFailure(stream.str());
-        return false;
-    }
-
-    scratch.cableIndex = outCableByPort_[outPortIndex];
-    EncodeRequest request{scratch.cableIndex, midiBytes, byteCount};
-    EncodeBuffer buffer{scratch.bytes, scratch.capacity, 0};
-    std::string error;
-    if (!mapper_->EncodeToDevice(request, buffer, error))
-    {
-        recordPumpFailure(formatPortCableFailure(
-            "Host→device encode", outPortIndex, scratch.cableIndex, error));
-        return false;
-    }
-    scratch.size = buffer.size;
-    return true;
-}
-
 bool DeviceSession::openTransportOnly(
     const DeviceSessionStartRequest& request,
     std::string& errorOut)
@@ -262,6 +179,7 @@ bool DeviceSession::startPump(std::string& errorOut)
 
     deviceHostCounters_.Reset();
     resetInFramers();
+    (void)clearHostOutboundQueue();
 
     stopPump_.store(false);
     // Accept host→device as soon as the sink is live (before Start returns).
@@ -348,14 +266,15 @@ void DeviceSession::Stop() noexcept
 
     {
         std::lock_guard<std::mutex> lock(usbIoMutex_);
-        // Drop sink + running_ before DestroyPortSet so callbacks finish WriteBulk
-        // under this lock or bail without touching a closed transport.
+        // Drop sink + running_ before clearing the queue / DestroyPortSet so a late
+        // VirtualMIDI callback cannot enqueue work that will never drain.
         if (midiBackend_ != nullptr)
         {
             midiBackend_->SetHostToDeviceSink(nullptr, nullptr);
         }
         running_.store(false);
     }
+    (void)clearHostOutboundQueue();
 
     // DestroyPortSet outside usbIoMutex_: teVirtualMIDI may wait for OUT callbacks.
     destroyPortsBestEffort();

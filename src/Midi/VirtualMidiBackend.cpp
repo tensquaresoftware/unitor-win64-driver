@@ -39,6 +39,7 @@ void VirtualMidiBackend::SetHostToDeviceSink(HostToDeviceSink sink, void* contex
 #else
 
 #include "Midi/VirtualMidiWinSupport.h"
+#include "Midi/TeVirtualMidiLimits.h"
 
 namespace
 {
@@ -77,6 +78,13 @@ bool validateSendToHostArgs(const SendToHostValidation& args, std::string& error
     if (args.midiBytes == nullptr || args.byteCount == 0)
     {
         errorOut = formatInPortIndexError("rejected empty MIDI payload", args.inPortIndex);
+        return false;
+    }
+    if (exceedsTeVmDefaultMaxSysexLength(args.byteCount))
+    {
+        errorOut = formatInPortIndexError(
+            "rejected payload above teVirtualMIDI max SysEx length (65535)",
+            args.inPortIndex);
         return false;
     }
     if (args.portHandle == nullptr)

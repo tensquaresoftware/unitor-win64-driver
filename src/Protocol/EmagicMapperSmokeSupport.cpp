@@ -397,7 +397,9 @@ bool runAllEmagicMapperSmokeTests(std::ostream& out, std::ostream& err)
         runEmagicMapperSmokeEncodeClockTransport,
         runEmagicMapperSmokeDecodeClockTransport,
         runEmagicMapperSmokeEncodeMtc,
-        runEmagicMapperSmokeDecodeMtc};
+        runEmagicMapperSmokeDecodeMtc,
+        runEmagicMapperSmokeEncodeSysex,
+        runEmagicMapperSmokeDecodeSysex};
 
     for (SmokeFn runner : runners)
     {

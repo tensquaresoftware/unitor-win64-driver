@@ -2,7 +2,6 @@
 
 namespace
 {
-constexpr std::size_t kMaxSysexHoldBytes = 1024;
 constexpr uint8_t kMtcQuarterFrame = 0xF1;
 
 bool isRealtimeStatus(uint8_t status) noexcept
@@ -28,6 +27,18 @@ void MidiMessageFramer::Reset() noexcept
     expectedLength_ = 0;
     inSysex_ = false;
     interruptActive_ = false;
+}
+
+std::uint64_t MidiMessageFramer::OversizeSysexRejectCount() const noexcept
+{
+    return oversizeSysexRejectCount_;
+}
+
+std::uint64_t MidiMessageFramer::ConsumeOversizeSysexRejectCount() noexcept
+{
+    const std::uint64_t count = oversizeSysexRejectCount_;
+    oversizeSysexRejectCount_ = 0;
+    return count;
 }
 
 void MidiMessageFramer::emitBuffer(const MidiFramedMessageSink& sink)
@@ -178,6 +189,10 @@ void MidiMessageFramer::handleStatusByte(uint8_t status, const MidiFramedMessage
 
     if (isSystemExclusiveStart(status))
     {
+        if (inSysex_)
+        {
+            ++oversizeSysexRejectCount_;
+        }
         beginSysEx();
         return;
     }
@@ -199,6 +214,7 @@ void MidiMessageFramer::appendSysexData(uint8_t data)
 {
     if (buffer_.size() >= kMaxSysexHoldBytes)
     {
+        ++oversizeSysexRejectCount_;
         Reset();
         return;
     }

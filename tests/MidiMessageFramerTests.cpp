@@ -372,3 +372,4 @@ TEST_CASE(
     REQUIRE(messages[0][0] == kMtcQuarterFrame);
     REQUIRE(messages[0][1] == 0x67);
 }
+

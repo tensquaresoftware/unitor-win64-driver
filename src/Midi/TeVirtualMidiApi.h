@@ -17,7 +17,9 @@ inline constexpr DWORD kTeVmFlagsInstantiateRx = 4;
 inline constexpr DWORD kTeVmFlagsInstantiateTx = 8;
 
 // Default queue / max sysex size used at port create.
-inline constexpr DWORD kTeVmDefaultMaxSysexLength = 65535;
+#include "Midi/TeVirtualMidiLimits.h"
+inline constexpr DWORD kTeVmDefaultMaxSysexLength =
+    static_cast<DWORD>(kTeVmDefaultMaxSysexLengthSize);
 
 #ifdef __cplusplus
 extern "C" {

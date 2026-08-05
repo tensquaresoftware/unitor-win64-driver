@@ -16,6 +16,8 @@ bool runEmagicMapperSmokeEncodeClockTransport(const DeviceProfile& profile, std:
 bool runEmagicMapperSmokeDecodeClockTransport(const DeviceProfile& profile, std::ostream& err);
 bool runEmagicMapperSmokeEncodeMtc(const DeviceProfile& profile, std::ostream& err);
 bool runEmagicMapperSmokeDecodeMtc(const DeviceProfile& profile, std::ostream& err);
+bool runEmagicMapperSmokeEncodeSysex(const DeviceProfile& profile, std::ostream& err);
+bool runEmagicMapperSmokeDecodeSysex(const DeviceProfile& profile, std::ostream& err);
 
 // Runs the synthetic checks above; prints a success line to out on pass.
 bool runAllEmagicMapperSmokeTests(std::ostream& out, std::ostream& err);
