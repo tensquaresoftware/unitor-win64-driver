@@ -9,9 +9,10 @@
 - `processBulkRead` holds `usbIoMutex_` across full `DecodeFromDevice` + allocations — busy IN can stall host→device encode (latency under load; not a wrong-cable bug once WriteBulk is locked).
 - Zadig fallback opens the first hardware-ID match without counting multiple MT4s — ambiguous multi-unit open (Epic 3 / multi-device; primary GUID path already refuses `matchCount != 1`).
 - Partial `CreatePortSet` errors omit which `MT4 Port N` / IN·OUT failed.
-- First host→device encode on Port 1 may omit F5 when mapper `currentOutCable_` starts at 0 (Port 1 == cable 0); needs hardware confirmation that device OUT select matches after init magic.
-- Hardware notes/CC round-trip proof on all 2 IN + 4 OUT — still open (was 1-6).
-- Identical IN/OUT `MT4 Port N` Windows/teVirtualMIDI collision proof — still open (was 1-5).
+- First host→device encode on Port 1 may omit F5 when mapper `currentOutCable_` starts at 0 (Port 1 == cable 0); **hardware confirmed 2026-08-05** (Boot Camp): first notes on Out 1 lit all four Out LEDs; later Out 1 OK after other ports used; CC7 Out 1 was OK.
+- **P0 lab 2026-08-05**: device DIN In 1/2 LEDs blink (notes+CC from Mac) but Ableton on PC sees no traffic on virtual `MT4 Port 1/2` IN — bulk IN → demux → `SendToHost` path (and/or Live monitor setup) not proven.
+- Hardware notes/CC **full** round-trip on all 2 IN + 4 OUT — still open (was 1-6); PC→device largely OK; device→host missing.
+- Identical IN/OUT `MT4 Port N` teVirtualMIDI collision — **patched** in lab session (merged bidirectional create); keep an eye on DAW IN/OUT pairing.
 - Shared `MidiBackend` across concurrent `DeviceSession` instances not rejected — still open (was 1-5 / Epic 3).
 
 ## Deferred from: code review of 1-6-notes-and-cc-round-trip-on-all-ports.md (2026-08-05)

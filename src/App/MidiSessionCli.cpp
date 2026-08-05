@@ -143,6 +143,6 @@ int runMt4MidiSession(bool allowZadigFallback)
     }
 
     std::cout << "DeviceSession started for MT4 with Virtual Ports\n";
-    std::cout << "MIDI I/O running — notes/CC smoke ready (Ctrl+C to stop)\n";
+    std::cout << "MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)\n";
     return waitForMidiSessionCancel(session);
 }

@@ -28,6 +28,19 @@ Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, 
 
 - Horloge MIDI, MTC, SysEx, hot-plug, multi-client, installateur public.
 
+**Retour labo (2026-08-05, Boot Camp MacBook Pro 2014)**
+
+| Étape | Résultat |
+|---|---|
+| Bind | **Cas B** (Zadig / INF lab sur nœud parent sans `MI_02`) + Bridge `--dev-zadig` |
+| Sections 1–3 | ✅ open / probe USB |
+| Section 4 | ✅ session + **2 IN / 4 OUT** visibles dans Ableton Live 12 |
+| Section 5 (boîtier → PC) | ❌ LEDs In physiques OK ; **aucun** note/CC dans Live sur les ports IN virtuels |
+| Section 6 (PC → boîtier) | ✅ globalement (notes + CC7) ; 1er envoi notes sur Out 1 a un instant allumé **les 4** LEDs Out (voir §6) |
+| Section 8 | ✅ Ctrl+C → Patch rouge, USB orange éteint, ports Live en orange (déconnectés) |
+
+**Ne pas enchaîner** `--probe-usb` puis `--start-session` sans rebuild récent : le probe réveille le boîtier ; la session doit pouvoir le reréveiller (finish + retry). Pour le smoke MIDI, lance **uniquement** `--start-session --dev-zadig`.
+
 ---
 
 ## 0. Préparer la machine et le matériel
@@ -55,10 +68,10 @@ Les correctifs de la revue d’intégration Epic 1 (verrou multi-OUT, timeout US
 
 Validation :
 
-- Dépôt présent sur le PC Windows : ✅ / ❌
-- Je suis bien à la racine du dépôt (je vois `CMakeLists.txt`, `src/`, `installer/`) : ✅ / ❌
-- VirtualMIDI / loopMIDI installé : ✅ / ❌
-- ShowMIDI (ou DAW) prêt : ✅ / ❌
+- Dépôt présent sur le PC Windows : ✅
+- Je suis bien à la racine du dépôt (je vois `CMakeLists.txt`, `src/`, `installer/`) : ✅
+- VirtualMIDI / loopMIDI installé : ✅ (installé via loopMIDI)
+  - ShowMIDI (ou DAW) prêt : ✅ (Ableton Live 12 Suite & ShowMIDI installés)
 
 📌 Remarques GD :
 
@@ -102,13 +115,13 @@ Tu dois obtenir une sortie de contrôle DeviceProfile et un **code de sortie 0**
 
 Validation :
 
-- Configure CMake OK : ✅ / ❌
-- Build OK : ✅ / ❌
-- Chemin exact de `Bridge.exe` noté : ✅ / ❌  
-  → Chemin : _________________________________
-- Lancement sans argument : sortie 0 : ✅ / ❌
+- Configure CMake OK : ✅
+- Build OK : ✅
+- Chemin exact de `Bridge.exe` noté : ✅
+  → Chemin : builds\debug\Debug\Bridge.exe
+- Lancement sans argument : sortie 0 : ✅ (je ne vois pas de code "0" de sortie, mais pas d'erreur non plus)
 
-📌 Remarques GD :
+📌 Remarques GD : Un dossier `build\` (sans « s ») à la racine n’est **pas** le chemin attendu du projet — les builds vont sous `builds\`. Tu peux supprimer `build\` s’il vient d’un essai CMake hors convention.
 
 
 
@@ -116,63 +129,75 @@ Validation :
 
 ## 2. Brancher le MT4 et vérifier WinUSB
 
-Objectif : Windows voit le MT4 sur l’interface MIDI Emagic, associée à **WinUSB**, avec le GUID du projet.
+Objectif : Windows voit le MT4 associé à **WinUSB**, et le Bridge peut l’ouvrir.
+
+**Deux cas possibles sur le terrain**
+
+| Cas | Ce que tu vois dans le Gestionnaire | Suite |
+|---|---|---|
+| **A — nœuds séparés** | Un enfant avec ID `…&MI_02` | INF du dépôt (ou Gestionnaire → INF) ; Bridge **sans** `--dev-zadig` |
+| **B — un seul nœud** (vu sur Boot Camp / MacBook) | Un seul « MT4 » / périphérique inconnu : `USB\VID_086A&PID_0003` **sans** `MI_02` | **Zadig** sur ce nœud ; Bridge **avec** `--dev-zadig` |
+
+Le numéro « 2 » est un **canal USB interne** du boîtier (celui du MIDI Emagic), **pas** un canal MIDI 1–16. Windows peut le montrer à part (`MI_02`) ou le laisser caché dans le nœud parent : dans les deux cas le Bridge doit pouvoir parler au MIDI.
 
 ### 2.1 Brancher
 
-1. Branche le MT4 en USB.
+1. Branche le MT4 en USB (de préférence un port du PC, pas un hub externe).
 2. Attends quelques secondes que Windows le détecte.
+3. Ouvre le **Gestionnaire de périphériques** et regarde si tu as un ID avec `MI_02` (cas A) ou seulement `VID_086A&PID_0003` (cas B).
 
-### 2.2 Chemin principal — INF du dépôt (préféré)
+### 2.2 Chemin principal — INF du dépôt (cas A, préféré si `MI_02` existe)
 
 1. Ouvre **PowerShell en administrateur**.
-2. Place-toi dans le dépôt, puis :
+2. Place-toi à la **racine du dépôt** (là où se trouvent `CMakeLists.txt` et `installer\`) — **pas** dans `builds\debug\Debug` :
 
 ```powershell
+cd C:\Users\Guillaume\Dev\Projects\unitor-win64-driver
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\installer\bind-mt4-winusb.ps1
 ```
 
-3. Si Windows refuse l’INF non signé : passe par le Gestionnaire de périphériques (section suivante), ou active le mode test uniquement sur machine de labo.
+3. Si PowerShell refuse les scripts : la ligne `Set-ExecutionPolicy … Bypass` ci-dessus ne change la règle **que pour cette fenêtre**.
+4. Si `pnputil` refuse l’INF **non signé** (« ne contient pas d’informations de signature numérique ») : passe au Gestionnaire (2.3) ou à Zadig (2.4).
 
-### 2.3 Variante — Gestionnaire de périphériques
+### 2.3 Variante — Gestionnaire de périphériques (cas A)
 
-1. Ouvre le **Gestionnaire de périphériques**.
-2. Trouve le nœud du MT4 / USB composite lié à l’**interface 2** (souvent sous « Périphériques USB » ou « Autres périphériques »).
-3. Clic droit → **Mettre à jour le pilote** → **Parcourir mon ordinateur**.
-4. Pointe vers le dossier `installer\` du dépôt (fichier `mt4-winusb.inf`).
-5. Termine l’assistant (accepte les avertissements de signature seulement si tu es OK sur cette machine de labo).
+1. Cible le nœud dont l’ID de matériel contient **`MI_02`** (pas le parent sans `MI_…`).
+2. Clic droit → **Mettre à jour le pilote** → **Parcourir mon ordinateur** → de préférence **Choisir dans une liste** → **Disque fourni…**
+3. Pointe vers `installer\mt4-winusb.inf` du dépôt.
+4. Accepte l’avertissement non signé seulement sur machine de labo.
 
-### 2.4 Variante contributeur — Zadig (secours seulement)
+**Piège vu en labo :** forcer « Périphérique USB composite » sur le parent **sans** `MI_02` peut laisser le périphérique en **erreur (code 10)** et **ne crée pas** d’enfants `MI_02`. Dans ce cas : désinstalle ce pilote, rebranche, et passe à Zadig (2.4).
 
-À n’utiliser **que** si l’INF ne passe pas. Bind WinUSB sur **MI_02** (pas une autre interface du composite).  
-Ensuite tu lancera le Bridge avec `--dev-zadig` en plus des autres flags.
+### 2.4 Variante contributeur — Zadig (cas B, ou si l’INF ne passe pas)
+
+1. Désinstalle tout pilote cassé / composite en erreur sur le MT4, puis rebranche.
+2. Lance **Zadig** → **Options** → coche **List All Devices**.
+3. Sélectionne le **MT4** (`086A` / `0003`).
+4. Si tu vois un menu **Interface** : choisis l’interface **2**.
+   Si tu ne vois **qu’une** entrée « MT4 » sans menu Interface : c’est le cas B — installe **WinUSB** sur cette entrée (c’est normal).
+5. **Install Driver** / Replace Driver.
+6. Ensuite, **toutes** les commandes Bridge de ce guide doivent inclure `--dev-zadig`.
+
+**Si `--probe-usb` échoue avec erreur 121** (écriture USB qui expire alors que le bon canal 2 est trouvé) : remplace le pilote Zadig/libwdi par l’INF du dépôt sur le **même** nœud parent — Gestionnaire → Mettre à jour → Disque fourni → `installer\mt4-winusb.inf` (l’INF accepte aussi `USB\VID_086A&PID_0003` sans `MI_02`). Puis reteste `--probe-usb`.
 
 ### 2.5 Vérifier dans le Gestionnaire de périphériques
 
-1. Propriétés du périphérique → onglet **Pilote** : pile WinUSB / pas un pilote kernel custom de ce projet.
-2. Onglet **Détails** → **ID de matériel** : tu dois voir quelque chose comme :
-
-```text
-USB\VID_086A&PID_0003&MI_02
-```
-
-3. (Si tu sais ouvrir la base de registre du périphérique) paramètres : présence du GUID  
-
-```text
-{aa209017-cf8a-49ad-a0e7-701187ff7e05}
-```
+1. Propriétés → onglet **Pilote** : service / pile **WinUSB** (pas un pilote kernel custom de ce projet).
+2. Onglet **Détails** → **ID de matériel** :
+   - Cas A : quelque chose comme `USB\VID_086A&PID_0003&MI_02`
+   - Cas B : `USB\VID_086A&PID_0003` (sans `MI_02`) suffit si WinUSB est bien chargé
+3. GUID projet `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` : attendu surtout après INF ; **souvent absent** après Zadig (d’où `--dev-zadig`).
 
 Validation :
 
-- MT4 branché et détecté : ✅ / ❌
-- Bind WinUSB effectué (INF / Gestionnaire / Zadig — préciser lequel) : ✅ / ❌  
-  → Méthode : _________________________________
-- Hardware ID contient `VID_086A&PID_0003&MI_02` : ✅ / ❌
-- GUID projet présent (si vérifié) : ✅ / ❌ / non vérifié
+- MT4 branché et détecté : ✅
+- Bind WinUSB effectué (INF / Gestionnaire / Zadig — préciser lequel) : ✅
+  → Méthode : Zadig (cas B, nœud parent sans MI_02 ; Boot Camp MacBook Pro 2014)
+- Hardware ID : `VID_086A&PID_0003` (avec ou sans `MI_02`) : ✅ (sans MI_02)
+- GUID projet présent (si vérifié) : non vérifié / absent (Zadig)
 
-📌 Remarques GD :
-
-
+📌 Remarques GD : Sur cette machine le composite forcé échoue (code 10) ; Zadig sur le nœud unique + Bridge `--dev-zadig` ouvre correctement (après correctifs open parent + canal USB 2 associé).
 
 ---
 
@@ -201,14 +226,10 @@ builds\debug\Debug\Bridge.exe --open-device --dev-zadig
 
 Validation :
 
-- `--open-device` réussi (exit 0) : ✅ / ❌
-- Message d’erreur éventuel (copier-coller) :
+- `--open-device` réussi (exit 0) : ✅ (`--open-device --dev-zadig` → `WinUSB open succeeded`)
+- Message d’erreur éventuel (copier-coller) : _(résolu)_ avant correctifs : matching HWID sans MI_02 + ifnum 0 vs 2
 
-
-
-📌 Remarques GD :
-
-
+📌 Remarques GD : Rebuild requis après les correctifs Usb (parent Zadig + interface associée).
 
 ---
 
@@ -243,9 +264,12 @@ builds\debug\Debug\Bridge.exe --start-session --dev-zadig
 
 - Une liste des noms de ports attendus (`MT4 Port 1` …).
 - `DeviceSession started for MT4 with Virtual Ports`
-- `MIDI I/O running — notes/CC smoke ready (Ctrl+C to stop)`
+- `MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)`  
+  (tiret ASCII `-` uniquement — un tiret typographique s’affiche en `ÔÇö` sous PowerShell OEM)
 
-Le processus **reste ouvert** : ne ferme pas la fenêtre tant que tu testes.
+Le processus **reste ouvert** (curseur qui clignote) : **c’est normal**. Ne ferme pas la fenêtre tant que tu testes ; **Ctrl+C** pour arrêter.
+
+**loopMIDI** n’affiche en général **pas** les ports créés par Bridge (il ne liste que ses propres ports). Regarde dans **Ableton / ShowMIDI**.
 
 ### 4.4 Vérifier les ports côté Windows
 
@@ -258,15 +282,13 @@ Les noms IN et OUT portent le **même libellé** pour le même numéro de port (
 
 Validation :
 
-- Session démarrée, messages console OK : ✅ / ❌
-- 2 IN visibles : ✅ / ❌
-- 4 OUT visibles : ✅ / ❌
-- Noms exacts `MT4 Port N` (pas un suffixe bizarre du type `#2`, ou le noter) : ✅ / ❌
-- Échec éventuel (VirtualMIDI manquant, open USB, etc.) — coller le message :
+- Session démarrée, messages console OK : ✅
+- 2 IN visibles : ✅ (Ableton Live 12 → Réglages → MIDI → Input Ports)
+- 4 OUT visibles : ✅ (idem Output Ports ; Track coché pour notes/CC)
+- Noms exacts `MT4 Port N` (pas un suffixe bizarre du type `#2`, ou le noter) : ✅
+- Échec éventuel (VirtualMIDI manquant, open USB, etc.) — coller le message : _(aucun)_
 
-
-
-📌 Remarques GD :
+📌 Remarques GD : Lab 2026-08-05 Boot Camp — session avec `--dev-zadig`. Ports créés par Bridge (teVirtualMIDI), pas via la UI loopMIDI.
 
 
 
@@ -289,8 +311,8 @@ Objectif : ce qui entre dans le MT4 apparaît sur `MT4 Port 1` / `MT4 Port 2` da
 
 Validation Port 1 IN :
 
-- Notes visibles : ✅ / ❌
-- CC visibles : ✅ / ❌
+- Notes visibles : ❌
+- CC visibles : ❌
 
 ### 5.3 Tester Port 2
 
@@ -300,8 +322,8 @@ Validation Port 1 IN :
 
 Validation Port 2 IN :
 
-- Notes visibles : ✅ / ❌
-- CC visibles : ✅ / ❌
+- Notes visibles : ❌
+- CC visibles : ❌
 
 ### 5.4 Contrôle anti-mélange (rapide)
 
@@ -309,9 +331,14 @@ Sans rien brancher sur l’IN 2, jouer sur l’IN 1 : le trafic ne doit **pas** 
 
 Validation :
 
-- Pas de « fantômes » sur l’autre port IN : ✅ / ❌
+- Pas de « fantômes » sur l’autre port IN : non testé (aucun trafic virtuel reçu)
 
-📌 Remarques GD :
+📌 Remarques GD (lab 2026-08-05) :
+
+- Source = clip MIDI Ableton sur **Mac** → câble DIN → **In 1** puis **In 2** du MT4 (PC Boot Camp).
+- LEDs rouges **In 1 / In 2** du MT4 clignotent (notes + CC7) : le boîtier **reçoit** bien le DIN.
+- Ableton Live 12 sur le **PC** écoute `MT4 Port 1` / `2` (Track coché) : **aucune** note/CC n’apparaît.
+- Conclusion smoke : chemin **physique OK**, chemin **Bridge USB bulk IN → port virtuel IN** non prouvé (bug ou config Live à isoler ensuite). Priorité correctif / debug après ce guide.
 
 
 
@@ -334,10 +361,10 @@ Pour **chaque** port `MT4 Port 1` … `MT4 Port 4` :
 2. Envoie quelques **notes**, puis un **CC**.
 3. Vérifie sur le **câble physique correspondant** (ou un moniteur MIDI branché dessus) que c’est bien ce numéro de port qui réagit — pas un autre.
 
-Validation OUT 1 notes/CC : ✅ / ❌  
-Validation OUT 2 notes/CC : ✅ / ❌  
-Validation OUT 3 notes/CC : ✅ / ❌  
-Validation OUT 4 notes/CC : ✅ / ❌
+Validation OUT 1 notes/CC : ✅ notes (après 2ᵉ essai) / ✅ CC7 — *voir remarque 1er envoi notes*  
+Validation OUT 2 notes/CC : ✅ / ✅  
+Validation OUT 3 notes/CC : ✅ / ✅  
+Validation OUT 4 notes/CC : ✅ / ✅
 
 ### 6.3 Test important — plusieurs OUT en même temps
 
@@ -349,10 +376,16 @@ C’est le point ciblé par le correctif d’intégration de ce jour.
 
 Validation multi-OUT :
 
-- Deux OUT en parallèle, routage correct : ✅ / ❌
-- Quatre OUT sollicités dans la même session sans redémarrer le Bridge : ✅ / ❌ / non testé
+- Deux OUT en parallèle, routage correct : non testé
+- Quatre OUT sollicités dans la même session sans redémarrer le Bridge : ✅ (enchaînement successif Out 1→4 dans la même session Live)
 
-📌 Remarques GD :
+📌 Remarques GD (lab 2026-08-05) :
+
+- Émission = clips Ableton Live 12 **sur le PC** → ports OUT `MT4 Port N` (Track coché).
+- **CC7** : LED verte Out **N** seule pour chaque port 1…4 — OK.
+- **Notes** : Out 2 / 3 / 4 → LED Out correspondante seule — OK.
+- **Notes Out 1 (1er essai de la session)** : les **4** LEDs vertes Out ont clignoté ensemble ; **retest** notes Out 1 plus tard → seule Out 1. Cohérent avec l’omission connue du sélecteur de câble Emagic (`F5`) quand le mapper croit déjà être sur le câble 0 après init.
+- Critère Epic 1 PC→boîtier : **largement OK** ; edge Out 1 au premier envoi = dette connue à corriger.
 
 
 
@@ -368,10 +401,8 @@ Objectif : quelques minutes de jeu sans devoir relancer le Bridge.
 
 Validation :
 
-- Session stable ~2–3 min : ✅ / ❌
-- Message d’échec éventuel (copier) :
-
-
+- Session stable ~2–3 min : ✅ (session tenue pendant les essais IN/OUT Ableton)
+- Message d’échec éventuel (copier) : _(aucun)_
 
 📌 Remarques GD :
 
@@ -390,10 +421,11 @@ Objectif : ranger les ports virtuels et l’USB proprement.
 
 Validation :
 
-- Ctrl+C termine le Bridge : ✅ / ❌
-- Ports `MT4 Port N` disparus après arrêt : ✅ / ❌
+- Ctrl+C termine le Bridge : ✅
+- Ports `MT4 Port N` disparus après arrêt : ✅ (Live : intitulés passent en **orange** = interface déconnectée)
+- LED MT4 : Patch **rouge** allumée, USB **orange** éteinte : ✅
 
-📌 Remarques GD :
+📌 Remarques GD : Teardown aligné avec le comportement macOS (retour mode Patch).
 
 
 
@@ -425,28 +457,36 @@ Remplis après les tests (même partiels).
 
 **Verdict personnel**
 
-- Prêt à enchaîner Epic 2 côté usage notes/CC : oui / non / avec réserves  
-- Réserves en une phrase :
-
-
+- Prêt à enchaîner Epic 2 côté usage notes/CC : **avec réserves**
+- Réserves en une phrase : boîtier→PC virtuel muet ; premier envoi notes Out 1 douteux (F5).
 
 **Ce qui a le mieux marché**
 
-
+- WinUSB lab (cas B) + init magic + session VirtualMIDI.
+- 2 IN / 4 OUT nommés `MT4 Port N` dans Ableton Live 12.
+- PC→boîtier notes/CC (surtout Out 2–4 et CC sur tous les Out).
+- Arrêt Ctrl+C propre (LEDs + ports Live).
 
 **Ce qui a bloqué ou surpris**
 
-
+- DIN In 1/2 : LEDs MT4 OK, **silence** dans Live sur les IN virtuels.
+- Premier envoi **notes** sur Out 1 : 4 LEDs Out allumées ; retest OK.
+- Messages console avec tiret typographique (`ÔÇö`) sous PowerShell — corrigé en ASCII.
+- loopMIDI vide alors que Live voit les ports (attendu : Bridge ≠ UI loopMIDI).
 
 **À retester / à corriger ensuite**
 
-
+1. **P0** — chemin device→host (bulk IN → demux → `SendToHost` → ports IN virtuels) ; confirmer aussi armement / monitoring Live.
+2. **P1** — forcer un `F5` (ou reset `currentOutCable_`) après init pour Out 1 au premier encode.
+3. Multi-OUT strictement parallèle (section 6.3) non fait.
+4. Section 9 (fermeture croix / ports orphelins) non testée.
 
 **Fichiers / logs utiles** (chemins, captures, messages console)
 
+- Capture Ableton MIDI I/O : 2× `MT4 Port 1/2` IN + 4× OUT Track ON.
+- Console : `DeviceSession started…` / `MIDI I/O running…` / Ctrl+C → stopped.
 
-
-📌 Remarques GD (bilan) :
+📌 Remarques GD (bilan) : Premier smoke matériel Epic 1 **sympathique** : socle session OK ; round-trip complet **pas** encore vert (IN virtuel).
 
 
 
@@ -456,13 +496,24 @@ Remplis après les tests (même partiels).
 
 | Symptôme | Piste |
 |---|---|
-| `--open-device` échoue, parle du GUID | Bind INF pas fait, ou mauvais nœud USB ; vérifier `MI_02`. En secours : Zadig + `--dev-zadig`. |
-| Session échoue, parle de VirtualMIDI / DLL | Installer loopMIDI / teVirtualMIDI ; rouvrir le terminal après install. |
-| Aucun port `MT4 Port N` | La session n’a pas démarré ; ou ShowMIDI ouvert **avant** sans refresh. |
-| Ports présents mais silence total | Mauvais câble physique ; mauvais port choisi dans ShowMIDI/DAW ; MT4 pas alimenté / autre interface USB. |
-| Notes OK sur un port, mélangées sur plusieurs OUT | Noter précisément ports + séquence — c’était le bug d’intégration corrigé ; si ça revient, c’est un **❌** prioritaire. |
+| `--open-device` échoue, parle du GUID | Bind INF pas fait, ou mauvais nœud USB. Si tu n’as **pas** de `MI_02` : Zadig sur le nœud parent + `--dev-zadig` (rebuild à jour). |
+| Script `bind-mt4-winusb.ps1` introuvable | Tu es dans `builds\…` au lieu de la **racine** du dépôt. |
+| Exécution de scripts désactivée | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` puis relancer le script. |
+| INF : pas de signature numérique | Normal tant que l’INF n’est pas signé ; Gestionnaire (Disque fourni) ou Zadig. |
+| « Aucun pilote » / pas de `MI_02` | Cas B : ne force pas « USB composite » ; Zadig sur le MT4 unique. |
+| Zadig sans menu Interface 2 | Normal en cas B : Install WinUSB sur l’entrée « MT4 » seule. |
+| `--probe-usb` / init : erreur 121 sur OUT 0x2 | Bon canal trouvé mais le boîtier ne répond pas. Débranche/rebranche ; remplace Zadig par `installer\mt4-winusb.inf` (Disque fourni) ; autre port USB ; redémarrage PC. |
+| Session échoue, parle de VirtualMIDI / DLL / Win32=1379 | Installer loopMIDI / teVirtualMIDI ; si « existe déjà » : fermer ports loopMIDI homonymes ou rebuild avec merge IN/OUT homonymes. |
+| Aucun port `MT4 Port N` dans loopMIDI | **Normal** — Bridge crée les ports via teVirtualMIDI ; regarde Ableton / ShowMIDI. |
+| Aucun port `MT4 Port N` dans la DAW | La session n’a pas démarré ; ou DAW ouverte **avant** sans refresh. |
+| Ports présents mais silence total (PC→boîtier) | Mauvais câble ; mauvais port OUT ; Track non coché dans Live. |
+| LEDs In MT4 OK, silence dans la DAW (boîtier→PC) | Chemin Bridge device→host suspect (lab 2026-08-05) ; vérifier aussi piste Live armée / monitoring sur l’entrée `MT4 Port N`. |
+| 1er envoi notes Out 1 allume plusieurs LEDs Out | Dette F5 / `currentOutCable_` après init ; retester après avoir utiliséé un autre Out. |
+| Notes OK sur un port, mélangées sur plusieurs OUT | Noter ports + séquence — bug multi-OUT d’intégration ; si ça revient, **❌** prioritaire. |
 | Session qui meurt toute seule | Copier le message anglais de la console (échec pompe / SendToHost / WriteBulk). |
 | Ports qui restent après Ctrl+C | Noter ; éventuellement relancer Windows avant le prochain essai. |
+| `--probe-usb` OK puis `--start-session` init 121 | Probe a réveillé le boîtier ; rebuild avec finish-après-probe / retry session, ou lancer **seulement** `--start-session`. |
+| Périphérique « Emagic MT4 » grisé + « Emagic MT4 (WinUSB) » | Normal avec périphériques cachés : fantôme vs nœud actif WinUSB. |
 
 ---
 
