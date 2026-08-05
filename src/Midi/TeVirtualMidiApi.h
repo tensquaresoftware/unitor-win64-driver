@@ -41,6 +41,11 @@ typedef TeVmMidiPortHandle(CALLBACK* TeVmCreatePortEx2Fn)(
 
 typedef void(CALLBACK* TeVmClosePortFn)(TeVmMidiPortHandle midiPort);
 
+typedef BOOL(CALLBACK* TeVmSendDataFn)(
+    TeVmMidiPortHandle midiPort,
+    LPBYTE midiDataBytes,
+    DWORD length);
+
 #ifdef __cplusplus
 }
 #endif

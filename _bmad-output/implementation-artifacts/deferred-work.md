@@ -1,5 +1,12 @@
 # Deferred work
 
+## Deferred from: code review of 1-6-notes-and-cc-round-trip-on-all-ports.md (2026-08-05)
+
+- Hardware AC1/AC2 round-trip proof (notes+CC on all 2 IN + 4 OUT via ShowMIDI/DAW) — deferred: infra OK for story close; Windows smoke remains a manual checklist.
+- CTRL_CLOSE_EVENT may terminate the process before `DeviceSession::Stop()` finishes closing Virtual Ports and WinUSB.
+- Device→host path can forward raw Emagic demux spans that are not complete MIDI messages (no message framer in 1.6).
+- `SendToHost` does not reject payloads above teVirtualMIDI default max Sysex length — revisit with Epic 2 SysEx.
+
 ## Deferred from: code review of 1-5-virtualmidi-backend-and-stable-mt4-port-names.md (2026-08-05)
 
 - No recovery for stale Virtual Ports left after a crashed Bridge — revisit when multi-unit / reconnect lifecycle is hardened.

@@ -37,91 +37,58 @@ void VirtualMidiBackend::SetHostToDeviceSink(HostToDeviceSink sink, void* contex
 
 #else
 
+#include "Midi/VirtualMidiWinSupport.h"
+
 namespace
 {
 constexpr const char* kVirtualMidiDllName = "teVirtualMIDI.dll";
-constexpr const char* kMissingDriverFixPath =
-    "VirtualMIDI driver/DLL missing (ERROR_PATH_NOT_FOUND-class). "
-    "Install loopMIDI or rtpMIDI so the VirtualMIDI driver is present, "
-    "then retry.";
 
-std::string formatLastError(const char* action)
+std::string formatInPortIndexError(const char* reason, std::size_t inPortIndex)
 {
-    const DWORD code = GetLastError();
     std::ostringstream stream;
-    stream << action << " failed (Win32=" << code << ")";
-    if (code == ERROR_PATH_NOT_FOUND || code == ERROR_MOD_NOT_FOUND)
-    {
-        stream << ": " << kMissingDriverFixPath;
-    }
+    stream << "VirtualMIDI SendToHost " << reason << " for IN port index " << inPortIndex;
     return stream.str();
 }
 
-bool utf8ToWide(const std::string& utf8, std::wstring& wideOut, std::string& errorOut)
+struct SendToHostValidation
 {
-    if (utf8.empty())
-    {
-        errorOut = "VirtualMIDI port name must not be empty";
-        return false;
-    }
+    bool portsCreated = false;
+    std::size_t inPortCount = 0;
+    std::size_t inPortIndex = 0;
+    const uint8_t* midiBytes = nullptr;
+    std::size_t byteCount = 0;
+    TeVmMidiPortHandle portHandle = nullptr;
+    TeVmSendDataFn sendData = nullptr;
+};
 
-    const int needed = MultiByteToWideChar(
-        CP_UTF8, 0, utf8.c_str(), -1, nullptr, 0);
-    if (needed <= 0)
-    {
-        errorOut = formatLastError("UTF-8 to wide conversion size query");
-        return false;
-    }
-
-    wideOut.assign(static_cast<std::size_t>(needed), L'\0');
-    const int written = MultiByteToWideChar(
-        CP_UTF8, 0, utf8.c_str(), -1, wideOut.data(), needed);
-    if (written <= 0)
-    {
-        errorOut = formatLastError("UTF-8 to wide conversion");
-        return false;
-    }
-
-    // MultiByteToWideChar includes the trailing null in `needed`.
-    if (!wideOut.empty() && wideOut.back() == L'\0')
-    {
-        wideOut.pop_back();
-    }
-    return true;
-}
-
-bool isBlankPortName(const std::string& name)
+bool validateSendToHostArgs(const SendToHostValidation& args, std::string& errorOut)
 {
-    return name.find_first_not_of(" \t\r\n") == std::string::npos;
-}
-
-bool validatePortNameSet(const PortNameSet& names, std::string& errorOut)
-{
-    if (names.inCount == 0 && names.outCount == 0)
+    if (!args.portsCreated)
     {
-        errorOut = "VirtualMIDI CreatePortSet rejected empty PortNameSet (fail closed)";
+        errorOut = "VirtualMIDI SendToHost requires an active port set";
         return false;
     }
-    if (names.inCount > kMaxMidiBackendInPorts || names.outCount > kMaxMidiBackendOutPorts)
+    if (args.inPortIndex >= args.inPortCount)
     {
-        errorOut = "VirtualMIDI CreatePortSet port counts exceed backend limits";
+        errorOut = formatInPortIndexError("rejected out-of-range index", args.inPortIndex);
         return false;
     }
-    for (std::size_t index = 0; index < names.inCount; ++index)
+    if (args.midiBytes == nullptr || args.byteCount == 0)
     {
-        if (isBlankPortName(names.inNames[index]))
-        {
-            errorOut = "VirtualMIDI CreatePortSet rejected blank IN port display name";
-            return false;
-        }
+        errorOut = formatInPortIndexError("rejected empty MIDI payload", args.inPortIndex);
+        return false;
     }
-    for (std::size_t index = 0; index < names.outCount; ++index)
+    if (args.portHandle == nullptr)
     {
-        if (isBlankPortName(names.outNames[index]))
-        {
-            errorOut = "VirtualMIDI CreatePortSet rejected blank OUT port display name";
-            return false;
-        }
+        errorOut = formatInPortIndexError("rejected null port handle", args.inPortIndex);
+        return false;
+    }
+    if (args.sendData == nullptr)
+    {
+        errorOut =
+            "VirtualMIDI SendToHost missing virtualMIDISendData export; "
+            "reinstall loopMIDI or rtpMIDI";
+        return false;
     }
     return true;
 }
@@ -135,7 +102,10 @@ VirtualMidiBackend::~VirtualMidiBackend()
 
 bool VirtualMidiBackend::ensureApiLoaded(std::string& errorOut)
 {
-    if (dllModule_ != nullptr && createPortEx2_ != nullptr && closePort_ != nullptr)
+    if (dllModule_ != nullptr
+        && createPortEx2_ != nullptr
+        && closePort_ != nullptr
+        && sendData_ != nullptr)
     {
         return true;
     }
@@ -147,10 +117,10 @@ bool VirtualMidiBackend::ensureApiLoaded(std::string& errorOut)
         LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (dllModule_ == nullptr)
     {
-        errorOut = formatLastError("LoadLibraryEx(teVirtualMIDI.dll, SYSTEM32)");
-        if (errorOut.find(kMissingDriverFixPath) == std::string::npos)
+        errorOut = formatVirtualMidiLastError("LoadLibraryEx(teVirtualMIDI.dll, SYSTEM32)");
+        if (errorOut.find(kVirtualMidiMissingDriverFixPath) == std::string::npos)
         {
-            errorOut += std::string(": ") + kMissingDriverFixPath;
+            errorOut += std::string(": ") + kVirtualMidiMissingDriverFixPath;
         }
         return false;
     }
@@ -159,12 +129,15 @@ bool VirtualMidiBackend::ensureApiLoaded(std::string& errorOut)
         GetProcAddress(dllModule_, "virtualMIDICreatePortEx2"));
     closePort_ = reinterpret_cast<TeVmClosePortFn>(
         GetProcAddress(dllModule_, "virtualMIDIClosePort"));
+    sendData_ = reinterpret_cast<TeVmSendDataFn>(
+        GetProcAddress(dllModule_, "virtualMIDISendData"));
 
-    if (createPortEx2_ == nullptr || closePort_ == nullptr)
+    if (createPortEx2_ == nullptr || closePort_ == nullptr || sendData_ == nullptr)
     {
         unloadApi();
         errorOut =
-            "teVirtualMIDI.dll loaded but required exports are missing; "
+            "teVirtualMIDI.dll loaded but required exports are missing "
+            "(virtualMIDICreatePortEx2 / virtualMIDIClosePort / virtualMIDISendData); "
             "reinstall loopMIDI or rtpMIDI so the VirtualMIDI driver matches the DLL";
         return false;
     }
@@ -176,6 +149,7 @@ void VirtualMidiBackend::unloadApi() noexcept
 {
     createPortEx2_ = nullptr;
     closePort_ = nullptr;
+    sendData_ = nullptr;
     if (dllModule_ != nullptr)
     {
         FreeLibrary(dllModule_);
@@ -185,6 +159,7 @@ void VirtualMidiBackend::unloadApi() noexcept
 
 void VirtualMidiBackend::closeAllPorts() noexcept
 {
+    // Never call closePort_ from outMidiDataCallback — teVirtualMIDI deadlock risk.
     if (closePort_ != nullptr)
     {
         for (std::size_t index = 0; index < inPortCount_; ++index)
@@ -210,34 +185,37 @@ void VirtualMidiBackend::closeAllPorts() noexcept
 }
 
 bool VirtualMidiBackend::createDirectionalPort(
-    const std::string& utf8Name,
-    DWORD flags,
-    TeVmMidiPortHandle& handleOut,
+    const PortCreateRequest& request,
     std::string& errorOut)
 {
+    if (request.utf8Name == nullptr || request.handleOut == nullptr)
+    {
+        errorOut = "VirtualMIDI createDirectionalPort received null request fields";
+        return false;
+    }
+
     std::wstring wideName;
-    if (!utf8ToWide(utf8Name, wideName, errorOut))
+    if (!utf8ToWideVirtualMidiName(*request.utf8Name, wideName, errorOut))
     {
         return false;
     }
 
     SetLastError(0);
-    handleOut = createPortEx2_(
+    *request.handleOut = createPortEx2_(
         wideName.c_str(),
-        nullptr,
-        0,
+        request.callback,
+        request.callbackInstance,
         kTeVmDefaultMaxSysexLength,
-        flags);
-    if (handleOut == nullptr)
+        request.flags);
+    if (*request.handleOut == nullptr)
     {
-        errorOut = formatLastError("virtualMIDICreatePortEx2");
+        errorOut = formatVirtualMidiLastError("virtualMIDICreatePortEx2");
         if (GetLastError() == ERROR_PATH_NOT_FOUND
             || errorOut.find("PATH_NOT_FOUND") != std::string::npos)
         {
-            // Keep explicit fix path for driver-not-present failures.
-            if (errorOut.find(kMissingDriverFixPath) == std::string::npos)
+            if (errorOut.find(kVirtualMidiMissingDriverFixPath) == std::string::npos)
             {
-                errorOut += std::string(": ") + kMissingDriverFixPath;
+                errorOut += std::string(": ") + kVirtualMidiMissingDriverFixPath;
             }
         }
         return false;
@@ -258,31 +236,83 @@ bool VirtualMidiBackend::createPortGroup(
 
     for (std::size_t index = 0; index < group.count; ++index)
     {
-        TeVmMidiPortHandle handle = nullptr;
-        if (!createDirectionalPort(group.names[index], group.flags, handle, errorOut))
+        PortCreateRequest request;
+        request.utf8Name = &group.names[index];
+        request.flags = group.flags;
+        request.callback = group.callback;
+        request.callbackInstance = 0;
+        request.handleOut = &group.handlesOut[countOut];
+
+        if (group.cookies != nullptr)
+        {
+            group.cookies[index].backend = this;
+            group.cookies[index].outPortIndex = index;
+            request.callbackInstance =
+                reinterpret_cast<DWORD_PTR>(&group.cookies[index]);
+        }
+
+        if (!createDirectionalPort(request, errorOut))
         {
             return false;
         }
-        group.handlesOut[countOut++] = handle;
+        ++countOut;
     }
     return true;
+}
+
+void VirtualMidiBackend::forwardHostToDevice(
+    std::size_t outPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t byteCount) noexcept
+{
+    const HostToDeviceSink sink = hostToDeviceSink_;
+    void* context = hostToDeviceContext_;
+    if (sink == nullptr || midiBytes == nullptr || byteCount == 0)
+    {
+        return;
+    }
+    sink(context, outPortIndex, midiBytes, byteCount);
+}
+
+void CALLBACK VirtualMidiBackend::outMidiDataCallback(
+    TeVmMidiPortHandle /*midiPort*/,
+    LPBYTE midiDataBytes,
+    DWORD length,
+    DWORD_PTR callbackInstance)
+{
+    auto* cookie = reinterpret_cast<OutPortCookie*>(callbackInstance);
+    if (cookie == nullptr || cookie->backend == nullptr)
+    {
+        return;
+    }
+    cookie->backend->forwardHostToDevice(
+        cookie->outPortIndex,
+        reinterpret_cast<const uint8_t*>(midiDataBytes),
+        static_cast<std::size_t>(length));
 }
 
 bool VirtualMidiBackend::CreatePortSet(const PortNameSet& names, std::string& errorOut)
 {
     DestroyPortSet();
 
-    if (!validatePortNameSet(names, errorOut) || !ensureApiLoaded(errorOut))
+    if (!validateVirtualMidiPortNameSet(names, errorOut) || !ensureApiLoaded(errorOut))
     {
         return false;
     }
 
-    // Product IN → apps see MIDI IN (TX). Product OUT → MIDI OUT (RX).
+    // Product IN → apps see MIDI IN (TX). Product OUT → MIDI OUT (RX + callback).
     constexpr DWORD kInFlags = kTeVmFlagsParseTx | kTeVmFlagsInstantiateTx;
     constexpr DWORD kOutFlags = kTeVmFlagsParseRx | kTeVmFlagsInstantiateRx;
 
-    const PortGroupCreate inGroup{names.inNames, names.inCount, kInFlags, inPorts_};
-    const PortGroupCreate outGroup{names.outNames, names.outCount, kOutFlags, outPorts_};
+    const PortGroupCreate inGroup{
+        names.inNames, names.inCount, kInFlags, inPorts_, nullptr, nullptr};
+    const PortGroupCreate outGroup{
+        names.outNames,
+        names.outCount,
+        kOutFlags,
+        outPorts_,
+        &VirtualMidiBackend::outMidiDataCallback,
+        outCookies_};
     if (!createPortGroup(inGroup, inPortCount_, errorOut)
         || !createPortGroup(outGroup, outPortCount_, errorOut))
     {
@@ -308,13 +338,42 @@ void VirtualMidiBackend::DestroyPortSet() noexcept
 }
 
 bool VirtualMidiBackend::SendToHost(
-    std::size_t /*inPortIndex*/,
-    const uint8_t* /*midiBytes*/,
-    std::size_t /*byteCount*/,
+    std::size_t inPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t byteCount,
     std::string& errorOut)
 {
-    errorOut = "VirtualMIDI SendToHost is reserved for Story 1.6";
-    return false;
+    SendToHostValidation args;
+    args.portsCreated = portsCreated_;
+    args.inPortCount = inPortCount_;
+    args.inPortIndex = inPortIndex;
+    args.midiBytes = midiBytes;
+    args.byteCount = byteCount;
+    args.portHandle =
+        (inPortIndex < inPortCount_) ? inPorts_[inPortIndex] : nullptr;
+    args.sendData = sendData_;
+
+    if (!validateSendToHostArgs(args, errorOut))
+    {
+        return false;
+    }
+
+    SetLastError(0);
+    const BOOL ok = sendData_(
+        inPorts_[inPortIndex],
+        const_cast<LPBYTE>(reinterpret_cast<const BYTE*>(midiBytes)),
+        static_cast<DWORD>(byteCount));
+    if (!ok)
+    {
+        errorOut = formatVirtualMidiLastError("virtualMIDISendData");
+        std::ostringstream stream;
+        stream << errorOut << " (IN port index " << inPortIndex << ")";
+        errorOut = stream.str();
+        return false;
+    }
+
+    errorOut.clear();
+    return true;
 }
 
 void VirtualMidiBackend::SetHostToDeviceSink(HostToDeviceSink sink, void* context) noexcept

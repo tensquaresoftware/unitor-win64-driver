@@ -30,7 +30,7 @@ public:
     // Destroy that set. Idempotent if never created or already destroyed.
     virtual void DestroyPortSet() noexcept = 0;
 
-    // Story 1.6 seam stubs — not used for notes/CC proof in Story 1.5.
+    // Device→host / host→device data path (Story 1.6).
     virtual bool SendToHost(
         std::size_t inPortIndex,
         const uint8_t* midiBytes,

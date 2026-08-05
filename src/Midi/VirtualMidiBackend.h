@@ -32,32 +32,58 @@ public:
 
 private:
 #ifdef _WIN32
-    bool ensureApiLoaded(std::string& errorOut);
-    bool createDirectionalPort(
-        const std::string& utf8Name,
-        DWORD flags,
-        TeVmMidiPortHandle& handleOut,
-        std::string& errorOut);
+    struct OutPortCookie
+    {
+        VirtualMidiBackend* backend = nullptr;
+        std::size_t outPortIndex = 0;
+    };
+
+    struct PortCreateRequest
+    {
+        const std::string* utf8Name = nullptr;
+        DWORD flags = 0;
+        TeVmMidiDataCallback callback = nullptr;
+        DWORD_PTR callbackInstance = 0;
+        TeVmMidiPortHandle* handleOut = nullptr;
+    };
+
     struct PortGroupCreate
     {
         const std::string* names = nullptr;
         std::size_t count = 0;
         DWORD flags = 0;
         TeVmMidiPortHandle* handlesOut = nullptr;
+        TeVmMidiDataCallback callback = nullptr;
+        OutPortCookie* cookies = nullptr;
     };
+
+    bool ensureApiLoaded(std::string& errorOut);
+    bool createDirectionalPort(const PortCreateRequest& request, std::string& errorOut);
     bool createPortGroup(
         const PortGroupCreate& group,
         std::size_t& countOut,
         std::string& errorOut);
     void closeAllPorts() noexcept;
     void unloadApi() noexcept;
+    void forwardHostToDevice(
+        std::size_t outPortIndex,
+        const uint8_t* midiBytes,
+        std::size_t byteCount) noexcept;
+
+    static void CALLBACK outMidiDataCallback(
+        TeVmMidiPortHandle midiPort,
+        LPBYTE midiDataBytes,
+        DWORD length,
+        DWORD_PTR callbackInstance);
 
     HMODULE dllModule_ = nullptr;
     TeVmCreatePortEx2Fn createPortEx2_ = nullptr;
     TeVmClosePortFn closePort_ = nullptr;
+    TeVmSendDataFn sendData_ = nullptr;
 
     TeVmMidiPortHandle inPorts_[kMaxMidiBackendInPorts] = {};
     TeVmMidiPortHandle outPorts_[kMaxMidiBackendOutPorts] = {};
+    OutPortCookie outCookies_[kMaxMidiBackendOutPorts] = {};
     std::size_t inPortCount_ = 0;
     std::size_t outPortCount_ = 0;
 #endif

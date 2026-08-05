@@ -111,6 +111,28 @@ void WinUsbTransport::clearPipeState() noexcept
     bulkOutPipeId_ = 0;
     bulkInPipeId_ = 0;
     pipesReady_ = false;
+    lastReadTimedOut_ = false;
+}
+
+bool WinUsbTransport::applyBulkInTransferTimeout(std::string& errorOut)
+{
+    // Bound blocking ReadBulk so DeviceSession Stop can observe stopPump_ between reads
+    // (Story 1.4 deferred Close vs in-flight I/O). 100 ms is tens–hundreds of ms.
+    constexpr ULONG kBulkInTransferTimeoutMs = 100;
+    ULONG timeoutMs = kBulkInTransferTimeoutMs;
+    if (!WinUsb_SetPipePolicy(
+            static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
+            bulkInPipeId_,
+            PIPE_TRANSFER_TIMEOUT,
+            sizeof(timeoutMs),
+            &timeoutMs))
+    {
+        errorOut = formatWin32Error(
+            "WinUsb_SetPipePolicy(PIPE_TRANSFER_TIMEOUT) failed for Emagic bulk IN",
+            GetLastError());
+        return false;
+    }
+    return true;
 }
 
 bool WinUsbTransport::discoverBulkPipes(std::string& errorOut)
@@ -193,7 +215,7 @@ bool WinUsbTransport::Open(
 
     deviceHandle_ = handles.device;
     winUsbHandle_ = handles.winUsb;
-    if (!discoverBulkPipes(errorOut))
+    if (!discoverBulkPipes(errorOut) || !applyBulkInTransferTimeout(errorOut))
     {
         Close();
         return false;
@@ -201,6 +223,11 @@ bool WinUsbTransport::Open(
 
     errorOut.clear();
     return true;
+}
+
+bool WinUsbTransport::LastReadTimedOut() const noexcept
+{
+    return lastReadTimedOut_;
 }
 
 void WinUsbTransport::Close() noexcept
@@ -276,6 +303,7 @@ bool WinUsbTransport::ReadBulk(
     std::string& errorOut)
 {
     bytesRead = 0;
+    lastReadTimedOut_ = false;
 
     if (!IsOpen())
     {
@@ -299,8 +327,15 @@ bool WinUsbTransport::ReadBulk(
 
     if (!ok)
     {
-        errorOut = formatWin32Error(
-            "WinUsb_ReadPipe failed for Emagic bulk IN", GetLastError());
+        const DWORD code = GetLastError();
+        if (code == ERROR_SEM_TIMEOUT)
+        {
+            // PIPE_TRANSFER_TIMEOUT elapsed — caller may retry or stop cleanly.
+            lastReadTimedOut_ = true;
+            errorOut = "WinUSB ReadBulk timed out on Emagic bulk IN";
+            return false;
+        }
+        errorOut = formatWin32Error("WinUsb_ReadPipe failed for Emagic bulk IN", code);
         return false;
     }
 
@@ -337,6 +372,11 @@ bool WinUsbTransport::IsOpen() const noexcept
     return open_;
 }
 
+bool WinUsbTransport::LastReadTimedOut() const noexcept
+{
+    return lastReadTimedOut_;
+}
+
 bool WinUsbTransport::WriteBulk(
     const uint8_t* /*data*/,
     std::size_t /*size*/,
@@ -353,6 +393,7 @@ bool WinUsbTransport::ReadBulk(
     std::string& errorOut)
 {
     bytesRead = 0;
+    lastReadTimedOut_ = false;
     errorOut = "WinUSB ReadBulk requires Windows";
     return false;
 }

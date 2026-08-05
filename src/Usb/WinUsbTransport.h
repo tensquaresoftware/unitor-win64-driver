@@ -48,9 +48,13 @@ public:
         std::size_t& bytesRead,
         std::string& errorOut);
 
+    // True when the last ReadBulk failed because PIPE_TRANSFER_TIMEOUT elapsed.
+    bool LastReadTimedOut() const noexcept;
+
 private:
 #ifdef _WIN32
     bool discoverBulkPipes(std::string& errorOut);
+    bool applyBulkInTransferTimeout(std::string& errorOut);
     void clearPipeState() noexcept;
 
     void* deviceHandle_ = nullptr;   // HANDLE
@@ -58,7 +62,9 @@ private:
     unsigned char bulkOutPipeId_ = 0;
     unsigned char bulkInPipeId_ = 0;
     bool pipesReady_ = false;
+    bool lastReadTimedOut_ = false;
 #else
     bool open_ = false;
+    bool lastReadTimedOut_ = false;
 #endif
 };

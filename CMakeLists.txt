@@ -14,6 +14,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(Bridge
     src/App/Main.cpp
+    src/App/MapperSmoke.cpp
+    src/App/MidiSessionCli.cpp
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionManager.cpp
     src/Midi/VirtualMidiBackend.cpp
@@ -29,6 +31,7 @@ target_include_directories(Bridge
 
 if(WIN32)
     target_sources(Bridge PRIVATE
+        src/Midi/VirtualMidiWinSupport.cpp
         src/Usb/WinUsbOpenDetail.cpp
         src/Usb/WinUsbOpenSupport.cpp
     )
