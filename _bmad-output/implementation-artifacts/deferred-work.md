@@ -52,3 +52,9 @@
 ## Deferred from: code review of 1-1-scaffold-bridge-project-and-windows-build-gate.md (2026-08-04)
 
 - Fill the Observed versions table in `docs/dev/windows-ci-toolchain.md` with CMake and Visual Studio values from the first green `windows-2022` Actions log (workflow already prints them).
+
+## Deferred from: spec-ci-cd-windows-pipeline.md (2026-08-05)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-ci-cd-windows-pipeline.md`
+  summary: Add lean C++ unit tests without hardware (EmagicCableMapper, DeviceProfile, MapperSmoke) plus a CMake Tests target and CI job.
+  evidence: CI/CD ticket deliberately deferred the test factory — no Tests target today; keep the merge gate lean until the pure-logic surface is wired.

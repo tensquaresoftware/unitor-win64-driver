@@ -1,3 +1,8 @@
+# Windows build + quality merge gate.
+#
+# Inspired by Matrix-Control patterns (quality-gate, ci-success, checkout@v5) —
+# adapted to Windows-only usermode Bridge (no multi-OS matrix, no draft tier, no release).
+
 name: Windows Build
 
 on:
@@ -5,13 +10,53 @@ on:
     branches: [main]
   pull_request:
 
-jobs:
-  build:
-    runs-on: windows-2022
+concurrency:
+  group: windows-build-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
+permissions:
+  contents: read
+
+jobs:
+  quality-gate:
+    name: quality-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install quality-gate dependencies
+        run: python3 -m pip install -r scripts/quality/requirements.txt
+
+      - name: Lint touched C++ (quality gate)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+            git fetch origin "${{ github.base_ref }}"
+            python3 scripts/quality/lint-touched.py --base "$BASE_REF"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
+              && git rev-parse --verify "$BEFORE" >/dev/null 2>&1; then
+              python3 scripts/quality/lint-touched.py --base "$BEFORE"
+            else
+              python3 scripts/quality/lint-touched.py --base "HEAD~1"
+            fi
+          fi
+
+  build:
+    name: build
+    needs: [quality-gate]
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
 
       - name: Record toolchain versions
         shell: pwsh
@@ -36,3 +81,16 @@ jobs:
             Select-Object -First 1
           if (-not $exe) { throw "Bridge.exe not found under builds/ci" }
           Write-Host "Built: $($exe.FullName)"
+
+  ci-success:
+    name: ci-success
+    needs: [quality-gate, build]
+    if: >-
+      always() &&
+      needs.quality-gate.result == 'success' &&
+      needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: All CI legs passed
+        run: echo "quality-gate and build passed; merge gate green."
