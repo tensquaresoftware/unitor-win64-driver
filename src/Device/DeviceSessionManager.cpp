@@ -2,16 +2,20 @@
 
 #include <sstream>
 
-std::string formatPortDisplayName(unsigned unitOrdinalK, unsigned portN)
+std::string formatPortDisplayName(
+    unsigned unitOrdinalK,
+    unsigned portN,
+    MidiPortDirection direction)
 {
+    const char* face = (direction == MidiPortDirection::In) ? "Input" : "Output";
     std::ostringstream stream;
     if (unitOrdinalK <= 1)
     {
-        stream << "MT4 Port " << portN;
+        stream << "MT4 " << face << ' ' << portN;
     }
     else
     {
-        stream << "MT4 #" << unitOrdinalK << " Port " << portN;
+        stream << "MT4 #" << unitOrdinalK << ' ' << face << ' ' << portN;
     }
     return stream.str();
 }
@@ -22,6 +26,7 @@ struct DirectionalNameFill
 {
     uint16_t cableMask = 0;
     unsigned unitOrdinalK = 1;
+    MidiPortDirection direction = MidiPortDirection::In;
     std::string* namesOut = nullptr;
     std::size_t maxNames = 0;
 };
@@ -51,7 +56,8 @@ bool fillDirectionalNames(
     {
         // Port N is 1-based display order matching product cable ascending order.
         const unsigned portN = static_cast<unsigned>(index + 1);
-        fill.namesOut[index] = formatPortDisplayName(fill.unitOrdinalK, portN);
+        fill.namesOut[index] =
+            formatPortDisplayName(fill.unitOrdinalK, portN, fill.direction);
     }
 
     countOut = cableCount;
@@ -66,14 +72,22 @@ bool DeviceSessionManager::buildPortNameSet(
 {
     PortNameSet built;
     DirectionalNameFill inFill{
-        profile.inCables, unitOrdinalK_, built.inNames, kMaxMidiBackendInPorts};
+        profile.inCables,
+        unitOrdinalK_,
+        MidiPortDirection::In,
+        built.inNames,
+        kMaxMidiBackendInPorts};
     if (!fillDirectionalNames(inFill, built.inCount, errorOut))
     {
         return false;
     }
 
     DirectionalNameFill outFill{
-        profile.outCables, unitOrdinalK_, built.outNames, kMaxMidiBackendOutPorts};
+        profile.outCables,
+        unitOrdinalK_,
+        MidiPortDirection::Out,
+        built.outNames,
+        kMaxMidiBackendOutPorts};
     if (!fillDirectionalNames(outFill, built.outCount, errorOut))
     {
         return false;

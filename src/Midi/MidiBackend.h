@@ -1,5 +1,5 @@
 // Abstract host MIDI backend seam (AD-2 / NFR-Q3).
-// Backends must not invent unit ordinal K — display names arrive ready-made (AD-5 / AD-6).
+// Backends must not invent unit ordinal K — display names arrive ready-made (AD-6).
 
 #pragma once
 
@@ -10,7 +10,8 @@
 inline constexpr std::size_t kMaxMidiBackendInPorts = 8;
 inline constexpr std::size_t kMaxMidiBackendOutPorts = 8;
 
-// Ready-made AD-5 display strings + direction counts. No USB serial / topology inventing.
+// Ready-made directional display strings + direction counts.
+// No USB serial / topology inventing.
 struct PortNameSet
 {
     std::string inNames[kMaxMidiBackendInPorts];

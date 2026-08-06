@@ -6,8 +6,6 @@
 
 #ifdef _WIN32
 #include "Midi/TeVirtualMidiApi.h"
-
-struct MergedVirtualMidiPlan;
 #endif
 
 #include <cstddef>
@@ -52,8 +50,11 @@ private:
 
     bool ensureApiLoaded(std::string& errorOut);
     bool createDirectionalPort(const PortCreateRequest& request, std::string& errorOut);
-    bool createOneMergedPort(const MergedVirtualMidiPlan& plan, std::string& errorOut);
-    bool createMergedPortSet(const PortNameSet& names, std::string& errorOut);
+    bool createDirectionalPortSet(const PortNameSet& names, std::string& errorOut);
+    bool rejectSharedDirectionalHandles(
+        std::size_t inCount,
+        std::size_t outCount,
+        std::string& errorOut) const;
     void closeAllPorts() noexcept;
     void unloadApi() noexcept;
     void forwardHostToDevice(

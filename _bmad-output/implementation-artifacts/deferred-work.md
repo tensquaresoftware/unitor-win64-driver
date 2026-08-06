@@ -102,3 +102,15 @@ Design note already captured in the longevity guide (not an open deferral): afte
 ## Deferred from: code review of 2-2-mtc-quarter-frame-and-full-frame.md (2026-08-05)
 
 - Duplicated MTC quarter-frame / full-frame vectors in `FramerMtcSmoke.cpp` vs `tests/MidiMessageFramerTests.cpp` can drift; same dual-harness pattern as story 2.1 realtime — consolidate shared helpers when touching the framer test factory again.
+
+## Deferred from: spec-mt4-separate-virtual-ports.md (2026-08-06)
+
+- Identical IN/OUT `MT4 Port N` teVirtualMIDI collision — previously **patched** with merged bidirectional create — **superseded** by directional `MT4 Input N` / `MT4 Output Y` separate faces (no shared handle). Re-verify in lab: Device Inquiry on Output must not appear on Input; update any remaining historical notes that still cite the merged workaround as current.
+- Partial `CreatePortSet` errors still omit which directional face failed — unchanged; improve diagnostics when touching VirtualMIDI create again.
+- Lab soak (Matrix-Control presence 2–5 min + MIDI-OX no-echo check) remains manual on Windows hardware.
+- source_spec: `_bmad-output/implementation-artifacts/spec-mt4-separate-virtual-ports.md`
+  summary: Amend planning SSOT (AD-5 / product SPEC) from undirected `MT4 Port N` to directional `MT4 Input` / `MT4 Output` naming.
+  evidence: Code and operator smokes already ship directional names; architecture/epics still document the old shared-label contract.
+- source_spec: `_bmad-output/implementation-artifacts/spec-mt4-separate-virtual-ports.md`
+  summary: Harden uniqueness checks against wide/case-folded teVirtualMIDI alias collisions beyond exact UTF-8 string equality.
+  evidence: Current validation compares UTF-8 strings only; driver alias rules may be wider.
