@@ -51,12 +51,14 @@ Configure fetches Catch2 (pinned commit `f7cfc885…` / tag `v3.8.0` via FetchCo
 ### Windows x64 build + unit tests
 
 ```text
-cmake -S . -B builds/debug -A x64
-cmake --build builds/debug --config Debug
+cmake --preset debug
+cmake --build --preset debug
 ctest --test-dir builds/debug -C Debug --output-on-failure
 ```
 
-Outputs must stay under `builds/` (e.g. `builds/debug`, `builds/ci`).
+Equivalent without presets: `cmake -S . -B builds/debug -A x64` then `cmake --build builds/debug --config Debug`.
+
+Outputs must stay under `builds/` (e.g. `builds/debug`, `builds/ci`). Cursor/VS Code CMake Tools is pinned to preset `debug` via `.vscode/settings.json` so it does not recreate repo-root `build/`.
 
 Optional CLI smoke (same mapper vectors as unit tests): `Bridge.exe --test-mapper`
 

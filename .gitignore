@@ -1,5 +1,7 @@
-# Build outputs
+# Build outputs (official trees live under builds/)
 builds/
+# Safety net: CMake Tools defaults to repo-root build/ unless presets/.vscode win
+build/
 out/
 cmake-build-*/
 CMakeFiles/
@@ -12,6 +14,7 @@ compile_commands.json
 .vs/
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 
 # OS / editor
 .DS_Store

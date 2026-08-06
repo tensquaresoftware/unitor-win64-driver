@@ -178,7 +178,7 @@ If a §3 metric conflicts with timing safety or clarity of the critical path: **
 - **Target / validation machine:** Windows 10/11 64-bit PC — build, USB hardware tests, DAW checks
 - **IDE / AI agent:** Cursor Pro+ (project rules in `.cursor/rules/`)
 - **Language:** C++17 minimum (raise only if architecture explicitly requires it)
-- **Build system:** CMake (expected); build trees under `builds/` only (e.g. `builds/debug`, `builds/ci`)
+- **Build system:** CMake (expected); build trees under `builds/` only (e.g. `builds/debug`, `builds/ci`). Use `CMakePresets.json` / `cmake --preset debug`. Cursor pins CMake Tools to that preset via `.vscode/settings.json`.
 - **Directory / file names:** **kebab-case** for project folders and non-C++ files (`scripts/quality/lint-touched.py`, `docs/dev/…`, `conventions.md`). Exception: C++ sources under `src/` use **PascalCase** filenames matching types (`DeviceProfile.h`, `EmagicMidiMapper.cpp`). Never a top-level `Documentation/`
 - **Stack (to be confirmed in architecture):** WinUSB usermode + protocol layer + virtual MIDI exposure (VirtualMIDI SDK and/or Windows MIDI Services). JUCE may appear later for shared tooling — do not assume it until decided.
 

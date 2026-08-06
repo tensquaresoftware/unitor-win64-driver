@@ -1,0 +1,7 @@
+{
+  "cmake.useCMakePresets": "always",
+  "cmake.defaultConfigurePreset": "debug",
+  "cmake.defaultBuildPreset": "debug",
+  "cmake.configureOnOpen": true,
+  "cmake.copyCompileCommands": "${workspaceFolder}/builds/debug/compile_commands.json"
+}

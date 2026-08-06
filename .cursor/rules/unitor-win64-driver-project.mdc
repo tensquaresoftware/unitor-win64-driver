@@ -11,7 +11,7 @@ Source complète : `conventions.md`. Brief produit : `docs/dev/prompt-demarrage-
 
 - Développement principal : macOS Tahoe + Cursor ; validation matérielle / build cible : **Windows 10/11 64 bits**
 - Langage cible : **C++17** usermode (WinUSB + pont MIDI) — stack exacte à trancher en architecture BMad
-- Builds attendus sous `builds/` (ex. `builds/debug`, `builds/ci`)
+- Builds attendus sous `builds/` (ex. `builds/debug`, `builds/ci`) — presets CMake + `.vscode/settings.json` (pas l’arbre IDE par défaut)
 - IDE / agent : **Cursor Pro+**
 - Dossiers et fichiers projet en **kebab-case** (`scripts/`, `docs/dev/`, `conventions.md`, …)
 - Exception : sources C++ sous `src/` en **PascalCase** (`DeviceProfile.h`, …)

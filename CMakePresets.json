@@ -1,0 +1,34 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug (builds/debug)",
+      "description": "Local Debug tree under builds/ — not repo-root build/.",
+      "binaryDir": "${sourceDir}/builds/debug"
+    },
+    {
+      "name": "ci",
+      "displayName": "CI (builds/ci)",
+      "description": "CI/Release-oriented tree under builds/ci.",
+      "binaryDir": "${sourceDir}/builds/ci"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "ci",
+      "configurePreset": "ci",
+      "configuration": "Release"
+    }
+  ]
+}

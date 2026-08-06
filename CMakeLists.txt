@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 
+# Reject the CMake Tools / IDE default binary dir (${source}/build).
+# Official out-of-source trees are under builds/ (see CMakePresets.json).
+get_filename_component(_unitor_binary_dir_name "${CMAKE_BINARY_DIR}" NAME)
+if(_unitor_binary_dir_name STREQUAL "build")
+    message(FATAL_ERROR
+        "Refuse repo-root build/. Configure into builds/<name> "
+        "(e.g. cmake --preset debug, or cmake -S . -B builds/debug). "
+        "Cursor/VS Code: use CMake preset 'debug' (.vscode/settings.json).")
+endif()
+
 project(unitor-win64-driver
     VERSION 0.1.0
     LANGUAGES CXX
@@ -10,7 +20,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Out-of-source builds only. Configure into builds/ (e.g. builds/debug, builds/ci).
-# Example: cmake -S . -B builds/debug && cmake --build builds/debug
+# Example: cmake --preset debug && cmake --build --preset debug
+# Or: cmake -S . -B builds/debug && cmake --build builds/debug
 
 add_executable(Bridge
     src/App/Main.cpp
