@@ -104,13 +104,13 @@ Tu peux utiliser **deux câbles DIN** en même temps (un dans chaque sens) pour 
 
 | Nom dans ce guide | Chaîne concrète | Ce que tu prouves |
 |---|---|---|
-| **Mac → PC** (boîtier → Bridge → apps PC) | Live Mac → Scarlett OUT → MT4 IN N → Bridge → `MT4 Port N` IN → Live PC / MIDI-OX | Ce qui **entre** dans le MT4 arrive bien dans Windows |
-| **PC → Mac** (apps PC → Bridge → boîtier) | Live PC → `MT4 Port N` OUT → MT4 OUT N → Scarlett IN → MIDI Monitor / Live Mac | Ce que Windows **envoie** sort bien du MT4 |
+| **Mac → PC** (boîtier → Bridge → apps PC) | Live Mac → Scarlett OUT → MT4 IN N → Bridge → `MT4 Input N` → Live PC / MIDI-OX | Ce qui **entre** dans le MT4 arrive bien dans Windows |
+| **PC → Mac** (apps PC → Bridge → boîtier) | Live PC → `MT4 Output N` → MT4 OUT N → Scarlett IN → MIDI Monitor / Live Mac | Ce que Windows **envoie** sort bien du MT4 |
 
 **Où regarder les octets**
 
 - Sur le **Mac** : **MIDI Monitor** (excellent) sur le port MIDI de la Scarlett.
-- Sur le **PC** : **MIDI-OX** (Display / log fichier) et/ou Ableton Live 12 sur `MT4 Port N`.
+- Sur le **PC** : **MIDI-OX** (Display / log fichier) et/ou Ableton Live 12 sur `MT4 Input N` / `MT4 Output N`.
   - À partir de la **partie 5** (SysEx) : **MIDI-OX** uniquement pour observer et sauver le flux.
   - **MidiView** : **interdit** sur ce labo — BSOD `htmididriver64.sys` au SysEx ~275 B (2026-08-06). ShowMIDI : abandonné (pas de log fichier pratique).
 
@@ -118,7 +118,7 @@ Tu peux utiliser **deux câbles DIN** en même temps (un dans chaque sens) pour 
 
 - Branché en USB sur le **PC** : tu joues dans Live PC (notes locales) — ne traverse **pas** le MT4.
 - Branché en USB sur le **Mac** : idem côté Mac.
-- Pour des notes **à travers** le MT4 : envoie des clips / notes depuis **Live Mac** vers la Scarlett OUT (sens Mac → PC), ou depuis **Live PC** vers `MT4 Port N` OUT (sens PC → Mac).
+- Pour des notes **à travers** le MT4 : envoie des clips / notes depuis **Live Mac** vers la Scarlett OUT (sens Mac → PC), ou depuis **Live PC** vers `MT4 Output N` (sens PC → Mac).
 
 ---
 
@@ -162,7 +162,7 @@ Tu peux utiliser **deux câbles DIN** en même temps (un dans chaque sens) pour 
 1. Scarlett MIDI **OUT** → MT4 **IN** physique N (ex. IN 1). → ✅
 2. MT4 **OUT** physique N (ex. OUT 1) → Scarlett MIDI **IN**. → ✅
 3. Sur le Mac : Live + MIDI Monitor voient bien le périphérique MIDI de la Scarlett (souvent nommé autour de « Scarlett 6i6 » / MIDI Port). → ✅
-4. Note le **N** choisi : tu l’aligneras sur `MT4 Port N` côté PC. → ✅ — IN/OUT 1 → `MT4 Port 1`
+4. Note le **N** choisi : tu l’aligneras sur `MT4 Input N` / `MT4 Output N` côté PC. → ✅ — IN/OUT 1 → `MT4 Input 1` / `MT4 Output 1`
 
 ### 0.5 Remarques libres 📌
 
@@ -237,7 +237,7 @@ ctest --test-dir builds/debug -C Debug
 
 ## 2. Brancher le MT4, ouvrir l’USB, démarrer la session
 
-Objectif : retrouver le chemin labo Epic 1 (WinUSB + ports `MT4 Port N`) avant horloge / SysEx.
+Objectif : retrouver le chemin labo Epic 1 (WinUSB + ports `MT4 Input` / `MT4 Output`) avant horloge / SysEx.
 
 **Rappel Boot Camp** : souvent **cas B** — nœud `USB\VID_086A&PID_0003` sans `MI_02` → Zadig + **`--dev-zadig`**. Détail : [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) sections 2–4.
 
@@ -278,7 +278,7 @@ builds\debug\Debug\Bridge.exe --start-session
 
 Console attendue (libellés en anglais, normal) :
 
-- Noms `MT4 Port 1` → ✅ (je vois les deux entrées et les quatre sorties)
+- Noms `MT4 Input 1` / `MT4 Output 1` → ✅ (je vois les deux entrées et les quatre sorties)
 - `DeviceSession started for MT4 with Virtual Ports` → ✅
 - MIDI I/O qui tourne → ✅ ("MIDI I/O Running")
 
@@ -291,19 +291,19 @@ Console attendue (libellés en anglais, normal) :
 
 Dans **Ableton PC** → Réglages → MIDI :
 
-1. **2 entrées** visibles : `MT4 Port 1`, `MT4 Port 2`. → ✅
-2. **4 sorties** visibles : `MT4 Port 1` … `MT4 Port 4`. → ✅
+1. **2 entrées** visibles : `MT4 Input 1`, `MT4 Input 2`. → ✅
+2. **4 sorties** visibles : `MT4 Output 1` … `MT4 Output 4`. → ✅
 3. **Track** coché sur les ports que tu testes (Sync plus tard pour l’horloge). → ✅
 
 **Contrôle rapide Mac → PC** (notes à travers le MT4) :
 
 1. Sur le **Mac** : Live envoie des notes vers la **Scarlett MIDI OUT** (pas vers un port virtuel inventé). → ✅
 2. Câble : Scarlett OUT → MT4 IN 1. → ✅
-3. Sur le **PC** : MIDI-OX / Live sur `MT4 Port 1` IN → notes visibles. → ✅
+3. Sur le **PC** : MIDI-OX / Live sur `MT4 Input 1` → notes visibles. → ✅
 
 **Contrôle rapide PC → Mac** :
 
-1. Sur le **PC** : Live envoie des notes vers `MT4 Port 1` OUT (Track coché). → ✅
+1. Sur le **PC** : Live envoie des notes vers `MT4 Output 1` (Track coché). → ✅
 2. Câble : MT4 OUT 1 → Scarlett IN. → ✅
 3. Sur le **Mac** : MIDI Monitor (et/ou Live) sur l’entrée MIDI Scarlett → notes visibles. → ✅
 
@@ -321,13 +321,13 @@ Objectif : Timing Clock + Start / Stop / Continue passent **sans trous** imputab
 
 **Définition d’échec :** Live perd le sync, ou Start/Stop/Continue manque, **alors que** les notes circulent encore → ❌ Bridge.
 
-**Astuce Ableton (les deux machines)** : dans Préférences → Link/Tempo/MIDI (libellés selon version), tu actives l’**envoi** ou la **réception** Sync / MIDI Clock **par port**. Sur le PC, le port concerné est `MT4 Port N` ; sur le Mac, le port MIDI de la **Scarlett**.
+**Astuce Ableton (les deux machines)** : dans Préférences → Link/Tempo/MIDI (libellés selon version), tu actives l’**envoi** ou la **réception** Sync / MIDI Clock **par port**. Sur le PC, le port concerné est `MT4 Input N` ou `MT4 Output N` selon le sens ; sur le Mac, le port MIDI de la **Scarlett**.
 
 ### 3.1 Sens PC → Mac (Live PC → MT4 OUT → Scarlett → MIDI Monitor / Live Mac)
 
 1. Câble : **MT4 OUT N** → **Scarlett MIDI IN** (déjà en place si §0.4). → ✅
-   📌 Port / câble : `MT4 Port …` OUT / MT4 OUT … → Scarlett IN
-2. Sur le **PC** : dans Live, coche **Sync** (sortie) sur `MT4 Port N` OUT uniquement (évite d’arroser les 4 OUT au début). → ✅
+   📌 Port / câble : `MT4 Output …` / MT4 OUT … → Scarlett IN
+2. Sur le **PC** : dans Live, coche **Sync** (sortie) sur `MT4 Output N` uniquement (évite d’arroser les 4 OUT au début). → ✅
 3. Sur le **Mac** : ouvre **MIDI Monitor** sur l’entrée Scarlett ; optionnellement Live Mac en réception Sync sur la Scarlett si tu veux voir l’asservissement. → ✅
 4. Lance le transport **Live PC** (**Play**), laisse tourner ~1–2 min, puis **Stop**. → ✅
 5. **Continue** : si Live te le permet dans ta config, teste ; sinon **N/A** + raison. → ✅
@@ -345,9 +345,9 @@ Ce que tu dois voir côté Mac (MIDI Monitor) — note au fur et à mesure :
 ### 3.2 Sens Mac → PC (Live Mac → Scarlett → MT4 IN → Live PC / MIDI-OX)
 
 1. Câble : **Scarlett MIDI OUT** → **MT4 IN N**. → ✅
-   📌 Port / câble : Scarlett OUT → MT4 IN 1 → `MT4 Port 1` IN
+   📌 Port / câble : Scarlett OUT → MT4 IN 1 → `MT4 Input 1`
 2. Sur le **Mac** : Live envoie Sync / MIDI Clock **uniquement** vers la Scarlett MIDI OUT. → ✅
-3. Sur le **PC** : Live / MIDI-OX sur `MT4 Port N` IN ; coche Sync **entrée** si tu veux que Live PC **suive** l’horloge du Mac. → ✅
+3. Sur le **PC** : Live / MIDI-OX sur `MT4 Input N` ; coche Sync **entrée** si tu veux que Live PC **suive** l’horloge du Mac. → ✅
    📌 Observateur PC : MIDI-OX + Live 12
 4. Lance **Play** sur Live Mac, puis **Stop**. → ✅
 5. Observe `F8` / `FA` / `FC` (et Continue si possible) dans MIDI-OX et/ou l’asservissement Live PC. → ✅
@@ -387,18 +387,18 @@ Objectif : le Bridge transporte le **MTC quarter-frame** et au moins un **full-f
 
 **Hors scope :** bits utilisateur SMPTE, MMC, générateur MTC dans le Bridge.
 
-**Ableton :** active l’envoi / la réception de **MIDI Timecode (MTC)** sur le bon port (PC : `MT4 Port N` ; Mac : Scarlett). Ne confonds pas avec MIDI Clock (`F8`) de la partie 3.
+**Ableton :** active l’envoi / la réception de **MIDI Timecode (MTC)** sur le bon port (PC : `MT4 Input N` / `MT4 Output N` ; Mac : Scarlett). Ne confonds pas avec MIDI Clock (`F8`) de la partie 3.
 
 ### 4.1 Préparer
 
 1. Même câblage Scarlett ↔ MT4 que §0.4. → ✅
-2. Si possible, dédie `MT4 Port N` au MTC pour ce test (le MTC est bavard). → ✅
+2. Si possible, dédie `MT4 Output N` (et l’`MT4 Input` associé si besoin) au MTC pour ce test (le MTC est bavard). → ✅
 3. **MIDI Monitor** sur le Mac = meilleur « microscope » pour `F1` et le SysEx full-frame. → ✅
 4. MIDI-OX / Live PC prêts pour le sens Mac → PC. → ✅
 
 ### 4.2 Sens PC → Mac (Live PC envoie le MTC)
 
-1. Live PC : envoi MTC activé sur `MT4 Port N` OUT. → ✅
+1. Live PC : envoi MTC activé sur `MT4 Output N`. → ✅
    📌 Port OUT / câble : 1
 2. Mac : MIDI Monitor sur Scarlett IN (câble MT4 OUT N → Scarlett IN). → ✅
 3. Lance le transport / le timecode Live PC assez longtemps pour voir des **quarter-frames** en continu. → je ne sais pas
@@ -417,7 +417,7 @@ Observations PC → Mac : Je te laisse inspecté mon log MIDI "MTC 4.2.txt"
 1. Live Mac : envoi MTC vers Scarlett MIDI OUT. → ✅
 2. Câble : Scarlett OUT → MT4 IN N. → ✅
    📌 Port IN / câble : 1
-3. PC : MIDI-OX / Live sur `MT4 Port N` IN (réception MTC / observation). → ✅ — MIDI-OX, flux entrant OK (voir `tests/lab-logs/smoke-epic2/mtc-4.3.txt`)
+3. PC : MIDI-OX / Live sur `MT4 Input N` (réception MTC / observation). → ✅ — MIDI-OX, flux entrant OK (voir `tests/lab-logs/smoke-epic2/mtc-4.3.txt`)
 4. Quarter-frames visibles sur le PC. → je ne sais pas
 5. Au moins un full-frame si le Mac en envoie. → je ne sais pas
 6. Notes encore OK. → ✅
@@ -451,14 +451,14 @@ Tu t’étais arrêté au **Patch ~275 B** (§5.2). Voici comment reprendre **sa
    ```text
    builds\debug\Debug\Bridge.exe --start-session --dev-zadig
    ```
-3. Ouvre **MIDI-OX** ; Options → MIDI Devices : sélectionne `MT4 Port 1` en **Input** (pour Mac → PC). Active le **Display** / log que tu sais exporter en fichier texte.
+3. Ouvre **MIDI-OX** ; Options → MIDI Devices : sélectionne `MT4 Input 1` en **Input** (pour Mac → PC). Active le **Display** / log que tu sais exporter en fichier texte.
 4. Sur le Mac : SysEx Librarian + Scarlett OUT → MT4 IN 1 (comme avant).
 5. Reprends ci-dessous à **§5.2 étape 4** (Patch). Tu peux d’abord renvoyer l’Inquiry pour vérifier que MIDI-OX affiche bien les 6 octets, puis enchaîne Patch / Master.
 
 **Outil PC pour cette partie (et la suite) : MIDI-OX**
 
 - Un peu old-school, mais fiable pour **voir** le flux et **sauver** un log texte.
-- Écoute `MT4 Port N` (IN pour Mac → PC).
+- Écoute `MT4 Input` / `MT4 Output` (IN pour Mac → PC).
 - Peut aussi **envoyer** un `.syx` si besoin (Display / SysEx / Send).
 - **MidiView** : interdit sur ce labo (BSOD). **ShowMIDI** : abandonné (pas de log fichier pratique).
 
@@ -484,7 +484,7 @@ Tu t’étais arrêté au **Patch ~275 B** (§5.2). Voici comment reprendre **sa
 **Tentative 1 (MidiView) — interrompue par BSOD**
 
 1. Session Bridge active (mode Computer OK). → ✅
-2. Câble : Scarlett OUT → MT4 IN 1 ; MidiView écoutait `MT4 Port 1` IN. → ✅ (ne plus reproduire avec MidiView)
+2. Câble : Scarlett OUT → MT4 IN 1 ; MidiView écoutait `MT4 Input 1`. → ✅ (ne plus reproduire avec MidiView)
    📌 Port / câble / outil d’envoi : Port 1 / SysEx Librarian (Mac)
    📌 Log MidiView : non sauvé (crash avant) — Inquiry 6 B vu OK à l’écran
 3. Inquiry (6 B) — trame complète dans MidiView. → ✅
@@ -493,7 +493,7 @@ Tu t’étais arrêté au **Patch ~275 B** (§5.2). Voici comment reprendre **sa
 **Tentative 2 (reprise) — MIDI-OX, sans MidiView**
 
 1. Session Bridge relancée (`--start-session --dev-zadig`). → ✅
-2. MIDI-OX écoute `MT4 Port 1` IN (Display / log fichier prêt). → ✅
+2. MIDI-OX écoute `MT4 Input 1` (Display / log fichier prêt). → ✅
    📌 Fichier log MIDI-OX : `tests/lab-logs/smoke-epic2/sysex-5.2.txt`
 3. (Contrôle rapide) Renvoyer Inquiry (6 B) — trame complète dans MIDI-OX. → ✅
 4. Envoyer `tests/fixtures/sysex/Patch.syx` (~275 B) depuis le Mac — trame **complète** dans MIDI-OX (pas de BSOD). → ✅
@@ -501,7 +501,7 @@ Tu t’étais arrêté au **Patch ~275 B** (§5.2). Voici comment reprendre **sa
 
 ### 5.3 Sens PC → Mac (SysEx sort du MT4)
 
-1. Envoie depuis le PC (**MIDI-OX** / outil SysEx / Live / Matrix-Control) vers `MT4 Port N` OUT. → ✅
+1. Envoie depuis le PC (**MIDI-OX** / outil SysEx / Live / Matrix-Control) vers `MT4 Output N`. → ✅
    📌 Port / câble / outil d’envoi : Port 1 / MIDI-OX
 2. Câble : MT4 OUT N → Scarlett IN. → ✅
 3. Inquiry : trame complète dans **MIDI Monitor** (Mac). → ✅
@@ -536,7 +536,7 @@ Objectif : avec **Matrix-Control** (appli externe sur le **PC**) + de préféren
 
 **Sans Matrix-Control / sans Matrix-1000 :** marque **N/A** / reportée — ce n’est pas un échec des parties 1–5. Windows **10** = colonne obligatoire.
 
-**Lien avec le setup Scarlett :** pour cette partie, le chemin nominal est **Matrix-Control ↔ ports virtuels `MT4 Port N` ↔ MT4 ↔ Matrix-1000**. La Scarlett / le Mac ne sont **pas** nécessaires, sauf pour le vecteur **#7** (injection d’un SysEx non-patch) où un envoi SysEx sur le PC + **MIDI-OX** en observation/log suffit souvent ; tu peux aussi injecter depuis le Mac via Scarlett → MT4 IN **si** c’est le même port virtuel que Matrix-Control écoute — plus délicat, préfère injecter sur le PC et logger avec MIDI-OX pour #7.
+**Lien avec le setup Scarlett :** pour cette partie, le chemin nominal est **Matrix-Control ↔ ports virtuels `MT4 Input` / `MT4 Output` ↔ MT4 ↔ Matrix-1000**. La Scarlett / le Mac ne sont **pas** nécessaires, sauf pour le vecteur **#7** (injection d’un SysEx non-patch) où un envoi SysEx sur le PC + **MIDI-OX** en observation/log suffit souvent ; tu peux aussi injecter depuis le Mac via Scarlett → MT4 IN **si** c’est le même port virtuel que Matrix-Control écoute — plus délicat, préfère injecter sur le PC et logger avec MIDI-OX pour #7.
 
 **Règle d’espacement :** rythme stock Matrix-Control. Essai volontairement trop serré (< ~10 ms) → **invalide**, ne pas ❌ le Bridge.
 
@@ -547,9 +547,9 @@ Objectif : avec **Matrix-Control** (appli externe sur le **PC**) + de préféren
 1. Bridge en `--start-session` (`--dev-zadig` si besoin). Note commit / chemin. → 
 2. Mode Computer OK. → 
 3. Branche le **Matrix-1000** sur le câble MIDI MT4 choisi (IN/OUT selon le câblage synth). → 
-4. Ouvre Matrix-Control sur le **PC** ; sélectionne `MT4 Port N` correspondant. → 
+4. Ouvre Matrix-Control sur le **PC** ; sélectionne MIDI From = `MT4 Input X`, MIDI To = `MT4 Output Y`. → 
    📌 Port N / câble : …
-5. Ouvre **MIDI-OX** sur le même `MT4 Port N` utile (Display / log prêt pour les dumps douteux ou le #7). **Pas MidiView.** → 
+5. Ouvre **MIDI-OX** sur le même `MT4 Input X` utile (observation) (Display / log prêt pour les dumps douteux ou le #7). **Pas MidiView.** → 
 
 ### 6.2 Vecteurs portes dures
 
@@ -654,7 +654,7 @@ Vers ~2 h et à la fin : Gestionnaire des tâches (mémoire / handles de `Bridge
 1. Focus console Bridge (**PC**). → 
 2. **Ctrl+C** une fois ; attends jusqu’à ~3 s. → 
 3. Processus terminé. → 
-4. Ableton PC / MIDI-OX : `MT4 Port N` disparus ou non sélectionnables (souvent orange dans Live). → 
+4. Ableton PC / MIDI-OX : `MT4 Input` / `MT4 Output` disparus ou non sélectionnables (souvent orange dans Live). → 
 5. LEDs MT4 : Patch rouge, USB orange éteinte (comme Epic 1). → 
 
 ### 8.1 Remarques libres 📌
@@ -706,11 +706,11 @@ Vers ~2 h et à la fin : Gestionnaire des tâches (mémoire / handles de `Bridge
 | `--test-mapper` ≠ 0 | Rebuild à jour ; coller la sortie. |
 | Ports absents dans loopMIDI | **Normal** — Ableton PC / MIDI-OX. |
 | Ports absents dans Ableton PC | Session pas démarrée, ou Live ouverte trop tôt sans refresh. |
-| MIDI Monitor ne voit rien (sens PC → Mac) | Câble MT4 **OUT** → Scarlett **IN** ; mauvais port Live PC ; Track non coché sur `MT4 Port N`. |
-| MIDI-OX / Live PC silencieux (sens Mac → PC) | Câble Scarlett **OUT** → MT4 **IN** ; Live Mac / SysEx Librarian envoie vers la Scarlett ; mauvais `MT4 Port N` ; MIDI-OX Input bien sélectionné. |
+| MIDI Monitor ne voit rien (sens PC → Mac) | Câble MT4 **OUT** → Scarlett **IN** ; mauvais port Live PC ; Track non coché sur `MT4 Output N`. |
+| MIDI-OX / Live PC silencieux (sens Mac → PC) | Câble Scarlett **OUT** → MT4 **IN** ; Live Mac / SysEx Librarian envoie vers la Scarlett ; mauvais `MT4 Input N` / `MT4 Output N` ; MIDI-OX Input bien sélectionné. |
 | BSOD avec MidiView / `htmididriver64.sys` | **Connu** (2026-08-06) — ne plus utiliser MidiView sur ce labo ; reprendre avec MIDI-OX. |
-| Oxygen 61 « ne traverse pas » le MT4 | Normal : USB-only — il ne remplace pas un câble DIN. Passe par Live + Scarlett ou Live + `MT4 Port N`. |
-| Notes OK, horloge absente | Sync non coché sur le **bon** port (PC : `MT4 Port N` ; Mac : Scarlett). |
+| Oxygen 61 « ne traverse pas » le MT4 | Normal : USB-only — il ne remplace pas un câble DIN. Passe par Live + Scarlett ou Live + `MT4 Input` / `MT4 Output`. |
+| Notes OK, horloge absente | Sync non coché sur le **bon** port (PC : `MT4 Input N` / `MT4 Output N` ; Mac : Scarlett). |
 | Live ne suit pas l’horloge externe | Réception Sync activée ; l’autre Live envoie bien Clock ; sens de câble correct. |
 | Continue introuvable | Souvent limite Live → **N/A** + raison. |
 | MTC invisible / confondu avec Clock | MTC ≠ MIDI Clock. Active Timecode (MTC) ; MIDI Monitor doit montrer `F1`, pas seulement `F8`. |

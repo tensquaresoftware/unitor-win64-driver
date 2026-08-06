@@ -1,4 +1,4 @@
-// Naming authority for unit ordinal K and AD-5 Virtual Port display strings (AD-6).
+// Naming authority for unit ordinal K and Virtual Port display strings (AD-6).
 // MidiBackend must never invent K or re-format these names.
 
 #pragma once
@@ -8,9 +8,19 @@
 
 #include <string>
 
+// Directional Virtual Port face (host ← DIN vs host → DIN).
+enum class MidiPortDirection
+{
+    In,
+    Out,
+};
+
 // Sole formatting SSOT for Virtual Port display names.
-// K == 1 → "MT4 Port N"; K >= 2 → "MT4 #K Port N".
-std::string formatPortDisplayName(unsigned unitOrdinalK, unsigned portN);
+// Unit 1: "MT4 Input N" / "MT4 Output N"; unit K>=2: "MT4 #K Input N" / "MT4 #K Output N".
+std::string formatPortDisplayName(
+    unsigned unitOrdinalK,
+    unsigned portN,
+    MidiPortDirection direction);
 
 class DeviceSessionManager
 {

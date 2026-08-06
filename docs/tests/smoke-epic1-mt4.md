@@ -10,7 +10,7 @@ updated: 2026-08-05
 
 # Guide de smoke — Epic 1 (MT4 sous Windows)
 
-Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, lancer le Bridge, voir les ports `MT4 Port N`, faire passer des notes et des CC dans les deux sens.
+Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, lancer le Bridge, voir les ports `MT4 Input` / `MT4 Output`, faire passer des notes et des CC dans les deux sens.
 
 **Comment l’utiliser**
 
@@ -22,7 +22,7 @@ Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, 
 **Ce que ce smoke prouve (Epic 1)**
 
 - Le MT4 parle au Bridge via **WinUSB** (pas un pilote kernel custom du projet).
-- Le Bridge crée **2 entrées + 4 sorties** nommées `MT4 Port 1` … `MT4 Port 4`.
+- Le Bridge crée **2 entrées + 4 sorties** nommés `MT4 Input 1–2` et `MT4 Output 1–4`.
 - Notes et CC circulent **boîtier → PC** et **PC → boîtier**.
 
 **Hors scope ce soir** (ne pas les exiger)
@@ -37,7 +37,7 @@ Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, 
 | Bind | **Cas B** (Zadig / INF lab sur nœud parent sans `MI_02`) + Bridge `--dev-zadig` |
 | Sections 1–3 | ✅ open / probe USB |
 | Section 4 | ✅ session + **2 IN / 4 OUT** visibles dans Ableton Live 12 |
-| Section 5 (boîtier → PC) | ✅ notes + CC sur **In 1 et In 2** → Ableton (`MT4 Port 1/2`) ; pitch/CC fidèles (lab : C3, CC7) ; root cause WinUSB ReadBulk = `wMaxPacketSize` (32) |
+| Section 5 (boîtier → PC) | ✅ notes + CC sur **In 1 et In 2** → Ableton (`MT4 Input 1/2`) ; pitch/CC fidèles (lab : C3, CC7) ; root cause WinUSB ReadBulk = `wMaxPacketSize` (32) |
 | Section 6 (PC → boîtier) | ✅ notes + CC sur Out 1…4 ; **retest** 1er envoi Out 1 OK après sentinel `F5` |
 | Section 8 | ✅ Ctrl+C → Patch rouge, ports Live/PC désactivés (délai ~timeout bulk IN ~3 s possible) |
 
@@ -239,7 +239,7 @@ Validation :
 
 ## 4. Lancer la session MIDI (ports virtuels)
 
-Objectif : créer les ports `MT4 Port N` et laisser la pompe notes/CC tourner.
+Objectif : créer les ports `MT4 Input` / `MT4 Output` et laisser la pompe notes/CC tourner.
 
 ### 4.1 Avant de lancer
 
@@ -266,7 +266,7 @@ builds\debug\Debug\Bridge.exe --start-session --dev-zadig
 
 À peu près ceci (libellés en anglais, c’est normal) :
 
-- Une liste des noms de ports attendus (`MT4 Port 1` …).
+- Une liste des noms de ports attendus (`MT4 Input 1–2`, `MT4 Output 1–4`).
 - `DeviceSession started for MT4 with Virtual Ports`
 - `MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)`  
   (tiret ASCII `-` uniquement — un tiret typographique s’affiche en `ÔÇö` sous PowerShell OEM)
@@ -279,17 +279,17 @@ Le processus **reste ouvert** (curseur qui clignote) : **c’est normal**. Ne fe
 
 Dans ShowMIDI / DAW, tu dois voir **par unité MT4** :
 
-- **2 ports d’entrée** (MIDI IN côté apps) : `MT4 Port 1`, `MT4 Port 2`
-- **4 ports de sortie** (MIDI OUT côté apps) : `MT4 Port 1` … `MT4 Port 4`
+- **2 ports d’entrée** (MIDI IN côté apps) : `MT4 Input 1`, `MT4 Input 2`
+- **4 ports de sortie** (MIDI OUT côté apps) : `MT4 Output 1` … `MT4 Output 4`
 
-Les noms IN et OUT portent le **même libellé** pour le même numéro de port (comportement voulu).
+Les noms d’entrée et de sortie sont **volontairement distincts** (`MT4 Input N` vs `MT4 Output Y`) : ce ne sont pas des faces merged du même libellé.
 
 Validation :
 
 - Session démarrée, messages console OK : ✅
 - 2 IN visibles : ✅ (Ableton Live 12 → Réglages → MIDI → Input Ports)
 - 4 OUT visibles : ✅ (idem Output Ports ; Track coché pour notes/CC)
-- Noms exacts `MT4 Port N` (pas un suffixe bizarre du type `#2`, ou le noter) : ✅
+- Noms exacts `MT4 Input N` / `MT4 Output Y` (pas un suffixe bizarre du type `#2`, ou le noter) : ✅
 - Échec éventuel (VirtualMIDI manquant, open USB, etc.) — coller le message : _(aucun)_
 
 📌 Remarques GD : Lab 2026-08-05 Boot Camp — session avec `--dev-zadig`. Ports créés par Bridge (teVirtualMIDI), pas via la UI loopMIDI.
@@ -300,18 +300,18 @@ Validation :
 
 ## 5. Sens boîtier → PC (câbles IN physiques → ports virtuels IN)
 
-Objectif : ce qui entre dans le MT4 apparaît sur `MT4 Port 1` / `MT4 Port 2` dans ShowMIDI / DAW.
+Objectif : ce qui entre dans le MT4 apparaît sur `MT4 Input 1` / `MT4 Input 2` dans ShowMIDI / DAW.
 
 ### 5.1 Préparer l’écoute
 
-1. Dans ShowMIDI (ou DAW), sélectionne / surveille **`MT4 Port 1`** (entrée).
+1. Dans ShowMIDI (ou DAW), sélectionne / surveille **`MT4 Input 1`** (entrée).
 2. Branche un clavier (ou contrôleur) sur l’**entrée physique 1** du MT4.
 
 ### 5.2 Tester Port 1
 
 1. Joue quelques **notes**.
 2. Bouge un **CC** (mod wheel, fader, etc.).
-3. Confirme que ShowMIDI / DAW affiche bien notes + CC sur **`MT4 Port 1`**.
+3. Confirme que ShowMIDI / DAW affiche bien notes + CC sur **`MT4 Input 1`**.
 
 Validation Port 1 IN :
 
@@ -320,7 +320,7 @@ Validation Port 1 IN :
 
 ### 5.3 Tester Port 2
 
-1. Surveille **`MT4 Port 2`** (entrée) dans ShowMIDI / DAW.
+1. Surveille **`MT4 Input 2`** (entrée) dans ShowMIDI / DAW.
 2. Branche la source sur l’**entrée physique 2** du MT4 (ou change de câble).
 3. Notes + CC à nouveau.
 
@@ -331,7 +331,7 @@ Validation Port 2 IN :
 
 ### 5.4 Contrôle anti-mélange (rapide)
 
-Sans rien brancher sur l’IN 2, jouer sur l’IN 1 : le trafic ne doit **pas** apparaître sur `MT4 Port 2`.
+Sans rien brancher sur l’IN 2, jouer sur l’IN 1 : le trafic ne doit **pas** apparaître sur `MT4 Input 2`.
 
 Validation :
 
@@ -348,7 +348,7 @@ Validation :
 
 ## 6. Sens PC → boîtier (ports virtuels OUT → câbles OUT physiques)
 
-Objectif : ce que tu envoies sur `MT4 Port N` (OUT virtuel) sort sur le **câble physique N** du MT4.
+Objectif : ce que tu envoies sur `MT4 Output N` (OUT virtuel) sort sur le **câble physique N** du MT4.
 
 ### 6.1 Préparer l’émission
 
@@ -357,7 +357,7 @@ Objectif : ce que tu envoies sur `MT4 Port N` (OUT virtuel) sort sur le **câble
 
 ### 6.2 Tester chaque OUT (un par un)
 
-Pour **chaque** port `MT4 Port 1` … `MT4 Port 4` :
+Pour **chaque** port `MT4 Output 1` … `MT4 Output 4` :
 
 1. Dans l’outil d’envoi, choisis **uniquement** ce port OUT.
 2. Envoie quelques **notes**, puis un **CC**.
@@ -372,7 +372,7 @@ Validation OUT 4 notes/CC : ✅ / ✅
 
 C’est le point ciblé par le correctif d’intégration de ce jour.
 
-1. Configure l’outil pour envoyer **en parallèle** (ou en rafale très serrée) vers **au moins deux** OUT virtuels différents, par ex. `MT4 Port 1` et `MT4 Port 3`.
+1. Configure l’outil pour envoyer **en parallèle** (ou en rafale très serrée) vers **au moins deux** OUT virtuels différents, par ex. `MT4 Output 1` et `MT4 Output 3`.
 2. Envoie des notes **distinctes** (ex. note grave sur le port 1, note aiguë sur le port 3) pour reconnaître qui est qui.
 3. Vérifie que chaque câble physique reçoit **sa** note, sans inversion durable.
 
@@ -383,7 +383,7 @@ Validation multi-OUT :
 
 📌 Remarques GD (lab 2026-08-05) :
 
-- Émission = clips Ableton Live 12 **sur le PC** → ports OUT `MT4 Port N` (Track coché).
+- Émission = clips Ableton Live 12 **sur le PC** → ports OUT `MT4 Output N` (Track coché).
 - **Premier passage** : notes Out 1 (1er essai) allumaient les 4 LEDs Out (omission `F5`) ; CC7 et Out 2–4 OK.
 - **Retest soir** (sentinel `currentOutCable_` / `F5`) : notes + CC OK sur Out 1…4, y compris premier envoi Out 1.
 
@@ -417,12 +417,12 @@ Objectif : ranger les ports virtuels et l’USB proprement.
 1. Remets le focus sur la fenêtre console du Bridge.
 2. Appuie sur **Ctrl+C** (une fois, puis attends jusqu’à ~3 s : le thread USB IN peut finir un `ReadBulk` borné avant de joindre).
 3. Le processus doit se terminer.
-4. Dans ShowMIDI / DAW, **rafraîchis** la liste des ports : les `MT4 Port N` de cette session doivent **disparaître** (ou ne plus être sélectionnables comme ports live).
+4. Dans ShowMIDI / DAW, **rafraîchis** la liste des ports : les `MT4 Input` / `MT4 Output` de cette session doivent **disparaître** (ou ne plus être sélectionnables comme ports live).
 
 Validation :
 
 - Ctrl+C termine le Bridge : ✅
-- Ports `MT4 Port N` disparus après arrêt : ✅ (Live : intitulés passent en **orange** = interface déconnectée)
+- Ports `MT4 Input` / `MT4 Output` disparus après arrêt : ✅ (Live : intitulés passent en **orange** = interface déconnectée)
 - LED MT4 : Patch **rouge** allumée, USB **orange** éteinte : ✅
 
 📌 Remarques GD : Teardown aligné avec macOS (retour mode Patch). Retest soir : délai avant prise en compte Ctrl+C possible (~timeout bulk IN) ; LEDs + ports Live OK.
@@ -437,7 +437,7 @@ Validation :
 
 1. Relance `--start-session`.
 2. Ferme la fenêtre par la **croix** (ne fais pas Ctrl+C).
-3. Regarde si des `MT4 Port N` restent visibles alors que le Bridge est mort.
+3. Regarde si des `MT4 Input` / `MT4 Output` restent visibles alors que le Bridge est mort.
 
 Validation (informatif, pas un critère de réussite Epic 1) :
 
@@ -464,7 +464,7 @@ Remplis après les tests (même partiels).
 **Ce qui a le mieux marché**
 
 - WinUSB lab (cas B) + init magic + session VirtualMIDI.
-- 2 IN / 4 OUT nommés `MT4 Port N` dans Ableton Live 12.
+- 2 IN / 4 OUT nommés `MT4 Input` / `MT4 Output` dans Ableton Live 12.
 - **Round-trip notes/CC** boîtier↔PC sur les ports testés (retest soir).
 - Arrêt Ctrl+C (LEDs + ports Live), avec délai USB possible.
 
@@ -485,7 +485,7 @@ Remplis après les tests (même partiels).
 
 **Fichiers / logs utiles** (chemins, captures, messages console)
 
-- Capture Ableton MIDI I/O : 2× `MT4 Port 1/2` IN + 4× OUT Track ON.
+- Capture Ableton MIDI I/O : 2× `MT4 Input 1/2` + 4× `MT4 Output` Track ON.
 - Console Bridge (PowerShell) : `DeviceSession started…` / `MIDI I/O running…` / éventuellement `device-host counters:…` / Ctrl+C → stopped.
 
 📌 Remarques GD (bilan) : Smoke matériel Epic 1 notes/CC **vert** au second passage labo ; Epic 2 possible côté usage de base.
@@ -505,11 +505,11 @@ Remplis après les tests (même partiels).
 | « Aucun pilote » / pas de `MI_02` | Cas B : ne force pas « USB composite » ; Zadig sur le MT4 unique. |
 | Zadig sans menu Interface 2 | Normal en cas B : Install WinUSB sur l’entrée « MT4 » seule. |
 | `--probe-usb` / init : erreur 121 sur OUT 0x2 | Bon canal trouvé mais le boîtier ne répond pas. Débranche/rebranche ; remplace Zadig par `installer\mt4-winusb.inf` (Disque fourni) ; autre port USB ; redémarrage PC. |
-| Session échoue, parle de VirtualMIDI / DLL / Win32=1379 | Installer loopMIDI / teVirtualMIDI ; si « existe déjà » : fermer ports loopMIDI homonymes ou rebuild avec merge IN/OUT homonymes. |
-| Aucun port `MT4 Port N` dans loopMIDI | **Normal** — Bridge crée les ports via teVirtualMIDI ; regarde Ableton / ShowMIDI. |
-| Aucun port `MT4 Port N` dans la DAW | La session n’a pas démarré ; ou DAW ouverte **avant** sans refresh. |
+| Session échoue, parle de VirtualMIDI / DLL / Win32=1379 | Installer loopMIDI / teVirtualMIDI ; si « existe déjà » : fermer une ancienne session Bridge (ports `MT4 Input` / `MT4 Output` ou anciens `MT4 Port N` zombies) et les entrées loopMIDI homonymes, puis relancer. |
+| Aucun port `MT4 Input`/`MT4 Output` dans loopMIDI | **Normal** — Bridge crée les ports via teVirtualMIDI ; regarde Ableton / ShowMIDI. |
+| Aucun port `MT4 Input`/`MT4 Output` dans la DAW | La session n’a pas démarré ; ou DAW ouverte **avant** sans refresh. |
 | Ports présents mais silence total (PC→boîtier) | Mauvais câble ; mauvais port OUT ; Track non coché dans Live. |
-| LEDs In MT4 OK, silence dans la DAW (boîtier→PC) | Ancien P0 (lab matin) — **corrigé** au retest soir ; si ça revient : rebuild + vérifier piste Live armée sur `MT4 Port N`. |
+| LEDs In MT4 OK, silence dans la DAW (boîtier→PC) | Ancien P0 (lab matin) — **corrigé** au retest soir ; si ça revient : rebuild + vérifier piste Live armée sur `MT4 Input N`. |
 | 1er envoi notes Out 1 allume plusieurs LEDs Out | Ancien P1 F5 — **corrigé** (sentinel câble OUT) ; retester session fraîche. |
 | Pas de ligne `device-host counters:` | Même fenêtre PowerShell que `Bridge.exe` ; rebuild avec print sur `cerr` + flush ; message d’annonce au Start. |
 | Ctrl+C lent (~quelques secondes) | Attendu : timeout bulk IN (~3 s) avant join du thread lecteur. |

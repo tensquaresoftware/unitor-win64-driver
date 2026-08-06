@@ -79,7 +79,7 @@ std::size_t collectProductCableIndices(
         if (cableIndex == kEmagicBroadcastCableIndex)
         {
             // Bit 15 stays in the stored Linux mask for fidelity / future Broadcast work,
-            // but is not exposed as MT4 Port N in V1.
+            // but is not exposed as MT4 Input/Output N in V1.
             continue;
         }
 

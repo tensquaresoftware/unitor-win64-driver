@@ -93,11 +93,57 @@ bool expectExactName(const std::string& actual, const char* expected, const char
 
 bool testFormatPortDisplayNames()
 {
-    return expectExactName(formatPortDisplayName(1, 1), "MT4 Port 1", "K=1 Port 1")
-        && expectExactName(formatPortDisplayName(1, 2), "MT4 Port 2", "K=1 Port 2")
-        && expectExactName(formatPortDisplayName(1, 3), "MT4 Port 3", "K=1 Port 3")
-        && expectExactName(formatPortDisplayName(1, 4), "MT4 Port 4", "K=1 Port 4")
-        && expectExactName(formatPortDisplayName(2, 3), "MT4 #2 Port 3", "K=2 Port 3");
+    return expectExactName(
+               formatPortDisplayName(1, 1, MidiPortDirection::In),
+               "MT4 Input 1",
+               "K=1 Input 1")
+        && expectExactName(
+               formatPortDisplayName(1, 2, MidiPortDirection::In),
+               "MT4 Input 2",
+               "K=1 Input 2")
+        && expectExactName(
+               formatPortDisplayName(1, 1, MidiPortDirection::Out),
+               "MT4 Output 1",
+               "K=1 Output 1")
+        && expectExactName(
+               formatPortDisplayName(1, 4, MidiPortDirection::Out),
+               "MT4 Output 4",
+               "K=1 Output 4")
+        && expectExactName(
+               formatPortDisplayName(2, 3, MidiPortDirection::Out),
+               "MT4 #2 Output 3",
+               "K=2 Output 3")
+        && expectExactName(
+               formatPortDisplayName(2, 1, MidiPortDirection::In),
+               "MT4 #2 Input 1",
+               "K=2 Input 1");
+}
+
+bool portNameSetHasInOutCollision(const PortNameSet& names)
+{
+    for (std::size_t inIndex = 0; inIndex < names.inCount; ++inIndex)
+    {
+        for (std::size_t outIndex = 0; outIndex < names.outCount; ++outIndex)
+        {
+            if (names.inNames[inIndex] == names.outNames[outIndex])
+            {
+                std::cerr << "PortNameSet IN/OUT alias collision: \""
+                          << names.inNames[inIndex] << "\"\n";
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool expectMt4DirectionalPortNames(const PortNameSet& names)
+{
+    return expectExactName(names.inNames[0], "MT4 Input 1", "IN 1")
+        && expectExactName(names.inNames[1], "MT4 Input 2", "IN 2")
+        && expectExactName(names.outNames[0], "MT4 Output 1", "OUT 1")
+        && expectExactName(names.outNames[1], "MT4 Output 2", "OUT 2")
+        && expectExactName(names.outNames[2], "MT4 Output 3", "OUT 3")
+        && expectExactName(names.outNames[3], "MT4 Output 4", "OUT 4");
 }
 
 bool testBuiltMt4PortNameSet()
@@ -124,12 +170,12 @@ bool testBuiltMt4PortNameSet()
         return false;
     }
 
-    return expectExactName(names.inNames[0], "MT4 Port 1", "IN 1")
-        && expectExactName(names.inNames[1], "MT4 Port 2", "IN 2")
-        && expectExactName(names.outNames[0], "MT4 Port 1", "OUT 1")
-        && expectExactName(names.outNames[1], "MT4 Port 2", "OUT 2")
-        && expectExactName(names.outNames[2], "MT4 Port 3", "OUT 3")
-        && expectExactName(names.outNames[3], "MT4 Port 4", "OUT 4");
+    if (portNameSetHasInOutCollision(names))
+    {
+        return false;
+    }
+
+    return expectMt4DirectionalPortNames(names);
 }
 
 int runPortNameTests()

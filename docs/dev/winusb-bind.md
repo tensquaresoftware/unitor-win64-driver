@@ -9,7 +9,7 @@ After a successful bind on Windows 10 x64 or Windows 11 x64:
 - Device Manager shows the MT4 MIDI interface associated with WinUSB
 - Registry exposes DeviceInterfaceGUID `{aa209017-cf8a-49ad-a0e7-701187ff7e05}`
 - Bridge can open the device with `Bridge --open-device`
-- With VirtualMIDI installed, Bridge can create stable `MT4 Port N` endpoints and run notes/CC with `--start-session` / `--run-midi`
+- With VirtualMIDI installed, Bridge can create stable `MT4 Input N` / `MT4 Output Y` endpoints and run notes/CC with `--start-session` / `--run-midi`
 
 Hardware ID targeted by the package:
 
@@ -82,7 +82,7 @@ or equivalently:
 Bridge.exe --run-midi
 ```
 
-- Creates 2 IN + 4 OUT Virtual Ports named `MT4 Port 1` … `MT4 Port 4`
+- Creates 2 IN + 4 OUT Virtual Ports named `MT4 Input 1`…`MT4 Input 2` and `MT4 Output 1`…`MT4 Output 4` (separate faces; apps should use MIDI From = Input, MIDI To = Output). If a prior Bridge left old `MT4 Port N` endpoints, close that session / reboot MIDI stack before judging a rename failure.
 - Runs the notes/CC pump until Ctrl+C (or console close)
 - Fail closed with English stderr if WinUSB open or VirtualMIDI is missing
 
@@ -95,7 +95,7 @@ Without `--open-device` / `--start-session` / `--run-midi`, Bridge only runs the
 | *(none)* | Profile smoke only — does not open WinUSB |
 | `--open-device` | GUID-first WinUSB open; fail closed with English stderr on error |
 | `--dev-zadig` | With `--open-device` or session flags: allow Zadig fallback if the project GUID is absent |
-| `--start-session` | Open MT4, create `MT4 Port N` Virtual Ports, run notes/CC pump (Ctrl+C to stop). Leave this running for the ~4 h longevity soak (`docs/tests/checklists/smoke-epic2-longevity-mt4.md`) |
+| `--start-session` | Open MT4, create `MT4 Input` / `MT4 Output` Virtual Ports, run notes/CC pump (Ctrl+C to stop). Leave this running for the ~4 h longevity soak (`docs/tests/checklists/smoke-epic2-longevity-mt4.md`) |
 | `--run-midi` | Alias of `--start-session` |
 
 Example (contributor Zadig machine, open only):
