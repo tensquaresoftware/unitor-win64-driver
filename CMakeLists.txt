@@ -69,12 +69,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(BridgeTests
-    tests/DeviceProfileTests.cpp
-    tests/EmagicCableMapperTests.cpp
-    tests/MidiMessageFramerTests.cpp
-    tests/MidiMessageFramerSysexTests.cpp
-    tests/HostOutboundQueueTests.cpp
-    tests/TeVirtualMidiLimitsTests.cpp
+    tests/unit/DeviceProfileTests.cpp
+    tests/unit/EmagicCableMapperTests.cpp
+    tests/unit/MidiMessageFramerTests.cpp
+    tests/unit/MidiMessageFramerSysexTests.cpp
+    tests/unit/HostOutboundQueueTests.cpp
+    tests/unit/TeVirtualMidiLimitsTests.cpp
     src/Device/HostOutboundQueue.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
