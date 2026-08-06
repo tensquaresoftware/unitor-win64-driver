@@ -9,9 +9,11 @@ updated: 2026-08-05
 
 # Smoke guide — Epic 2.4 (Matrix-Control minimum SysEx pass vectors)
 
+> **Operator lab (French):** use [`smoke-epic2-mt4.md`](../smoke-epic2-mt4.md) §6. This file is the per-story English checklist (agents / validation matrix).
+
 Use this checklist to prove the **locked Matrix-Control minimum SysEx pass vectors** through MT4 Virtual Ports on Windows, without Bridge restart for normal librarian completion.
 
-Transparent SysEx pipe + short burst buffering lives in `docs/tests/smoke-epic2-sysex-mt4.md` (story 2.3). This document owns **SM-2 / FR-8 Matrix-Control vectors only**.
+Transparent SysEx pipe + short burst buffering lives in `docs/tests/checklists/smoke-epic2-sysex-mt4.md` (story 2.3). This document owns **SM-2 / FR-8 Matrix-Control vectors only**.
 
 **SSOT sources**
 
@@ -64,7 +66,7 @@ On Fail, write English notes with **Port N / cable / direction / validation-matr
 
 ## Prerequisites
 
-1. Story **2.3** transport smoke green (or at least synthetic + short burst): `docs/tests/smoke-epic2-sysex-mt4.md` and `Bridge --test-mapper` exit 0.
+1. Story **2.3** transport smoke green (or at least synthetic + short burst): `docs/tests/checklists/smoke-epic2-sysex-mt4.md` and `Bridge --test-mapper` exit 0.
 2. Epic 1 notes/CC smoke green on ≥1 IN and ≥1 OUT (`docs/tests/smoke-epic1-mt4.md`).
 3. **Matrix-Control** installed on the lab PC (external host only — not part of this repo).
 4. **Matrix-1000** preferred on a physical MT4 cable. Other Oberheim Matrix gear (“equivalent”) may run vectors **#2–#5 / #7**, but Device Inquiry (**#1**) Pass requires Universal reply identity bytes for M-1000 (`mfr 10`, family `06 00`, member `02 00`) — otherwise document alternate identity bytes and mark **#1** Skip (do not Fail the Bridge for a different member ID).

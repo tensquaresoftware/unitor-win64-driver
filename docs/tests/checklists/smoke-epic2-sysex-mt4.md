@@ -9,9 +9,11 @@ updated: 2026-08-05
 
 # Smoke guide — Epic 2.3 (MT4 transparent SysEx transport with burst buffering)
 
+> **Operator lab (French):** use [`smoke-epic2-mt4.md`](../smoke-epic2-mt4.md) §5. This file is the per-story English checklist (agents / validation matrix).
+
 Use this checklist to prove **librarian-sized SysEx** (including Oberheim Matrix-shaped frames) through MT4 Virtual Ports in both directions, with enough burst buffering that a short bank-export-scale sequence completes **without Bridge restart**.
 
-Clock / transport proof lives in `docs/tests/smoke-epic2-clock-mt4.md` (story 2.1). MTC proof lives in `docs/tests/smoke-epic2-mtc-mt4.md` (story 2.2). Matrix-Control locked minimum vectors live in `docs/tests/smoke-epic2-matrix-control-mt4.md` (story 2.4). This document owns **SysEx transport + short burst buffering only**.
+Clock / transport proof lives in `docs/tests/checklists/smoke-epic2-clock-mt4.md` (story 2.1). MTC proof lives in `docs/tests/checklists/smoke-epic2-mtc-mt4.md` (story 2.2). Matrix-Control locked minimum vectors live in `docs/tests/checklists/smoke-epic2-matrix-control-mt4.md` (story 2.4). This document owns **SysEx transport + short burst buffering only**.
 
 Mark each validation line **Pass** or **Fail**. On Fail, write English notes with **Port N / cable / direction**.
 

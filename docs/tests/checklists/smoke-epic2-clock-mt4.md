@@ -9,9 +9,11 @@ updated: 2026-08-05
 
 # Smoke guide — Epic 2.1 (MT4 MIDI clock and transport)
 
+> **Operator lab (French):** use [`smoke-epic2-mt4.md`](../smoke-epic2-mt4.md) §3. This file is the per-story English checklist (agents / validation matrix).
+
 Use this checklist to prove **Timing Clock** (`0xF8`) and **Start / Continue / Stop** (`0xFA` / `0xFB` / `0xFC`) through MT4 Virtual Ports under a short sequencing smoke.
 
-Epic 1 notes/CC must already pass on at least one IN and one OUT. That baseline lives in `docs/tests/smoke-epic1-mt4.md`. This document owns clock/transport only. MTC quarter-frame / full-frame proof lives in `docs/tests/smoke-epic2-mtc-mt4.md` (story 2.2).
+Epic 1 notes/CC must already pass on at least one IN and one OUT. That baseline lives in `docs/tests/smoke-epic1-mt4.md`. This document owns clock/transport only. MTC quarter-frame / full-frame proof lives in `docs/tests/checklists/smoke-epic2-mtc-mt4.md` (story 2.2).
 
 Mark each validation line **Pass** or **Fail**. On Fail, write English notes with **Port N / cable / direction**.
 

@@ -9,6 +9,8 @@ updated: 2026-08-05
 
 # Smoke guide — Epic 2.5 (MT4 session longevity for ~4 h studio use)
 
+> **Operator lab (French):** use [`smoke-epic2-mt4.md`](../smoke-epic2-mt4.md) §7. This file is the per-story English checklist (agents / validation matrix).
+
 Use this checklist to prove and document that a **continuous studio/editor session of about four hours**, including **SysEx Session activity**, does **not** require a **mandatory Bridge restart** for normal operation.
 
 Short clock / MTC / SysEx / Matrix-Control proofs live in their own Epic 2 guides. This document owns the **longevity contract**, the **stability sample plan**, and the **Pass/Fail matrix** for SM-3 / NFR-R1 / CAP-17 / AD-18.

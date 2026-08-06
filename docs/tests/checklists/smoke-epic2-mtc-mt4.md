@@ -9,9 +9,11 @@ updated: 2026-08-05
 
 # Smoke guide — Epic 2.2 (MT4 MTC quarter-frame and full-frame)
 
+> **Operator lab (French):** use [`smoke-epic2-mt4.md`](../smoke-epic2-mt4.md) §4. This file is the per-story English checklist (agents / validation matrix).
+
 Use this checklist to prove **MTC quarter-frame** (`0xF1` + data) and **MTC full-frame** (Universal Real Time SysEx `F0 7F … 01 01 hr mn sc fr F7`) through MT4 Virtual Ports under a short sync smoke.
 
-Clock / Start-Stop-Continue proof lives in `docs/tests/smoke-epic2-clock-mt4.md` (story 2.1). Epic 1 notes/CC baseline lives in `docs/tests/smoke-epic1-mt4.md`. This document owns **MTC sync only**.
+Clock / Start-Stop-Continue proof lives in `docs/tests/checklists/smoke-epic2-clock-mt4.md` (story 2.1). Epic 1 notes/CC baseline lives in `docs/tests/smoke-epic1-mt4.md`. This document owns **MTC sync only**.
 
 Mark each validation line **Pass** or **Fail**. On Fail, write English notes with **Port N / cable / direction**.
 

@@ -2,7 +2,7 @@
 
 ## Deferred from: story 2-5 session longevity design (2026-08-05)
 
-Open soak risks for SM-3 / NFR-R1 (`docs/tests/smoke-epic2-longevity-mt4.md`). None measured Fail this turn (Win10 ~4 h sample still blank). Do **not** treat them as “usermode destiny” if the sample hits them.
+Open soak risks for SM-3 / NFR-R1 (`docs/tests/checklists/smoke-epic2-longevity-mt4.md`). None measured Fail this turn (Win10 ~4 h sample still blank). Do **not** treat them as “usermode destiny” if the sample hits them.
 
 - Incomplete SysEx under hold with no `F7` (no idle timeout) — observe during soak; add idle-timeout / English session failure only if hang is real.
 - CTRL_CLOSE may kill before `Stop` → orphan Virtual Ports — prefer Ctrl+C for sample teardown; raise priority if the shared soak path uses window-close.
@@ -15,7 +15,7 @@ Design note already captured in the longevity guide (not an open deferral): afte
 ## Deferred from: code review of 2-4-matrix-control-minimum-sysex-pass-vectors.md (2026-08-05)
 
 - Update `deferred-work.md` with open 2.3 Win10 SysEx blanks after the Matrix-Control lab (story Task 2+) — not required for Task 1 checklist-only delivery.
-- Epic 1 smoke guide does not yet point operators to `docs/tests/smoke-epic2-matrix-control-mt4.md` — nice-to-have navigation; not a Task 1 acceptance gap.
+- Epic 1 smoke guide does not yet point operators to `docs/tests/checklists/smoke-epic2-matrix-control-mt4.md` — nice-to-have navigation; not a Task 1 acceptance gap.
 
 ## Deferred from: code review of 2-3-transparent-sysex-transport-with-burst-buffering.md (2026-08-05)
 
