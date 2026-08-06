@@ -4,7 +4,7 @@ project: unitor-win64-driver
 title: Smoke Epic 2 — MT4 (horloge, MTC, SysEx, Matrix-Control, longévité)
 author: Guillaume DUPONT
 created: 2026-08-05
-updated: 2026-08-05
+updated: 2026-08-06
 ---
 
 
@@ -12,17 +12,31 @@ updated: 2026-08-05
 
 Ce guide te sert pour **le labo matériel Epic 2** sur ton PC Boot Camp (Windows 10 Pro) avec le MT4 : horloge MIDI et transport, MTC, gros SysEx, Matrix-Control, et (si tu as le temps) une session longue d’environ 4 h.
 
-Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) : français, étapes dans l’ordre, cases ✅ / ❌, lignes **📌 Remarques GD**.
+Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) : français, étapes dans l’ordre, résultat **au fil de l’eau**.
 
 Les checklists techniques anglaises par story (agents / matrice de validation) sont sous [`docs/tests/checklists/`](checklists/). **Celui-ci** est le guide opérateur pour toi.
 
 **Comment l’utiliser**
 
 - Suis les parties **dans l’ordre** (0 → 1 → 2 → …). Tu peux faire une soirée « courte » (parties 0–5) et reporter Matrix-Control / 4 h.
-- À chaque ligne de validation : **✅** (OK), **❌** (problème), ou **N/A** + une phrase de raison.
-- Si une étape échoue : **arrête-toi** sur cette section, note dans **📌 Remarques GD**, puis va à « En cas de blocage ».
+- **À chaque micro-étape**, juste après la flèche `→`, note le résultat **au moment où tu le constates** :
+  - **✅** = OK
+  - **❌** = problème
+  - **N/A** = non applicable (+ une courte raison)
+- Tu peux ajouter une remarque sur la **même ligne** après l’emoji (`→ ✅ — …`), ou sur la ligne suivante indentée avec **📌**.
+- Si une étape échoue : **arrête-toi**, note ce que tu vois, puis va à « En cas de blocage ».
 - Les cases à cocher markdown ne sont **pas** utilisées — uniquement ✅ / ❌ / N/A.
 - Une seule session Bridge à la fois. Pour un essai valide : arrête avec **Ctrl+C** (pas la croix de la fenêtre).
+- En bas de chaque grande partie, un sous-titre **Remarques libres 📌** (ex. `### 0.5`) reste dispo pour ce qui ne rentre pas dans une étape.
+
+**Exemple de notation**
+
+```text
+1. Faire ceci. → ✅
+2. Faire cela. → ❌ — MidiView silencieux, câble OUT ?
+3. Optionnel. → N/A — pas de Matrix-1000 ce soir
+   📌 Live 12 n’envoie pas Continue dans cette config.
+```
 
 **Ce que ce smoke prouve (Epic 2)**
 
@@ -47,12 +61,12 @@ Les checklists techniques anglaises par story (agents / matrice de validation) s
 - Smoke Epic 1 notes/CC **vert** sur au moins **1 IN + 1 OUT** (voir [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md)).
 - Même machine Boot Camp / même bind WinUSB que le labo Epic 1 (cas B + `--dev-zadig` si c’est encore ton cas).
 
-**Retour labo** _(à remplir après la session)_
+**Retour labo** _(à remplir après la session — synthèse)_
 
 | Étape | Résultat |
 |---|---|
-| OS / machine Bridge | Windows 10 Pro x64 — Boot Camp MacBook Pro Intel |
-| Machine DIN / observateur | MacBook Pro M5 + Scarlett 6i6 + Live 12 + MIDI Monitor |
+| OS / machine Bridge | MacBook Pro Intel i7 / Windows 10 Pro x64 (Boot Camp) + MT4 + Live 12 + MidiView |
+| Machine DIN / observateur | MacBook Pro M5 / macOS Tahoe + Scarlett 6i6 + Live 12 + MIDI Monitor |
 | Bind | Cas A / Cas B + `--dev-zadig` : |
 | Partie 1 `--test-mapper` | |
 | Partie 2 session + ports | |
@@ -72,7 +86,7 @@ Le montage qui marche pour toi (comme en Epic 1) :
 
 | Rôle | Machine | Matériel / logiciel |
 |---|---|---|
-| **Bridge + MT4** | MacBook Pro **Intel** sous **Windows 10** (Boot Camp) | MT4 en USB, `Bridge.exe`, Ableton Live 12, ShowMIDI, loopMIDI / teVirtualMIDI |
+| **Bridge + MT4** | MacBook Pro **Intel** sous **Windows 10** (Boot Camp) | MT4 en USB, `Bridge.exe`, Ableton Live 12, **MidiView**, loopMIDI / teVirtualMIDI |
 | **Source / observateur DIN** | MacBook Pro **M5** (macOS) | Focusrite **Scarlett 6i6** (MIDI DIN IN + OUT), Ableton Live 12, **MIDI Monitor** |
 
 **Câblage DIN (à laisser en place pour les parties 3–5)**
@@ -90,13 +104,14 @@ Tu peux utiliser **deux câbles DIN** en même temps (un dans chaque sens) pour 
 
 | Nom dans ce guide | Chaîne concrète | Ce que tu prouves |
 |---|---|---|
-| **Mac → PC** (boîtier → Bridge → apps PC) | Live Mac → Scarlett OUT → MT4 IN N → Bridge → `MT4 Port N` IN → Live PC / ShowMIDI | Ce qui **entre** dans le MT4 arrive bien dans Windows |
+| **Mac → PC** (boîtier → Bridge → apps PC) | Live Mac → Scarlett OUT → MT4 IN N → Bridge → `MT4 Port N` IN → Live PC / MidiView | Ce qui **entre** dans le MT4 arrive bien dans Windows |
 | **PC → Mac** (apps PC → Bridge → boîtier) | Live PC → `MT4 Port N` OUT → MT4 OUT N → Scarlett IN → MIDI Monitor / Live Mac | Ce que Windows **envoie** sort bien du MT4 |
 
 **Où regarder les octets**
 
 - Sur le **Mac** : **MIDI Monitor** (excellent) sur le port MIDI de la Scarlett.
-- Sur le **PC** : **ShowMIDI** et/ou Ableton Live 12 sur `MT4 Port N`.
+- Sur le **PC** : **MidiView** (log / export fichier) et/ou Ableton Live 12 sur `MT4 Port N`.
+  - À partir de la **partie 5** (SysEx), **MidiView** est l’outil PC recommandé pour **voir et sauver** le flux — on n’utilise plus ShowMIDI.
 
 **Oxygen 61**
 
@@ -110,56 +125,44 @@ Tu peux utiliser **deux câbles DIN** en même temps (un dans chaque sens) pour 
 
 ### 0.1 Matériel
 
-1. **PC Boot Camp** : Windows 10 64 bits (ligne **obligatoire** de la matrice).
-2. **MT4** Emagic + USB sur le PC (port direct de préférence, pas hub externe).
-3. **Mac M5** : Scarlett 6i6 branchée (drivers Focusrite OK), alimentation OK.
-4. **Deux câbles MIDI DIN** (ou au minimum un, à rebrancher selon le sens).
-5. (Optionnel) **Oxygen 61** en USB sur l’une des deux machines pour jouer des notes **dans** Live — pas obligatoire pour horloge / MTC.
-6. Pour la partie **6 (Matrix-Control)** : **Matrix-1000** sur un câble MIDI du MT4. Sans Matrix-1000, tu fais quand même les parties 1–5 (et une partie de 7) avec le duo Mac/PC + Scarlett.
-7. Écouteurs si tu veux entendre un retour — MIDI Monitor / ShowMIDI / Live suffisent pour **voir**.
+1. **PC Boot Camp** : Windows 10 64 bits (ligne **obligatoire** de la matrice). → ✅
+2. **MT4** Emagic + USB sur le PC (port direct de préférence, pas hub externe). → ✅
+3. **Mac M5** : Scarlett 6i6 branchée (drivers Focusrite OK), alimentation OK. → ✅
+4. **Deux câbles MIDI DIN** (ou au minimum un, à rebrancher selon le sens). → ✅
+5. (Optionnel) **Oxygen 61** en USB sur l’une des deux machines pour jouer des notes **dans** Live — pas obligatoire pour horloge / MTC. → 
+6. Pour la partie **6 (Matrix-Control)** : **Matrix-1000** sur un câble MIDI du MT4. Sans Matrix-1000, tu fais quand même les parties 1–5 (et une partie de 7) avec le duo Mac/PC + Scarlett. → ✅
+7. Écouteurs si tu veux entendre un retour — MIDI Monitor / MidiView / Live suffisent pour **voir**. → 
 
 ### 0.2 Logiciels
 
 **Sur le PC (Boot Camp)**
 
-1. CMake + Visual Studio / Build Tools x64.
-2. **VirtualMIDI** via **loopMIDI** (ou rtpMIDI).
-3. **Ableton Live 12**.
-4. **ShowMIDI**.
-5. (Partie 6) **Matrix-Control** (appli externe).
+1. CMake + Visual Studio / Build Tools x64. → ✅
+2. **VirtualMIDI** via **loopMIDI** (ou rtpMIDI). → ✅
+3. **Ableton Live 12**. → ✅
+4. **MidiView** (observateur / log MIDI sur le PC — remplace ShowMIDI). → ✅
+5. (Partie 6) **Matrix-Control** (appli externe). → ✅
 
 **Sur le Mac M5**
 
-1. **Ableton Live 12**.
-2. **MIDI Monitor**.
-3. Focusrite Control / pile audio Scarlett fonctionnelle (MIDI DIN visible dans Live et MIDI Monitor).
+1. **Ableton Live 12**. → ✅
+2. **MIDI Monitor**. → ✅
+3. Focusrite Control / pile audio Scarlett fonctionnelle (MIDI DIN visible dans Live et MIDI Monitor). → ✅
 
 ### 0.3 Code à tester (PC seulement)
 
-1. Sync / pull du dépôt `unitor-win64-driver` sur le PC Windows — état qui contient **toutes** les stories Epic 2.
-2. Terminal à la **racine** du dépôt (`CMakeLists.txt`, `src/`, `installer/`).
-3. Note commit (`git rev-parse --short HEAD`) et/ou chemin de `Bridge.exe`.
+1. Sync / pull du dépôt `unitor-win64-driver` sur le PC Windows — état qui contient **toutes** les stories Epic 2. → ✅
+2. Terminal à la **racine** du dépôt (`CMakeLists.txt`, `src/`, `installer/`). → ✅
+3. Note commit (`git rev-parse --short HEAD`) et/ou chemin de `Bridge.exe`. → ✅ — `49b294a` — `builds\debug\Debug\Bridge.exe`
 
 ### 0.4 Câbler Scarlett ↔ MT4
 
-1. Scarlett MIDI **OUT** → MT4 **IN** physique N (ex. IN 1).
-2. MT4 **OUT** physique N (ex. OUT 1) → Scarlett MIDI **IN**.
-3. Sur le Mac : Live + MIDI Monitor voient bien le périphérique MIDI de la Scarlett (souvent nommé autour de « Scarlett 6i6 » / MIDI Port).
-4. Note le **N** choisi : tu l’aligneras sur `MT4 Port N` côté PC.
+1. Scarlett MIDI **OUT** → MT4 **IN** physique N (ex. IN 1). → ✅
+2. MT4 **OUT** physique N (ex. OUT 1) → Scarlett MIDI **IN**. → ✅
+3. Sur le Mac : Live + MIDI Monitor voient bien le périphérique MIDI de la Scarlett (souvent nommé autour de « Scarlett 6i6 » / MIDI Port). → ✅
+4. Note le **N** choisi : tu l’aligneras sur `MT4 Port N` côté PC. → ✅ — IN/OUT 1 → `MT4 Port 1`
 
-Validation :
-
-- PC Boot Camp + dépôt prêts : ✅ / ❌
-- Mac M5 + Scarlett + Live + MIDI Monitor prêts : ✅ / ❌
-- Deux câbles DIN en place (ou un câble + plan de rebranchement) : ✅ / ❌
-- Port physique N choisi : IN/OUT … → `MT4 Port …`
-- VirtualMIDI / loopMIDI (PC) : ✅ / ❌
-- ShowMIDI (PC) : ✅ / ❌
-- Matrix-Control (si partie 6) : ✅ / ❌ / N/A
-- Matrix-1000 (si partie 6) : ✅ / ❌ / N/A
-- Commit / chemin Bridge : ✅ / ❌ → …
-
-📌 Remarques GD :
+### 0.5 Remarques libres 📌
 
 
 
@@ -188,6 +191,10 @@ builds\debug\Debug\Bridge.exe
 
 Sinon : `Get-ChildItem -Path builds -Recurse -Filter Bridge.exe`
 
+1. Configure CMake OK. → ✅
+2. Build OK. → ✅
+3. Chemin `Bridge.exe` trouvé. → ✅ — `builds\debug\Debug\Bridge.exe`
+
 ### 1.2 Contrôle profil (sans USB)
 
 ```text
@@ -195,6 +202,8 @@ builds\debug\Debug\Bridge.exe
 ```
 
 Attendu : sortie DeviceProfile, **exit 0**, pas d’erreur de bind WinUSB.
+
+1. Sans argument : exit 0. → ✅
 
 ### 1.3 Contrôle synthétique Epic 2 (sans matériel)
 
@@ -204,6 +213,9 @@ builds\debug\Debug\Bridge.exe --test-mapper
 
 Attendu : **exit 0** (horloge / transport, MTC, vecteurs SysEx).
 
+1. `--test-mapper` : exit 0. → ✅
+   📌 Message : `Mapper synthetic tests passed`
+
 ### 1.4 (Recommandé) Tests automatisés C++
 
 ```text
@@ -212,16 +224,10 @@ ctest --test-dir builds/debug -C Debug
 
 (ou `BridgeTests`). Attendu : tout passe.
 
-Validation :
+1. `ctest` / BridgeTests. → ✅
+   📌 Message : `100% tests passed out of 1`
 
-- Configure CMake OK : ✅ / ❌
-- Build OK : ✅ / ❌
-- Chemin `Bridge.exe` : ✅ / ❌ → …
-- Sans argument : exit 0 : ✅ / ❌
-- `--test-mapper` : exit 0 : ✅ / ❌
-- `ctest` / BridgeTests : ✅ / ❌ / N/A
-
-📌 Remarques GD :
+### 1.5 Remarques libres 📌
 
 
 
@@ -235,14 +241,9 @@ Objectif : retrouver le chemin labo Epic 1 (WinUSB + ports `MT4 Port N`) avant h
 
 ### 2.1 Bind WinUSB (si pas déjà fait aujourd’hui)
 
-1. Branche le MT4 sur le **PC**, attends la détection.
-2. Gestionnaire de périphériques : WinUSB sur le nœud MT4.
-3. Si rebinding : Epic 1 §2 (INF ou Zadig).
-
-Validation :
-
-- MT4 détecté + WinUSB : ✅ / ❌
-- Méthode : INF / Gestionnaire / Zadig (cas B) : …
+1. Branche le MT4 sur le **PC**, attends la détection. → ✅
+2. Gestionnaire de périphériques : WinUSB sur le nœud MT4. → ✅
+3. Si rebinding : Epic 1 §2 (INF ou Zadig). Méthode utilisée : → ✅ — Zadig (cas B)
 
 ### 2.2 Ouverture USB seule (optionnel)
 
@@ -251,6 +252,9 @@ builds\debug\Debug\Bridge.exe --open-device --dev-zadig
 ```
 
 (Sans `--dev-zadig` en cas A / GUID.) Attendu : exit 0, `WinUSB open succeeded`.
+
+1. Ouverture USB seule. → ✅
+   📌 Message : `WinUSB open succeeded`
 
 ### 2.3 Lancer la session MIDI
 
@@ -272,43 +276,38 @@ builds\debug\Debug\Bridge.exe --start-session
 
 Console attendue (libellés en anglais, normal) :
 
-- Noms `MT4 Port 1` …
-- `DeviceSession started for MT4 with Virtual Ports`
-- MIDI I/O qui tourne
+- Noms `MT4 Port 1` → ✅ (je vois les deux entrées et les quatre sorties)
+- `DeviceSession started for MT4 with Virtual Ports` → ✅
+- MIDI I/O qui tourne → ✅ ("MIDI I/O Running")
 
-**loopMIDI** ne liste en général **pas** ces ports — regarde **Ableton PC / ShowMIDI**.
+**loopMIDI** ne liste en général **pas** ces ports — regarde **Ableton PC / MidiView**. (GD : ports E/S MT4 OK dans Ableton Live)
+
+1. Session démarrée, messages console OK. → ✅
+2. Flag `--dev-zadig` utilisé ? → 
 
 ### 2.4 Vérifier les ports + contrôle notes/CC via Scarlett
 
 Dans **Ableton PC** → Réglages → MIDI :
 
-- **2 entrées** : `MT4 Port 1`, `MT4 Port 2`
-- **4 sorties** : `MT4 Port 1` … `MT4 Port 4`
-- Coche **Track** sur les ports que tu testes (Sync plus tard pour l’horloge)
+1. **2 entrées** visibles : `MT4 Port 1`, `MT4 Port 2`. → ✅
+2. **4 sorties** visibles : `MT4 Port 1` … `MT4 Port 4`. → ✅
+3. **Track** coché sur les ports que tu testes (Sync plus tard pour l’horloge). → ✅
 
 **Contrôle rapide Mac → PC** (notes à travers le MT4) :
 
-1. Sur le **Mac** : Live envoie des notes vers la **Scarlett MIDI OUT** (pas vers un port virtuel inventé).
-2. Câble : Scarlett OUT → MT4 IN N.
-3. Sur le **PC** : ShowMIDI / Live sur `MT4 Port N` IN → notes visibles.
+1. Sur le **Mac** : Live envoie des notes vers la **Scarlett MIDI OUT** (pas vers un port virtuel inventé). → ✅
+2. Câble : Scarlett OUT → MT4 IN 1. → ✅
+3. Sur le **PC** : MidiView / Live sur `MT4 Port 1` IN → notes visibles. → ✅
 
 **Contrôle rapide PC → Mac** :
 
-1. Sur le **PC** : Live envoie des notes vers `MT4 Port N` OUT (Track coché).
-2. Câble : MT4 OUT N → Scarlett IN.
-3. Sur le **Mac** : MIDI Monitor (et/ou Live) sur l’entrée MIDI Scarlett → notes visibles.
+1. Sur le **PC** : Live envoie des notes vers `MT4 Port 1` OUT (Track coché). → ✅
+2. Câble : MT4 OUT 1 → Scarlett IN. → ✅
+3. Sur le **Mac** : MIDI Monitor (et/ou Live) sur l’entrée MIDI Scarlett → notes visibles. → ✅
 
 **Mode Computer :** le Bridge envoie déjà le coup de pouce (CC) au démarrage de session. **Le SysEx seul ne réveille pas** le mode Computer — si le boîtier a été manipulé hors Bridge, relance une session propre.
 
-Validation :
-
-- Session démarrée, messages console OK : ✅ / ❌
-- 2 IN / 4 OUT visibles sur le PC : ✅ / ❌
-- Notes Mac → PC via Scarlett / MT4 IN N : ✅ / ❌
-- Notes PC → Mac via MT4 OUT N / Scarlett : ✅ / ❌
-- Flag `--dev-zadig` : oui / non : …
-
-📌 Remarques GD :
+### 2.5 Remarques libres 📌
 
 
 
@@ -324,60 +323,54 @@ Objectif : Timing Clock + Start / Stop / Continue passent **sans trous** imputab
 
 ### 3.1 Sens PC → Mac (Live PC → MT4 OUT → Scarlett → MIDI Monitor / Live Mac)
 
-1. Câble : **MT4 OUT N** → **Scarlett MIDI IN** (déjà en place si §0.4).
-2. Sur le **PC** : dans Live, coche **Sync** (sortie) sur `MT4 Port N` OUT uniquement (évite d’arroser les 4 OUT au début).
-3. Sur le **Mac** : ouvre **MIDI Monitor** sur l’entrée Scarlett ; optionnellement Live Mac en réception Sync sur la Scarlett si tu veux voir l’asservissement.
-4. Lance le transport **Live PC** (**Play**), laisse tourner ~1–2 min, puis **Stop**.
-5. **Continue** : si Live te le permet dans ta config, teste ; sinon **N/A** + raison (« Live 12 ne m’envoie pas Continue ici »).
+1. Câble : **MT4 OUT N** → **Scarlett MIDI IN** (déjà en place si §0.4). → ✅
+   📌 Port / câble : `MT4 Port …` OUT / MT4 OUT … → Scarlett IN
+2. Sur le **PC** : dans Live, coche **Sync** (sortie) sur `MT4 Port N` OUT uniquement (évite d’arroser les 4 OUT au début). → ✅
+3. Sur le **Mac** : ouvre **MIDI Monitor** sur l’entrée Scarlett ; optionnellement Live Mac en réception Sync sur la Scarlett si tu veux voir l’asservissement. → ✅
+4. Lance le transport **Live PC** (**Play**), laisse tourner ~1–2 min, puis **Stop**. → ✅
+5. **Continue** : si Live te le permet dans ta config, teste ; sinon **N/A** + raison. → ✅
 
-Ce que tu dois voir côté Mac (MIDI Monitor) :
+Ce que tu dois voir côté Mac (MIDI Monitor) — note au fur et à mesure :
 
-- Rafale d’octets d’horloge (`F8`) pendant le Play.
-- `FA` au démarrage, `FC` à l’arrêt (et `FB` si Continue disponible).
-- Pas de « trous » évidents sur cette courte séquence.
-- Contrôle notes encore OK sur le même OUT (clip notes Live PC → MIDI Monitor).
+1. Rafale d’octets d’horloge (`F8`) pendant le Play. → ✅ (voir mon fichier MTC 3.1.txt)
+2. `FA` au démarrage. → ✅
+3. `FC` à l’arrêt. → ✅
+4. `FB` si Continue disponible. → ✅
+5. Pas de « trous » évidents sur cette courte séquence. → ✅
+6. Contrôle notes encore OK sur le même OUT (clip notes Live PC → MIDI Monitor). → ✅
+7. Live Mac asservi (si testé). → ✅
 
-Validation PC → Mac :
+### 3.2 Sens Mac → PC (Live Mac → Scarlett → MT4 IN → Live PC / MidiView)
 
-- Port : `MT4 Port …` OUT / câble MT4 OUT … → Scarlett IN
-- Horloge (`F8`) dans MIDI Monitor : ✅ / ❌
-- Start (`FA`) : ✅ / ❌
-- Stop (`FC`) : ✅ / ❌
-- Continue (`FB`) : ✅ / ❌ / N/A (raison : …)
-- Pas de trous Bridge : ✅ / ❌
-- Notes encore OK sur ce OUT : ✅ / ❌
-- Live Mac asservi (si testé) : ✅ / ❌ / N/A
+1. Câble : **Scarlett MIDI OUT** → **MT4 IN N**. → ✅
+   📌 Port / câble : Scarlett OUT → MT4 IN 1 → `MT4 Port 1` IN
+2. Sur le **Mac** : Live envoie Sync / MIDI Clock **uniquement** vers la Scarlett MIDI OUT. → ✅
+3. Sur le **PC** : Live / MidiView sur `MT4 Port N` IN ; coche Sync **entrée** si tu veux que Live PC **suive** l’horloge du Mac. → ✅
+   📌 Observateur PC : MidiView / Live 12 : MIDI-OX + Live 12 (session déjà faite ; MidiView pour la suite)
+4. Lance **Play** sur Live Mac, puis **Stop**. → ✅
+5. Observe `F8` / `FA` / `FC` (et Continue si possible) dans MidiView et/ou l’asservissement Live PC. → ✅
+6. Contrôle notes Mac → PC encore OK sur le même IN. → ✅
 
-### 3.2 Sens Mac → PC (Live Mac → Scarlett → MT4 IN → Live PC / ShowMIDI)
+Détail observation Mac → PC : (voir mon fichier MTC 3.2.txt)
 
-1. Câble : **Scarlett MIDI OUT** → **MT4 IN N**.
-2. Sur le **Mac** : Live envoie Sync / MIDI Clock **uniquement** vers la Scarlett MIDI OUT.
-3. Sur le **PC** : Live / ShowMIDI sur `MT4 Port N` IN ; coche Sync **entrée** si tu veux que Live PC **suive** l’horloge du Mac.
-4. Lance **Play** sur Live Mac, puis **Stop** ; Observe `F8` / `FA` / `FC` (et Continue si possible) dans ShowMIDI et/ou l’asservissement Live PC.
-5. Contrôle notes Mac → PC encore OK sur le même IN.
-
-Validation Mac → PC :
-
-- Port : Scarlett OUT → MT4 IN … → `MT4 Port …` IN
-- Horloge observée ou Live PC asservi : ✅ / ❌
-- Start / Stop / Continue : ✅ / ❌ / N/A Continue
-- Pas de trous Bridge : ✅ / ❌
-- Notes encore OK sur ce IN : ✅ / ❌
-- Observateur PC : ShowMIDI / Live 12 : …
+1. Horloge observée ou Live PC asservi. → ✅
+2. Start (`FA`). → ✅
+3. Stop (`FC`). → ✅
+4. Continue (`FB`). → ✅
+5. Pas de trous Bridge. → ✅
+6. Notes encore OK sur ce IN. → ✅
 
 ### 3.3 Stabilité courte (même session Bridge)
 
 Sans redémarrer le Bridge : enchaîne 3.1 et 3.2 (ou au moins un sens complet). Console PC sans tempête WriteBulk / SendToHost.
 
-Validation :
+1. Courte séance sans redémarrer le Bridge. → ✅
+2. Console sans tempête d’erreurs. → ✅
+3. Message d’échec éventuel (copier) : → ✅
 
-- Courte séance sans redémarrer le Bridge : ✅ / ❌
-- Console sans tempête d’erreurs : ✅ / ❌
-- Message d’échec éventuel (copier) : …
+### 3.4 Remarques libres 📌
 
-📌 Remarques GD :
-
-
+Voir mes logs MIDI (MTC 3.1.txt et MTC 3.2.txt) pour la sync dans les deux sens.
 
 ---
 
@@ -396,55 +389,48 @@ Objectif : le Bridge transporte le **MTC quarter-frame** et au moins un **full-f
 
 ### 4.1 Préparer
 
-1. Même câblage Scarlett ↔ MT4 que §0.4.
-2. Si possible, dédie `MT4 Port N` au MTC pour ce test (le MTC est bavard).
-3. **MIDI Monitor** sur le Mac = meilleur « microscope » pour `F1` et le SysEx full-frame.
-4. ShowMIDI / Live PC pour le sens Mac → PC.
+1. Même câblage Scarlett ↔ MT4 que §0.4. → ✅
+2. Si possible, dédie `MT4 Port N` au MTC pour ce test (le MTC est bavard). → ✅
+3. **MIDI Monitor** sur le Mac = meilleur « microscope » pour `F1` et le SysEx full-frame. → ✅
+4. MidiView / Live PC prêts pour le sens Mac → PC. → ✅
 
 ### 4.2 Sens PC → Mac (Live PC envoie le MTC)
 
-1. Live PC : envoi MTC activé sur `MT4 Port N` OUT.
-2. Mac : MIDI Monitor sur Scarlett IN (câble MT4 OUT N → Scarlett IN).
-3. Lance le transport / le timecode Live PC assez longtemps pour voir des **quarter-frames** en continu.
-4. Cherche aussi **au moins un full-frame** (souvent à un locate / re-sync — si Live n’en envoie pas facilement, note ce que tu obtiens et complète avec un outil MTC si besoin ; l’absence de full-frame côté générateur Live ≠ automatiquement ❌ Bridge si les quarter-frames passent et qu’un full-frame d’une autre source passe).
-5. Contrôle notes encore OK sur le même OUT.
+1. Live PC : envoi MTC activé sur `MT4 Port N` OUT. → ✅
+   📌 Port OUT / câble : 1
+2. Mac : MIDI Monitor sur Scarlett IN (câble MT4 OUT N → Scarlett IN). → ✅
+3. Lance le transport / le timecode Live PC assez longtemps pour voir des **quarter-frames** en continu. → je ne sais pas
+4. Cherche aussi **au moins un full-frame** (souvent à un locate / re-sync — si Live n’en envoie pas facilement, note ce que tu obtiens ; l’absence de full-frame côté générateur Live ≠ automatiquement ❌ Bridge si les quarter-frames passent et qu’un full-frame d’une autre source passe). → je ne sais pas
+5. Contrôle notes encore OK sur le même OUT. → ✅
 
-Validation PC → Mac :
+Observations PC → Mac : Je te laisse inspecté mon log MIDI "MTC 4.2.txt"
 
-- Port OUT / câble : …
-- Quarter-frame (`F1`) dans MIDI Monitor : ✅ / ❌
-- Au moins un full-frame observé : ✅ / ❌ / N/A (raison générateur : …)
-- Pas de trous Bridge : ✅ / ❌
-- Notes encore OK : ✅ / ❌
+1. Quarter-frame (`F1`) dans MIDI Monitor. → ?
+2. Au moins un full-frame observé. → ?
+3. Pas de trous Bridge. → ?
+4. Notes encore OK. → ✅
 
 ### 4.3 Sens Mac → PC (Live Mac envoie le MTC)
 
-1. Live Mac : envoi MTC vers Scarlett MIDI OUT.
-2. Câble : Scarlett OUT → MT4 IN N.
-3. PC : ShowMIDI / Live sur `MT4 Port N` IN (réception MTC / observation).
-4. Quarter-frames + au moins un full-frame si le Mac en envoie ; notes encore OK.
-
-Validation Mac → PC :
-
-- Port IN / câble : …
-- Quarter-frame sur PC : ✅ / ❌
-- Full-frame sur PC : ✅ / ❌ / N/A (raison : …)
-- Pas de trous Bridge : ✅ / ❌
-- Notes encore OK : ✅ / ❌
-- Live PC asservi au MTC (si testé) : ✅ / ❌ / N/A
+1. Live Mac : envoi MTC vers Scarlett MIDI OUT. → ✅
+2. Câble : Scarlett OUT → MT4 IN N. → ✅
+   📌 Port IN / câble : 1
+3. PC : MidiView / Live sur `MT4 Port N` IN (réception MTC / observation). → J'ai utilisé MIDI-OX, flux entrant OK (voir log "MTC 4.3.txt") — MidiView pour la suite
+4. Quarter-frames visibles sur le PC. → je ne sais pas
+5. Au moins un full-frame si le Mac en envoie. → je ne sais pas
+6. Notes encore OK. → ✅
+7. Live PC asservi au MTC (si testé). → ✅
 
 ### 4.4 Stabilité courte
 
 Même session Bridge ; pas de redémarrage pour « récupérer » le MTC ; console propre.
 
-Validation :
+1. Courte sync sans redémarrer. → ✅
+2. Console propre. → ✅
 
-- Courte sync sans redémarrer : ✅ / ❌
-- Console propre : ✅ / ❌
+### 4.5 Remarques libres 📌
 
-📌 Remarques GD :
-
-
+Je te laisse inspecter mes logs MIDI ("MTC 4.2.txt" et "MTC 4.3.txt").
 
 ---
 
@@ -453,6 +439,13 @@ Validation :
 Objectif : de **gros** messages SysEx passent complets dans les deux sens, et une **petite rafale** (plusieurs ~275 B) se termine **sans** redémarrer le Bridge.
 
 Ce n’est **pas** encore Matrix-Control complet (partie 6) — ici on prouve le **tuyau + tampons**.
+
+**Outil PC pour cette partie (et la suite) : MidiView**
+
+- Ouvre **MidiView** sur le PC ; écoute `MT4 Port N` (IN pour Mac → PC, ou le trafic utile selon le sens).
+- **Log / export** le flux vers un fichier (TXT ou CSV selon ce que MidiView te propose) — c’est la preuve à joindre aux remarques.
+- ShowMIDI : **abandonné** (pas de log fichier pratique).
+- MIDI-OX reste OK en secours si tu en as besoin pour **envoyer** un SysEx, mais pour **observer et sauver**, préfère MidiView.
 
 ### 5.1 Tailles à couvrir
 
@@ -468,49 +461,39 @@ Ce n’est **pas** encore Matrix-Control complet (partie 6) — ici on prouve le
 
 - **MIDI Monitor** (Mac) : excellent pour **voir** ; selon version / outils, tu peux aussi renvoyer des messages — pratique pour Inquiry.
 - Fichiers `.syx` + utilitaire d’envoi SysEx sur Mac ou PC (si tu en as un).
-- Live n’est **pas** toujours le meilleur émetteur de gros SysEx : ne te bloque pas dessus — un petit outil SysEx + observation MIDI Monitor / ShowMIDI suffit pour la partie 5.
+- Live n’est **pas** toujours le meilleur émetteur de gros SysEx : ne te bloque pas dessus — un petit outil SysEx + observation **MIDI Monitor (Mac)** / **MidiView (PC, avec log fichier)** suffit pour la partie 5.
 - Si Matrix-Control + Matrix-1000 sont là : tu peux déjà t’en servir ici, sans exiger tous les vecteurs de la partie 6.
 
 ### 5.2 Sens Mac → PC (SysEx entre dans le MT4)
 
-1. Session Bridge active (mode Computer OK).
-2. Câble : Scarlett OUT → MT4 IN N ; PC observe `MT4 Port N` IN (ShowMIDI).
-3. Depuis le Mac : envoie Inquiry, puis ~275 B, puis ~351 B si tu as le fichier.
-4. Sur le PC : trame **complète** (pas coupée, pas fusionnée, pas « succès » silencieux si corrompu).
-
-Validation Mac → PC :
-
-- Inquiry (6 B) : ✅ / ❌ / N/A
-- Patch-shaped (~275 B) : ✅ / ❌ / N/A
-- Master-shaped (~351 B) : ✅ / ❌ / N/A
-- Port / câble / outil d’envoi : …
+1. Session Bridge active (mode Computer OK). → 
+2. Câble : Scarlett OUT → MT4 IN N ; sur le **PC**, MidiView écoute `MT4 Port N` IN (log / export activé). → 
+   📌 Port / câble / outil d’envoi : …
+   📌 Fichier log MidiView : …
+3. Depuis le Mac : envoie Inquiry (6 B) — trame **complète** dans MidiView. → 
+4. Depuis le Mac : envoie ~275 B (patch-shaped) — trame complète dans MidiView. → 
+5. Depuis le Mac : envoie ~351 B (master-shaped) si tu as le fichier — trame complète dans MidiView. → 
 
 ### 5.3 Sens PC → Mac (SysEx sort du MT4)
 
-1. Envoie depuis le PC (ShowMIDI / outil SysEx / Live si possible) vers `MT4 Port N` OUT.
-2. Câble : MT4 OUT N → Scarlett IN.
-3. Sur le Mac : **MIDI Monitor** — trames complètes, bonnes tailles.
-
-Validation PC → Mac :
-
-- Inquiry : ✅ / ❌ / N/A
-- ~275 B : ✅ / ❌ / N/A
-- ~351 B : ✅ / ❌ / N/A
-- Port / câble / outil : …
+1. Envoie depuis le PC (outil SysEx / MIDI-OX / Live / Matrix-Control si possible) vers `MT4 Port N` OUT. → 
+   📌 Port / câble / outil d’envoi : …
+2. Câble : MT4 OUT N → Scarlett IN. → 
+3. Inquiry : trame complète dans **MIDI Monitor** (Mac). → 
+4. ~275 B : trame complète dans MIDI Monitor. → 
+5. ~351 B : trame complète dans MIDI Monitor. → 
+6. (Utile) Si tu renvoies aussi vers un IN virtuel ou un autre chemin observable sur le PC, MidiView peut logger en parallèle. → 
 
 ### 5.4 Petite rafale (sans redémarrer)
 
-1. Envoie **plusieurs** trames ~275 B à la suite (rythme calme, idéalement **≥ 10 ms** entre trames).
-2. Pas de redémarrage Bridge pour finir la série.
-3. Si ❌ : note troncature / fusion / drop / restart + message console anglais.
+1. Envoie **plusieurs** trames ~275 B à la suite (rythme calme, idéalement **≥ 10 ms** entre trames). → 
+2. Pas de redémarrage Bridge pour finir la série. → 
+3. Sens testé (Mac→PC / PC→Mac / les deux) : → 
+4. Si ❌ : symptôme (troncature / fusion / drop / restart) + message console : → 
+5. Sauve le log MidiView (et/ou MIDI Monitor) de la rafale. → 
+   📌 Fichier(s) : …
 
-Validation rafale :
-
-- Plusieurs ~275 B sans redémarrer : ✅ / ❌
-- Sens testé (Mac→PC / PC→Mac / les deux) : …
-- Symptôme si ❌ : …
-
-📌 Remarques GD :
+### 5.5 Remarques libres 📌
 
 
 
@@ -522,37 +505,42 @@ Objectif : avec **Matrix-Control** (appli externe sur le **PC**) + de préféren
 
 **Sans Matrix-Control / sans Matrix-1000 :** marque **N/A** / reportée — ce n’est pas un échec des parties 1–5. Windows **10** = colonne obligatoire.
 
-**Lien avec le setup Scarlett :** pour cette partie, le chemin nominal est **Matrix-Control ↔ ports virtuels `MT4 Port N` ↔ MT4 ↔ Matrix-1000**. La Scarlett / le Mac ne sont **pas** nécessaires, sauf pour le vecteur **#7** (injection d’un SysEx non-patch) où ShowMIDI sur le PC suffit souvent ; tu peux aussi injecter depuis le Mac via Scarlett → MT4 IN **si** c’est le même port virtuel que Matrix-Control écoute — plus délicat, préfère ShowMIDI sur le PC pour #7.
+**Lien avec le setup Scarlett :** pour cette partie, le chemin nominal est **Matrix-Control ↔ ports virtuels `MT4 Port N` ↔ MT4 ↔ Matrix-1000**. La Scarlett / le Mac ne sont **pas** nécessaires, sauf pour le vecteur **#7** (injection d’un SysEx non-patch) où un envoi SysEx sur le PC + **MidiView** en observation/log suffit souvent ; tu peux aussi injecter depuis le Mac via Scarlett → MT4 IN **si** c’est le même port virtuel que Matrix-Control écoute — plus délicat, préfère injecter sur le PC et logger avec MidiView pour #7.
 
 **Règle d’espacement :** rythme stock Matrix-Control. Essai volontairement trop serré (< ~10 ms) → **invalide**, ne pas ❌ le Bridge.
 
-**Timeout hôte (~2 s) :** si Matrix-Control expire mais ShowMIDI / MIDI Monitor montre la trame intacte → note « timeout hôte », pas automatiquement ❌ Bridge.
+**Timeout hôte (~2 s) :** si Matrix-Control expire mais **MidiView** / MIDI Monitor montre la trame intacte (idéalement avec log fichier) → note « timeout hôte », pas automatiquement ❌ Bridge.
 
 ### 6.1 Préparer
 
-1. Bridge en `--start-session` (`--dev-zadig` si besoin). Note commit / chemin.
-2. Mode Computer OK.
-3. Branche le **Matrix-1000** sur le câble MIDI MT4 choisi (IN/OUT selon le câblage synth).
-4. Ouvre Matrix-Control sur le **PC** ; sélectionne `MT4 Port N` correspondant. Note Port N / câble.
+1. Bridge en `--start-session` (`--dev-zadig` si besoin). Note commit / chemin. → 
+2. Mode Computer OK. → 
+3. Branche le **Matrix-1000** sur le câble MIDI MT4 choisi (IN/OUT selon le câblage synth). → 
+4. Ouvre Matrix-Control sur le **PC** ; sélectionne `MT4 Port N` correspondant. → 
+   📌 Port N / câble : …
+5. Ouvre **MidiView** sur le même `MT4 Port N` utile (log / export prêt pour les dumps douteux ou le #7). → 
 
 ### 6.2 Vecteurs portes dures
 
-| # | Vecteur | Quoi faire dans Matrix-Control | Résultat |
-|---|---|---|---|
-| **1** | Device Inquiry | Ouvre / reconnecte ; l’UI détecte l’appareil. Matrix-1000 : identité fabricant `10`, famille `06 00`, membre `02 00`. Autre Oberheim : documente les octets + Skip #1 (pas ❌ Bridge). | ✅ / ❌ / Skip |
-| **2** | Dump patch (~275 B) | Demande un dump ; trame `F0 10 06 01 … F7` de **275 octets** complète (pas coupée / fusionnée), souvent dans les ~2 s. | ✅ / ❌ |
-| **3** | Dump Master (~351 B) | Dump Master **351 octets** sans redémarrer le Bridge. | ✅ / ❌ |
-| **4** | Push / edit-buffer (~275 B) | Écrit un patch vers un slot **et/ou** edit-buffer (`0D`). Pass = le synth accepte (son / UI). | ✅ / ❌ |
-| **5** | Flux éditeur live | Knobs / Matrix Mod au rythme stock ; pas de restart Bridge ni drop évident. Pass = au moins une classe 7 B / 9 B. | ✅ / ❌ |
-| **7** | Fil mélangé | Démarre un dump patch (#2). Pendant l’attente, injecte un Inquiry `F0 7E 7F 06 01 F7` sur le **même** port virtuel (ShowMIDI PC recommandé). Puis un dump patch **ultérieur** doit encore arriver intact. | ✅ / ❌ |
+Pour chaque ligne : remplis **Résultat** dès que tu as fini le vecteur (✅ / ❌ / Skip / N/A) + notes au besoin.
+
+| # | Vecteur | Quoi faire dans Matrix-Control | Résultat | Notes |
+|---|---|---|---|---|
+| **1** | Device Inquiry | Ouvre / reconnecte ; l’UI détecte l’appareil. Matrix-1000 : identité fabricant `10`, famille `06 00`, membre `02 00`. Autre Oberheim : documente les octets + Skip #1 (pas ❌ Bridge). | →  |  |
+| **2** | Dump patch (~275 B) | Demande un dump ; trame `F0 10 06 01 … F7` de **275 octets** complète (pas coupée / fusionnée), souvent dans les ~2 s. | →  |  |
+| **3** | Dump Master (~351 B) | Dump Master **351 octets** sans redémarrer le Bridge. | →  |  |
+| **4** | Push / edit-buffer (~275 B) | Écrit un patch vers un slot **et/ou** edit-buffer (`0D`). Pass = le synth accepte (son / UI). | →  |  |
+| **5** | Flux éditeur live | Knobs / Matrix Mod au rythme stock ; pas de restart Bridge ni drop évident. Pass = au moins une classe 7 B / 9 B. | →  |  |
+| **7** | Fil mélangé | Démarre un dump patch (#2). Pendant l’attente, injecte un Inquiry `F0 7E 7F 06 01 F7` sur le **même** port virtuel (outil d’envoi SysEx PC / MIDI-OX ; **MidiView** pour observer et sauver le log). Puis un dump patch **ultérieur** doit encore arriver intact. | →  |  |
 
 ### 6.3 Optionnel — stress banque (#6)
 
-≈ 100 × 275 B à ≥ 10 ms. Pas une porte dure : ✅ / **Skip** / ❌.
+≈ 100 × 275 B à ≥ 10 ms. Pas une porte dure.
 
-Validation #6 : ✅ / Skip / ❌ — notes : …
+1. Stress banque (#6). → 
+   📌 Notes : …
 
-### 6.4 Bilan Matrix-Control (Win10)
+### 6.4 Bilan Matrix-Control (Win10) — synthèse rapide
 
 | # | Résultat | Notes (Port N / câble / sens / build) |
 |---|---|---|
@@ -564,7 +552,7 @@ Validation #6 : ✅ / Skip / ❌ — notes : …
 | 7 Mixed-wire | | |
 | 6 Banque (opt.) | | |
 
-📌 Remarques GD :
+### 6.5 Remarques libres 📌
 
 
 
@@ -578,12 +566,17 @@ Tu peux **reporter** cette partie. Un essai 30–60 min aide, mais **ne clôture
 
 ### 7.1 Avant le chrono
 
-1. Sur le **PC** : désactive veille / hibernation / suspension sélective USB ; session déverrouillée.
-2. PC endormi ou USB suspendu pendant la fenêtre → essai **annulé** ou ❌.
-3. Arrêt valide : **Ctrl+C** seulement (pas la croix).
-4. Évite de rediriger la console 4 h. Logs qui meurent en cours → essai annulé.
-5. Note commit + heure de début **avant** Pass.
-6. Le **Mac + Scarlett** peuvent rester allumés pour les contrôles horaires (notes / SysEx / horloge), ou tu fais les contrôles entièrement côté PC si Matrix-Control / ShowMIDI suffisent — **enregistre** ce que tu as utilisé.
+1. Sur le **PC** : désactive veille / hibernation / suspension sélective USB ; session déverrouillée. → 
+2. Rappel : PC endormi ou USB suspendu pendant la fenêtre → essai **annulé** ou ❌ (lu / OK). → 
+3. Rappel : arrêt valide = **Ctrl+C** seulement, pas la croix (lu / OK). → 
+4. Évite de rediriger la console 4 h. Logs qui meurent en cours → essai annulé (lu / OK). → 
+5. Note commit + heure de début **avant** Pass. → 
+   📌 Commit / chemin Bridge : …
+   📌 Début (heure murale) : …
+6. Choix des contrôles horaires : Mac + Scarlett, et/ou entièrement PC (Matrix-Control / MidiView). → 
+   📌 Mac / Scarlett utilisés pendant le soak ? oui / non — détail : …
+   📌 Outils : Live PC / Live Mac / MidiView / MIDI Monitor / Matrix-Control : …
+   📌 Ports / câbles : …
 
 ### 7.2 Pendant ~4 h
 
@@ -591,42 +584,35 @@ Tu peux **reporter** cette partie. Un essai 30–60 min aide, mais **ne clôture
 builds\debug\Debug\Bridge.exe --start-session --dev-zadig
 ```
 
-Au moins **une fois par heure** :
+Au moins **une fois par heure** — coche au fil de l’eau :
 
-1. Notes/CC sur ≥1 IN et ≥1 OUT — ex. clip Live Mac → Scarlett → MT4 IN, et Live PC → MT4 OUT → MIDI Monitor.
-2. Un peu de **SysEx** (Inquiry / ~275 B / Matrix-Control) — **requis**.
-3. (Bonus) Horloge ou MTC via le duo Mac/PC si parties 3–4 déjà vertes.
+| Heure ~ | Notes/CC ≥1 IN + ≥1 OUT | SysEx (requis) | Horloge / MTC (bonus) | Remarque |
+|---|---|---|---|---|
+| H+1 | →  | →  | →  |  |
+| H+2 | →  | →  | →  |  |
+| H+3 | →  | →  | →  |  |
+| H+4 | →  | →  | →  |  |
 
 Vers ~2 h et à la fin : Gestionnaire des tâches (mémoire / handles de `Bridge.exe`).
 
-### 7.3 Critères
+1. Ressources ~2 h notées. → 
+2. Ressources fin notées. → 
+   📌 Ressources (début / milieu / fin) : …
+
+### 7.3 Critères (au moment où tu clôtures)
 
 **Pass** si : durée **≥ 3 h 45**, pas de restart obligatoire, ports utilisables à la fin, SysEx au rythme prévu, tableau rempli.
 
 **Fail** si : crash, pompe morte, restart forcé, dumps qui exigent restart, sommeil PC / USB, etc.
 
-### 7.4 Enregistrement
+1. Fin (heure murale) : → 
+2. Durée (≥ 3 h 45 ?) : → 
+3. SysEx : rythme OK ? → 
+4. Anomalies : → 
+5. Essai ~4 h. → 
+6. Essai 30–60 min (optionnel). → 
 
-| Champ | Valeur |
-|---|---|
-| Commit / chemin Bridge | |
-| OS | Windows 10 Pro x64 (Boot Camp) |
-| Mac / Scarlett utilisés pendant le soak ? | oui / non — détail : |
-| Début (heure murale) | |
-| Fin (heure murale) | |
-| Durée (≥ 3 h 45 ?) | |
-| Outils (Live PC / Live Mac / ShowMIDI / MIDI Monitor / Matrix-Control) | |
-| Ports / câbles | |
-| SysEx : rythme OK ? | oui / non — détail : |
-| Ressources (début / milieu / fin) | |
-| Anomalies | |
-
-Validation :
-
-- Essai ~4 h : ✅ / ❌ / reporté
-- Essai 30–60 min (optionnel) : ✅ / ❌ / N/A — durée : …
-
-📌 Remarques GD :
+### 7.4 Remarques libres 📌
 
 
 
@@ -634,19 +620,13 @@ Validation :
 
 ## 8. Arrêt propre (Ctrl+C)
 
-1. Focus console Bridge (**PC**).
-2. **Ctrl+C** une fois ; attends jusqu’à ~3 s.
-3. Processus terminé.
-4. Ableton PC / ShowMIDI : `MT4 Port N` disparus ou non sélectionnables (souvent orange dans Live).
-5. LEDs MT4 : Patch rouge, USB orange éteinte (comme Epic 1).
+1. Focus console Bridge (**PC**). → 
+2. **Ctrl+C** une fois ; attends jusqu’à ~3 s. → 
+3. Processus terminé. → 
+4. Ableton PC / MidiView : `MT4 Port N` disparus ou non sélectionnables (souvent orange dans Live). → 
+5. LEDs MT4 : Patch rouge, USB orange éteinte (comme Epic 1). → 
 
-Validation :
-
-- Ctrl+C OK : ✅ / ❌
-- Ports rangés : ✅ / ❌
-- LEDs : ✅ / ❌ / non observé
-
-📌 Remarques GD :
+### 8.1 Remarques libres 📌
 
 
 
@@ -656,13 +636,13 @@ Validation :
 
 **Verdict personnel**
 
-- Horloge / transport (2.1) : oui / non / partiel
-- MTC (2.2) : oui / non / partiel
-- SysEx pipe (2.3) : oui / non / partiel
-- Matrix-Control (2.4) : oui / non / reporté / N/A matériel
-- Longévité ~4 h (2.5) : oui / non / reporté
-- Setup Scarlett + deux Live utile / à ajuster : …
-- Prêt à enchaîner Epic 3 : oui / non / avec réserves
+1. Horloge / transport (2.1) : oui / non / partiel → 
+2. MTC (2.2) : oui / non / partiel → 
+3. SysEx pipe (2.3) : oui / non / partiel → 
+4. Matrix-Control (2.4) : oui / non / reporté / N/A matériel → 
+5. Longévité ~4 h (2.5) : oui / non / reporté → 
+6. Setup Scarlett + deux Live utile / à ajuster : → 
+7. Prêt à enchaîner Epic 3 : oui / non / avec réserves → 
 
 **Ce qui a le mieux marché**
 
@@ -677,11 +657,11 @@ Validation :
 1. …
 2. …
 
-**Fichiers / logs utiles** (captures MIDI Monitor, ShowMIDI, Live, console Bridge, commit)
+**Fichiers / logs utiles** (captures MIDI Monitor, **MidiView** export TXT/CSV, Live, console Bridge, commit)
 
 - …
 
-📌 Remarques GD (bilan) :
+### 9.1 Remarques libres 📌
 
 
 
@@ -693,10 +673,10 @@ Validation :
 |---|---|
 | `--open-device` / session échoue | Epic 1 §2 : cas B → Zadig + `--dev-zadig`. |
 | `--test-mapper` ≠ 0 | Rebuild à jour ; coller la sortie. |
-| Ports absents dans loopMIDI | **Normal** — Ableton PC / ShowMIDI. |
+| Ports absents dans loopMIDI | **Normal** — Ableton PC / MidiView. |
 | Ports absents dans Ableton PC | Session pas démarrée, ou Live ouverte trop tôt sans refresh. |
 | MIDI Monitor ne voit rien (sens PC → Mac) | Câble MT4 **OUT** → Scarlett **IN** ; mauvais port Live PC ; Track non coché sur `MT4 Port N`. |
-| ShowMIDI / Live PC silencieux (sens Mac → PC) | Câble Scarlett **OUT** → MT4 **IN** ; Live Mac envoie vers la Scarlett (pas un autre périphérique) ; mauvais `MT4 Port N`. |
+| MidiView / Live PC silencieux (sens Mac → PC) | Câble Scarlett **OUT** → MT4 **IN** ; Live Mac envoie vers la Scarlett (pas un autre périphérique) ; mauvais `MT4 Port N` ; MidiView écoute bien l’IN virtuel. |
 | Oxygen 61 « ne traverse pas » le MT4 | Normal : USB-only — il ne remplace pas un câble DIN. Passe par Live + Scarlett ou Live + `MT4 Port N`. |
 | Notes OK, horloge absente | Sync non coché sur le **bon** port (PC : `MT4 Port N` ; Mac : Scarlett). |
 | Live ne suit pas l’horloge externe | Réception Sync activée ; l’autre Live envoie bien Clock ; sens de câble correct. |
@@ -705,7 +685,7 @@ Validation :
 | Full-frame absent mais `F1` OK | Souvent le générateur Live n’envoie pas de full-frame — note N/A générateur ; teste une autre source si tu en as une. |
 | SysEx coupé / fusionné | Taille, Port N, sens Mac↔PC ; ❌ Bridge si reproductible au rythme calme. |
 | SysEx seul, boîtier « mort » | Relancer `--start-session` (mode Computer), pas seulement un SysEx. |
-| Matrix-Control timeout ~2 s | Capture ShowMIDI / MIDI Monitor ; possible timeout hôte si trame intacte. |
+| Matrix-Control timeout ~2 s | Capture MidiView (log fichier) / MIDI Monitor ; possible timeout hôte si trame intacte. |
 | Session qui meurt toute seule | Copier le message anglais console. |
 | Ctrl+C lent (~3 s) | Attendu (timeout bulk IN). |
 | Croix fenêtre / ports orphelins | Soak **annulé** ; nettoyer avant le prochain essai. |
@@ -738,12 +718,12 @@ Adapte toujours le chemin complet vers ton `Bridge.exe` sous `builds\`.
 
 **Ordre conseillé pour une soirée labo (ton setup)**
 
-1. **0** — allumer PC + Mac, câbler Scarlett ↔ MT4, vérifier MIDI Monitor + ShowMIDI (~15–25 min).  
+1. **0** — allumer PC + Mac, câbler Scarlett ↔ MT4, vérifier MIDI Monitor + MidiView (~15–25 min).  
 2. **1–2** — build + session Bridge + spot notes via Scarlett (~20–40 min si bind OK).  
 3. **3** — horloge dans les deux sens (Live PC ↔ Live Mac) (~20–40 min).  
 4. **4** — MTC, MIDI Monitor comme microscope (~20–40 min).  
-5. **5** — SysEx + rafale (~30–60 min).  
-6. **6** — Matrix-Control quand Matrix-1000 prêt (Scarlett optionnelle).  
+5. **5** — SysEx + rafale ; **MidiView** log fichier côté PC (~30–60 min).  
+6. **6** — Matrix-Control quand Matrix-1000 prêt (Scarlett optionnelle ; MidiView pour #7 / preuves).  
 7. **7** — ~4 h sur une plage dédiée.
 
 Checklists techniques anglaises (référence agents / IDs de matrice) :  
