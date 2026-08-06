@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Out-of-source builds only. Configure into builds/, never repo-root build/.
+# Out-of-source builds only. Configure into builds/ (e.g. builds/debug, builds/ci).
 # Example: cmake -S . -B builds/debug && cmake --build builds/debug
 
 add_executable(Bridge

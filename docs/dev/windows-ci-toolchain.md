@@ -56,7 +56,7 @@ cmake --build builds/debug --config Debug
 ctest --test-dir builds/debug -C Debug --output-on-failure
 ```
 
-Outputs must stay under `builds/`. Never use repo-root `build/` as the documented out directory.
+Outputs must stay under `builds/` (e.g. `builds/debug`, `builds/ci`).
 
 Optional CLI smoke (same mapper vectors as unit tests): `Bridge.exe --test-mapper`
 
