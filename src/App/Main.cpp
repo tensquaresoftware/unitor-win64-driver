@@ -146,7 +146,7 @@ bool expectMt4DirectionalPortNames(const PortNameSet& names)
         && expectExactName(names.outNames[3], "MT4 Output 4", "OUT 4");
 }
 
-bool testBuiltMt4PortNameSet()
+bool printAndCheckBuiltMt4PortNameSet()
 {
     const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
     if (mt4 == nullptr)
@@ -170,17 +170,32 @@ bool testBuiltMt4PortNameSet()
         return false;
     }
 
+    std::cout << "Unit 1 Virtual Ports (" << names.inCount << " IN / " << names.outCount
+              << " OUT):\n";
+    for (std::size_t index = 0; index < names.inCount; ++index)
+    {
+        std::cout << "  IN  " << names.inNames[index] << '\n';
+    }
+    for (std::size_t index = 0; index < names.outCount; ++index)
+    {
+        std::cout << "  OUT " << names.outNames[index] << '\n';
+    }
+
+    std::cout << "Multi-unit samples:\n";
+    std::cout << "  IN  " << formatPortDisplayName(2, 1, MidiPortDirection::In) << '\n';
+    std::cout << "  OUT " << formatPortDisplayName(2, 3, MidiPortDirection::Out) << '\n';
+
     if (portNameSetHasInOutCollision(names))
     {
         return false;
     }
 
-    return expectMt4DirectionalPortNames(names);
+    return expectMt4DirectionalPortNames(names) && testFormatPortDisplayNames();
 }
 
 int runPortNameTests()
 {
-    if (!testFormatPortDisplayNames() || !testBuiltMt4PortNameSet())
+    if (!printAndCheckBuiltMt4PortNameSet())
     {
         return 1;
     }
