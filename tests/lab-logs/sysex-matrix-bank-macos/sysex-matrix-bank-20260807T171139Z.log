@@ -1,0 +1,442 @@
+# SysEx Matrix bank-burst lab log
+# started_utc: 2026-08-07T17:11:39.228846+00:00
+# with_bridge: false
+# fresh_sessions: 2
+# session_gap_s: 2.0
+# burst_count: 100
+# start_slot: 0
+# interval_s: 0.01
+# reply_timeout_s: 3.0
+# pass_percent: 100.0
+# out_port_needle: MT4 Port 1
+# in_port_needle: MT4 Port 1
+# stamp: 20260807T171139Z
+---
+# session_index: 1
+# start_index: 1
+# out_port: MT4 Port 1
+# in_port: MT4 Port 1
+# burst_count: 100
+# start_slot: 0
+# interval_s: 0.01
+# reply_timeout_s: 3.0
+# first_request: F0 10 06 04 01 00 F7
+---
+0001 SEND dump_patch_request slot=00 F0 10 06 04 01 00 F7 t_mono=158627.696
+0001 RECV dump_patch slot=00 len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=129.0
+0002 SEND dump_patch_request slot=01 F0 10 06 04 01 01 F7 t_mono=158627.831
+0002 RECV dump_patch slot=01 len=275 head=F0 10 06 01 tail=00 00 1E F7 len=275 dt_ms=127.1
+0003 SEND dump_patch_request slot=02 F0 10 06 04 01 02 F7 t_mono=158627.965
+0003 RECV dump_patch slot=02 len=275 head=F0 10 06 01 tail=00 00 52 F7 len=275 dt_ms=131.4
+0004 SEND dump_patch_request slot=03 F0 10 06 04 01 03 F7 t_mono=158628.102
+0004 RECV dump_patch slot=03 len=275 head=F0 10 06 01 tail=00 00 50 F7 len=275 dt_ms=132.3
+0005 SEND dump_patch_request slot=04 F0 10 06 04 01 04 F7 t_mono=158628.239
+0005 RECV dump_patch slot=04 len=275 head=F0 10 06 01 tail=00 00 35 F7 len=275 dt_ms=128.3
+0006 SEND dump_patch_request slot=05 F0 10 06 04 01 05 F7 t_mono=158628.373
+0006 RECV dump_patch slot=05 len=275 head=F0 10 06 01 tail=00 00 26 F7 len=275 dt_ms=128.6
+0007 SEND dump_patch_request slot=06 F0 10 06 04 01 06 F7 t_mono=158628.508
+0007 RECV dump_patch slot=06 len=275 head=F0 10 06 01 tail=00 00 39 F7 len=275 dt_ms=132.4
+0008 SEND dump_patch_request slot=07 F0 10 06 04 01 07 F7 t_mono=158628.647
+0008 RECV dump_patch slot=07 len=275 head=F0 10 06 01 tail=00 00 48 F7 len=275 dt_ms=128.5
+0009 SEND dump_patch_request slot=08 F0 10 06 04 01 08 F7 t_mono=158628.782
+0009 RECV dump_patch slot=08 len=275 head=F0 10 06 01 tail=00 00 01 F7 len=275 dt_ms=129.2
+0010 SEND dump_patch_request slot=09 F0 10 06 04 01 09 F7 t_mono=158628.917
+0010 RECV dump_patch slot=09 len=275 head=F0 10 06 01 tail=00 00 5E F7 len=275 dt_ms=126.8
+0011 SEND dump_patch_request slot=0A F0 10 06 04 01 0A F7 t_mono=158629.049
+0011 RECV dump_patch slot=0A len=275 head=F0 10 06 01 tail=00 00 46 F7 len=275 dt_ms=130.4
+0012 SEND dump_patch_request slot=0B F0 10 06 04 01 0B F7 t_mono=158629.186
+0012 RECV dump_patch slot=0B len=275 head=F0 10 06 01 tail=00 00 5B F7 len=275 dt_ms=127.2
+0013 SEND dump_patch_request slot=0C F0 10 06 04 01 0C F7 t_mono=158629.320
+0013 RECV dump_patch slot=0C len=275 head=F0 10 06 01 tail=00 00 7C F7 len=275 dt_ms=127.4
+0014 SEND dump_patch_request slot=0D F0 10 06 04 01 0D F7 t_mono=158629.454
+0014 RECV dump_patch slot=0D len=275 head=F0 10 06 01 tail=00 00 30 F7 len=275 dt_ms=127.2
+0015 SEND dump_patch_request slot=0E F0 10 06 04 01 0E F7 t_mono=158629.587
+0015 RECV dump_patch slot=0E len=275 head=F0 10 06 01 tail=00 00 7A F7 len=275 dt_ms=128.9
+0016 SEND dump_patch_request slot=0F F0 10 06 04 01 0F F7 t_mono=158629.723
+0016 RECV dump_patch slot=0F len=275 head=F0 10 06 01 tail=00 00 12 F7 len=275 dt_ms=128.2
+0017 SEND dump_patch_request slot=10 F0 10 06 04 01 10 F7 t_mono=158629.857
+0017 RECV dump_patch slot=10 len=275 head=F0 10 06 01 tail=00 00 48 F7 len=275 dt_ms=129.7
+0018 SEND dump_patch_request slot=11 F0 10 06 04 01 11 F7 t_mono=158629.993
+0018 RECV dump_patch slot=11 len=275 head=F0 10 06 01 tail=00 00 5B F7 len=275 dt_ms=130.2
+0019 SEND dump_patch_request slot=12 F0 10 06 04 01 12 F7 t_mono=158630.130
+0019 RECV dump_patch slot=12 len=275 head=F0 10 06 01 tail=00 00 78 F7 len=275 dt_ms=129.3
+0020 SEND dump_patch_request slot=13 F0 10 06 04 01 13 F7 t_mono=158630.265
+0020 RECV dump_patch slot=13 len=275 head=F0 10 06 01 tail=00 00 53 F7 len=275 dt_ms=127.0
+0021 SEND dump_patch_request slot=14 F0 10 06 04 01 14 F7 t_mono=158630.398
+0021 RECV dump_patch slot=14 len=275 head=F0 10 06 01 tail=00 00 19 F7 len=275 dt_ms=129.8
+0022 SEND dump_patch_request slot=15 F0 10 06 04 01 15 F7 t_mono=158630.535
+0022 RECV dump_patch slot=15 len=275 head=F0 10 06 01 tail=00 00 41 F7 len=275 dt_ms=130.2
+0023 SEND dump_patch_request slot=16 F0 10 06 04 01 16 F7 t_mono=158630.671
+0023 RECV dump_patch slot=16 len=275 head=F0 10 06 01 tail=00 00 26 F7 len=275 dt_ms=131.7
+0024 SEND dump_patch_request slot=17 F0 10 06 04 01 17 F7 t_mono=158630.809
+0024 RECV dump_patch slot=17 len=275 head=F0 10 06 01 tail=00 00 3B F7 len=275 dt_ms=129.3
+0025 SEND dump_patch_request slot=18 F0 10 06 04 01 18 F7 t_mono=158630.944
+0025 RECV dump_patch slot=18 len=275 head=F0 10 06 01 tail=00 00 79 F7 len=275 dt_ms=128.2
+0026 SEND dump_patch_request slot=19 F0 10 06 04 01 19 F7 t_mono=158631.079
+0026 RECV dump_patch slot=19 len=275 head=F0 10 06 01 tail=00 00 46 F7 len=275 dt_ms=128.8
+0027 SEND dump_patch_request slot=1A F0 10 06 04 01 1A F7 t_mono=158631.214
+0027 RECV dump_patch slot=1A len=275 head=F0 10 06 01 tail=00 00 16 F7 len=275 dt_ms=128.8
+0028 SEND dump_patch_request slot=1B F0 10 06 04 01 1B F7 t_mono=158631.349
+0028 RECV dump_patch slot=1B len=275 head=F0 10 06 01 tail=00 00 37 F7 len=275 dt_ms=129.2
+0029 SEND dump_patch_request slot=1C F0 10 06 04 01 1C F7 t_mono=158631.485
+0029 RECV dump_patch slot=1C len=275 head=F0 10 06 01 tail=00 00 0D F7 len=275 dt_ms=132.0
+0030 SEND dump_patch_request slot=1D F0 10 06 04 01 1D F7 t_mono=158631.623
+0030 RECV dump_patch slot=1D len=275 head=F0 10 06 01 tail=00 00 61 F7 len=275 dt_ms=128.0
+0031 SEND dump_patch_request slot=1E F0 10 06 04 01 1E F7 t_mono=158631.758
+0031 RECV dump_patch slot=1E len=275 head=F0 10 06 01 tail=00 00 25 F7 len=275 dt_ms=126.3
+0032 SEND dump_patch_request slot=1F F0 10 06 04 01 1F F7 t_mono=158631.890
+0032 RECV dump_patch slot=1F len=275 head=F0 10 06 01 tail=00 00 7B F7 len=275 dt_ms=128.4
+0033 SEND dump_patch_request slot=20 F0 10 06 04 01 20 F7 t_mono=158632.025
+0033 RECV dump_patch slot=20 len=275 head=F0 10 06 01 tail=00 00 63 F7 len=275 dt_ms=128.6
+0034 SEND dump_patch_request slot=21 F0 10 06 04 01 21 F7 t_mono=158632.160
+0034 RECV dump_patch slot=21 len=275 head=F0 10 06 01 tail=00 00 3E F7 len=275 dt_ms=130.1
+0035 SEND dump_patch_request slot=22 F0 10 06 04 01 22 F7 t_mono=158632.296
+0035 RECV dump_patch slot=22 len=275 head=F0 10 06 01 tail=00 00 69 F7 len=275 dt_ms=128.0
+0036 SEND dump_patch_request slot=23 F0 10 06 04 01 23 F7 t_mono=158632.429
+0036 RECV dump_patch slot=23 len=275 head=F0 10 06 01 tail=00 00 75 F7 len=275 dt_ms=130.3
+0037 SEND dump_patch_request slot=24 F0 10 06 04 01 24 F7 t_mono=158632.566
+0037 RECV dump_patch slot=24 len=275 head=F0 10 06 01 tail=00 00 4F F7 len=275 dt_ms=125.7
+0038 SEND dump_patch_request slot=25 F0 10 06 04 01 25 F7 t_mono=158632.698
+0038 RECV dump_patch slot=25 len=275 head=F0 10 06 01 tail=00 00 4F F7 len=275 dt_ms=126.6
+0039 SEND dump_patch_request slot=26 F0 10 06 04 01 26 F7 t_mono=158632.831
+0039 RECV dump_patch slot=26 len=275 head=F0 10 06 01 tail=00 00 58 F7 len=275 dt_ms=128.8
+0040 SEND dump_patch_request slot=27 F0 10 06 04 01 27 F7 t_mono=158632.966
+0040 RECV dump_patch slot=27 len=275 head=F0 10 06 01 tail=00 00 0B F7 len=275 dt_ms=133.0
+0041 SEND dump_patch_request slot=28 F0 10 06 04 01 28 F7 t_mono=158633.106
+0041 RECV dump_patch slot=28 len=275 head=F0 10 06 01 tail=00 00 66 F7 len=275 dt_ms=125.9
+0042 SEND dump_patch_request slot=29 F0 10 06 04 01 29 F7 t_mono=158633.238
+0042 RECV dump_patch slot=29 len=275 head=F0 10 06 01 tail=00 00 3C F7 len=275 dt_ms=131.5
+0043 SEND dump_patch_request slot=2A F0 10 06 04 01 2A F7 t_mono=158633.376
+0043 RECV dump_patch slot=2A len=275 head=F0 10 06 01 tail=00 00 32 F7 len=275 dt_ms=130.4
+0044 SEND dump_patch_request slot=2B F0 10 06 04 01 2B F7 t_mono=158633.513
+0044 RECV dump_patch slot=2B len=275 head=F0 10 06 01 tail=00 00 50 F7 len=275 dt_ms=126.0
+0045 SEND dump_patch_request slot=2C F0 10 06 04 01 2C F7 t_mono=158633.645
+0045 RECV dump_patch slot=2C len=275 head=F0 10 06 01 tail=03 01 3F F7 len=275 dt_ms=130.5
+0046 SEND dump_patch_request slot=2D F0 10 06 04 01 2D F7 t_mono=158633.782
+0046 RECV dump_patch slot=2D len=275 head=F0 10 06 01 tail=00 00 7E F7 len=275 dt_ms=131.0
+0047 SEND dump_patch_request slot=2E F0 10 06 04 01 2E F7 t_mono=158633.919
+0047 RECV dump_patch slot=2E len=275 head=F0 10 06 01 tail=00 00 4C F7 len=275 dt_ms=132.3
+0048 SEND dump_patch_request slot=2F F0 10 06 04 01 2F F7 t_mono=158634.058
+0048 RECV dump_patch slot=2F len=275 head=F0 10 06 01 tail=00 00 68 F7 len=275 dt_ms=130.9
+0049 SEND dump_patch_request slot=30 F0 10 06 04 01 30 F7 t_mono=158634.194
+0049 RECV dump_patch slot=30 len=275 head=F0 10 06 01 tail=00 00 45 F7 len=275 dt_ms=130.3
+0050 SEND dump_patch_request slot=31 F0 10 06 04 01 31 F7 t_mono=158634.331
+0050 RECV dump_patch slot=31 len=275 head=F0 10 06 01 tail=00 00 34 F7 len=275 dt_ms=126.0
+0051 SEND dump_patch_request slot=32 F0 10 06 04 01 32 F7 t_mono=158634.463
+0051 RECV dump_patch slot=32 len=275 head=F0 10 06 01 tail=00 00 65 F7 len=275 dt_ms=128.7
+0052 SEND dump_patch_request slot=33 F0 10 06 04 01 33 F7 t_mono=158634.598
+0052 RECV dump_patch slot=33 len=275 head=F0 10 06 01 tail=09 01 7B F7 len=275 dt_ms=126.7
+0053 SEND dump_patch_request slot=34 F0 10 06 04 01 34 F7 t_mono=158634.731
+0053 RECV dump_patch slot=34 len=275 head=F0 10 06 01 tail=00 00 3F F7 len=275 dt_ms=128.0
+0054 SEND dump_patch_request slot=35 F0 10 06 04 01 35 F7 t_mono=158634.866
+0054 RECV dump_patch slot=35 len=275 head=F0 10 06 01 tail=00 00 1E F7 len=275 dt_ms=128.9
+0055 SEND dump_patch_request slot=36 F0 10 06 04 01 36 F7 t_mono=158635.000
+0055 RECV dump_patch slot=36 len=275 head=F0 10 06 01 tail=00 00 0D F7 len=275 dt_ms=128.9
+0056 SEND dump_patch_request slot=37 F0 10 06 04 01 37 F7 t_mono=158635.136
+0056 RECV dump_patch slot=37 len=275 head=F0 10 06 01 tail=00 00 1D F7 len=275 dt_ms=127.6
+0057 SEND dump_patch_request slot=38 F0 10 06 04 01 38 F7 t_mono=158635.270
+0057 RECV dump_patch slot=38 len=275 head=F0 10 06 01 tail=00 00 4C F7 len=275 dt_ms=130.3
+0058 SEND dump_patch_request slot=39 F0 10 06 04 01 39 F7 t_mono=158635.409
+0058 RECV dump_patch slot=39 len=275 head=F0 10 06 01 tail=00 00 7B F7 len=275 dt_ms=126.2
+0059 SEND dump_patch_request slot=3A F0 10 06 04 01 3A F7 t_mono=158635.541
+0059 RECV dump_patch slot=3A len=275 head=F0 10 06 01 tail=00 00 61 F7 len=275 dt_ms=126.7
+0060 SEND dump_patch_request slot=3B F0 10 06 04 01 3B F7 t_mono=158635.673
+0060 RECV dump_patch slot=3B len=275 head=F0 10 06 01 tail=00 00 7F F7 len=275 dt_ms=126.2
+0061 SEND dump_patch_request slot=3C F0 10 06 04 01 3C F7 t_mono=158635.806
+0061 RECV dump_patch slot=3C len=275 head=F0 10 06 01 tail=00 00 50 F7 len=275 dt_ms=127.0
+0062 SEND dump_patch_request slot=3D F0 10 06 04 01 3D F7 t_mono=158635.940
+0062 RECV dump_patch slot=3D len=275 head=F0 10 06 01 tail=00 01 6D F7 len=275 dt_ms=131.8
+0063 SEND dump_patch_request slot=3E F0 10 06 04 01 3E F7 t_mono=158636.078
+0063 RECV dump_patch slot=3E len=275 head=F0 10 06 01 tail=00 00 06 F7 len=275 dt_ms=129.5
+0064 SEND dump_patch_request slot=3F F0 10 06 04 01 3F F7 t_mono=158636.214
+0064 RECV dump_patch slot=3F len=275 head=F0 10 06 01 tail=00 00 34 F7 len=275 dt_ms=127.5
+0065 SEND dump_patch_request slot=40 F0 10 06 04 01 40 F7 t_mono=158636.348
+0065 RECV dump_patch slot=40 len=275 head=F0 10 06 01 tail=00 00 51 F7 len=275 dt_ms=129.0
+0066 SEND dump_patch_request slot=41 F0 10 06 04 01 41 F7 t_mono=158636.483
+0066 RECV dump_patch slot=41 len=275 head=F0 10 06 01 tail=00 00 0E F7 len=275 dt_ms=128.5
+0067 SEND dump_patch_request slot=42 F0 10 06 04 01 42 F7 t_mono=158636.618
+0067 RECV dump_patch slot=42 len=275 head=F0 10 06 01 tail=00 00 04 F7 len=275 dt_ms=128.6
+0068 SEND dump_patch_request slot=43 F0 10 06 04 01 43 F7 t_mono=158636.753
+0068 RECV dump_patch slot=43 len=275 head=F0 10 06 01 tail=00 00 29 F7 len=275 dt_ms=126.2
+0069 SEND dump_patch_request slot=44 F0 10 06 04 01 44 F7 t_mono=158636.885
+0069 RECV dump_patch slot=44 len=275 head=F0 10 06 01 tail=00 00 5A F7 len=275 dt_ms=131.2
+0070 SEND dump_patch_request slot=45 F0 10 06 04 01 45 F7 t_mono=158637.023
+0070 RECV dump_patch slot=45 len=275 head=F0 10 06 01 tail=00 00 42 F7 len=275 dt_ms=130.3
+0071 SEND dump_patch_request slot=46 F0 10 06 04 01 46 F7 t_mono=158637.159
+0071 RECV dump_patch slot=46 len=275 head=F0 10 06 01 tail=00 00 47 F7 len=275 dt_ms=127.1
+0072 SEND dump_patch_request slot=47 F0 10 06 04 01 47 F7 t_mono=158637.293
+0072 RECV dump_patch slot=47 len=275 head=F0 10 06 01 tail=00 00 06 F7 len=275 dt_ms=128.3
+0073 SEND dump_patch_request slot=48 F0 10 06 04 01 48 F7 t_mono=158637.428
+0073 RECV dump_patch slot=48 len=275 head=F0 10 06 01 tail=00 00 1B F7 len=275 dt_ms=129.4
+0074 SEND dump_patch_request slot=49 F0 10 06 04 01 49 F7 t_mono=158637.564
+0074 RECV dump_patch slot=49 len=275 head=F0 10 06 01 tail=00 00 51 F7 len=275 dt_ms=127.2
+0075 SEND dump_patch_request slot=4A F0 10 06 04 01 4A F7 t_mono=158637.697
+0075 RECV dump_patch slot=4A len=275 head=F0 10 06 01 tail=00 00 34 F7 len=275 dt_ms=127.0
+0076 SEND dump_patch_request slot=4B F0 10 06 04 01 4B F7 t_mono=158637.831
+0076 RECV dump_patch slot=4B len=275 head=F0 10 06 01 tail=00 00 53 F7 len=275 dt_ms=130.8
+0077 SEND dump_patch_request slot=4C F0 10 06 04 01 4C F7 t_mono=158637.968
+0077 RECV dump_patch slot=4C len=275 head=F0 10 06 01 tail=01 00 4D F7 len=275 dt_ms=130.5
+0078 SEND dump_patch_request slot=4D F0 10 06 04 01 4D F7 t_mono=158638.105
+0078 RECV dump_patch slot=4D len=275 head=F0 10 06 01 tail=00 00 2E F7 len=275 dt_ms=131.7
+0079 SEND dump_patch_request slot=4E F0 10 06 04 01 4E F7 t_mono=158638.243
+0079 RECV dump_patch slot=4E len=275 head=F0 10 06 01 tail=00 00 6F F7 len=275 dt_ms=126.9
+0080 SEND dump_patch_request slot=4F F0 10 06 04 01 4F F7 t_mono=158638.377
+0080 RECV dump_patch slot=4F len=275 head=F0 10 06 01 tail=00 00 7D F7 len=275 dt_ms=128.6
+0081 SEND dump_patch_request slot=50 F0 10 06 04 01 50 F7 t_mono=158638.511
+0081 RECV dump_patch slot=50 len=275 head=F0 10 06 01 tail=00 00 7E F7 len=275 dt_ms=129.8
+0082 SEND dump_patch_request slot=51 F0 10 06 04 01 51 F7 t_mono=158638.647
+0082 RECV dump_patch slot=51 len=275 head=F0 10 06 01 tail=00 00 04 F7 len=275 dt_ms=129.3
+0083 SEND dump_patch_request slot=52 F0 10 06 04 01 52 F7 t_mono=158638.783
+0083 RECV dump_patch slot=52 len=275 head=F0 10 06 01 tail=00 00 3C F7 len=275 dt_ms=127.0
+0084 SEND dump_patch_request slot=53 F0 10 06 04 01 53 F7 t_mono=158638.916
+0084 RECV dump_patch slot=53 len=275 head=F0 10 06 01 tail=00 00 5E F7 len=275 dt_ms=128.8
+0085 SEND dump_patch_request slot=54 F0 10 06 04 01 54 F7 t_mono=158639.052
+0085 RECV dump_patch slot=54 len=275 head=F0 10 06 01 tail=00 00 35 F7 len=275 dt_ms=129.3
+0086 SEND dump_patch_request slot=55 F0 10 06 04 01 55 F7 t_mono=158639.187
+0086 RECV dump_patch slot=55 len=275 head=F0 10 06 01 tail=00 00 59 F7 len=275 dt_ms=128.7
+0087 SEND dump_patch_request slot=56 F0 10 06 04 01 56 F7 t_mono=158639.323
+0087 RECV dump_patch slot=56 len=275 head=F0 10 06 01 tail=00 00 76 F7 len=275 dt_ms=130.3
+0088 SEND dump_patch_request slot=57 F0 10 06 04 01 57 F7 t_mono=158639.459
+0088 RECV dump_patch slot=57 len=275 head=F0 10 06 01 tail=00 00 7C F7 len=275 dt_ms=127.6
+0089 SEND dump_patch_request slot=58 F0 10 06 04 01 58 F7 t_mono=158639.593
+0089 RECV dump_patch slot=58 len=275 head=F0 10 06 01 tail=00 00 2E F7 len=275 dt_ms=127.7
+0090 SEND dump_patch_request slot=59 F0 10 06 04 01 59 F7 t_mono=158639.727
+0090 RECV dump_patch slot=59 len=275 head=F0 10 06 01 tail=00 00 44 F7 len=275 dt_ms=129.2
+0091 SEND dump_patch_request slot=5A F0 10 06 04 01 5A F7 t_mono=158639.863
+0091 RECV dump_patch slot=5A len=275 head=F0 10 06 01 tail=00 00 26 F7 len=275 dt_ms=131.8
+0092 SEND dump_patch_request slot=5B F0 10 06 04 01 5B F7 t_mono=158640.001
+0092 RECV dump_patch slot=5B len=275 head=F0 10 06 01 tail=00 00 4F F7 len=275 dt_ms=127.7
+0093 SEND dump_patch_request slot=5C F0 10 06 04 01 5C F7 t_mono=158640.135
+0093 RECV dump_patch slot=5C len=275 head=F0 10 06 01 tail=09 01 3A F7 len=275 dt_ms=128.1
+0094 SEND dump_patch_request slot=5D F0 10 06 04 01 5D F7 t_mono=158640.270
+0094 RECV dump_patch slot=5D len=275 head=F0 10 06 01 tail=09 01 17 F7 len=275 dt_ms=128.3
+0095 SEND dump_patch_request slot=5E F0 10 06 04 01 5E F7 t_mono=158640.404
+0095 RECV dump_patch slot=5E len=275 head=F0 10 06 01 tail=09 01 20 F7 len=275 dt_ms=133.5
+0096 SEND dump_patch_request slot=5F F0 10 06 04 01 5F F7 t_mono=158640.544
+0096 RECV dump_patch slot=5F len=275 head=F0 10 06 01 tail=00 00 14 F7 len=275 dt_ms=126.6
+0097 SEND dump_patch_request slot=60 F0 10 06 04 01 60 F7 t_mono=158640.677
+0097 RECV dump_patch slot=60 len=275 head=F0 10 06 01 tail=00 00 52 F7 len=275 dt_ms=127.2
+0098 SEND dump_patch_request slot=61 F0 10 06 04 01 61 F7 t_mono=158640.811
+0098 RECV dump_patch slot=61 len=275 head=F0 10 06 01 tail=00 00 45 F7 len=275 dt_ms=127.8
+0099 SEND dump_patch_request slot=62 F0 10 06 04 01 62 F7 t_mono=158640.945
+0099 RECV dump_patch slot=62 len=275 head=F0 10 06 01 tail=00 00 04 F7 len=275 dt_ms=128.9
+0100 SEND dump_patch_request slot=63 F0 10 06 04 01 63 F7 t_mono=158641.080
+0100 RECV dump_patch slot=63 len=275 head=F0 10 06 01 tail=00 00 70 F7 len=275 dt_ms=129.2
+summary[bank_burst_patch]: sent=100 ok=100 rate=100.0% elapsed_s=13.58 pass=true (need>=100%)
+# finished_utc: 2026-08-07T17:11:52.923072+00:00
+# start_pass: true
+# session_index: 2
+# start_index: 2
+# out_port: MT4 Port 1
+# in_port: MT4 Port 1
+# burst_count: 100
+# start_slot: 0
+# interval_s: 0.01
+# reply_timeout_s: 3.0
+# first_request: F0 10 06 04 01 00 F7
+---
+0001 SEND dump_patch_request slot=00 F0 10 06 04 01 00 F7 t_mono=158643.457
+0001 RECV dump_patch slot=00 len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=130.4
+0002 SEND dump_patch_request slot=01 F0 10 06 04 01 01 F7 t_mono=158643.593
+0002 RECV dump_patch slot=01 len=275 head=F0 10 06 01 tail=00 00 1E F7 len=275 dt_ms=125.7
+0003 SEND dump_patch_request slot=02 F0 10 06 04 01 02 F7 t_mono=158643.725
+0003 RECV dump_patch slot=02 len=275 head=F0 10 06 01 tail=00 00 52 F7 len=275 dt_ms=129.0
+0004 SEND dump_patch_request slot=03 F0 10 06 04 01 03 F7 t_mono=158643.861
+0004 RECV dump_patch slot=03 len=275 head=F0 10 06 01 tail=00 00 50 F7 len=275 dt_ms=126.9
+0005 SEND dump_patch_request slot=04 F0 10 06 04 01 04 F7 t_mono=158643.994
+0005 RECV dump_patch slot=04 len=275 head=F0 10 06 01 tail=00 00 35 F7 len=275 dt_ms=128.9
+0006 SEND dump_patch_request slot=05 F0 10 06 04 01 05 F7 t_mono=158644.129
+0006 RECV dump_patch slot=05 len=275 head=F0 10 06 01 tail=00 00 26 F7 len=275 dt_ms=129.2
+0007 SEND dump_patch_request slot=06 F0 10 06 04 01 06 F7 t_mono=158644.265
+0007 RECV dump_patch slot=06 len=275 head=F0 10 06 01 tail=00 00 39 F7 len=275 dt_ms=132.3
+0008 SEND dump_patch_request slot=07 F0 10 06 04 01 07 F7 t_mono=158644.403
+0008 RECV dump_patch slot=07 len=275 head=F0 10 06 01 tail=00 00 48 F7 len=275 dt_ms=127.9
+0009 SEND dump_patch_request slot=08 F0 10 06 04 01 08 F7 t_mono=158644.538
+0009 RECV dump_patch slot=08 len=275 head=F0 10 06 01 tail=00 00 01 F7 len=275 dt_ms=127.8
+0010 SEND dump_patch_request slot=09 F0 10 06 04 01 09 F7 t_mono=158644.672
+0010 RECV dump_patch slot=09 len=275 head=F0 10 06 01 tail=00 00 5E F7 len=275 dt_ms=129.7
+0011 SEND dump_patch_request slot=0A F0 10 06 04 01 0A F7 t_mono=158644.807
+0011 RECV dump_patch slot=0A len=275 head=F0 10 06 01 tail=00 00 46 F7 len=275 dt_ms=127.7
+0012 SEND dump_patch_request slot=0B F0 10 06 04 01 0B F7 t_mono=158644.941
+0012 RECV dump_patch slot=0B len=275 head=F0 10 06 01 tail=00 00 5B F7 len=275 dt_ms=127.2
+0013 SEND dump_patch_request slot=0C F0 10 06 04 01 0C F7 t_mono=158645.074
+0013 RECV dump_patch slot=0C len=275 head=F0 10 06 01 tail=00 00 7C F7 len=275 dt_ms=128.5
+0014 SEND dump_patch_request slot=0D F0 10 06 04 01 0D F7 t_mono=158645.209
+0014 RECV dump_patch slot=0D len=275 head=F0 10 06 01 tail=00 00 30 F7 len=275 dt_ms=130.8
+0015 SEND dump_patch_request slot=0E F0 10 06 04 01 0E F7 t_mono=158645.345
+0015 RECV dump_patch slot=0E len=275 head=F0 10 06 01 tail=00 00 7A F7 len=275 dt_ms=131.8
+0016 SEND dump_patch_request slot=0F F0 10 06 04 01 0F F7 t_mono=158645.482
+0016 RECV dump_patch slot=0F len=275 head=F0 10 06 01 tail=00 00 12 F7 len=275 dt_ms=128.0
+0017 SEND dump_patch_request slot=10 F0 10 06 04 01 10 F7 t_mono=158645.616
+0017 RECV dump_patch slot=10 len=275 head=F0 10 06 01 tail=00 00 48 F7 len=275 dt_ms=130.5
+0018 SEND dump_patch_request slot=11 F0 10 06 04 01 11 F7 t_mono=158645.753
+0018 RECV dump_patch slot=11 len=275 head=F0 10 06 01 tail=00 00 5B F7 len=275 dt_ms=128.5
+0019 SEND dump_patch_request slot=12 F0 10 06 04 01 12 F7 t_mono=158645.888
+0019 RECV dump_patch slot=12 len=275 head=F0 10 06 01 tail=00 00 78 F7 len=275 dt_ms=130.8
+0020 SEND dump_patch_request slot=13 F0 10 06 04 01 13 F7 t_mono=158646.026
+0020 RECV dump_patch slot=13 len=275 head=F0 10 06 01 tail=00 00 53 F7 len=275 dt_ms=128.7
+0021 SEND dump_patch_request slot=14 F0 10 06 04 01 14 F7 t_mono=158646.160
+0021 RECV dump_patch slot=14 len=275 head=F0 10 06 01 tail=00 00 19 F7 len=275 dt_ms=129.3
+0022 SEND dump_patch_request slot=15 F0 10 06 04 01 15 F7 t_mono=158646.296
+0022 RECV dump_patch slot=15 len=275 head=F0 10 06 01 tail=00 00 41 F7 len=275 dt_ms=132.1
+0023 SEND dump_patch_request slot=16 F0 10 06 04 01 16 F7 t_mono=158646.433
+0023 RECV dump_patch slot=16 len=275 head=F0 10 06 01 tail=00 00 26 F7 len=275 dt_ms=126.2
+0024 SEND dump_patch_request slot=17 F0 10 06 04 01 17 F7 t_mono=158646.565
+0024 RECV dump_patch slot=17 len=275 head=F0 10 06 01 tail=00 00 3B F7 len=275 dt_ms=130.0
+0025 SEND dump_patch_request slot=18 F0 10 06 04 01 18 F7 t_mono=158646.702
+0025 RECV dump_patch slot=18 len=275 head=F0 10 06 01 tail=00 00 79 F7 len=275 dt_ms=129.0
+0026 SEND dump_patch_request slot=19 F0 10 06 04 01 19 F7 t_mono=158646.837
+0026 RECV dump_patch slot=19 len=275 head=F0 10 06 01 tail=00 00 46 F7 len=275 dt_ms=129.7
+0027 SEND dump_patch_request slot=1A F0 10 06 04 01 1A F7 t_mono=158646.973
+0027 RECV dump_patch slot=1A len=275 head=F0 10 06 01 tail=00 00 16 F7 len=275 dt_ms=128.6
+0028 SEND dump_patch_request slot=1B F0 10 06 04 01 1B F7 t_mono=158647.108
+0028 RECV dump_patch slot=1B len=275 head=F0 10 06 01 tail=00 00 37 F7 len=275 dt_ms=128.5
+0029 SEND dump_patch_request slot=1C F0 10 06 04 01 1C F7 t_mono=158647.243
+0029 RECV dump_patch slot=1C len=275 head=F0 10 06 01 tail=00 00 0D F7 len=275 dt_ms=131.0
+0030 SEND dump_patch_request slot=1D F0 10 06 04 01 1D F7 t_mono=158647.380
+0030 RECV dump_patch slot=1D len=275 head=F0 10 06 01 tail=00 00 61 F7 len=275 dt_ms=129.5
+0031 SEND dump_patch_request slot=1E F0 10 06 04 01 1E F7 t_mono=158647.516
+0031 RECV dump_patch slot=1E len=275 head=F0 10 06 01 tail=00 00 25 F7 len=275 dt_ms=130.6
+0032 SEND dump_patch_request slot=1F F0 10 06 04 01 1F F7 t_mono=158647.653
+0032 RECV dump_patch slot=1F len=275 head=F0 10 06 01 tail=00 00 7B F7 len=275 dt_ms=129.0
+0033 SEND dump_patch_request slot=20 F0 10 06 04 01 20 F7 t_mono=158647.789
+0033 RECV dump_patch slot=20 len=275 head=F0 10 06 01 tail=00 00 63 F7 len=275 dt_ms=128.0
+0034 SEND dump_patch_request slot=21 F0 10 06 04 01 21 F7 t_mono=158647.923
+0034 RECV dump_patch slot=21 len=275 head=F0 10 06 01 tail=00 00 3E F7 len=275 dt_ms=131.1
+0035 SEND dump_patch_request slot=22 F0 10 06 04 01 22 F7 t_mono=158648.060
+0035 RECV dump_patch slot=22 len=275 head=F0 10 06 01 tail=00 00 69 F7 len=275 dt_ms=126.7
+0036 SEND dump_patch_request slot=23 F0 10 06 04 01 23 F7 t_mono=158648.192
+0036 RECV dump_patch slot=23 len=275 head=F0 10 06 01 tail=00 00 75 F7 len=275 dt_ms=133.0
+0037 SEND dump_patch_request slot=24 F0 10 06 04 01 24 F7 t_mono=158648.331
+0037 RECV dump_patch slot=24 len=275 head=F0 10 06 01 tail=00 00 4F F7 len=275 dt_ms=129.9
+0038 SEND dump_patch_request slot=25 F0 10 06 04 01 25 F7 t_mono=158648.468
+0038 RECV dump_patch slot=25 len=275 head=F0 10 06 01 tail=00 00 4F F7 len=275 dt_ms=133.2
+0039 SEND dump_patch_request slot=26 F0 10 06 04 01 26 F7 t_mono=158648.607
+0039 RECV dump_patch slot=26 len=275 head=F0 10 06 01 tail=00 00 58 F7 len=275 dt_ms=128.6
+0040 SEND dump_patch_request slot=27 F0 10 06 04 01 27 F7 t_mono=158648.741
+0040 RECV dump_patch slot=27 len=275 head=F0 10 06 01 tail=00 00 0B F7 len=275 dt_ms=126.6
+0041 SEND dump_patch_request slot=28 F0 10 06 04 01 28 F7 t_mono=158648.874
+0041 RECV dump_patch slot=28 len=275 head=F0 10 06 01 tail=00 00 66 F7 len=275 dt_ms=126.2
+0042 SEND dump_patch_request slot=29 F0 10 06 04 01 29 F7 t_mono=158649.007
+0042 RECV dump_patch slot=29 len=275 head=F0 10 06 01 tail=00 00 3C F7 len=275 dt_ms=128.9
+0043 SEND dump_patch_request slot=2A F0 10 06 04 01 2A F7 t_mono=158649.141
+0043 RECV dump_patch slot=2A len=275 head=F0 10 06 01 tail=00 00 32 F7 len=275 dt_ms=127.8
+0044 SEND dump_patch_request slot=2B F0 10 06 04 01 2B F7 t_mono=158649.276
+0044 RECV dump_patch slot=2B len=275 head=F0 10 06 01 tail=00 00 50 F7 len=275 dt_ms=132.2
+0045 SEND dump_patch_request slot=2C F0 10 06 04 01 2C F7 t_mono=158649.414
+0045 RECV dump_patch slot=2C len=275 head=F0 10 06 01 tail=03 01 3F F7 len=275 dt_ms=128.4
+0046 SEND dump_patch_request slot=2D F0 10 06 04 01 2D F7 t_mono=158649.549
+0046 RECV dump_patch slot=2D len=275 head=F0 10 06 01 tail=00 00 7E F7 len=275 dt_ms=128.3
+0047 SEND dump_patch_request slot=2E F0 10 06 04 01 2E F7 t_mono=158649.684
+0047 RECV dump_patch slot=2E len=275 head=F0 10 06 01 tail=00 00 4C F7 len=275 dt_ms=127.3
+0048 SEND dump_patch_request slot=2F F0 10 06 04 01 2F F7 t_mono=158649.818
+0048 RECV dump_patch slot=2F len=275 head=F0 10 06 01 tail=00 00 68 F7 len=275 dt_ms=127.0
+0049 SEND dump_patch_request slot=30 F0 10 06 04 01 30 F7 t_mono=158649.951
+0049 RECV dump_patch slot=30 len=275 head=F0 10 06 01 tail=00 00 45 F7 len=275 dt_ms=128.1
+0050 SEND dump_patch_request slot=31 F0 10 06 04 01 31 F7 t_mono=158650.085
+0050 RECV dump_patch slot=31 len=275 head=F0 10 06 01 tail=00 00 34 F7 len=275 dt_ms=128.8
+0051 SEND dump_patch_request slot=32 F0 10 06 04 01 32 F7 t_mono=158650.219
+0051 RECV dump_patch slot=32 len=275 head=F0 10 06 01 tail=00 00 65 F7 len=275 dt_ms=129.8
+0052 SEND dump_patch_request slot=33 F0 10 06 04 01 33 F7 t_mono=158650.356
+0052 RECV dump_patch slot=33 len=275 head=F0 10 06 01 tail=09 01 7B F7 len=275 dt_ms=126.4
+0053 SEND dump_patch_request slot=34 F0 10 06 04 01 34 F7 t_mono=158650.489
+0053 RECV dump_patch slot=34 len=275 head=F0 10 06 01 tail=00 00 3F F7 len=275 dt_ms=129.9
+0054 SEND dump_patch_request slot=35 F0 10 06 04 01 35 F7 t_mono=158650.625
+0054 RECV dump_patch slot=35 len=275 head=F0 10 06 01 tail=00 00 1E F7 len=275 dt_ms=129.2
+0055 SEND dump_patch_request slot=36 F0 10 06 04 01 36 F7 t_mono=158650.760
+0055 RECV dump_patch slot=36 len=275 head=F0 10 06 01 tail=00 00 0D F7 len=275 dt_ms=128.2
+0056 SEND dump_patch_request slot=37 F0 10 06 04 01 37 F7 t_mono=158650.895
+0056 RECV dump_patch slot=37 len=275 head=F0 10 06 01 tail=00 00 1D F7 len=275 dt_ms=129.4
+0057 SEND dump_patch_request slot=38 F0 10 06 04 01 38 F7 t_mono=158651.031
+0057 RECV dump_patch slot=38 len=275 head=F0 10 06 01 tail=00 00 4C F7 len=275 dt_ms=130.6
+0058 SEND dump_patch_request slot=39 F0 10 06 04 01 39 F7 t_mono=158651.168
+0058 RECV dump_patch slot=39 len=275 head=F0 10 06 01 tail=00 00 7B F7 len=275 dt_ms=130.3
+0059 SEND dump_patch_request slot=3A F0 10 06 04 01 3A F7 t_mono=158651.304
+0059 RECV dump_patch slot=3A len=275 head=F0 10 06 01 tail=00 00 61 F7 len=275 dt_ms=128.0
+0060 SEND dump_patch_request slot=3B F0 10 06 04 01 3B F7 t_mono=158651.439
+0060 RECV dump_patch slot=3B len=275 head=F0 10 06 01 tail=00 00 7F F7 len=275 dt_ms=127.3
+0061 SEND dump_patch_request slot=3C F0 10 06 04 01 3C F7 t_mono=158651.572
+0061 RECV dump_patch slot=3C len=275 head=F0 10 06 01 tail=00 00 50 F7 len=275 dt_ms=126.5
+0062 SEND dump_patch_request slot=3D F0 10 06 04 01 3D F7 t_mono=158651.704
+0062 RECV dump_patch slot=3D len=275 head=F0 10 06 01 tail=00 01 6D F7 len=275 dt_ms=129.2
+0063 SEND dump_patch_request slot=3E F0 10 06 04 01 3E F7 t_mono=158651.840
+0063 RECV dump_patch slot=3E len=275 head=F0 10 06 01 tail=00 00 06 F7 len=275 dt_ms=129.7
+0064 SEND dump_patch_request slot=3F F0 10 06 04 01 3F F7 t_mono=158651.976
+0064 RECV dump_patch slot=3F len=275 head=F0 10 06 01 tail=00 00 34 F7 len=275 dt_ms=128.0
+0065 SEND dump_patch_request slot=40 F0 10 06 04 01 40 F7 t_mono=158652.110
+0065 RECV dump_patch slot=40 len=275 head=F0 10 06 01 tail=00 00 51 F7 len=275 dt_ms=130.0
+0066 SEND dump_patch_request slot=41 F0 10 06 04 01 41 F7 t_mono=158652.247
+0066 RECV dump_patch slot=41 len=275 head=F0 10 06 01 tail=00 00 0E F7 len=275 dt_ms=128.2
+0067 SEND dump_patch_request slot=42 F0 10 06 04 01 42 F7 t_mono=158652.381
+0067 RECV dump_patch slot=42 len=275 head=F0 10 06 01 tail=00 00 04 F7 len=275 dt_ms=127.1
+0068 SEND dump_patch_request slot=43 F0 10 06 04 01 43 F7 t_mono=158652.514
+0068 RECV dump_patch slot=43 len=275 head=F0 10 06 01 tail=00 00 29 F7 len=275 dt_ms=128.8
+0069 SEND dump_patch_request slot=44 F0 10 06 04 01 44 F7 t_mono=158652.649
+0069 RECV dump_patch slot=44 len=275 head=F0 10 06 01 tail=00 00 5A F7 len=275 dt_ms=127.6
+0070 SEND dump_patch_request slot=45 F0 10 06 04 01 45 F7 t_mono=158652.783
+0070 RECV dump_patch slot=45 len=275 head=F0 10 06 01 tail=00 00 42 F7 len=275 dt_ms=129.7
+0071 SEND dump_patch_request slot=46 F0 10 06 04 01 46 F7 t_mono=158652.919
+0071 RECV dump_patch slot=46 len=275 head=F0 10 06 01 tail=00 00 47 F7 len=275 dt_ms=126.8
+0072 SEND dump_patch_request slot=47 F0 10 06 04 01 47 F7 t_mono=158653.052
+0072 RECV dump_patch slot=47 len=275 head=F0 10 06 01 tail=00 00 06 F7 len=275 dt_ms=129.1
+0073 SEND dump_patch_request slot=48 F0 10 06 04 01 48 F7 t_mono=158653.187
+0073 RECV dump_patch slot=48 len=275 head=F0 10 06 01 tail=00 00 1B F7 len=275 dt_ms=132.5
+0074 SEND dump_patch_request slot=49 F0 10 06 04 01 49 F7 t_mono=158653.326
+0074 RECV dump_patch slot=49 len=275 head=F0 10 06 01 tail=00 00 51 F7 len=275 dt_ms=129.2
+0075 SEND dump_patch_request slot=4A F0 10 06 04 01 4A F7 t_mono=158653.462
+0075 RECV dump_patch slot=4A len=275 head=F0 10 06 01 tail=00 00 34 F7 len=275 dt_ms=127.7
+0076 SEND dump_patch_request slot=4B F0 10 06 04 01 4B F7 t_mono=158653.596
+0076 RECV dump_patch slot=4B len=275 head=F0 10 06 01 tail=00 00 53 F7 len=275 dt_ms=127.5
+0077 SEND dump_patch_request slot=4C F0 10 06 04 01 4C F7 t_mono=158653.729
+0077 RECV dump_patch slot=4C len=275 head=F0 10 06 01 tail=01 00 4D F7 len=275 dt_ms=125.0
+0078 SEND dump_patch_request slot=4D F0 10 06 04 01 4D F7 t_mono=158653.861
+0078 RECV dump_patch slot=4D len=275 head=F0 10 06 01 tail=00 00 2E F7 len=275 dt_ms=127.4
+0079 SEND dump_patch_request slot=4E F0 10 06 04 01 4E F7 t_mono=158653.995
+0079 RECV dump_patch slot=4E len=275 head=F0 10 06 01 tail=00 00 6F F7 len=275 dt_ms=129.7
+0080 SEND dump_patch_request slot=4F F0 10 06 04 01 4F F7 t_mono=158654.131
+0080 RECV dump_patch slot=4F len=275 head=F0 10 06 01 tail=00 00 7D F7 len=275 dt_ms=130.3
+0081 SEND dump_patch_request slot=50 F0 10 06 04 01 50 F7 t_mono=158654.267
+0081 RECV dump_patch slot=50 len=275 head=F0 10 06 01 tail=00 00 7E F7 len=275 dt_ms=129.2
+0082 SEND dump_patch_request slot=51 F0 10 06 04 01 51 F7 t_mono=158654.403
+0082 RECV dump_patch slot=51 len=275 head=F0 10 06 01 tail=00 00 04 F7 len=275 dt_ms=131.1
+0083 SEND dump_patch_request slot=52 F0 10 06 04 01 52 F7 t_mono=158654.540
+0083 RECV dump_patch slot=52 len=275 head=F0 10 06 01 tail=00 00 3C F7 len=275 dt_ms=128.0
+0084 SEND dump_patch_request slot=53 F0 10 06 04 01 53 F7 t_mono=158654.675
+0084 RECV dump_patch slot=53 len=275 head=F0 10 06 01 tail=00 00 5E F7 len=275 dt_ms=127.9
+0085 SEND dump_patch_request slot=54 F0 10 06 04 01 54 F7 t_mono=158654.809
+0085 RECV dump_patch slot=54 len=275 head=F0 10 06 01 tail=00 00 35 F7 len=275 dt_ms=130.1
+0086 SEND dump_patch_request slot=55 F0 10 06 04 01 55 F7 t_mono=158654.945
+0086 RECV dump_patch slot=55 len=275 head=F0 10 06 01 tail=00 00 59 F7 len=275 dt_ms=127.7
+0087 SEND dump_patch_request slot=56 F0 10 06 04 01 56 F7 t_mono=158655.079
+0087 RECV dump_patch slot=56 len=275 head=F0 10 06 01 tail=00 00 76 F7 len=275 dt_ms=131.9
+0088 SEND dump_patch_request slot=57 F0 10 06 04 01 57 F7 t_mono=158655.217
+0088 RECV dump_patch slot=57 len=275 head=F0 10 06 01 tail=00 00 7C F7 len=275 dt_ms=126.6
+0089 SEND dump_patch_request slot=58 F0 10 06 04 01 58 F7 t_mono=158655.349
+0089 RECV dump_patch slot=58 len=275 head=F0 10 06 01 tail=00 00 2E F7 len=275 dt_ms=131.0
+0090 SEND dump_patch_request slot=59 F0 10 06 04 01 59 F7 t_mono=158655.486
+0090 RECV dump_patch slot=59 len=275 head=F0 10 06 01 tail=00 00 44 F7 len=275 dt_ms=128.0
+0091 SEND dump_patch_request slot=5A F0 10 06 04 01 5A F7 t_mono=158655.620
+0091 RECV dump_patch slot=5A len=275 head=F0 10 06 01 tail=00 00 26 F7 len=275 dt_ms=127.0
+0092 SEND dump_patch_request slot=5B F0 10 06 04 01 5B F7 t_mono=158655.754
+0092 RECV dump_patch slot=5B len=275 head=F0 10 06 01 tail=00 00 4F F7 len=275 dt_ms=132.0
+0093 SEND dump_patch_request slot=5C F0 10 06 04 01 5C F7 t_mono=158655.892
+0093 RECV dump_patch slot=5C len=275 head=F0 10 06 01 tail=09 01 3A F7 len=275 dt_ms=128.4
+0094 SEND dump_patch_request slot=5D F0 10 06 04 01 5D F7 t_mono=158656.027
+0094 RECV dump_patch slot=5D len=275 head=F0 10 06 01 tail=09 01 17 F7 len=275 dt_ms=129.6
+0095 SEND dump_patch_request slot=5E F0 10 06 04 01 5E F7 t_mono=158656.162
+0095 RECV dump_patch slot=5E len=275 head=F0 10 06 01 tail=09 01 20 F7 len=275 dt_ms=129.1
+0096 SEND dump_patch_request slot=5F F0 10 06 04 01 5F F7 t_mono=158656.298
+0096 RECV dump_patch slot=5F len=275 head=F0 10 06 01 tail=00 00 14 F7 len=275 dt_ms=127.9
+0097 SEND dump_patch_request slot=60 F0 10 06 04 01 60 F7 t_mono=158656.431
+0097 RECV dump_patch slot=60 len=275 head=F0 10 06 01 tail=00 00 52 F7 len=275 dt_ms=131.5
+0098 SEND dump_patch_request slot=61 F0 10 06 04 01 61 F7 t_mono=158656.568
+0098 RECV dump_patch slot=61 len=275 head=F0 10 06 01 tail=00 00 45 F7 len=275 dt_ms=128.7
+0099 SEND dump_patch_request slot=62 F0 10 06 04 01 62 F7 t_mono=158656.703
+0099 RECV dump_patch slot=62 len=275 head=F0 10 06 01 tail=00 00 04 F7 len=275 dt_ms=131.3
+0100 SEND dump_patch_request slot=63 F0 10 06 04 01 63 F7 t_mono=158656.841
+0100 RECV dump_patch slot=63 len=275 head=F0 10 06 01 tail=00 00 70 F7 len=275 dt_ms=127.9
+summary[bank_burst_patch]: sent=100 ok=100 rate=100.0% elapsed_s=13.58 pass=true (need>=100%)
+# finished_utc: 2026-08-07T17:12:08.681849+00:00
+# start_pass: true
+# finished_utc: 2026-08-07T17:12:08.701154+00:00
+# overall_pass: true
