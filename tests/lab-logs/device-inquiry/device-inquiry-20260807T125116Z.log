@@ -1,0 +1,53 @@
+# Device Inquiry lab log (automated; no MIDI-OX Thru)
+# started_utc: 2026-08-07T12:51:19.208836+00:00
+# with_bridge: false
+# count: 20
+# interval_s: 5.0
+# reply_timeout_s: 4.0
+# inquiry: F0 7E 7F 06 01 F7
+# out_port: MT4 Output 1 1
+# in_port: MT4 Input 1 0
+---
+0001 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5056.015
+0001 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0002 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5061.031
+0002 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0003 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5066.031
+0003 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0004 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5071.031
+0004 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0005 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5076.031
+0005 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0006 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5081.031
+0006 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0007 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5086.031
+0007 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0008 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5091.031
+0008 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0009 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5096.031
+0009 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0010 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5101.031
+0010 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0011 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5106.031
+0011 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0012 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5111.031
+0012 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0013 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5116.031
+0013 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0014 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5121.031
+0014 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0015 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5126.031
+0015 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0016 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5131.031
+0016 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0017 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5136.031
+0017 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0018 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5141.031
+0018 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0019 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5146.031
+0019 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+0020 SEND inquiry F0 7E 7F 06 01 F7 t_mono=5151.031
+0020 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=47.0
+---
+summary: sent=20 recv=20 late=0 rate=100.0% pass=true (need>=100%)
+# finished_utc: 2026-08-07T12:52:54.405855+00:00

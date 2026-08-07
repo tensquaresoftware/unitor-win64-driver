@@ -114,3 +114,17 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-mt4-separate-virtual-ports.md`
   summary: Harden uniqueness checks against wide/case-folded teVirtualMIDI alias collisions beyond exact UTF-8 string equality.
   evidence: Current validation compares UTF-8 strings only; driver alias rules may be wider.
+## Deferred from: spec-mt4-device-inquiry-alternate-drop.md (2026-08-07)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-mt4-device-inquiry-alternate-drop.md`
+  summary: `usbIoMutex_` held across demux and SendToHost on the async IN path may delay host OUT WriteBulk under try_lock.
+  evidence: Review BH-07; pre-existing async IN design; lab Identity path stays ~46 ms — revisit only with jitter evidence.
+- source_spec: `_bmad-output/implementation-artifacts/spec-mt4-device-inquiry-alternate-drop.md`
+  summary: Ungated stderr/stdout Inquiry and Identity lab lines on every message.
+  evidence: Review BH-09; intentional while closing the first-shot gate — gate or throttle after V1 credibility lab is done.
+- source_spec: `_bmad-output/implementation-artifacts/spec-mt4-device-inquiry-alternate-drop.md`
+  summary: `BulkOutMaxPacketSize` is discovered but unused by encode/WriteBulk.
+  evidence: Review BH-11; leftover from discarded full-packet pad experiments.
+- source_spec: `_bmad-output/implementation-artifacts/spec-mt4-device-inquiry-alternate-drop.md`
+  summary: Post-kick IN drain hard-caps at 8 packets (same as init drains).
+  evidence: Edge review; unlikely after kick with idle bus; change only if lab shows residual >8.

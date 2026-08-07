@@ -1,0 +1,123 @@
+# Bridge console capture started_utc=2026-08-07T12:18:08.687747+00:00
+Expected Virtual Ports: 2 IN / 4 OUT
+  IN  MT4 Input 1
+  IN  MT4 Input 2
+  OUT MT4 Output 1
+  OUT MT4 Output 2
+  OUT MT4 Output 3
+  OUT MT4 Output 4
+Emagic init/computer-mode: drained 32 bulk IN byte(s); read capacity=32; channel CC kick sent (manual Computer Mode)
+DeviceSession started for MT4 with Virtual Ports
+MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)
+device-host counters will print in this window on USB IN activity (same thread as this message)
+Device Inquiry lab: watch inquiry_out vs identity_reply_in (expect them to stay close)
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=1 inquiry_out=1 identity_reply_in=0
+device-host counters: bulk_in_bytes=448 demux_spans=14 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=1 inquiry_out=1 identity_reply_in=0
+device-host counters: bulk_in_bytes=448 demux_spans=14 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=1 inquiry_out=1 identity_reply_in=0
+device-host counters: bulk_in_bytes=448 demux_spans=14 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=1 inquiry_out=1 identity_reply_in=0
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=448 demux_spans=14 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=2 inquiry_out=2 identity_reply_in=0
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=928 demux_spans=29 send_ok_msgs=1 send_fail_msgs=0 host_out_ok=2 inquiry_out=2 identity_reply_in=1
+device-host counters: bulk_in_bytes=928 demux_spans=29 send_ok_msgs=1 send_fail_msgs=0 host_out_ok=2 inquiry_out=2 identity_reply_in=1
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=1408 demux_spans=44 send_ok_msgs=2 send_fail_msgs=0 host_out_ok=3 inquiry_out=3 identity_reply_in=2
+device-host counters: bulk_in_bytes=1408 demux_spans=44 send_ok_msgs=2 send_fail_msgs=0 host_out_ok=3 inquiry_out=3 identity_reply_in=2
+device-host counters: bulk_in_bytes=1408 demux_spans=44 send_ok_msgs=2 send_fail_msgs=0 host_out_ok=3 inquiry_out=3 identity_reply_in=2
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=1408 demux_spans=44 send_ok_msgs=2 send_fail_msgs=0 host_out_ok=4 inquiry_out=4 identity_reply_in=2
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=1888 demux_spans=59 send_ok_msgs=3 send_fail_msgs=0 host_out_ok=4 inquiry_out=4 identity_reply_in=3
+device-host counters: bulk_in_bytes=1888 demux_spans=59 send_ok_msgs=3 send_fail_msgs=0 host_out_ok=4 inquiry_out=4 identity_reply_in=3
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=1888 demux_spans=59 send_ok_msgs=3 send_fail_msgs=0 host_out_ok=5 inquiry_out=5 identity_reply_in=3
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=2368 demux_spans=74 send_ok_msgs=4 send_fail_msgs=0 host_out_ok=5 inquiry_out=5 identity_reply_in=4
+device-host counters: bulk_in_bytes=2368 demux_spans=74 send_ok_msgs=4 send_fail_msgs=0 host_out_ok=5 inquiry_out=5 identity_reply_in=4
+device-host counters: bulk_in_bytes=2368 demux_spans=74 send_ok_msgs=4 send_fail_msgs=0 host_out_ok=5 inquiry_out=5 identity_reply_in=4
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=2368 demux_spans=74 send_ok_msgs=4 send_fail_msgs=0 host_out_ok=6 inquiry_out=6 identity_reply_in=4
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=2848 demux_spans=89 send_ok_msgs=5 send_fail_msgs=0 host_out_ok=6 inquiry_out=6 identity_reply_in=5
+device-host counters: bulk_in_bytes=2848 demux_spans=89 send_ok_msgs=5 send_fail_msgs=0 host_out_ok=6 inquiry_out=6 identity_reply_in=5
+device-host counters: bulk_in_bytes=2848 demux_spans=89 send_ok_msgs=5 send_fail_msgs=0 host_out_ok=6 inquiry_out=6 identity_reply_in=5
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=2848 demux_spans=89 send_ok_msgs=5 send_fail_msgs=0 host_out_ok=7 inquiry_out=7 identity_reply_in=5
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=3328 demux_spans=104 send_ok_msgs=6 send_fail_msgs=0 host_out_ok=7 inquiry_out=7 identity_reply_in=6
+device-host counters: bulk_in_bytes=3328 demux_spans=104 send_ok_msgs=6 send_fail_msgs=0 host_out_ok=7 inquiry_out=7 identity_reply_in=6
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=3328 demux_spans=104 send_ok_msgs=6 send_fail_msgs=0 host_out_ok=8 inquiry_out=8 identity_reply_in=6
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=3808 demux_spans=119 send_ok_msgs=7 send_fail_msgs=0 host_out_ok=8 inquiry_out=8 identity_reply_in=7
+device-host counters: bulk_in_bytes=3808 demux_spans=119 send_ok_msgs=7 send_fail_msgs=0 host_out_ok=8 inquiry_out=8 identity_reply_in=7
+device-host counters: bulk_in_bytes=3808 demux_spans=119 send_ok_msgs=7 send_fail_msgs=0 host_out_ok=8 inquiry_out=8 identity_reply_in=7
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=4288 demux_spans=134 send_ok_msgs=8 send_fail_msgs=0 host_out_ok=9 inquiry_out=9 identity_reply_in=8
+device-host counters: bulk_in_bytes=4288 demux_spans=134 send_ok_msgs=8 send_fail_msgs=0 host_out_ok=9 inquiry_out=9 identity_reply_in=8
+device-host counters: bulk_in_bytes=4288 demux_spans=134 send_ok_msgs=8 send_fail_msgs=0 host_out_ok=9 inquiry_out=9 identity_reply_in=8
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=4768device→host: Identity Reply SendToHost ok (in_port= demux_spans=1149 send_ok_msgs=8 bytes= send_fail_msgs=015 host_out_ok=10 inquiry_out=10 identity_reply_in=8
+)
+device-host counters: bulk_in_bytes=4768 demux_spans=149 send_ok_msgs=9 send_fail_msgs=0 host_out_ok=10 inquiry_out=10 identity_reply_in=9
+device-host counters: bulk_in_bytes=4768 demux_spans=149 send_ok_msgs=9 send_fail_msgs=0 host_out_ok=10 inquiry_out=10 identity_reply_in=9
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=4768 demux_spans=149 send_ok_msgs=9 send_fail_msgs=0 host_out_ok=11 inquiry_out=11 identity_reply_in=9
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=5248 demux_spans=164 send_ok_msgs=10 send_fail_msgs=0 host_out_ok=11 inquiry_out=11 identity_reply_in=10
+device-host counters: bulk_in_bytes=5248 demux_spans=164 send_ok_msgs=10 send_fail_msgs=0 host_out_ok=11 inquiry_out=11 identity_reply_in=10
+device-host counters: bulk_in_bytes=5248 demux_spans=164 send_ok_msgs=10 send_fail_msgs=0 host_out_ok=11 inquiry_out=11 identity_reply_in=10
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=5248 demux_spans=164 send_ok_msgs=10 send_fail_msgs=0 host_out_ok=12 inquiry_out=12 identity_reply_in=10
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=5728 demux_spans=179 send_ok_msgs=11 send_fail_msgs=0 host_out_ok=12 inquiry_out=12 identity_reply_in=11
+device-host counters: bulk_in_bytes=5728 demux_spans=179 send_ok_msgs=11 send_fail_msgs=0 host_out_ok=12 inquiry_out=12 identity_reply_in=11
+device-host counters: bulk_in_bytes=5728 demux_spans=179 send_ok_msgs=11 send_fail_msgs=0 host_out_ok=12 inquiry_out=12 identity_reply_in=11
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=5728 demux_spans=179 send_ok_msgs=11 send_fail_msgs=0 host_out_ok=13 inquiry_out=13 identity_reply_in=11
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=6208 demux_spans=194 send_ok_msgs=12 send_fail_msgs=0 host_out_ok=13 inquiry_out=13 identity_reply_in=12
+device-host counters: bulk_in_bytes=6208 demux_spans=194 send_ok_msgs=12 send_fail_msgs=0 host_out_ok=13 inquiry_out=13 identity_reply_in=12
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=6208 demux_spans=194 send_ok_msgs=12 send_fail_msgs=0 host_out_ok=14 inquiry_out=14 identity_reply_in=12
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=6688 demux_spans=209 send_ok_msgs=13 send_fail_msgs=0 host_out_ok=14 inquiry_out=14 identity_reply_in=13
+device-host counters: bulk_in_bytes=6688 demux_spans=209 send_ok_msgs=13 send_fail_msgs=0 host_out_ok=14 inquiry_out=14 identity_reply_in=13
+device-host counters: bulk_in_bytes=6688 demux_spans=209 send_ok_msgs=13 send_fail_msgs=0 host_out_ok=14 inquiry_out=14 identity_reply_in=13
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=6688 demux_spans=209 send_ok_msgs=13 send_fail_msgs=0 host_out_ok=15 inquiry_out=15 identity_reply_in=13
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=7168 demux_spans=224 send_ok_msgs=14 send_fail_msgs=0 host_out_ok=15 inquiry_out=15 identity_reply_in=14
+device-host counters: bulk_in_bytes=7168 demux_spans=224 send_ok_msgs=14 send_fail_msgs=0 host_out_ok=15 inquiry_out=15 identity_reply_in=14
+device-host counters: bulk_in_bytes=7168 demux_spans=224 send_ok_msgs=14 send_fail_msgs=0 host_out_ok=15 inquiry_out=15 identity_reply_in=14
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=7168 demux_spans=224 send_ok_msgs=14 send_fail_msgs=0 host_out_ok=16 inquiry_out=16 identity_reply_in=14
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=7648 demux_spans=239 send_ok_msgs=15 send_fail_msgs=0 host_out_ok=16 inquiry_out=16 identity_reply_in=15
+device-host counters: bulk_in_bytes=7648 demux_spans=239 send_ok_msgs=15 send_fail_msgs=0 host_out_ok=16 inquiry_out=16 identity_reply_in=15
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=7648 demux_spans=239 send_ok_msgs=15 send_fail_msgs=0 host_out_ok=17 inquiry_out=17 identity_reply_in=15
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=8128 demux_spans=254 send_ok_msgs=16 send_fail_msgs=0 host_out_ok=17 inquiry_out=17 identity_reply_in=16
+device-host counters: bulk_in_bytes=8128 demux_spans=254 send_ok_msgs=16 send_fail_msgs=0 host_out_ok=17 inquiry_out=17 identity_reply_in=16
+device-host counters: bulk_in_bytes=8128 demux_spans=254 send_ok_msgs=16 send_fail_msgs=0 host_out_ok=17 inquiry_out=17 identity_reply_in=16
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=8128 demux_spans=254 send_ok_msgs=16 send_fail_msgs=0 host_out_ok=18 inquiry_out=18 identity_reply_in=16
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=8608 demux_spans=269 send_ok_msgs=17 send_fail_msgs=0 host_out_ok=18 inquiry_out=18 identity_reply_in=17
+device-host counters: bulk_in_bytes=8608 demux_spans=269 send_ok_msgs=17 send_fail_msgs=0 host_out_ok=18 inquiry_out=18 identity_reply_in=17
+device-host counters: bulk_in_bytes=8608 demux_spans=269 send_ok_msgs=17 send_fail_msgs=0 host_out_ok=18 inquiry_out=18 identity_reply_in=17
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=8608 demux_spans=269 send_ok_msgs=17 send_fail_msgs=0 host_out_ok=19 inquiry_out=19 identity_reply_in=17
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=9088 demux_spans=284 send_ok_msgs=18 send_fail_msgs=0 host_out_ok=19 inquiry_out=19 identity_reply_in=18
+device-host counters: bulk_in_bytes=9088 demux_spans=284 send_ok_msgs=18 send_fail_msgs=0 host_out_ok=19 inquiry_out=19 identity_reply_in=18
+host→device: Device Inquiry WriteBulk ok (out_port=1 bytes=6)
+device-host counters: bulk_in_bytes=9088 demux_spans=284 send_ok_msgs=18 send_fail_msgs=0 host_out_ok=20 inquiry_out=20 identity_reply_in=18
+device→host: Identity Reply SendToHost ok (in_port=1 bytes=15)
+device-host counters: bulk_in_bytes=9568 demux_spans=299 send_ok_msgs=19 send_fail_msgs=0 host_out_ok=20 inquiry_out=20 identity_reply_in=19
+device-host counters: bulk_in_bytes=9568 demux_spans=299 send_ok_msgs=19 send_fail_msgs=0 host_out_ok=20 inquiry_out=20 identity_reply_in=19
+MIDI I/O stopped

@@ -1,0 +1,3 @@
+# Windows Boot Camp lab helper for Device Inquiry loops (replaces manual MIDI-OX send).
+mido>=1.3.0
+python-rtmidi>=1.5.0

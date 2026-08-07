@@ -1,0 +1,53 @@
+# Device Inquiry lab log (automated; no MIDI-OX Thru)
+# started_utc: 2026-08-07T11:46:21.267531+00:00
+# with_bridge: false
+# count: 20
+# interval_s: 5.0
+# reply_timeout_s: 4.0
+# inquiry: F0 7E 7F 06 01 F7
+# out_port: MT4 Output 1 1
+# in_port: MT4 Input 1 0
+---
+0001 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1158.140
+0001 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=1907.0
+0002 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1163.140
+0002 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0003 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1168.140
+0003 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=1422.0
+0004 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1173.140
+0004 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0005 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1178.140
+0005 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=922.0
+0006 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1183.140
+0006 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0007 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1188.140
+0007 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=422.0
+0008 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1193.140
+0008 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0009 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1198.140
+0009 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0010 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1203.140
+0010 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0011 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1208.140
+0011 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0012 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1213.140
+0012 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0013 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1218.140
+0013 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0014 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1223.140
+0014 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0015 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1228.140
+0015 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0016 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1233.140
+0016 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0017 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1238.140
+0017 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0018 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1243.140
+0018 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0019 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1248.140
+0019 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+0020 SEND inquiry F0 7E 7F 06 01 F7 t_mono=1253.140
+0020 TIMEOUT no identity within 4.0s (+1.0s slack) waited_ms=4969.0
+---
+summary: sent=20 recv=4 late=0 rate=20.0% pass=false (need>=95%)
+# finished_utc: 2026-08-07T11:48:01.433551+00:00

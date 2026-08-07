@@ -1,0 +1,55 @@
+# Device Inquiry lab log (automated; no MIDI-OX Thru)
+# started_utc: 2026-08-07T10:59:33.716655+00:00
+# with_bridge: true
+# count: 20
+# interval_s: 5.0
+# reply_timeout_s: 2.0
+# inquiry: F0 7E 7F 06 01 F7
+# bridge_exe: C:\Users\Guillaume\Dev\Projects\unitor-win64-driver\builds\debug\Debug\Bridge.exe
+# bridge_log: C:\Users\Guillaume\Dev\Projects\unitor-win64-driver\tests\lab-logs\device-inquiry\bridge-20260807T105933Z.log
+# out_port: MT4 Output 1 1
+# in_port: MT4 Input 1 0
+---
+0001 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47517.281
+0001 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0002 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47522.281
+0002 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=828.0
+0003 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47527.281
+0003 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0004 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47532.281
+0004 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=328.0
+0005 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47537.281
+0005 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0006 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47542.281
+0006 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0007 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47547.281
+0007 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0008 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47552.281
+0008 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0009 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47557.281
+0009 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=594.0
+0010 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47562.281
+0010 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0011 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47567.281
+0011 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=94.0
+0012 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47572.281
+0012 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0013 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47577.281
+0013 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0014 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47582.281
+0014 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0015 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47587.281
+0015 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0016 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47592.281
+0016 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0017 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47597.281
+0017 RECV identity F0 7E 00 06 02 10 06 00 02 00 20 31 32 30 F7 dt_ms=1609.0
+0018 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47602.281
+0018 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0019 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47607.281
+0019 TIMEOUT no identity within 2.0s waited_ms=2000.0
+0020 SEND inquiry F0 7E 7F 06 01 F7 t_mono=47612.281
+0020 TIMEOUT no identity within 2.0s waited_ms=2000.0
+---
+summary: sent=20 recv=5 rate=25.0% pass=false (need>=95%)
+# finished_utc: 2026-08-07T11:01:15.135104+00:00

@@ -1,0 +1,29 @@
+# Bridge console capture started_utc=2026-08-07T11:43:05.118172+00:00
+Expected Virtual Ports: 2 IN / 4 OUT
+  IN  MT4 Input 1
+  IN  MT4 Input 2
+  OUT MT4 Output 1
+  OUT MT4 Output 2
+  OUT MT4 Output 3
+  OUT MT4 Output 4
+Emagic init/computer-mode: drained 32 bulk IN byte(s); read capacity=32; channel CC kick sent (manual Computer Mode)
+DeviceSession started for MT4 with Virtual Ports
+MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)
+device-host counters will print in this window on USB IN activity (same thread as this message)
+Device Inquiry lab: watch inquiry_out vs identity_reply_in (expect them to stay close)
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=0 inquiry_out=0 identity_reply_in=0
+MIDI I/O stopped
