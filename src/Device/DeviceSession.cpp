@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <system_error>
+#include <thread>
 
 DeviceSession::~DeviceSession()
 {
@@ -209,9 +210,12 @@ bool DeviceSession::armBulkInAsyncRing(std::string& errorOut)
 void DeviceSession::enableHostMidiSink()
 {
     running_.store(true);
-    hostOutEarliestSteady_ = std::chrono::steady_clock::now();
+    // Keep host→device gated until waitPostStartInCalm opens the window after
+    // the quiet-CC prime and IN ring is idle / fully pending.
+    hostOutEarliestSteady_ = std::chrono::steady_clock::now() + std::chrono::hours(1);
     midiBackend_->SetHostToDeviceSink(&DeviceSession::hostToDeviceThunk, this);
-    std::cout << "Host MIDI sink live (bulk IN ring already active)\n" << std::flush;
+    std::cout << "Host MIDI sink live (bulk IN ring already active; librarian OUT gated)\n"
+              << std::flush;
 }
 
 void DeviceSession::queuePostStartPipePrime()
@@ -228,8 +232,75 @@ void DeviceSession::queuePostStartPipePrime()
             return;
         }
     }
+    // Allow only the prime through the calm gate.
+    hostOutEarliestSteady_ = std::chrono::steady_clock::now();
     std::cout << "Post-start pipe prime queued (quiet CC on Out1)\n" << std::flush;
     drainHostOutbound();
+    // Re-gate until waitPostStartInCalm confirms IN idle + full pending depth.
+    hostOutEarliestSteady_ = std::chrono::steady_clock::now() + std::chrono::hours(1);
+}
+
+void DeviceSession::waitPostStartInCalm() noexcept
+{
+    constexpr auto kMaxWait = std::chrono::milliseconds(500);
+    constexpr auto kIdleNeed = std::chrono::milliseconds(40);
+    constexpr auto kPoll = std::chrono::milliseconds(5);
+    const auto deadline = std::chrono::steady_clock::now() + kMaxWait;
+
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        if (stopPump_.load() || !running_.load())
+        {
+            openLibrarianOutboundGate(true);
+            return;
+        }
+        if (postStartInIsCalm(kIdleNeed))
+        {
+            openLibrarianOutboundGate(false);
+            return;
+        }
+        std::this_thread::sleep_for(kPoll);
+    }
+    openLibrarianOutboundGate(true);
+}
+
+bool DeviceSession::postStartInIsCalm(std::chrono::milliseconds idleNeed) noexcept
+{
+    std::size_t queued = 0;
+    {
+        std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
+        queued = bulkInDeliverQueue_.size();
+    }
+    if (queued != 0 || transport_.CountPendingBulkInSlots() != kBulkInAsyncSlotCount)
+    {
+        return false;
+    }
+    const auto now = std::chrono::steady_clock::now();
+    return lastBulkInPacketSteady_.time_since_epoch().count() == 0
+        || (now - lastBulkInPacketSteady_ >= idleNeed);
+}
+
+void DeviceSession::openLibrarianOutboundGate(bool timedOut) noexcept
+{
+    const std::size_t pending = transport_.CountPendingBulkInSlots();
+    std::size_t queued = 0;
+    {
+        std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
+        queued = bulkInDeliverQueue_.size();
+    }
+    hostOutEarliestSteady_ = std::chrono::steady_clock::now();
+    firstBurstDiagRemaining_.store(12, std::memory_order_relaxed);
+    if (timedOut)
+    {
+        std::cerr << "Post-start IN calm timed out (pending=" << pending << "/"
+                  << kBulkInAsyncSlotCount << " queued=" << queued
+                  << "); opening librarian OUT anyway\n"
+                  << std::flush;
+        return;
+    }
+    std::cout << "Post-start IN calm ready (pending=" << pending << "/"
+              << kBulkInAsyncSlotCount << " queued=" << queued << ")\n"
+              << std::flush;
 }
 
 bool DeviceSession::startPump(std::string& errorOut)
@@ -238,17 +309,7 @@ bool DeviceSession::startPump(std::string& errorOut)
         std::lock_guard<std::mutex> lock(pumpErrorMutex_);
         pumpError_.clear();
     }
-
-    deviceHostCounters_.Reset();
-    resetInFramers();
-    (void)clearHostOutboundQueue();
-    {
-        std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
-        bulkInDeliverQueue_.clear();
-    }
-    firstHostInquiryLogged_.store(false);
-    bulkInRingArmedSteadyMs_.store(-1, std::memory_order_relaxed);
-    lastBulkInPacketSteady_ = {};
+    resetPumpRuntimeState();
     stopPump_.store(false);
 
     // Arm INPUT_URBS, start the reader Wait loop, then open the host sink so
@@ -272,7 +333,26 @@ bool DeviceSession::startPump(std::string& errorOut)
 
     enableHostMidiSink();
     queuePostStartPipePrime();
+    waitPostStartInCalm();
     return true;
+}
+
+void DeviceSession::resetPumpRuntimeState() noexcept
+{
+    deviceHostCounters_.Reset();
+    resetInFramers();
+    (void)clearHostOutboundQueue();
+    {
+        std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
+        bulkInDeliverQueue_.clear();
+    }
+    firstHostInquiryLogged_.store(false);
+    firstBurstDiagRemaining_.store(0, std::memory_order_relaxed);
+    bulkInRingArmedSteadyMs_.store(-1, std::memory_order_relaxed);
+    lastBulkInPacketSteady_ = {};
+    clearExpectInBurst();
+    lastDumpRequest_.clear();
+    lastDumpOutPort_ = 0;
 }
 
 void DeviceSession::stopPumpAndJoin() noexcept

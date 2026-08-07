@@ -71,9 +71,15 @@ private:
         const PortNameSet& portNames,
         std::string& errorOut);
     bool startPump(std::string& errorOut);
+    void resetPumpRuntimeState() noexcept;
     bool armBulkInAsyncRing(std::string& errorOut);
     void enableHostMidiSink();
     void queuePostStartPipePrime();
+    // After post-start prime: wait until deliver queue is idle and IN ring is full
+    // before allowing librarian host→device traffic.
+    void waitPostStartInCalm() noexcept;
+    bool postStartInIsCalm(std::chrono::milliseconds idleNeed) noexcept;
+    void openLibrarianOutboundGate(bool timedOut) noexcept;
     void stopPumpAndJoin() noexcept;
     void readerLoop();
     void failReaderOnReadBulkError(const std::string& error);
@@ -129,6 +135,11 @@ private:
         uint8_t cableIndex,
         const uint8_t* midiBytes,
         std::size_t byteCount);
+    void maybeLogFirstBurst(
+        uint8_t cableIndex,
+        std::size_t inPortIndex,
+        const uint8_t* midiBytes,
+        std::size_t byteCount);
     void sendFramedToHost(
         std::size_t inPortIndex,
         uint8_t cableIndex,
@@ -146,8 +157,17 @@ private:
     std::size_t findInPortIndex(uint8_t cableIndex) const noexcept;
     void resetInFramers() noexcept;
     bool anyInFramerHoldingSysex() const noexcept;
+    bool hostOutboundWriteBlocked() const noexcept;
+    bool expectInBurstActive() const noexcept;
+    void armExpectInBurstAfterHostSysex(
+        std::size_t outPortIndex,
+        const uint8_t* midiBytes,
+        std::size_t midiBytesCount) noexcept;
+    void clearExpectInBurst() noexcept;
+    bool rejectShortMatrixDumpAndRetry(std::size_t gotLength);
     void finalizeIdleHeldSysex();
     void finalizeOneHeldSysex(std::size_t inPortIndex);
+    void abandonIdlePartialSysexHold(std::size_t inPortIndex);
 
     static void hostToDeviceThunk(
         void* context,
@@ -181,6 +201,14 @@ private:
     std::atomic<bool> firstHostInquiryLogged_{false};
     std::chrono::steady_clock::time_point lastBulkInPacketSteady_{};
     std::chrono::steady_clock::time_point hostOutEarliestSteady_{};
+    // After a short host SysEx (dump request), block further WriteBulk until the
+    // expected device→host SysEx completes or this deadline passes.
+    std::chrono::steady_clock::time_point expectInBurstUntil_{};
+    std::vector<uint8_t> lastDumpRequest_{};
+    std::size_t lastDumpOutPort_ = 0;
+    unsigned dumpRequestRetryRemaining_ = 0;
+    // Temporary lab diag: log first product IN spans after Start (F0 / hold).
+    std::atomic<unsigned> firstBurstDiagRemaining_{0};
 
     // Completion thread enqueues USB packets; reader demuxes + SendToHost (teVirtualMIDI
     // is not safe to call from the WinUSB completion thread — lab saw send_ok with

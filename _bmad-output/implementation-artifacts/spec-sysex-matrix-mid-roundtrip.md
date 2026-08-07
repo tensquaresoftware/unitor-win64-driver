@@ -2,8 +2,8 @@
 title: 'MT4 Bridge — mid-size Matrix SysEx round-trip lab (palier 1)'
 type: 'feature'
 created: '2026-08-07'
-status: 'in-progress'
-baseline_commit: 'c29583551d143a29455fd636f8e38f52a1ea1e1f'
+status: 'done'
+baseline_commit: 'f91f883c4bce304d294c8736b08daf68a99582b1'
 review_loop_iteration: 0
 context:
   - '{project-root}/conventions.md'
@@ -77,12 +77,12 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `_bmad-output/implementation-artifacts/spec-sysex-matrix-mid-roundtrip.md` -- keep Design Notes for lab stamps/rates -- evidence SSOT
-- [ ] `scripts/lab/sysex-matrix-mid-loop.py` -- new harness (push ×2, dump ×2, Bridge lifecycle, reassemble-to-F7, 100 % gate) -- automated palier-1 gate
-- [ ] `tests/lab-logs/sysex-matrix-mid/README.md` -- short EN how-to + log naming -- operator path
-- [ ] `docs/tests/checklists/smoke-mt4-sysex-matrix-mid.md` -- one-shot EN checklist + Pass criteria -- human retest
-- [ ] Lab run on Zadig MT4 + Matrix DIN Out1↔In1 -- ≥10 reps/scenario, ≥2 fresh Starts for dumps, document stamps -- prove 100 % or instrument Fail
-- [ ] Bridge C++ (only if lab KO) -- minimal fix + lint-touched -- close proven hole only
+- [x] `_bmad-output/implementation-artifacts/spec-sysex-matrix-mid-roundtrip.md` -- keep Design Notes for lab stamps/rates -- evidence SSOT
+- [x] `scripts/lab/sysex-matrix-mid-loop.py` -- new harness (push ×2, dump ×2, Bridge lifecycle, reassemble-to-F7, 100 % gate) -- automated palier-1 gate
+- [x] `tests/lab-logs/sysex-matrix-mid/README.md` -- short EN how-to + log naming -- operator path
+- [x] `docs/tests/checklists/smoke-mt4-sysex-matrix-mid.md` -- one-shot EN checklist + Pass criteria -- human retest
+- [x] Lab run on Zadig MT4 + Matrix DIN Out1↔In1 -- ≥10 reps/scenario, ≥2 fresh Starts for dumps, document stamps -- prove 100 % or instrument Fail
+- [x] Bridge C++ (only if lab KO) -- minimal fix + lint-touched -- close proven hole only
 
 **Acceptance Criteria:**
 - Given fixtures and Matrix on cable 1, when the harness runs host→device patch and master pushes (≥10 each), then every send completes and Bridge logs show no pump/WriteBulk fail for those windows.
@@ -93,6 +93,8 @@ context:
 
 ## Spec Change Log
 
+- 2026-08-07 — Bridge: post-start IN calm + OUT silence after dump request; leading-F0 repair; wrong-size Matrix dump reject + one dump-request retry; bulk IN ring depth 16. Lab gate 100 % including Matrix power-cycle confirm (`20260807T190336Z`; prior `185403Z` / `185508Z` / `185953Z`).
+
 ## Design Notes
 
 Defaults locked for implementers:
@@ -102,19 +104,59 @@ Defaults locked for implementers:
 - Reuse Inquiry deps file unless a sibling requirements file is strictly needed.
 - Harness runs dumps before pushes on Start 1 (Matrix can stay busy after librarian writes).
 - Bridge change under test: in-order bulk IN harvest via reorder buffer (`WinUsbBulkInAsyncRing.h`) so completed slots resubmit immediately while delivery stays submit-ordered.
+- Post-start: quiet-CC prime, then wait until deliver queue idle + full pending depth before librarian OUT.
+- After each short host SysEx (dump request): silence further WriteBulk until a complete device→host SysEx or timeout.
+- Narrow guards (lab-proven): if expect-IN is armed and the first product byte is `0x10` without a hold, prepend `F0`; if a Matrix dump reply arrives with wrong length, do not `SendToHost` and re-send the dump request once.
+- `kBulkInAsyncSlotCount = 16` (was 7) for deeper always-pending IN during Matrix bursts.
 
-### Lab evidence (2026-08-07, baseline `c295835` + async reorder)
+### Lab evidence (2026-08-07)
 
 | Stamp | Result | Notes |
 |---|---|---|
-| `20260807T133833Z` | Fail | Pre-fix: dump_patch corrupt/truncate (`F0 10 00 02` len=272; len=274) + Start2#1 TIMEOUT |
-| `20260807T134744Z` | Fail | After in-order-only wait: Start2 dumps 100%; Start1 dump_patch#1 TIMEOUT after pushes |
-| `20260807T134928Z` | Fail | Dumps-before-pushes: dump_patch 100%; dump_master#5 discard len=191 tail matches full master (middle drop) |
-| `20260807T135214Z` / `135942Z` | Fail | Reorder buffer: still intermittent dump_patch TIMEOUT with Bridge `demux_spans=274` + `send_ok=0` (missing final F7) on fresh Start #1; later trials often 125 ms / 275 B |
+| `20260807T133833Z`…`161017Z` | Fail | Pre-fix era: first dump after Start often `TIMEOUT` / `demux≈274` + `send_ok=0` (lost leading F0) or mid-stream discard wrong length |
+| `20260807T183415Z` | Fail | Post-start calm only: Start1 colder (4× bulk_in=0); instrumentation later proved F0 loss vs hold |
+| `20260807T183815Z` | Fail ~90 % | Calm + OUT silence: first-burst `head=10` (F0 lost); classic hole confirmed |
+| `20260807T184459Z` | Pass once | Calm/silence lucky natural F0; not stable on next runs (mid-stream discard) |
+| `20260807T185403Z` | **Pass** | F0 repair fired Start1#1; size-reject+retry once (len=319); both Starts 100 % |
+| `20260807T185508Z` | **Pass** | Confirm harness; F0 repair on Start2; `overall_pass=true` exit 0 |
+| `20260807T185953Z` | **Pass** | Post-review (narrow arm/clear expect); F0 repair Start1; `overall_pass=true` exit 0 — Matrix power state at Start not operator-confirmed |
+| `20260807T190336Z` | **Pass** | Clean confirm: Matrix power-cycled before launch; F0 repair + size-reject retries; `overall_pass=true` exit 0 |
 
-**Stable so far:** host→device push patch/master 10/10; dump_master often 10/10; dump_patch usually ≥8/10 with ~125 ms when OK; no Bridge pump/WriteBulk fail lines.
+**Closed for palier 1:** fresh-Start first dump + mid-size Matrix round-trip at 100 % across ≥2 Starts, including one operator-confirmed Matrix power-cycle before launch (`190336Z`). macOS Apple-driver control remains the hardware SSOT (`docs/tests/lab-reports/macos-sysex-paliers-2026-08-07.md`).
 
-**Open hole:** device→host patch dump still loses the closing byte/packet often enough to miss 100 % (framer holds 274 spans without SendToHost). Not blamed on Matrix when DIN LEDs / bulk_in activity are present.
+## Suggested Review Order
+
+**Dump-request quiet window + retry**
+
+- Arm expect only for Matrix dump requests; block WriteBulk while waiting for the reply.
+  [`DeviceSessionHostOutbound.cpp:49`](../../src/Device/DeviceSessionHostOutbound.cpp#L49)
+
+- Size-reject wrong-length Matrix dumps and re-send the dump request once.
+  [`DeviceSessionHostOutbound.cpp:73`](../../src/Device/DeviceSessionHostOutbound.cpp#L73)
+
+- Deliver exact 275/351 only after length check; clear expect only on exact Matrix dump.
+  [`DeviceSessionDeviceHost.cpp:109`](../../src/Device/DeviceSessionDeviceHost.cpp#L109)
+
+**Leading-F0 repair (first-shot hole)**
+
+- Prepend `F0` when dump expect is armed and demux starts at `0x10` without a hold.
+  [`DeviceSessionSupport.cpp:76`](../../src/Device/DeviceSessionSupport.cpp#L76)
+
+- Wire repair into the reader demux→framer path (never from WinUSB completion).
+  [`DeviceSessionDeviceHost.cpp:179`](../../src/Device/DeviceSessionDeviceHost.cpp#L179)
+
+**Post-start calm before librarian OUT**
+
+- Gate host→device until IN deliver queue idle and pending ring is full.
+  [`DeviceSession.cpp:243`](../../src/Device/DeviceSession.cpp#L243)
+
+**Always-pending IN depth**
+
+- Raise async bulk IN ring to 16 slots; expose pending count for calm/diag.
+  [`WinUsbTransport.h:24`](../../src/Usb/WinUsbTransport.h#L24)
+
+- Count pending slots without draining the ring.
+  [`WinUsbBulkInAsync.cpp:246`](../../src/Usb/WinUsbBulkInAsync.cpp#L246)
 
 ## Verification
 

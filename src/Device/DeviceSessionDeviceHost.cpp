@@ -10,7 +10,6 @@
 
 namespace
 {
-// Wake often enough to drain host→device while IN URBs stay pending (Linux model).
 constexpr std::uint32_t kReaderIdleWaitMs = 50;
 constexpr std::uint32_t kReaderOutboundWaitMs = 5;
 } // namespace
@@ -60,6 +59,7 @@ void DeviceSession::finalizeIdleHeldSysex()
     // Only when hold is exactly one byte short of a known Matrix dump (trailing
     // F7 URB lost). Linux never synthesizes F7 — keep this narrow.
     constexpr auto kIdleFinalize = std::chrono::milliseconds(80);
+    constexpr auto kAbandonHold = std::chrono::milliseconds(500);
     const auto now = std::chrono::steady_clock::now();
     if (lastBulkInPacketSteady_.time_since_epoch().count() == 0
         || now - lastBulkInPacketSteady_ < kIdleFinalize)
@@ -68,26 +68,37 @@ void DeviceSession::finalizeIdleHeldSysex()
     }
     for (std::size_t index = 0; index < inPortCount_; ++index)
     {
-        const std::size_t held = inFramers_[index].HeldSysexSize();
         if (!inFramers_[index].IsHoldingSysEx())
         {
             continue;
         }
+        const std::size_t held = inFramers_[index].HeldSysexSize();
         if (held == 274 || held == 350)
         {
             finalizeOneHeldSysex(index);
             continue;
         }
-        // Rate-limited diagnosis: first-dump holes often demux without a hold.
-        static thread_local auto lastDiag = std::chrono::steady_clock::time_point{};
-        if (lastDiag.time_since_epoch().count() == 0 || now - lastDiag > std::chrono::milliseconds(500))
+        if (now - lastBulkInPacketSteady_ >= kAbandonHold)
         {
-            lastDiag = now;
-            std::cerr << "SysEx idle hold (no finalize): in_port=" << index
-                      << " held=" << held << "\n"
-                      << std::flush;
+            abandonIdlePartialSysexHold(index);
         }
     }
+}
+
+void DeviceSession::abandonIdlePartialSysexHold(std::size_t inPortIndex)
+{
+    std::lock_guard<std::mutex> lock(usbIoMutex_);
+    if (!inFramers_[inPortIndex].IsHoldingSysEx())
+    {
+        return;
+    }
+    const std::size_t abandoned = inFramers_[inPortIndex].HeldSysexSize();
+    inFramers_[inPortIndex].Reset();
+    // Do not clearExpectInBurst here — a dump may still be in flight on another
+    // completion; abandoning a partial hold must not re-open WriteBulk early.
+    std::cerr << "SysEx hold abandoned after idle: in_port=" << inPortIndex
+              << " held=" << abandoned << "\n"
+              << std::flush;
 }
 
 void DeviceSession::noteBulkReadCounters(std::size_t bulkBytes, std::size_t demuxSpans)
@@ -101,6 +112,13 @@ void DeviceSession::sendFramedToHost(
     const uint8_t* midiBytes,
     std::size_t byteCount)
 {
+    if (expectInBurstActive() && isMatrixDumpReply(midiBytes, byteCount)
+        && !isExactMatrixDumpLength(byteCount))
+    {
+        (void)rejectShortMatrixDumpAndRetry(byteCount);
+        return;
+    }
+
     std::string error;
     if (!midiBackend_->SendToHost(inPortIndex, midiBytes, byteCount, error))
     {
@@ -111,6 +129,12 @@ void DeviceSession::sendFramedToHost(
     }
 
     deviceHostCounters_.AddSendOk();
+    // Only a complete Matrix dump ends the dump-request quiet window — realtime
+    // / Identity / other framed MIDI must not disarm F0 repair or size reject.
+    if (isMatrixDumpReply(midiBytes, byteCount) && isExactMatrixDumpLength(byteCount))
+    {
+        clearExpectInBurst();
+    }
     if (isIdentityReply(midiBytes, byteCount))
     {
         deviceHostCounters_.AddIdentityReplyIn();
@@ -146,26 +170,51 @@ void DeviceSession::forwardDeviceMidi(
     {
         return;
     }
-
     const std::size_t inPortIndex = findInPortIndex(cableIndex);
     if (inPortIndex >= inPortCount_)
     {
-        // Non-product / Broadcast cables are ignored (no Virtual Port).
         return;
     }
 
+    static thread_local std::vector<uint8_t> repairStorage;
+    const bool armRepair =
+        expectInBurstActive() && !inFramers_[inPortIndex].IsHoldingSysEx();
+    const MidiPushView push =
+        maybePrependLostLeadingF0(armRepair, midiBytes, byteCount, repairStorage);
     inFramers_[inPortIndex].Push(
-        midiBytes,
-        byteCount,
+        push.bytes,
+        push.count,
         [this, inPortIndex, cableIndex](const uint8_t* framed, std::size_t framedSize) {
             sendFramedToHost(inPortIndex, cableIndex, framed, framedSize);
         });
+    maybeLogFirstBurst(cableIndex, inPortIndex, midiBytes, byteCount);
 
     const std::uint64_t rejects = inFramers_[inPortIndex].ConsumeOversizeSysexRejectCount();
     if (rejects > 0)
     {
         noteFramerOversizeRejects(inPortIndex, cableIndex, rejects);
     }
+}
+
+void DeviceSession::maybeLogFirstBurst(
+    uint8_t cableIndex,
+    std::size_t inPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t byteCount)
+{
+    if (firstBurstDiagRemaining_.load(std::memory_order_relaxed) == 0
+        || firstBurstDiagRemaining_.fetch_sub(1, std::memory_order_relaxed) == 0)
+    {
+        return;
+    }
+    const MidiMessageFramer& framer = inFramers_[inPortIndex];
+    logFirstBurstSpan(FirstBurstDiag{
+        cableIndex,
+        midiBytes,
+        byteCount,
+        framer.IsHoldingSysEx(),
+        framer.HeldSysexSize(),
+        transport_.CountPendingBulkInSlots()});
 }
 
 void DeviceSession::failReaderOnReadBulkError(const std::string& error)
@@ -348,7 +397,7 @@ int DeviceSession::readerWaitOnceAsync()
     {
         finalizeIdleHeldSysex();
     }
-    if (!anyInFramerHoldingSysex())
+    if (!hostOutboundWriteBlocked())
     {
         drainHostOutbound();
     }

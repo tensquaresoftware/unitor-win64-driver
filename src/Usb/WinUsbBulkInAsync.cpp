@@ -243,6 +243,25 @@ bool WinUsbTransport::IsBulkInAsyncRingActive() const noexcept
     return ring != nullptr && ring->active;
 }
 
+std::size_t WinUsbTransport::CountPendingBulkInSlots() noexcept
+{
+    std::lock_guard<std::mutex> lock(bulkInRingMutex_);
+    const auto* ring = bulkInAsRing(bulkInAsyncRing_);
+    if (ring == nullptr || !ring->active)
+    {
+        return 0;
+    }
+    std::size_t pending = 0;
+    for (std::size_t index = 0; index < kBulkInAsyncSlotCount; ++index)
+    {
+        if (ring->slots[index].pending)
+        {
+            ++pending;
+        }
+    }
+    return pending;
+}
+
 void WinUsbTransport::SetBulkInPacketHandler(
     BulkInPacketHandler handler,
     void* context) noexcept
@@ -358,6 +377,11 @@ void WinUsbTransport::StopBulkInAsyncRing() noexcept
 bool WinUsbTransport::IsBulkInAsyncRingActive() const noexcept
 {
     return false;
+}
+
+std::size_t WinUsbTransport::CountPendingBulkInSlots() noexcept
+{
+    return 0;
 }
 
 void WinUsbTransport::AbortBulkInAsyncRing() noexcept {}

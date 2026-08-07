@@ -114,6 +114,24 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-mt4-separate-virtual-ports.md`
   summary: Harden uniqueness checks against wide/case-folded teVirtualMIDI alias collisions beyond exact UTF-8 string equality.
   evidence: Current validation compares UTF-8 strings only; driver alias rules may be wider.
+## Deferred from: spec-sysex-matrix-mid-roundtrip.md (2026-08-07)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-sysex-matrix-mid-roundtrip.md`
+  summary: Mid-stream USB/reorder drops still exist; size-reject + one dump-request retry masks them for palier-1 gate — root cause at harvest/reorder remains open.
+  evidence: Lab stamps `185403Z` (retry on len=319) and earlier `discard` wrong lengths before guards; Apple driver 100 % on same MT4.
+- source_spec: `_bmad-output/implementation-artifacts/spec-sysex-matrix-mid-roundtrip.md`
+  summary: Leading-F0 repair keys on first product byte `0x10` during dump expect — Matrix-shaped for this lab; false-positive risk if stray `0x10` arrives in the same window.
+  evidence: Review; intentional narrow guard for Emagic Matrix dump body after lost `F0`.
+- source_spec: `_bmad-output/implementation-artifacts/spec-sysex-matrix-mid-roundtrip.md`
+  summary: Dump-request retry `WriteBulk` runs while reader may hold `usbIoMutex_` — sync OUT under contention.
+  evidence: Edge review; revisit if retry latency or OUT stall shows in longer librarian runs.
+- source_spec: `_bmad-output/implementation-artifacts/spec-sysex-matrix-mid-roundtrip.md`
+  summary: Temporary first-burst diagnostic stderr (`first-burst IN`, leading-F0 repair lines) still enabled — gate or remove after palier credibility is locked.
+  evidence: Intentional lab instrumentation during Quick Dev close.
+- source_spec: `_bmad-output/implementation-artifacts/spec-sysex-matrix-mid-roundtrip.md`
+  summary: Post-start calm is best-effort (opens librarian gate on 500 ms timeout even if pending/queued not ideal).
+  evidence: Edge review; calm alone did not close the hole; keep for hygiene only.
+
 ## Deferred from: spec-mt4-device-inquiry-alternate-drop.md (2026-08-07)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-mt4-device-inquiry-alternate-drop.md`

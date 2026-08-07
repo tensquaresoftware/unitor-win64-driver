@@ -1,7 +1,9 @@
 #include "Device/DeviceSessionSupport.h"
 
 #include <cstdio>
+#include <iostream>
 #include <sstream>
+#include <vector>
 
 std::string formatPortCableFailure(
     const char* direction,
@@ -69,4 +71,61 @@ std::string formatMidiBytesHex(const uint8_t* midiBytes, std::size_t byteCount)
         out.append(" ...");
     }
     return out;
+}
+
+MidiPushView maybePrependLostLeadingF0(
+    bool armRepair,
+    const uint8_t* midiBytes,
+    std::size_t byteCount,
+    std::vector<uint8_t>& repairStorage)
+{
+    if (!armRepair || midiBytes == nullptr || byteCount == 0 || midiBytes[0] != 0x10)
+    {
+        return {midiBytes, byteCount};
+    }
+    repairStorage.clear();
+    repairStorage.push_back(0xF0);
+    repairStorage.insert(repairStorage.end(), midiBytes, midiBytes + byteCount);
+    std::cerr << "SysEx leading-F0 repair: prepended F0 (span_len=" << byteCount
+              << " head_was=10)\n"
+              << std::flush;
+    return {repairStorage.data(), repairStorage.size()};
+}
+
+void logFirstBurstSpan(const FirstBurstDiag& diag)
+{
+    if (diag.midiBytes == nullptr || diag.byteCount == 0)
+    {
+        return;
+    }
+    std::cerr << "first-burst IN: cable=" << static_cast<unsigned>(diag.cableIndex)
+              << " span_len=" << diag.byteCount
+              << " head=" << formatMidiBytesHex(diag.midiBytes, diag.byteCount)
+              << " has_f0=" << ((diag.midiBytes[0] == 0xF0) ? "yes" : "no")
+              << " holding=" << (diag.holding ? "yes" : "no")
+              << " held=" << diag.heldSize << " pending_urbs=" << diag.pendingUrbs
+              << "\n"
+              << std::flush;
+}
+
+bool isMatrixDumpReply(const uint8_t* midiBytes, std::size_t byteCount) noexcept
+{
+    if (midiBytes == nullptr || byteCount < 5 || midiBytes[0] != 0xF0)
+    {
+        return false;
+    }
+    return midiBytes[1] == 0x10 && midiBytes[2] == 0x06
+        && (midiBytes[3] == 0x01 || midiBytes[3] == 0x03);
+}
+
+bool isExactMatrixDumpLength(std::size_t byteCount) noexcept
+{
+    return byteCount == 275 || byteCount == 351;
+}
+
+bool isMatrixDumpRequest(const uint8_t* midiBytes, std::size_t byteCount) noexcept
+{
+    return midiBytes != nullptr && byteCount == 7 && midiBytes[0] == 0xF0
+        && midiBytes[1] == 0x10 && midiBytes[2] == 0x06 && midiBytes[3] == 0x04
+        && midiBytes[6] == 0xF7;
 }

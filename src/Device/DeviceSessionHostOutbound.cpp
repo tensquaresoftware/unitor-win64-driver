@@ -22,6 +22,92 @@ void appendDiscardedSuffix(std::string& detail, std::size_t discarded)
 }
 } // namespace
 
+bool DeviceSession::hostOutboundWriteBlocked() const noexcept
+{
+    if (std::chrono::steady_clock::now() < hostOutEarliestSteady_)
+    {
+        return true;
+    }
+    if (anyInFramerHoldingSysex())
+    {
+        return true;
+    }
+    if (expectInBurstUntil_.time_since_epoch().count() != 0
+        && std::chrono::steady_clock::now() < expectInBurstUntil_)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool DeviceSession::expectInBurstActive() const noexcept
+{
+    return expectInBurstUntil_.time_since_epoch().count() != 0
+        && std::chrono::steady_clock::now() < expectInBurstUntil_;
+}
+
+void DeviceSession::armExpectInBurstAfterHostSysex(
+    std::size_t outPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t midiBytesCount) noexcept
+{
+    // Only Matrix dump requests arm the post-request IN quiet window / F0 repair.
+    constexpr auto kExpectWindow = std::chrono::milliseconds(3500);
+    if (!isMatrixDumpRequest(midiBytes, midiBytesCount))
+    {
+        return;
+    }
+    expectInBurstUntil_ = std::chrono::steady_clock::now() + kExpectWindow;
+    lastDumpOutPort_ = outPortIndex;
+    lastDumpRequest_.assign(midiBytes, midiBytes + midiBytesCount);
+    dumpRequestRetryRemaining_ = 1;
+}
+
+void DeviceSession::clearExpectInBurst() noexcept
+{
+    expectInBurstUntil_ = {};
+    dumpRequestRetryRemaining_ = 0;
+    lastDumpRequest_.clear();
+}
+
+bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
+{
+    std::cerr << "SysEx size reject: len=" << gotLength
+              << " (Matrix dump; keeping expect window)\n"
+              << std::flush;
+    if (dumpRequestRetryRemaining_ == 0 || lastDumpRequest_.empty())
+    {
+        // Exhausted: drop the bad frame and end the quiet window so OUT unblocks.
+        clearExpectInBurst();
+        return false;
+    }
+    --dumpRequestRetryRemaining_;
+
+    uint8_t encodeBytes[64] = {};
+    HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
+    if (!encodeHostMidiLocked(
+            lastDumpOutPort_, lastDumpRequest_.data(), lastDumpRequest_.size(), scratch))
+    {
+        clearExpectInBurst();
+        return false;
+    }
+    std::string error;
+    if (!transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error))
+    {
+        std::cerr << "SysEx size reject: dump-request retry WriteBulk failed: " << error
+                  << "\n"
+                  << std::flush;
+        clearExpectInBurst();
+        return false;
+    }
+    expectInBurstUntil_ = std::chrono::steady_clock::now() + std::chrono::milliseconds(3500);
+    deviceHostCounters_.AddHostOutOk();
+    std::cerr << "SysEx size reject: re-sent dump request (" << lastDumpRequest_.size()
+              << " B)\n"
+              << std::flush;
+    return true;
+}
+
 void DeviceSession::hostToDeviceThunk(
     void* context,
     std::size_t outPortIndex,
@@ -124,15 +210,15 @@ void DeviceSession::noteHostOutboundCounters(
                                .count();
         msSinceRing = nowMs - armedMs;
     }
-    // Single 0xFF pad → midi+1; F5 + cable + midi + pad → midi+3.
     const bool includedF5 = encodedBytes >= item.midi.size() + 3;
-
     std::cerr << "host→device: Device Inquiry WriteBulk ok (out_port="
               << (item.outPortIndex + 1) << " midi_bytes=" << item.midi.size()
               << " encoded_bytes=" << encodedBytes
               << " f5_switch=" << (includedF5 ? "yes" : "no")
               << " ring_active=" << (ringActive ? "yes" : "no")
               << " ms_since_ring_arm=" << msSinceRing
+              << " pending_urbs=" << transport_.CountPendingBulkInSlots() << "/"
+              << kBulkInAsyncSlotCount
               << " first_after_start=" << (firstShot ? "yes" : "no") << ")\n"
               << std::flush;
 }
@@ -145,6 +231,11 @@ bool DeviceSession::writeHostOutboundItem(
     if (transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error))
     {
         noteHostOutboundCounters(item, scratch.size);
+        if (!item.midi.empty() && item.midi[0] == 0xF0)
+        {
+            armExpectInBurstAfterHostSysex(
+                item.outPortIndex, item.midi.data(), item.midi.size());
+        }
         return true;
     }
     const std::size_t discarded = clearHostOutboundQueue();
@@ -199,12 +290,8 @@ void DeviceSession::drainHostOutboundLocked()
         }
         return;
     }
-    if (std::chrono::steady_clock::now() < hostOutEarliestSteady_)
-    {
-        return;
-    }
-    // handleHostMidi also drains — must not WriteBulk mid–SysEx hold (drops F7 URB).
-    if (anyInFramerHoldingSysex())
+    // Post-start calm, mid–SysEx hold, or post-dump-request expect-IN window.
+    if (hostOutboundWriteBlocked())
     {
         return;
     }
@@ -220,6 +307,10 @@ void DeviceSession::drainHostOutboundLocked()
             {
                 return;
             }
+        }
+        if (hostOutboundWriteBlocked())
+        {
+            return;
         }
         if (!encodeWritePopOneHostOutbound(scratch))
         {

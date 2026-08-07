@@ -19,7 +19,9 @@ inline constexpr const char* kMt4WinUsbDeviceInterfaceGuid =
     "{aa209017-cf8a-49ad-a0e7-701187ff7e05}";
 
 // Linux snd-usb-midi INPUT_URBS — keep this many bulk IN transfers always pending.
-inline constexpr std::size_t kBulkInAsyncSlotCount = 7;
+// Lab mid-SysEx discards (correct F0…F7, wrong length) correlated with thin depth
+// under Matrix dump burst rates; 16 keeps more completions in flight than stock 7/8.
+inline constexpr std::size_t kBulkInAsyncSlotCount = 16;
 
 struct WinUsbOpenOptions
 {
@@ -101,6 +103,8 @@ public:
     bool StartBulkInAsyncRing(std::string& errorOut);
     void StopBulkInAsyncRing() noexcept;
     bool IsBulkInAsyncRingActive() const noexcept;
+    // How many ring slots currently have a bulk IN transfer pending (0 when inactive).
+    std::size_t CountPendingBulkInSlots() noexcept;
     // AbortPipe to wake WaitBulkInReaderTick / completion waits during session Stop.
     void AbortBulkInAsyncRing() noexcept;
     // Optional: demux on the completion thread (set before StartBulkInAsyncRing).
