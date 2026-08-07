@@ -95,6 +95,7 @@ void WinUsbTransport::clearPipeState() noexcept
     bulkOutPipeId_ = 0;
     bulkInPipeId_ = 0;
     bulkInMaxPacketSize_ = 0;
+    bulkOutMaxPacketSize_ = 0;
     pipesReady_ = false;
     lastReadTimedOut_ = false;
 }
@@ -151,9 +152,12 @@ bool WinUsbTransport::discoverBulkPipes(std::string& errorOut)
     bulkOutPipeId_ = outClaim.pipeId;
     bulkInPipeId_ = inClaim.pipeId;
     bulkInMaxPacketSize_ = inClaim.maxPacketSize;
-    if (bulkInMaxPacketSize_ == 0)
+    bulkOutMaxPacketSize_ = outClaim.maxPacketSize;
+    if (bulkInMaxPacketSize_ == 0 || bulkOutMaxPacketSize_ == 0)
     {
-        errorOut = "Opened WinUSB bulk IN pipe reports MaximumPacketSize 0";
+        errorOut = (bulkInMaxPacketSize_ == 0)
+            ? "Opened WinUSB bulk IN pipe reports MaximumPacketSize 0"
+            : "Opened WinUSB bulk OUT pipe reports MaximumPacketSize 0";
         return false;
     }
     pipesReady_ = true;
@@ -219,8 +223,14 @@ std::size_t WinUsbTransport::BulkInReadCapacity() const noexcept
     return bulkInMaxPacketSize_ != 0 ? bulkInMaxPacketSize_ : 64;
 }
 
+std::size_t WinUsbTransport::BulkOutMaxPacketSize() const noexcept
+{
+    return bulkOutMaxPacketSize_ != 0 ? bulkOutMaxPacketSize_ : 64;
+}
+
 void WinUsbTransport::Close() noexcept
 {
+    StopBulkInAsyncRing();
     clearPipeState();
 
     for (std::size_t index = 0; index < winUsbAssociatedCount_; ++index)
@@ -378,6 +388,11 @@ bool WinUsbTransport::LastReadTimedOut() const noexcept
 }
 
 std::size_t WinUsbTransport::BulkInReadCapacity() const noexcept
+{
+    return 64;
+}
+
+std::size_t WinUsbTransport::BulkOutMaxPacketSize() const noexcept
 {
     return 64;
 }

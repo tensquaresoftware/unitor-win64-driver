@@ -47,6 +47,7 @@ add_executable(Bridge
     src/Protocol/MidiMessageFramer.cpp
     src/Usb/WinUsbTransport.cpp
     src/Usb/WinUsbTransportInit.cpp
+    src/Usb/WinUsbBulkInAsync.cpp
     src/Usb/WinUsbBulkProbe.cpp
 )
 

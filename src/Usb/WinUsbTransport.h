@@ -15,12 +15,23 @@
 inline constexpr const char* kMt4WinUsbDeviceInterfaceGuid =
     "{aa209017-cf8a-49ad-a0e7-701187ff7e05}";
 
+// Linux snd-usb-midi INPUT_URBS — keep this many bulk IN transfers always pending.
+inline constexpr std::size_t kBulkInAsyncSlotCount = 7;
+
 struct WinUsbOpenOptions
 {
     // Contributor escape hatch for Zadig-bound / Boot Camp lab machines.
     // When true, open HWID/Zadig-first (same path as --probe-usb); GUID is backup.
     // Default builds remain GUID-only and fail closed when the GUID is missing.
     bool allowZadigFallback = false;
+};
+
+// One completed bulk IN packet from the async ring (buffer owned by the transport).
+struct BulkInAsyncPacket
+{
+    const uint8_t* data = nullptr;
+    std::size_t size = 0;
+    std::size_t slot = 0;
 };
 
 class WinUsbTransport
@@ -60,13 +71,33 @@ public:
     // short packet and times out with 0 bytes under default WinUSB coalescing.
     std::size_t BulkInReadCapacity() const noexcept;
 
+    // Emagic bulk OUT endpoint wMaxPacketSize (informational; encode uses short pad).
+    std::size_t BulkOutMaxPacketSize() const noexcept;
+
     // True when the last ReadBulk failed because PIPE_TRANSFER_TIMEOUT elapsed.
     bool LastReadTimedOut() const noexcept;
 
-    // Lab half-duplex: after OUT (or between IN packets) briefly poll bulk IN, then
-    // restore the normal session PIPE_TRANSFER_TIMEOUT on both pipes.
+    // Lab half-duplex helper for init drain / legacy sync paths.
     bool BeginShortBulkInDrain(std::string& errorOut);
     bool RestoreSessionBulkTimeouts(std::string& errorOut);
+
+    // Best-effort short IN drain (post Computer Mode kick / residual).
+    // Returns false when the short-drain policy could not be armed.
+    bool DrainBulkInBestEffort(std::size_t maxPackets, std::size_t& drainedOut, std::string& errorOut);
+
+    // Always-pending multi-buffer bulk IN (Linux INPUT_URBS model). Call after Open
+    // and before the session reader waits; Stop aborts in-flight reads.
+    bool StartBulkInAsyncRing(std::string& errorOut);
+    void StopBulkInAsyncRing() noexcept;
+    bool IsBulkInAsyncRingActive() const noexcept;
+    // AbortPipe to wake WaitBulkInAsyncPacket during session Stop.
+    void AbortBulkInAsyncRing() noexcept;
+    // 1 = packet ready, 0 = wait timeout (ring still armed), -1 = fatal / aborted.
+    int WaitBulkInAsyncPacket(
+        std::uint32_t timeoutMs,
+        BulkInAsyncPacket& packetOut,
+        std::string& errorOut);
+    bool ResubmitBulkInAsyncSlot(std::size_t slot, std::string& errorOut);
 
 private:
 #ifdef _WIN32
@@ -83,6 +114,9 @@ private:
     bool armShortInDrainTimeout(std::string& errorOut);
     std::size_t drainBulkInUntilIdle(std::size_t maxPackets);
     void clearPipeState() noexcept;
+    bool submitBulkInAsyncSlot(std::size_t slot, std::string& errorOut);
+    void releaseBulkInAsyncSlots() noexcept;
+    bool armInfiniteBulkInTimeout(std::string& errorOut);
 
     void* deviceHandle_ = nullptr;   // HANDLE
     void* winUsbHandle_ = nullptr;   // WINUSB_INTERFACE_HANDLE (ifnum match)
@@ -92,8 +126,10 @@ private:
     unsigned char bulkOutPipeId_ = 0;
     unsigned char bulkInPipeId_ = 0;
     std::uint16_t bulkInMaxPacketSize_ = 0;
+    std::uint16_t bulkOutMaxPacketSize_ = 0;
     bool pipesReady_ = false;
     bool lastReadTimedOut_ = false;
+    void* bulkInAsyncRing_ = nullptr; // BulkInAsyncRingState*
 #else
     bool open_ = false;
     bool lastReadTimedOut_ = false;

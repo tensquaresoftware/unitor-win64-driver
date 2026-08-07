@@ -60,6 +60,27 @@ bool WinUsbTransport::applyBulkTransferTimeouts(std::string& errorOut)
     return setBulkTransferTimeoutMs(kSessionBulkTimeoutMs, errorOut);
 }
 
+bool WinUsbTransport::DrainBulkInBestEffort(
+    std::size_t maxPackets,
+    std::size_t& drainedOut,
+    std::string& errorOut)
+{
+    drainedOut = 0;
+    if (!BeginShortBulkInDrain(errorOut))
+    {
+        return false;
+    }
+    drainedOut = drainBulkInUntilIdle(maxPackets);
+    std::string restoreError;
+    if (!RestoreSessionBulkTimeouts(restoreError))
+    {
+        errorOut = restoreError;
+        return false;
+    }
+    errorOut.clear();
+    return true;
+}
+
 std::size_t WinUsbTransport::drainBulkInUntilIdle(std::size_t maxPackets)
 {
     std::size_t total = 0;
@@ -186,6 +207,16 @@ bool WinUsbTransport::WriteEmagicInitSequence(
 }
 
 #else // !_WIN32
+
+bool WinUsbTransport::DrainBulkInBestEffort(
+    std::size_t /*maxPackets*/,
+    std::size_t& drainedOut,
+    std::string& errorOut)
+{
+    drainedOut = 0;
+    errorOut = "WinUSB DrainBulkInBestEffort requires Windows";
+    return false;
+}
 
 bool WinUsbTransport::WriteEmagicInitSequence(
     std::string& errorOut,
