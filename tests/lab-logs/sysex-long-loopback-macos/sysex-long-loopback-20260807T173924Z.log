@@ -1,0 +1,286 @@
+# SysEx long DIN loopback lab log
+# started_utc: 2026-08-07T17:39:24.645015+00:00
+# with_bridge: false
+# fresh_sessions: 2
+# session_gap_s: 2.0
+# count_per_payload: 20
+# sizes: 1024,4096
+# fixture: /Volumes/Guillaume/Dev/Projects/Drivers/unitor-win64-driver/tests/fixtures/sysex/long-loopback-14708.syx
+# skip_fixture: false
+# interval_s: 0.05
+# reply_timeout_s: 8.0
+# pass_percent: 100.0
+# out_port_needle: MT4 Port 1
+# in_port_needle: MT4 Port 1
+# stamp: 20260807T173924Z
+---
+# session_index: 1
+# start_index: 1
+# out_port: MT4 Port 1
+# in_port: MT4 Port 1
+# count_per_payload: 20
+# interval_s: 0.05
+# reply_timeout_s: 8.0
+# payloads: synth_1024=1024B, synth_4096=4096B, fixture_14708=14708B
+---
+0001 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160293.931
+0001 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=334.4
+0002 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160294.280
+0002 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=331.8
+0003 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160294.625
+0003 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=333.5
+0004 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160294.971
+0004 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=331.4
+0005 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160295.316
+0005 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=331.0
+0006 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160295.661
+0006 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=331.0
+0007 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160296.005
+0007 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=330.9
+0008 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160296.349
+0008 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.6
+0009 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160296.693
+0009 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.6
+0010 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160297.036
+0010 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=333.0
+0011 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160297.383
+0011 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=332.5
+0012 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160297.729
+0012 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=331.1
+0013 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160298.074
+0013 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.1
+0014 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160298.416
+0014 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=333.8
+0015 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160298.764
+0015 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.0
+0016 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160299.107
+0016 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=333.0
+0017 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160299.454
+0017 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=334.0
+0018 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160299.802
+0018 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=333.8
+0019 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160300.150
+0019 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=330.4
+0020 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160300.493
+0020 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=331.4
+summary[synth_1024]: sent=20 ok=20 rate=100.0% elapsed_s=6.91 pass=true (need>=100%)
+0001 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160300.838
+0001 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1316.2
+0002 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160302.169
+0002 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.9
+0003 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160303.501
+0003 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.4
+0004 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160304.832
+0004 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.1
+0005 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160306.161
+0005 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.1
+0006 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160307.493
+0006 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.4
+0007 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160308.826
+0007 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.7
+0008 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160310.158
+0008 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.9
+0009 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160311.488
+0009 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.0
+0010 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160312.819
+0010 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.3
+0011 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160314.148
+0011 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.1
+0012 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160315.479
+0012 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.2
+0013 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160316.811
+0013 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.8
+0014 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160318.138
+0014 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1312.9
+0015 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160319.466
+0015 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.2
+0016 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160320.795
+0016 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1316.9
+0017 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160322.126
+0017 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.0
+0018 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160323.457
+0018 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.1
+0019 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160324.788
+0019 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.1
+0020 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160326.119
+0020 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1317.3
+summary[synth_4096]: sent=20 ok=20 rate=100.0% elapsed_s=26.61 pass=true (need>=100%)
+0001 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160327.452
+0001 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4720.1
+0002 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160332.196
+0002 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4714.4
+0003 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160336.930
+0003 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4715.4
+0004 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160341.665
+0004 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4720.8
+0005 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160346.405
+0005 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4714.8
+0006 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160351.141
+0006 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4713.4
+0007 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160355.874
+0007 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4711.7
+0008 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160360.609
+0008 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.7
+0009 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160365.340
+0009 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.8
+0010 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160370.072
+0010 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.7
+0011 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160374.806
+0011 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.2
+0012 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160379.536
+0012 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.4
+0013 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160384.268
+0013 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4713.2
+0014 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160389.000
+0014 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.9
+0015 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160393.733
+0015 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.8
+0016 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160398.468
+0016 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.7
+0017 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160403.202
+0017 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.9
+0018 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160407.937
+0018 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.7
+0019 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160412.669
+0019 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4713.3
+0020 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160417.402
+0020 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.4
+summary[fixture_14708]: sent=20 ok=20 rate=100.0% elapsed_s=94.68 pass=true (need>=100%)
+# finished_utc: 2026-08-07T17:41:33.787137+00:00
+# start_pass: true
+# session_index: 2
+# start_index: 2
+# out_port: MT4 Port 1
+# in_port: MT4 Port 1
+# count_per_payload: 20
+# interval_s: 0.05
+# reply_timeout_s: 8.0
+# payloads: synth_1024=1024B, synth_4096=4096B, fixture_14708=14708B
+---
+0001 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160425.142
+0001 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=334.3
+0002 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160425.491
+0002 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.7
+0003 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160425.833
+0003 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=332.1
+0004 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160426.179
+0004 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.4
+0005 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160426.525
+0005 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=335.1
+0006 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160426.876
+0006 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=335.4
+0007 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160427.225
+0007 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=332.8
+0008 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160427.573
+0008 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=335.5
+0009 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160427.922
+0009 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=330.2
+0010 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160428.267
+0010 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=333.5
+0011 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160428.616
+0011 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.0
+0012 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160428.961
+0012 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.8
+0013 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160429.307
+0013 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.3
+0014 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160429.650
+0014 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=335.7
+0015 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160430.001
+0015 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=335.4
+0016 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160430.352
+0016 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=332.6
+0017 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160430.700
+0017 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=329.0
+0018 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160431.045
+0018 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=332.1
+0019 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160431.393
+0019 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.8
+0020 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=160431.736
+0020 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=333.5
+summary[synth_1024]: sent=20 ok=20 rate=100.0% elapsed_s=6.94 pass=true (need>=100%)
+0001 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160432.084
+0001 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.9
+0002 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160433.417
+0002 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.6
+0003 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160434.748
+0003 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.3
+0004 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160436.079
+0004 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.1
+0005 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160437.411
+0005 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.4
+0006 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160438.742
+0006 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.3
+0007 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160440.074
+0007 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1317.3
+0008 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160441.408
+0008 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.1
+0009 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160442.739
+0009 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1316.9
+0010 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160444.074
+0010 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.8
+0011 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160445.409
+0011 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1316.7
+0012 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160446.741
+0012 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.4
+0013 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160448.074
+0013 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.5
+0014 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160449.407
+0014 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.5
+0015 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160450.742
+0015 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1314.5
+0016 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160452.075
+0016 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.6
+0017 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160453.409
+0017 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1316.4
+0018 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160454.745
+0018 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1315.1
+0019 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160456.079
+0019 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1316.3
+0020 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=160457.411
+0020 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1317.3
+summary[synth_4096]: sent=20 ok=20 rate=100.0% elapsed_s=26.66 pass=true (need>=100%)
+0001 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160458.749
+0001 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4716.1
+0002 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160463.489
+0002 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4714.6
+0003 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160468.226
+0003 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4714.7
+0004 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160472.962
+0004 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4711.4
+0005 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160477.696
+0005 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4722.6
+0006 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160482.435
+0006 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.7
+0007 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160487.170
+0007 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4716.5
+0008 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160491.909
+0008 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4727.7
+0009 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160496.659
+0009 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4715.4
+0010 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160501.396
+0010 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.9
+0011 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160506.130
+0011 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4712.7
+0012 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160510.860
+0012 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4714.9
+0013 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160515.597
+0013 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4714.1
+0014 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160520.331
+0014 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4715.0
+0015 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160525.067
+0015 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4714.3
+0016 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160529.804
+0016 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4715.3
+0017 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160534.539
+0017 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4715.3
+0018 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160539.278
+0018 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4715.4
+0019 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160544.016
+0019 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4716.2
+0020 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=160548.756
+0020 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4716.8
+summary[fixture_14708]: sent=20 ok=20 rate=100.0% elapsed_s=94.75 pass=true (need>=100%)
+# finished_utc: 2026-08-07T17:43:45.144742+00:00
+# start_pass: true
+# finished_utc: 2026-08-07T17:43:45.166443+00:00
+# overall_pass: true
