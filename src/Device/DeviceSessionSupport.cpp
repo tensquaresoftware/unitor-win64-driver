@@ -73,6 +73,38 @@ std::string formatMidiBytesHex(const uint8_t* midiBytes, std::size_t byteCount)
     return out;
 }
 
+void logLongSysexSendToHost(
+    std::size_t inPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t byteCount,
+    std::size_t deliverHighWater)
+{
+    if (byteCount < 512 || midiBytes == nullptr || midiBytes[0] != 0xF0
+        || midiBytes[byteCount - 1] != 0xF7)
+    {
+        return;
+    }
+    const std::size_t edge = (byteCount < 4) ? byteCount : 4;
+    std::cerr << "device→host: long SysEx SendToHost ok (in_port=" << (inPortIndex + 1)
+              << " bytes=" << byteCount << " head=" << formatMidiBytesHex(midiBytes, edge)
+              << " tail=" << formatMidiBytesHex(midiBytes + byteCount - edge, edge)
+              << " deliver_hw=" << deliverHighWater << ")\n"
+              << std::flush;
+}
+
+void logDeviceInquiryHostOut(const DeviceInquiryHostOutDiag& diag)
+{
+    std::cerr << "host→device: Device Inquiry WriteBulk ok (out_port="
+              << (diag.outPortIndex + 1) << " midi_bytes=" << diag.midiBytes
+              << " encoded_bytes=" << diag.encodedBytes
+              << " f5_switch=" << (diag.includedF5 ? "yes" : "no")
+              << " ring_active=" << (diag.ringActive ? "yes" : "no")
+              << " ms_since_ring_arm=" << diag.msSinceRing
+              << " pending_urbs=" << diag.pendingUrbs << "/" << diag.urbSlotCount
+              << " first_after_start=" << (diag.firstAfterStart ? "yes" : "no") << ")\n"
+              << std::flush;
+}
+
 MidiPushView maybePrependLostLeadingF0(
     bool armRepair,
     const uint8_t* midiBytes,

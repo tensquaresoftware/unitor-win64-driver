@@ -22,6 +22,27 @@ bool isIdentityReply(const uint8_t* midiBytes, std::size_t byteCount) noexcept;
 // Compact uppercase hex for lab dumps (e.g. "F0 7E 00"); empty if no bytes.
 std::string formatMidiBytesHex(const uint8_t* midiBytes, std::size_t byteCount);
 
+void logLongSysexSendToHost(
+    std::size_t inPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t byteCount,
+    std::size_t deliverHighWater);
+
+struct DeviceInquiryHostOutDiag
+{
+    std::size_t outPortIndex = 0;
+    std::size_t midiBytes = 0;
+    std::size_t encodedBytes = 0;
+    bool includedF5 = false;
+    bool ringActive = false;
+    long long msSinceRing = -1;
+    std::size_t pendingUrbs = 0;
+    std::size_t urbSlotCount = 0;
+    bool firstAfterStart = false;
+};
+
+void logDeviceInquiryHostOut(const DeviceInquiryHostOutDiag& diag);
+
 struct MidiPushView
 {
     const uint8_t* bytes = nullptr;

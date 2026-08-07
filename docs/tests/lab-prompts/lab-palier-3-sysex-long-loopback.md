@@ -39,7 +39,7 @@ Ne pas accuser le câble DIN ni la MT4 si Windows échoue sous le même topo que
 python scripts/lab/sysex-long-loopback.py --with-bridge --pass-percent 100
 ```
 
-Defaults : `MT4 Output 1` / `MT4 Input 1`, `--sizes 1024,4096`, fixture on, `--fresh-starts 2`,
+Defaults : `MT4 Out 1` / `MT4 In 1`, `--sizes 1024,4096`, fixture on, `--fresh-starts 2`,
 `--count 20`, `--interval 0.05`, `--reply-timeout 8`.  
 Logs : `tests/lab-logs/sysex-long-loopback/` (+ `bridge-<UTC>-startN.log`).
 

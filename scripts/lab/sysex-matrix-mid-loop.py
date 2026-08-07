@@ -966,13 +966,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--out-port",
-        default="MT4 Output 1",
-        help="MIDI output port name (default: MT4 Output 1)",
+        default="MT4 Out 1",
+        help="MIDI output port name (default: MT4 Out 1)",
     )
     parser.add_argument(
         "--in-port",
-        default="MT4 Input 1",
-        help="MIDI input port name (default: MT4 Input 1)",
+        default="MT4 In 1",
+        help="MIDI input port name (default: MT4 In 1)",
     )
     parser.add_argument(
         "--count",

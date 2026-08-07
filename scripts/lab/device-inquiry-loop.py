@@ -150,7 +150,7 @@ def _run_midi_lab_in_fresh_process(args: argparse.Namespace, log_path: Path) -> 
 
 
 def _normalize_port_label(name: str) -> str:
-    """Strip teVirtualMIDI / rtmidi trailing ' <n>' index: 'MT4 Output 1 1' -> 'MT4 Output 1'."""
+    """Strip teVirtualMIDI / rtmidi trailing ' <n>' index: 'MT4 Out 1 1' -> 'MT4 Out 1'."""
     parts = name.rsplit(" ", 1)
     if len(parts) == 2 and parts[1].isdigit():
         return parts[0]
@@ -158,7 +158,7 @@ def _normalize_port_label(name: str) -> str:
 
 
 def _port_match_rank(name: str, needle: str) -> int | None:
-    """Lower rank is better. None = not a match. Avoids 'MT4 Output 1' matching 'MT4 Output 10'."""
+    """Lower rank is better. None = not a match. Avoids 'MT4 Out 1' matching 'MT4 Out 10'."""
     if name == needle:
         return 0
     if _normalize_port_label(name) == needle:
@@ -528,13 +528,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--out-port",
-        default="MT4 Output 1",
-        help="MIDI output port name (default: MT4 Output 1)",
+        default="MT4 Out 1",
+        help="MIDI output port name (default: MT4 Out 1)",
     )
     parser.add_argument(
         "--in-port",
-        default="MT4 Input 1",
-        help="MIDI input port name (default: MT4 Input 1)",
+        default="MT4 In 1",
+        help="MIDI input port name (default: MT4 In 1)",
     )
     parser.add_argument(
         "--count",

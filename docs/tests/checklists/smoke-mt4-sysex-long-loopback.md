@@ -53,7 +53,7 @@ Mac-parity gate (synthetic 1024 + 4096 + fixture ~14708):
 python scripts/lab/sysex-long-loopback.py --with-bridge --pass-percent 100
 ```
 
-Defaults: `MT4 Output 1` / `MT4 Input 1`, `--fresh-starts 2`, fixture on.
+Defaults: `MT4 Out 1` / `MT4 In 1`, `--fresh-starts 2`, fixture on.
 Logs under `tests/lab-logs/sysex-long-loopback/` (+ bridge start logs).
 
 Hardware control (do not reopen): macOS Apple already 100 % on 1024/4096/14708 —

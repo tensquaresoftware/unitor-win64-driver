@@ -93,7 +93,7 @@ std::string formatVirtualMidiLastError(const char* action)
     else if (code == ERROR_ALIAS_EXISTS)
     {
         stream << ": a VirtualMIDI port with this display name already exists "
-                  "(close a leftover Bridge session — MT4 Input/Output or old "
+                  "(close a leftover Bridge session — MT4 In/Out or old "
                   "MT4 Port N zombies — or conflicting loopMIDI entries, then retry)";
     }
     return stream.str();

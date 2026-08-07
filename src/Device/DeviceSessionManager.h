@@ -16,7 +16,8 @@ enum class MidiPortDirection
 };
 
 // Sole formatting SSOT for Virtual Port display names.
-// Unit 1: "MT4 Input N" / "MT4 Output N"; unit K>=2: "MT4 #K Input N" / "MT4 #K Output N".
+// Unit 1: "MT4 In N" / "MT4 Out N"; unit K>=2: "MT4 #K In N" / "MT4 #K Out N".
+// Matches MT4 chassis silkscreen (In/Out), not the longer Input/Output words.
 std::string formatPortDisplayName(
     unsigned unitOrdinalK,
     unsigned portN,

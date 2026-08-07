@@ -12,7 +12,7 @@ macOS Apple-driver control (no Bridge):
 Windows Bridge (palier 2 gate):
 
   python scripts/lab/sysex-matrix-bank-loop.py --with-bridge --pass-percent 100
-  # defaults: MT4 Output 1 / MT4 Input 1, --fresh-starts 2, --count 100
+  # defaults: MT4 Out 1 / MT4 In 1, --fresh-starts 2, --count 100
 
 Matrix powered + DIN Out1 <-> In1. Close DAWs / Matrix-Control on MT4 ports.
 """
@@ -774,13 +774,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--out-port",
-        default="MT4 Output 1",
-        help="MIDI output port name (default: MT4 Output 1)",
+        default="MT4 Out 1",
+        help="MIDI output port name (default: MT4 Out 1)",
     )
     parser.add_argument(
         "--in-port",
-        default="MT4 Input 1",
-        help="MIDI input port name (default: MT4 Input 1)",
+        default="MT4 In 1",
+        help="MIDI input port name (default: MT4 In 1)",
     )
     parser.add_argument(
         "--count",

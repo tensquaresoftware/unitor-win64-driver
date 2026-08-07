@@ -3,7 +3,7 @@ title: 'MT4 — long SysEx DIN loopback on Windows Bridge (palier 3, Mac parity)
 type: 'chore'
 created: '2026-08-07'
 status: 'in-progress'
-baseline_commit: '0c8234f'
+baseline_commit: 'a8b763a'
 review_loop_iteration: 0
 context:
   - '{project-root}/conventions.md'
@@ -85,6 +85,20 @@ context:
 
 ## Spec Change Log
 
+- 2026-08-07 (late): DIN rewired Out1↔In1 (Matrix still unplugged). Baseline gate
+  without between-chunk drain: 1024 90% / 4096 85% / fixture 50% — Bridge
+  `SendToHost` already short (matches harness). Wired existing between-chunk IN
+  demux + deferred SendToHost; overlapped Emagic OUT with IN pump during wait;
+  clamp OUT chunk to 32 B. Result: deliver queue collapses (~0–20 vs ~4k–14k);
+  synth 1024 **20/20 @ 100%**; synth 4096 **~90–95%** with rare middle gaps
+  (still Bridge-short). Fixture / dual Start gate not green yet.
+- 2026-08-07: Instrumented long SysEx SendToHost size + deliver-queue high-water +
+  harness `first_diff_offset` / `missing_bytes`. Lab proof: Bridge can emit full
+  1024 B `SendToHost` on DIN Out2→In2 while Python still sees `TIMEOUT last=none`
+  (host MIDI path). Between-chunk IN demux + deferred SendToHost + 32-slot ring
+  were tried then rolled back to reader demux-after-OUT for isolation; helpers
+  (`DeviceSessionBulkInDeliver.cpp`, signal-on-queue) remain for the next cut.
+
 ## Design Notes
 
 macOS Apple already proved 1024/4096/14708 at 100 % (DIN Out1→In1) — see
@@ -97,9 +111,27 @@ while `kEncodeBufferCapacity` stays 4096.
 python scripts/lab/sysex-long-loopback.py --with-bridge --pass-percent 100
 ```
 
-Defaults: `MT4 Output 1` / `MT4 Input 1`, `--sizes 1024,4096`, fixture on, `--fresh-starts 2`,
-`--count 20`, `--interval 0.05`, `--reply-timeout 8`.
+Defaults: `MT4 Out 1` / `MT4 In 1` (display names match chassis silkscreen),
+`--sizes 1024,4096`, fixture on, `--fresh-starts 2`, `--count 20`, `--interval 0.05`,
+`--reply-timeout 8`.
 Early `TIMEOUT last=none` usually means loopback not live yet — confirm cable before counting Fail.
+
+**Windows 2026-08-07 diagnosis (commit a8b763a + this quick-dev):** Prior ~85–95 %
+runs showed short frames with intact head/tail (middle loss). Instrumented Bridge
+`SendToHost` size + harness `first_diff_offset`. **Cable confusion clarified:** physical
+DIN loopback is Out2→In2 (Guillaume); Bridge probe that looked like Out2→In1 was an
+**IN demux attribution bug**, not a wrong jack. Evidence: host encodes Out2 as
+`F5 02 F0…F7 FF` correctly, but USB IN returns the echo as one-byte Emagic packets
+(`F0 FF…`, `7D FF…`, `F7 FF…`) **with no `F5 02`**, so `currentInCable_` stays 0 and
+VirtualMIDI **MT4 In 1** receives the frame.
+
+**Matrix-disconnected confirmation (2026-08-07 late):** Matrix-1000 unplugged from MT4;
+same result. Out2→In2 harness: TIMEOUT on `MT4 In 2` while Bridge logs
+`SendToHost … in_port=1 bytes=1024`. Out2 listen `MT4 In 1`: 5/5 @ 100 % (1024).
+Matrix was not the cause — IN stream lacks Emagic `F5` for physical In2, demux sticky
+cable 0. Next: fix IN port tagging (why MT4 omits `F5` / init vs Mac), then separately
+demux-between-OUT-chunks for long-SysEx truncation under load. Overnight stays blocked
+until `overall_pass=true` ×2 Starts.
 
 ## Verification
 

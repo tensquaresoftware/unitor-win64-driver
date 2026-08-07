@@ -79,26 +79,12 @@ bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
               << std::flush;
     if (dumpRequestRetryRemaining_ == 0 || lastDumpRequest_.empty())
     {
-        // Exhausted: drop the bad frame and end the quiet window so OUT unblocks.
         clearExpectInBurst();
         return false;
     }
     --dumpRequestRetryRemaining_;
-
-    uint8_t encodeBytes[64] = {};
-    HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
-    if (!encodeHostMidiLocked(
-            lastDumpOutPort_, lastDumpRequest_.data(), lastDumpRequest_.size(), scratch))
+    if (!rewriteLastDumpRequestLocked())
     {
-        clearExpectInBurst();
-        return false;
-    }
-    std::string error;
-    if (!transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error))
-    {
-        std::cerr << "SysEx size reject: dump-request retry WriteBulk failed: " << error
-                  << "\n"
-                  << std::flush;
         clearExpectInBurst();
         return false;
     }
@@ -107,6 +93,39 @@ bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
     std::cerr << "SysEx size reject: re-sent dump request (" << lastDumpRequest_.size()
               << " B)\n"
               << std::flush;
+    return true;
+}
+
+bool DeviceSession::rewriteLastDumpRequestLocked()
+{
+    uint8_t encodeBytes[64] = {};
+    HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
+    if (!encodeHostMidiLocked(
+            lastDumpOutPort_, lastDumpRequest_.data(), lastDumpRequest_.size(), scratch))
+    {
+        return false;
+    }
+    betweenOutChunkDemuxFailed_ = false;
+    deferredHostSends_.clear();
+    deferHostSendDuringOut_ = true;
+    std::string error;
+    const WinUsbTransport::EmagicBetweenChunks between{
+        &DeviceSession::betweenOutChunksDrainIn, this};
+    const bool wrote =
+        transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error, &between);
+    flushDeferredHostSends();
+    if (!wrote)
+    {
+        std::cerr << "SysEx size reject: dump-request retry WriteBulk failed: " << error
+                  << "\n"
+                  << std::flush;
+        return false;
+    }
+    if (betweenOutChunkDemuxFailed_)
+    {
+        std::cerr << "SysEx size reject: dump-request retry IN demux failed\n" << std::flush;
+        return false;
+    }
     return true;
 }
 
@@ -147,7 +166,8 @@ void DeviceSession::handleHostMidi(
     }
 
     // Queue under a dedicated lock so VirtualMIDI PARSE_RX callbacks are not the
-    // sole unbounded work path under usbIoMutex_ (AD-18 / NFR-R3).
+    // sole unbounded work path under usbIoMutex_ (AD-18 / NFR-R3). WriteBulk and
+    // SendToHost run only on the reader thread — never nest teVirtualMIDI here.
     {
         std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
         if (!hostOutbound_.TryPush(outPortIndex, midiBytes, byteCount))
@@ -163,7 +183,8 @@ void DeviceSession::handleHostMidi(
         }
     }
 
-    // try_lock drain when the reader is between Wait timeouts (IN URBs stay pending).
+    transport_.signalBulkInDataReady();
+    // Opportunistic drain when the reader is waiting (lock free).
     drainHostOutbound();
 }
 
@@ -200,8 +221,6 @@ void DeviceSession::noteHostOutboundCounters(
     }
 
     deviceHostCounters_.AddInquiryOut();
-    const bool ringActive = transport_.IsBulkInAsyncRingActive();
-    const bool firstShot = !firstHostInquiryLogged_.exchange(true);
     long long msSinceRing = -1;
     const std::int64_t armedMs =
         bulkInRingArmedSteadyMs_.load(std::memory_order_acquire);
@@ -212,17 +231,49 @@ void DeviceSession::noteHostOutboundCounters(
                                .count();
         msSinceRing = nowMs - armedMs;
     }
-    const bool includedF5 = encodedBytes >= item.midi.size() + 3;
-    std::cerr << "host→device: Device Inquiry WriteBulk ok (out_port="
-              << (item.outPortIndex + 1) << " midi_bytes=" << item.midi.size()
-              << " encoded_bytes=" << encodedBytes
-              << " f5_switch=" << (includedF5 ? "yes" : "no")
-              << " ring_active=" << (ringActive ? "yes" : "no")
-              << " ms_since_ring_arm=" << msSinceRing
-              << " pending_urbs=" << transport_.CountPendingBulkInSlots() << "/"
-              << kBulkInAsyncSlotCount
-              << " first_after_start=" << (firstShot ? "yes" : "no") << ")\n"
-              << std::flush;
+    logDeviceInquiryHostOut(DeviceInquiryHostOutDiag{
+        item.outPortIndex,
+        item.midi.size(),
+        encodedBytes,
+        encodedBytes >= item.midi.size() + 3,
+        transport_.IsBulkInAsyncRingActive(),
+        msSinceRing,
+        transport_.CountPendingBulkInSlots(),
+        kBulkInAsyncSlotCount,
+        !firstHostInquiryLogged_.exchange(true)});
+}
+
+bool DeviceSession::finishHostOutboundWrite(const HostOutWriteFinishArgs& finish)
+{
+    if (betweenOutChunkDemuxFailed_)
+    {
+        return failHostOutboundBetweenChunkDemux(
+            finish.item->outPortIndex, finish.cableIndex);
+    }
+    if (!finish.wrote)
+    {
+        const std::size_t discarded = clearHostOutboundQueue();
+        appendDiscardedSuffix(*finish.error, discarded);
+        recordPumpFailure(formatPortCableFailure(
+            "Host→device WriteBulk",
+            finish.item->outPortIndex,
+            finish.cableIndex,
+            *finish.error));
+        return false;
+    }
+    noteHostOutboundCounters(*finish.item, finish.encodedBytes);
+    logLongSysexHostOutWrite(
+        *finish.item,
+        finish.encodedBytes,
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - finish.outStarted),
+        finish.deliverDepthAtStart);
+    if (!finish.item->midi.empty() && finish.item->midi[0] == 0xF0)
+    {
+        armExpectInBurstAfterHostSysex(
+            finish.item->outPortIndex, finish.item->midi.data(), finish.item->midi.size());
+    }
+    return true;
 }
 
 bool DeviceSession::writeHostOutboundItem(
@@ -231,24 +282,27 @@ bool DeviceSession::writeHostOutboundItem(
     std::unique_lock<std::mutex>& /*usbIoLock*/)
 {
     std::string error;
-    // Keep usbIoMutex_ held for the whole Emagic multi-packet OUT. Unlocking
-    // between packets to demux IN was tried for truncation under load; lab then
-    // stalled on reply timeouts (host_out crawled while IN bytes ballooned).
-    if (transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error))
-    {
-        noteHostOutboundCounters(item, scratch.size);
-        if (!item.midi.empty() && item.midi[0] == 0xF0)
-        {
-            armExpectInBurstAfterHostSysex(
-                item.outPortIndex, item.midi.data(), item.midi.size());
-        }
-        return true;
-    }
-    const std::size_t discarded = clearHostOutboundQueue();
-    appendDiscardedSuffix(error, discarded);
-    recordPumpFailure(formatPortCableFailure(
-        "Host→device WriteBulk", item.outPortIndex, scratch.cableIndex, error));
-    return false;
+    betweenOutChunkDemuxFailed_ = false;
+    deferredHostSends_.clear();
+    deferHostSendDuringOut_ = true;
+    const auto outStarted = std::chrono::steady_clock::now();
+    const std::size_t deliverDepthAtStart = bulkInDeliverQueueDepth();
+    // Drain+frame IN between Emagic OUT packets while usbIoMutex_ stays held;
+    // SendToHost is deferred until Write finishes (avoid nested teVirtualMIDI).
+    const WinUsbTransport::EmagicBetweenChunks between{
+        &DeviceSession::betweenOutChunksDrainIn, this};
+    const bool wrote =
+        transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error, &between);
+    flushDeferredHostSends();
+    HostOutWriteFinishArgs finish;
+    finish.item = &item;
+    finish.cableIndex = scratch.cableIndex;
+    finish.encodedBytes = scratch.size;
+    finish.error = &error;
+    finish.outStarted = outStarted;
+    finish.deliverDepthAtStart = deliverDepthAtStart;
+    finish.wrote = wrote;
+    return finishHostOutboundWrite(finish);
 }
 
 bool DeviceSession::encodeWritePopOneHostOutbound(

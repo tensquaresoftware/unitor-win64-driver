@@ -20,6 +20,8 @@ inline constexpr const char* kMt4WinUsbDeviceInterfaceGuid =
 
 // Linux snd-usb-midi INPUT_URBS — keep this many bulk IN transfers always pending.
 // Lab mid-SysEx discards (correct F0…F7, wrong length) correlated with thin depth
+// under Matrix dump burst rates; 32 keeps more completions in flight than 16.
+// Lab mid-SysEx discards (correct F0…F7, wrong length) correlated with thin depth
 // under Matrix dump burst rates; 16 keeps more completions in flight than stock 7/8.
 inline constexpr std::size_t kBulkInAsyncSlotCount = 16;
 
@@ -69,12 +71,16 @@ public:
     // Optional betweenChunks runs after each USB packet so the reader can drain IN
     // while a long SysEx OUT is still in flight (DIN loopback bursts).
     using BetweenChunksFn = void (*)(void* context);
+    struct EmagicBetweenChunks
+    {
+        BetweenChunksFn fn = nullptr;
+        void* ctx = nullptr;
+    };
     bool WriteEmagicHostMidi(
         const uint8_t* data,
         std::size_t size,
         std::string& errorOut,
-        BetweenChunksFn betweenChunks = nullptr,
-        void* betweenChunksCtx = nullptr);
+        const EmagicBetweenChunks* betweenChunks = nullptr);
     bool ReadBulk(
         uint8_t* buffer,
         std::size_t capacity,

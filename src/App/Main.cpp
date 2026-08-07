@@ -95,28 +95,28 @@ bool testFormatPortDisplayNames()
 {
     return expectExactName(
                formatPortDisplayName(1, 1, MidiPortDirection::In),
-               "MT4 Input 1",
-               "K=1 Input 1")
+               "MT4 In 1",
+               "K=1 In 1")
         && expectExactName(
                formatPortDisplayName(1, 2, MidiPortDirection::In),
-               "MT4 Input 2",
-               "K=1 Input 2")
+               "MT4 In 2",
+               "K=1 In 2")
         && expectExactName(
                formatPortDisplayName(1, 1, MidiPortDirection::Out),
-               "MT4 Output 1",
-               "K=1 Output 1")
+               "MT4 Out 1",
+               "K=1 Out 1")
         && expectExactName(
                formatPortDisplayName(1, 4, MidiPortDirection::Out),
-               "MT4 Output 4",
-               "K=1 Output 4")
+               "MT4 Out 4",
+               "K=1 Out 4")
         && expectExactName(
                formatPortDisplayName(2, 3, MidiPortDirection::Out),
-               "MT4 #2 Output 3",
-               "K=2 Output 3")
+               "MT4 #2 Out 3",
+               "K=2 Out 3")
         && expectExactName(
                formatPortDisplayName(2, 1, MidiPortDirection::In),
-               "MT4 #2 Input 1",
-               "K=2 Input 1");
+               "MT4 #2 In 1",
+               "K=2 In 1");
 }
 
 bool portNameSetHasInOutCollision(const PortNameSet& names)
@@ -138,12 +138,12 @@ bool portNameSetHasInOutCollision(const PortNameSet& names)
 
 bool expectMt4DirectionalPortNames(const PortNameSet& names)
 {
-    return expectExactName(names.inNames[0], "MT4 Input 1", "IN 1")
-        && expectExactName(names.inNames[1], "MT4 Input 2", "IN 2")
-        && expectExactName(names.outNames[0], "MT4 Output 1", "OUT 1")
-        && expectExactName(names.outNames[1], "MT4 Output 2", "OUT 2")
-        && expectExactName(names.outNames[2], "MT4 Output 3", "OUT 3")
-        && expectExactName(names.outNames[3], "MT4 Output 4", "OUT 4");
+    return expectExactName(names.inNames[0], "MT4 In 1", "IN 1")
+        && expectExactName(names.inNames[1], "MT4 In 2", "IN 2")
+        && expectExactName(names.outNames[0], "MT4 Out 1", "OUT 1")
+        && expectExactName(names.outNames[1], "MT4 Out 2", "OUT 2")
+        && expectExactName(names.outNames[2], "MT4 Out 3", "OUT 3")
+        && expectExactName(names.outNames[3], "MT4 Out 4", "OUT 4");
 }
 
 bool printAndCheckBuiltMt4PortNameSet()

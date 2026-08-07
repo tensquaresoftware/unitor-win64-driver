@@ -117,6 +117,27 @@ void DeviceSession::noteBulkReadCounters(std::size_t bulkBytes, std::size_t demu
     }
 }
 
+void DeviceSession::noteSendToHostSuccess(
+    std::size_t inPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t byteCount)
+{
+    deviceHostCounters_.AddSendOk();
+    logLongSysexSendToHost(
+        inPortIndex, midiBytes, byteCount, bulkInDeliverHighWater_.load());
+    if (isMatrixDumpReply(midiBytes, byteCount) && isExactMatrixDumpLength(byteCount))
+    {
+        clearExpectInBurst();
+    }
+    if (isIdentityReply(midiBytes, byteCount))
+    {
+        deviceHostCounters_.AddIdentityReplyIn();
+        std::cerr << "device→host: Identity Reply SendToHost ok (in_port="
+                  << (inPortIndex + 1) << " bytes=" << byteCount << ")\n"
+                  << std::flush;
+    }
+}
+
 void DeviceSession::sendFramedToHost(
     std::size_t inPortIndex,
     uint8_t cableIndex,
@@ -130,6 +151,16 @@ void DeviceSession::sendFramedToHost(
         return;
     }
 
+    if (deferHostSendDuringOut_)
+    {
+        DeferredHostSend deferred;
+        deferred.inPortIndex = inPortIndex;
+        deferred.cableIndex = cableIndex;
+        deferred.midi.assign(midiBytes, midiBytes + byteCount);
+        deferredHostSends_.push_back(std::move(deferred));
+        return;
+    }
+
     std::string error;
     if (!midiBackend_->SendToHost(inPortIndex, midiBytes, byteCount, error))
     {
@@ -138,21 +169,7 @@ void DeviceSession::sendFramedToHost(
             formatPortCableFailure("Device→host SendToHost", inPortIndex, cableIndex, error));
         return;
     }
-
-    deviceHostCounters_.AddSendOk();
-    // Only a complete Matrix dump ends the dump-request quiet window — realtime
-    // / Identity / other framed MIDI must not disarm F0 repair or size reject.
-    if (isMatrixDumpReply(midiBytes, byteCount) && isExactMatrixDumpLength(byteCount))
-    {
-        clearExpectInBurst();
-    }
-    if (isIdentityReply(midiBytes, byteCount))
-    {
-        deviceHostCounters_.AddIdentityReplyIn();
-        std::cerr << "device→host: Identity Reply SendToHost ok (in_port="
-                  << (inPortIndex + 1) << " bytes=" << byteCount << ")\n"
-                  << std::flush;
-    }
+    noteSendToHostSuccess(inPortIndex, midiBytes, byteCount);
 }
 
 void DeviceSession::noteFramerOversizeRejects(
@@ -305,23 +322,6 @@ bool DeviceSession::hostOutboundPending() const
     return hostOutbound_.MessageCount() > 0;
 }
 
-bool DeviceSession::processAsyncBulkInPacket(const BulkInAsyncPacket& packet)
-{
-    if (packet.size == 0)
-    {
-        return true;
-    }
-
-    std::string error;
-    std::lock_guard<std::mutex> lock(usbIoMutex_);
-    if (!processBulkReadLocked(packet.data, packet.size, error))
-    {
-        recordPumpFailure("Device→host DecodeFromDevice failed: " + error);
-        return false;
-    }
-    return true;
-}
-
 bool DeviceSession::bulkInPacketThunk(
     void* context,
     const uint8_t* data,
@@ -360,31 +360,24 @@ bool DeviceSession::enqueueBulkInPacket(const uint8_t* data, std::size_t size)
         std::memcpy(packet.data.data(), data, size);
     }
     bulkInDeliverQueue_.push_back(packet);
+    const std::size_t depth = bulkInDeliverQueue_.size();
+    std::size_t high = bulkInDeliverHighWater_.load(std::memory_order_relaxed);
+    while (depth > high
+        && !bulkInDeliverHighWater_.compare_exchange_weak(
+            high, depth, std::memory_order_relaxed))
+    {
+    }
     return true;
 }
 
 int DeviceSession::drainQueuedBulkInPackets()
 {
-    std::deque<QueuedBulkInPacket> batch;
+    std::lock_guard<std::mutex> usbLock(usbIoMutex_);
+    if (stopPump_.load())
     {
-        std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
-        batch.swap(bulkInDeliverQueue_);
+        return 0;
     }
-    for (const QueuedBulkInPacket& queued : batch)
-    {
-        if (stopPump_.load())
-        {
-            return 0;
-        }
-        BulkInAsyncPacket packet;
-        packet.data = queued.data.data();
-        packet.size = queued.size;
-        if (!processAsyncBulkInPacket(packet))
-        {
-            return -1;
-        }
-    }
-    return 1;
+    return drainQueuedBulkInPacketsHoldingUsbIo() ? 1 : -1;
 }
 
 int DeviceSession::readerWaitOnceAsync()

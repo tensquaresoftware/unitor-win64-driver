@@ -7,7 +7,7 @@ std::string formatPortDisplayName(
     unsigned portN,
     MidiPortDirection direction)
 {
-    const char* face = (direction == MidiPortDirection::In) ? "Input" : "Output";
+    const char* face = (direction == MidiPortDirection::In) ? "In" : "Out";
     std::ostringstream stream;
     if (unitOrdinalK <= 1)
     {

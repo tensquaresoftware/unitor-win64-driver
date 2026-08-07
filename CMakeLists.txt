@@ -33,6 +33,7 @@ add_executable(Bridge
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionDeviceHost.cpp
     src/Device/DeviceSessionHostOutbound.cpp
+    src/Device/DeviceSessionBulkInDeliver.cpp
     src/Device/DeviceSessionManager.cpp
     src/Device/DeviceHostCounters.cpp
     src/Device/DeviceSessionSupport.cpp

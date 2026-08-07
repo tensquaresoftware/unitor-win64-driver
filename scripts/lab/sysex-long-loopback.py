@@ -51,6 +51,10 @@ BRIDGE_FAIL_NEEDLES = (
     "WriteBulk skipped",
     "Host→device WriteBulk",
     "Host->device WriteBulk",
+    "deliver queue full",
+    "IN demux failed during host",
+    "Device→host DecodeFromDevice failed",
+    "Device→host SendToHost",
 )
 
 
@@ -144,6 +148,9 @@ def _prepare_mido_input(inport) -> None:
             "Install with:\n"
             "  python -m pip install -U \"git+https://github.com/SpotlightKid/python-rtmidi.git\"\n"
         )
+    # Belt-and-suspenders: mido already enables SysEx in Input._open.
+    if hasattr(rt, "ignore_types"):
+        rt.ignore_types(False, False, True)
 
 
 def _fresh_midi_port_names() -> tuple[list[str], list[str]]:
@@ -284,6 +291,25 @@ def _frame_head_tail(data: bytes) -> str:
     )
 
 
+def _first_diff_offset(got: bytes, expected: bytes) -> int:
+    limit = min(len(got), len(expected))
+    for index in range(limit):
+        if got[index] != expected[index]:
+            return index
+    if len(got) != len(expected):
+        return limit
+    return -1
+
+
+def _mismatch_note(frame: bytes, expected: bytes, data_len: int) -> str:
+    offset = _first_diff_offset(frame, expected)
+    return (
+        f"mismatch {_frame_head_tail(frame)} "
+        f"(expected_len={len(expected)}; mido_data_len={data_len}; "
+        f"first_diff_offset={offset}; missing_bytes={len(expected) - len(frame)})"
+    )
+
+
 def _wait_exact_sysex(
     inport,
     expected: bytes,
@@ -303,10 +329,7 @@ def _wait_exact_sysex(
             for frame in assembler.push_mido_sysex_data(message.data):
                 if frame == expected:
                     return frame, (time.monotonic() - started) * 1000.0, "match"
-                last_note = (
-                    f"mismatch {_frame_head_tail(frame)} "
-                    f"(expected_len={len(expected)}; mido_data_len={data_len})"
-                )
+                last_note = _mismatch_note(frame, expected, data_len)
         time.sleep(0.005)
     if saw_types and last_note == "none":
         last_note = "none types=" + ",".join(f"{k}:{v}" for k, v in sorted(saw_types.items()))
@@ -1081,13 +1104,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--out-port",
-        default="MT4 Output 1",
-        help="MIDI output port name (default: MT4 Output 1)",
+        default="MT4 Out 1",
+        help="MIDI output port name (default: MT4 Out 1)",
     )
     parser.add_argument(
         "--in-port",
-        default="MT4 Input 1",
-        help="MIDI input port name (default: MT4 Input 1)",
+        default="MT4 In 1",
+        help="MIDI input port name (default: MT4 In 1)",
     )
     parser.add_argument(
         "--count",

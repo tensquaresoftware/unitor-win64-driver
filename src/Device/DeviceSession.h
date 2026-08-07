@@ -115,16 +115,38 @@ private:
         const HostOutboundItem& item,
         HostEncodeScratch& scratch,
         std::unique_lock<std::mutex>& usbIoLock);
+    struct HostOutWriteFinishArgs
+    {
+        const HostOutboundItem* item = nullptr;
+        uint8_t cableIndex = 0;
+        std::size_t encodedBytes = 0;
+        bool wrote = false;
+        std::string* error = nullptr;
+        std::chrono::steady_clock::time_point outStarted{};
+        std::size_t deliverDepthAtStart = 0;
+    };
+    bool finishHostOutboundWrite(const HostOutWriteFinishArgs& finish);
     bool encodeWritePopOneHostOutbound(
         HostEncodeScratch& scratch,
         std::unique_lock<std::mutex>& usbIoLock);
     bool hostOutboundPending() const;
-    bool processAsyncBulkInPacket(const BulkInAsyncPacket& packet);
     // One Wait (+ idle finalize / outbound). 1=continue, 0=stop, -1=fatal.
     int readerWaitOnceAsync();
     static bool bulkInPacketThunk(void* context, const uint8_t* data, std::size_t size);
     bool enqueueBulkInPacket(const uint8_t* data, std::size_t size);
     int drainQueuedBulkInPackets();
+    // Demux deliver-queue while usbIoMutex_ is already held (OUT between-chunks).
+    // Returns false on demux failure (caller sets betweenOutChunkDemuxFailed_ if needed).
+    bool drainQueuedBulkInPacketsHoldingUsbIo();
+    static void betweenOutChunksDrainIn(void* context);
+    std::size_t bulkInDeliverQueueDepth();
+    void logLongSysexHostOutWrite(
+        const HostOutboundItem& item,
+        std::size_t encodedBytes,
+        std::chrono::milliseconds outMs,
+        std::size_t deliverDepthAtStart);
+    bool failHostOutboundBetweenChunkDemux(std::size_t outPortIndex, uint8_t cableIndex);
+    bool rewriteLastDumpRequestLocked();
     // Clears queued host→device work; returns how many messages were discarded.
     std::size_t clearHostOutboundQueue() noexcept;
     void appendPendingProductMidi(
@@ -148,6 +170,10 @@ private:
     void sendFramedToHost(
         std::size_t inPortIndex,
         uint8_t cableIndex,
+        const uint8_t* midiBytes,
+        std::size_t byteCount);
+    void noteSendToHostSuccess(
+        std::size_t inPortIndex,
         const uint8_t* midiBytes,
         std::size_t byteCount);
     void noteFramerOversizeRejects(
@@ -229,4 +255,18 @@ private:
     static constexpr std::size_t kMaxQueuedBulkInPackets = 32768;
     std::mutex bulkInDeliverMutex_;
     std::deque<QueuedBulkInPacket> bulkInDeliverQueue_;
+    std::atomic<std::size_t> bulkInDeliverHighWater_{0};
+    // Set when between-chunk IN demux fails while WriteEmagicHostMidi is in flight.
+    bool betweenOutChunkDemuxFailed_ = false;
+    // Between OUT USB chunks: demux+frame IN, but defer SendToHost until OUT ends
+    // (teVirtualMIDI must not run nested under an in-flight long WriteBulk).
+    bool deferHostSendDuringOut_ = false;
+    struct DeferredHostSend
+    {
+        std::size_t inPortIndex = 0;
+        uint8_t cableIndex = 0;
+        std::vector<uint8_t> midi;
+    };
+    std::vector<DeferredHostSend> deferredHostSends_;
+    void flushDeferredHostSends();
 };
