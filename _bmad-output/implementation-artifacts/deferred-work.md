@@ -146,3 +146,15 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-mt4-device-inquiry-alternate-drop.md`
   summary: Post-kick IN drain hard-caps at 8 packets (same as init drains).
   evidence: Edge review; unlikely after kick with idle bus; change only if lab shows residual >8.
+
+## Deferred from: quick-dev spec-sysex-matrix-bank-burst-2.md (2026-08-07)
+
+- source_spec: _bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst-2.md
+  summary: Bank harness can discard a wrong-size SysEx then Pass on a later 275 B match within the same trial timeout.
+  evidence: Edge review; pre-existing _wait_matched_sysex behavior shared with macOS gate - tighten only if a lab shows silent wrong-size frames.
+- source_spec: _bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst-2.md
+  summary: Patch-dump Pass does not bind reply slot/program identity to the requested slot.
+  evidence: Blind/Edge review; _is_patch_dump checks 275 B + prefix/suffix only - same as accepted macOS control.
+- source_spec: _bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst-2.md
+  summary: Update macOS paliers lab report Windows narrative now that Bridge bank gate is closed.
+  evidence: Blind review; report still frames early Windows Bridge first-dump losses - do not reopen hardware control, but refresh Windows status later.

@@ -90,7 +90,9 @@ python3 scripts/lab/sysex-matrix-bank-loop.py \
   --log-dir tests/lab-logs/sysex-matrix-bank-macos
 ```
 
-Windows later: add `--with-bridge --fresh-starts 2` (same defaults as mid-loop).
+Windows Bridge gate: see `_bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst-2.md`
+(`python scripts/lab/sysex-matrix-bank-loop.py --with-bridge --pass-percent 100`
+— defaults include `--fresh-starts 2`).
 Palier 3 deferred pending hardware decision for device→host mega-SysEx.
 
 ## Verification

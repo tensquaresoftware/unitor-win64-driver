@@ -1,0 +1,146 @@
+# Bridge console capture started_utc=2026-08-07T19:19:32.108933+00:00
+Expected Virtual Ports: 2 IN / 4 OUT
+  IN  MT4 Input 1
+  IN  MT4 Input 2
+  OUT MT4 Output 1
+  OUT MT4 Output 2
+  OUT MT4 Output 3
+  OUT MT4 Output 4
+Emagic init/computer-mode: drained 32 bulk IN byte(s); post-kick drain=0; read capacity=32; channel CC kick sent (manual Computer Mode)
+Bulk IN async ring armed (16 slots) before host MIDI sink
+Host MIDI sink live (bulk IN ring already active; librarian OUT gated)
+Post-start pipe prime queued (quiet CC on Out1)
+Post-start IN calm ready (pending=16/16 queued=0)
+DeviceSession started for MT4 with Virtual Ports
+MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)
+device-host counters will print in this window on USB IN activity (same thread as this message)
+Device Inquiry lab: watch inquiry_out vs identity_reply_in (expect them to stay close)
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=0 demux_spans=0 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=2 inquiry_out=0 identity_reply_in=0
+SysEx leading-F0 repair: prepended F0 (span_len=1 head_was=10)
+first-burst IN: cable=0 span_len=1 head=10 has_f0=no holding=yes held=2 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=06 has_f0=no holding=yes held=3 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=01 has_f0=no holding=yes held=4 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=00 has_f0=no holding=yes held=5 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=02 has_f0=no holding=yes held=6 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=04 has_f0=no holding=yes held=7 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=0E has_f0=no holding=yes held=8 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=04 has_f0=no holding=yes held=9 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=0B has_f0=no holding=yes held=10 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=04 has_f0=no holding=yes held=11 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=00 has_f0=no holding=yes held=12 pending_urbs=16
+first-burst IN: cable=0 span_len=1 head=03 has_f0=no holding=yes held=13 pending_urbs=16
+device-host counters: bulk_in_bytes=4224 demux_spans=132 send_ok_msgs=0 send_fail_msgs=0 host_out_ok=2 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=8768 demux_spans=274 send_ok_msgs=1 send_fail_msgs=0 host_out_ok=2 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=8864 demux_spans=277 send_ok_msgs=1 send_fail_msgs=0 host_out_ok=3 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=18560 demux_spans=579 send_ok_msgs=2 send_fail_msgs=0 host_out_ok=4 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=26368 demux_spans=824 send_ok_msgs=3 send_fail_msgs=0 host_out_ok=5 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=35168 demux_spans=1099 send_ok_msgs=4 send_fail_msgs=0 host_out_ok=6 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=43968 demux_spans=1374 send_ok_msgs=5 send_fail_msgs=0 host_out_ok=7 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=53472 demux_spans=1671 send_ok_msgs=6 send_fail_msgs=0 host_out_ok=8 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=61568 demux_spans=1924 send_ok_msgs=7 send_fail_msgs=0 host_out_ok=9 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=70368 demux_spans=2199 send_ok_msgs=8 send_fail_msgs=0 host_out_ok=10 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=79168 demux_spans=2474 send_ok_msgs=9 send_fail_msgs=0 host_out_ok=11 inquiry_out=0 identity_reply_in=0
+SysEx size reject: len=179 (Matrix dump; keeping expect window)
+SysEx size reject: re-sent dump request (7 B)
+device-host counters: bulk_in_bytes=84224 demux_spans=2632 send_ok_msgs=9 send_fail_msgs=0 host_out_ok=12 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=93024 demux_spans=2907 send_ok_msgs=10 send_fail_msgs=0 host_out_ok=13 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=102752 demux_spans=3211 send_ok_msgs=11 send_fail_msgs=0 host_out_ok=14 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=110624 demux_spans=3457 send_ok_msgs=12 send_fail_msgs=0 host_out_ok=15 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=119424 demux_spans=3732 send_ok_msgs=13 send_fail_msgs=0 host_out_ok=16 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=128128 demux_spans=4004 send_ok_msgs=13 send_fail_msgs=0 host_out_ok=16 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=128224 demux_spans=4007 send_ok_msgs=14 send_fail_msgs=0 host_out_ok=17 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=137760 demux_spans=4305 send_ok_msgs=15 send_fail_msgs=0 host_out_ok=18 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=145824 demux_spans=4557 send_ok_msgs=16 send_fail_msgs=0 host_out_ok=19 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=154624 demux_spans=4832 send_ok_msgs=17 send_fail_msgs=0 host_out_ok=20 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=163424 demux_spans=5107 send_ok_msgs=18 send_fail_msgs=0 host_out_ok=21 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=172608 demux_spans=5394 send_ok_msgs=19 send_fail_msgs=0 host_out_ok=22 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=181024 demux_spans=5657 send_ok_msgs=20 send_fail_msgs=0 host_out_ok=23 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=189824 demux_spans=5932 send_ok_msgs=21 send_fail_msgs=0 host_out_ok=24 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=198624 demux_spans=6207 send_ok_msgs=22 send_fail_msgs=0 host_out_ok=25 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=207552 demux_spans=6486 send_ok_msgs=23 send_fail_msgs=0 host_out_ok=26 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=216224 demux_spans=6757 send_ok_msgs=24 send_fail_msgs=0 host_out_ok=27 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=225024 demux_spans=7032 send_ok_msgs=25 send_fail_msgs=0 host_out_ok=28 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=233824 demux_spans=7307 send_ok_msgs=26 send_fail_msgs=0 host_out_ok=29 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=242624 demux_spans=7582 send_ok_msgs=27 send_fail_msgs=0 host_out_ok=30 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=252064 demux_spans=7877 send_ok_msgs=28 send_fail_msgs=0 host_out_ok=31 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=260224 demux_spans=8132 send_ok_msgs=29 send_fail_msgs=0 host_out_ok=32 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=269024 demux_spans=8407 send_ok_msgs=30 send_fail_msgs=0 host_out_ok=33 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=277824 demux_spans=8682 send_ok_msgs=31 send_fail_msgs=0 host_out_ok=34 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=286624 demux_spans=8957 send_ok_msgs=32 send_fail_msgs=0 host_out_ok=35 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=296512 demux_spans=9266 send_ok_msgs=33 send_fail_msgs=0 host_out_ok=36 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=304224 demux_spans=9507 send_ok_msgs=34 send_fail_msgs=0 host_out_ok=37 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=313024 demux_spans=9782 send_ok_msgs=35 send_fail_msgs=0 host_out_ok=38 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=316544 demux_spans=9892 send_ok_msgs=35 send_fail_msgs=0 host_out_ok=38 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=321824 demux_spans=10057 send_ok_msgs=36 send_fail_msgs=0 host_out_ok=39 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=331520 demux_spans=10360 send_ok_msgs=37 send_fail_msgs=0 host_out_ok=40 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=339424 demux_spans=10607 send_ok_msgs=38 send_fail_msgs=0 host_out_ok=41 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=348224 demux_spans=10882 send_ok_msgs=39 send_fail_msgs=0 host_out_ok=42 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=357024 demux_spans=11157 send_ok_msgs=40 send_fail_msgs=0 host_out_ok=43 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=366080 demux_spans=11440 send_ok_msgs=41 send_fail_msgs=0 host_out_ok=44 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=374624 demux_spans=11707 send_ok_msgs=42 send_fail_msgs=0 host_out_ok=45 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=383424 demux_spans=11982 send_ok_msgs=43 send_fail_msgs=0 host_out_ok=46 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=392224 demux_spans=12257 send_ok_msgs=44 send_fail_msgs=0 host_out_ok=47 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=401024 demux_spans=12532 send_ok_msgs=45 send_fail_msgs=0 host_out_ok=48 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=410848 demux_spans=12839 send_ok_msgs=46 send_fail_msgs=0 host_out_ok=49 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=418624 demux_spans=13082 send_ok_msgs=47 send_fail_msgs=0 host_out_ok=50 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=427424 demux_spans=13357 send_ok_msgs=48 send_fail_msgs=0 host_out_ok=51 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=436224 demux_spans=13632 send_ok_msgs=49 send_fail_msgs=0 host_out_ok=52 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=445184 demux_spans=13912 send_ok_msgs=50 send_fail_msgs=0 host_out_ok=53 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=454912 demux_spans=14216 send_ok_msgs=51 send_fail_msgs=0 host_out_ok=54 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=462624 demux_spans=14457 send_ok_msgs=52 send_fail_msgs=0 host_out_ok=55 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=471424 demux_spans=14732 send_ok_msgs=53 send_fail_msgs=0 host_out_ok=56 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=480224 demux_spans=15007 send_ok_msgs=54 send_fail_msgs=0 host_out_ok=57 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=489728 demux_spans=15304 send_ok_msgs=55 send_fail_msgs=0 host_out_ok=58 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=497824 demux_spans=15557 send_ok_msgs=56 send_fail_msgs=0 host_out_ok=59 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=506624 demux_spans=15832 send_ok_msgs=57 send_fail_msgs=0 host_out_ok=60 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=506624 demux_spans=15832 send_ok_msgs=57 send_fail_msgs=0 host_out_ok=60 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=515424 demux_spans=16107 send_ok_msgs=58 send_fail_msgs=0 host_out_ok=61 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=524384 demux_spans=16387 send_ok_msgs=59 send_fail_msgs=0 host_out_ok=62 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=534336 demux_spans=16698 send_ok_msgs=60 send_fail_msgs=0 host_out_ok=63 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=541824 demux_spans=16932 send_ok_msgs=61 send_fail_msgs=0 host_out_ok=64 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=550624 demux_spans=17207 send_ok_msgs=62 send_fail_msgs=0 host_out_ok=65 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=559424 demux_spans=17482 send_ok_msgs=63 send_fail_msgs=0 host_out_ok=66 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=568640 demux_spans=17770 send_ok_msgs=64 send_fail_msgs=0 host_out_ok=67 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=577024 demux_spans=18032 send_ok_msgs=65 send_fail_msgs=0 host_out_ok=68 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=585824 demux_spans=18307 send_ok_msgs=66 send_fail_msgs=0 host_out_ok=69 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=594624 demux_spans=18582 send_ok_msgs=67 send_fail_msgs=0 host_out_ok=70 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=603424 demux_spans=18857 send_ok_msgs=68 send_fail_msgs=0 host_out_ok=71 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=613120 demux_spans=19160 send_ok_msgs=69 send_fail_msgs=0 host_out_ok=72 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=621024 demux_spans=19407 send_ok_msgs=70 send_fail_msgs=0 host_out_ok=73 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=629824 demux_spans=19682 send_ok_msgs=71 send_fail_msgs=0 host_out_ok=74 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=638624 demux_spans=19957 send_ok_msgs=72 send_fail_msgs=0 host_out_ok=75 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=647424 demux_spans=20232 send_ok_msgs=73 send_fail_msgs=0 host_out_ok=76 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=656224 demux_spans=20507 send_ok_msgs=74 send_fail_msgs=0 host_out_ok=77 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=665024 demux_spans=20782 send_ok_msgs=75 send_fail_msgs=0 host_out_ok=78 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=673824 demux_spans=21057 send_ok_msgs=76 send_fail_msgs=0 host_out_ok=79 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=682624 demux_spans=21332 send_ok_msgs=77 send_fail_msgs=0 host_out_ok=80 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=691744 demux_spans=21617 send_ok_msgs=78 send_fail_msgs=0 host_out_ok=81 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=696864 demux_spans=21777 send_ok_msgs=78 send_fail_msgs=0 host_out_ok=81 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=700224 demux_spans=21882 send_ok_msgs=79 send_fail_msgs=0 host_out_ok=82 inquiry_out=0 identity_reply_in=0
+SysEx size reject: len=210 (Matrix dump; keeping expect window)
+SysEx size reject: re-sent dump request (7 B)
+device-host counters: bulk_in_bytes=705888 demux_spans=22059 send_ok_msgs=79 send_fail_msgs=0 host_out_ok=83 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=714368 demux_spans=22324 send_ok_msgs=80 send_fail_msgs=0 host_out_ok=84 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=722816 demux_spans=22588 send_ok_msgs=81 send_fail_msgs=0 host_out_ok=85 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=731616 demux_spans=22863 send_ok_msgs=82 send_fail_msgs=0 host_out_ok=86 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=740416 demux_spans=23138 send_ok_msgs=83 send_fail_msgs=0 host_out_ok=87 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=749216 demux_spans=23413 send_ok_msgs=84 send_fail_msgs=0 host_out_ok=88 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=758016 demux_spans=23688 send_ok_msgs=85 send_fail_msgs=0 host_out_ok=89 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=766816 demux_spans=23963 send_ok_msgs=86 send_fail_msgs=0 host_out_ok=90 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=775616 demux_spans=24238 send_ok_msgs=87 send_fail_msgs=0 host_out_ok=91 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=784416 demux_spans=24513 send_ok_msgs=88 send_fail_msgs=0 host_out_ok=92 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=794176 demux_spans=24818 send_ok_msgs=89 send_fail_msgs=0 host_out_ok=93 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=802016 demux_spans=25063 send_ok_msgs=90 send_fail_msgs=0 host_out_ok=94 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=810816 demux_spans=25338 send_ok_msgs=91 send_fail_msgs=0 host_out_ok=95 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=819616 demux_spans=25613 send_ok_msgs=92 send_fail_msgs=0 host_out_ok=96 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=828800 demux_spans=25900 send_ok_msgs=93 send_fail_msgs=0 host_out_ok=97 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=837216 demux_spans=26163 send_ok_msgs=94 send_fail_msgs=0 host_out_ok=98 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=846016 demux_spans=26438 send_ok_msgs=95 send_fail_msgs=0 host_out_ok=99 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=854816 demux_spans=26713 send_ok_msgs=96 send_fail_msgs=0 host_out_ok=100 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=863648 demux_spans=26989 send_ok_msgs=97 send_fail_msgs=0 host_out_ok=101 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=872416 demux_spans=27263 send_ok_msgs=98 send_fail_msgs=0 host_out_ok=102 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=881216 demux_spans=27538 send_ok_msgs=99 send_fail_msgs=0 host_out_ok=103 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=881216 demux_spans=27538 send_ok_msgs=99 send_fail_msgs=0 host_out_ok=103 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=890016 demux_spans=27813 send_ok_msgs=100 send_fail_msgs=0 host_out_ok=103 inquiry_out=0 identity_reply_in=0
+MIDI I/O stopped

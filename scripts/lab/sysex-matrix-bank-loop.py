@@ -9,9 +9,10 @@ macOS Apple-driver control (no Bridge):
     --count 100 --interval 0.01 --pass-percent 100 \\
     --fresh-sessions 2 --log-dir tests/lab-logs/sysex-matrix-bank-macos
 
-Windows Bridge (later):
+Windows Bridge (palier 2 gate):
 
   python scripts/lab/sysex-matrix-bank-loop.py --with-bridge --pass-percent 100
+  # defaults: MT4 Output 1 / MT4 Input 1, --fresh-starts 2, --count 100
 
 Matrix powered + DIN Out1 <-> In1. Close DAWs / Matrix-Control on MT4 ports.
 """

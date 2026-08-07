@@ -1,47 +1,82 @@
 /bmad-quick-dev
 
-## Objectif
+## Contexte de la Story
 
-Stress SysEx **palier 2** sur Bridge MT4 ↔ Matrix-1000 : valider à **100 %** une rafale SysEx **device→host** de taille « banque / dump All », après succès du palier 1 (patch 275 o / master 351 o).
+Après le palier 1 Windows à 100 %, on veut que le Bridge tienne aussi une **rafale** de dumps patch Matrix (~100× 275 o) sans perte, comme le pilote Apple sur la même MT4.
+
+## Objectif (unique)
+
+Stress SysEx **palier 2** sur **Bridge Windows** MT4 ↔ Matrix-1000 : valider à **100 %** une rafale **device→host** de taille banque (100× dump patch), après succès du palier 1.
 
 ## Prérequis (bloquant)
-- Palier 1 livré et lab **100 %** (harness Patch/Master push + dump patch/master).
-- Identity first-shot déjà à 100 % (`f8b24da` / `a5d3382` / `c295835` + suite palier 1).
-- Ne pas commencer si le palier 1 n’est pas vert.
 
-## Références
-- Vecteur optionnel Epic 2 #6 : ≈100× frames patch 275 o (~28 KB série), pacing ≥10 ms — `docs/tests/checklists/smoke-epic2-matrix-control-mt4.md`
-- Smoke SysEx : `docs/tests/checklists/smoke-epic2-sysex-mt4.md`
-- Harness palier 1 (à prolonger, pas à réécrire from scratch) sous `scripts/lab/`
-- Fixtures : `tests/fixtures/sysex/Patch.syx` (forme d’une frame patch)
+- Palier 1 Windows **clos** : mid-size patch/master push+dump à 100 % après Start frais (commit `c535069` ou plus récent sur `main`).
+- Harness déjà livré : `scripts/lab/sysex-matrix-bank-loop.py` (ne pas réécrire from scratch).
+- Checklist : `docs/tests/checklists/smoke-mt4-sysex-matrix-bank.md`
+- Spec Windows Bridge (gate actif) : `_bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst-2.md`
+  (sibling macOS done : `spec-sysex-matrix-bank-burst.md`).
+- Ne pas commencer si le palier 1 n’est pas vert sur cette machine.
 
-## Décision de forme (trancher en lab, documenter)
-Deux modes acceptables — choisir **un** comme gate principal, l’autre en bonus si facile :
-1. **Dump All / bank export réel** : un dump request Oberheim documenté (octets exacts depuis Matrix-Control ou capture lab) → le Matrix envoie une série de frames patch (et éventuellement master). Pass = toutes les frames complètes (chaque `F0 … F7`, taille attendue 275 o pour patch), compte de frames ≥ seuil documenté, zéro troncature, Bridge sans pump fail / restart.
-2. **Rafale synthétique device→host** si le dump All exact est ambigu : N dumps patch séquentiels (`F0 10 06 04 01 <n> F7` en balayant `<n>`) avec pacing ≥10 ms, N par défaut **100** (configurable). Pass = N/N réponses 275 o exactes.
+## Preuve hardware déjà tranchée (NE PAS rouvrir)
 
-Recommandation BMad si les octets « All » ne sont pas trouvés en &lt;30 min : gate = mode 2 (100× dump patch), et noter « All réel » en Ask First / follow-up.
+Rapport SSOT : `docs/tests/lab-reports/macos-sysex-paliers-2026-08-07.md`
 
-## Livrables
-1. Extension du harness lab (ou script frère kebab-case) avec `--with-bridge`, logs sous `tests/lab-logs/` (ex. `sysex-matrix-bank/`), résumé `sent/recv/rate/pass`.
-2. Réassemblage SysEx multi-fragments jusqu’à `F7` ; timeout global de rafale documenté (pas un timeout Identity de 4 s naïf).
-3. Spec EN + checklist EN ; Design Notes avec stamps lab.
-4. Barre : **100 %** sur ≥2 Starts frais (ex. 2×100 dumps patch, ou 2× dump All complet).
-5. Patch Bridge C++ **seulement** si lab prouve une perte ; sinon script-only. `lint-touched.py` clean si C++.
+Sous macOS + **pilote Apple** (pas Bridge) : palier 2 = **100 %** (2×100 dumps patch, stamp `20260807T171139Z`).  
+Donc : ne pas accuser Matrix, câble DIN, ni MT4 si Windows échoue. Le défaut, s’il y en a un, est dans la **pile Bridge (WinUSB + session + VirtualMIDI)**.
 
-## Méthode
-1. Spec single-goal palier 2.
-2. Implémenter harness ; lancer toi-même le lab.
-3. Sur KO : compteurs taille/frame index/délai ; LEDs MT4 = Matrix actif → perte Bridge.
-4. Pas de ralentissement artificiel pour « réussir » au-delà du pacing Matrix stock (≥10 ms).
-5. Pense à t'appuyer sur le code du driver Linux si tu dois intervenir sur le code de notre driver MT4, car à plusieurs reprises tu y as trouvé des points qui ont permi de débloquer certaines situations, le driver de Linux semble bien fait et robuste.
+## Forme du gate (déjà tranchée)
 
-## Hors scope
-- Palier 3 (générateur SysEx ultra-long / echo bidon)
-- Matrix-Control UI comme gate principal
-- Windows MIDI Services, MidiView, AMT8 / Unitor8
-- Heartbeat Matrix-Control comme fix
+Gate principal = **mode 2** (rafale de dumps patch), pas un Dump All Oberheim ambigu :
+
+- Request : `F0 10 06 04 01 <n> F7` avec balayage de slots (défaut 0…99)
+- Pass par frame : exactement **275 o**, préfixe `F0 10 06 01`, fin `F7`
+- Pacing ≥10 ms (`--interval 0.01` par défaut)
+- Timeout **par frame** ~3 s (pas un seul timeout pour toute la rafale)
+- ≥2 Starts frais Bridge ; `--pass-percent 100` ; zéro warm-up Inquiry opaque
+
+Dump All réel = Ask First / follow-up seulement (hors gate).
+
+## Commande cible Windows
+
+```text
+python scripts/lab/sysex-matrix-bank-loop.py --with-bridge --pass-percent 100
+```
+
+Defaults attendus : `MT4 Output 1` / `MT4 Input 1`, `--fresh-starts 2`, `--count 100`.  
+Logs : `tests/lab-logs/sysex-matrix-bank/` (+ `bridge-<stamp>-startN.log`).
 
 ## Setup
-- Zadig + `builds/debug/Debug/Bridge.exe --start-session --dev-zadig`
-- Matrix alimenté, DIN Out1↔In1 ; fermer MIDI-OX / Matrix-Control sur ports MT4
+
+- Matrix-1000 **alimenté avant** le lancement (confirmer à l’opérateur)
+- DIN Out1↔In1 ; fermer MIDI-OX / Matrix-Control / DAW sur ports MT4
+- Zadig + `builds/debug/Debug/Bridge.exe --start-session --dev-zadig` (via `--with-bridge`)
+- Rebuild Bridge Debug si tu touches le C++
+
+## Contraintes Bridge (hérité palier 1 — respecter)
+
+- **Ne jamais** `SendToHost` depuis le thread de completion WinUSB : completion = harvest → reorder → resubmit → enqueue ; reader = demux / framer → `SendToHost` → drain OUT.
+- Les gardes palier 1 (calme post-Start, silence OUT pendant dump expect, réparation `F0` manquant, reject+1 retry taille Matrix) sont déjà sur `main` — **ne pas les retirer** pour « simplifier » ; étendre seulement si le lab banque prouve un trou nouveau.
+- Pas de ralentissement artificiel au-delà du pacing Matrix stock (≥10 ms).
+
+## Méthode
+
+1. Clarifier en une phrase le but Windows (harness déjà là) ; mettre à jour spec / checklist si besoin (section Windows Bridge = now, plus « later »).
+2. Rebuild Bridge si nécessaire ; lancer **toi-même** le lab dès que Matrix est chaud.
+3. Sur KO : index / slot / len / head / tail / `dt_ms` + compteurs Bridge (`demux_spans`, `send_ok`, hold SysEx) — LEDs DIN actives ⇒ perte Bridge.
+4. Une piste → rebuild → lab ≥2 Starts → conclusion. Pas cinq rustines empilées.
+5. Si C++ : s’appuyer sur le driver Linux Emagic quand c’est pertinent ; `python scripts/quality/lint-touched.py` clean.
+6. Documenter stamps dans Design Notes / checklist ; barre **100 %** ou Fail honnête.
+
+## Hors scope
+
+- Palier 3 (SysEx ultra-long / boucle DIN sans Matrix)
+- Matrix-Control UI comme gate
+- Windows MIDI Services, MidiView, AMT8 / Unitor8
+- Heartbeat Matrix-Control comme fix
+- Baisser la barre 100 % ou « Pass avec warm-up »
+
+## Livrable de fin
+
+- Lab Windows `overall_pass=true` exit 0 sur ≥2 Starts (ou Fail instrumenté + patch minimal + re-lab)
+- Spec / checklist à jour pour le gate Bridge
+- Commit seulement sur demande explicite de Guillaume

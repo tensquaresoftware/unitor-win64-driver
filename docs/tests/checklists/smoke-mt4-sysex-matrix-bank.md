@@ -13,7 +13,8 @@ Lab gate for bank-scale device→host SysEx (~100× 275 B patch frames) after
 palier-1 mid-size patch/master is already proven.
 
 **Related:** Epic 2 optional vector #6 in `smoke-epic2-matrix-control-mt4.md`.
-**Spec:** `_bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst.md`
+**Spec (macOS done):** `_bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst.md`  
+**Spec (Windows Bridge gate):** `_bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst-2.md`
 
 ## Prerequisites
 
@@ -21,7 +22,8 @@ palier-1 mid-size patch/master is already proven.
 2. Close DAWs / Matrix-Control / MIDI-OX on the MT4 ports under test.
 3. Deps: `python -m pip install -r scripts/lab/requirements-device-inquiry.txt`
 4. **macOS (Apple driver):** MT4 USB; ports visible (e.g. `MT4 Port 1`).
-5. **Windows (Bridge, later):** Zadig MT4 + `builds/debug/Debug/Bridge.exe`.
+5. **Windows (Bridge):** Zadig MT4 + `builds/debug/Debug/Bridge.exe` (palier 1 must already be 100 % on this machine).
+6. Matrix powered **before** launch (a cold Matrix mid-run is not a valid Pass).
 
 ## Automated procedure — macOS Apple control
 
@@ -41,13 +43,17 @@ python3 scripts/lab/sysex-matrix-bank-loop.py \
 
 Never pass `--with-bridge` on macOS. Use `--fresh-sessions` (not `--fresh-starts`).
 
-## Automated procedure — Windows Bridge (later)
+## Automated procedure — Windows Bridge
 
 ```text
 python scripts/lab/sysex-matrix-bank-loop.py --with-bridge --pass-percent 100
 ```
 
-Defaults: `MT4 Output 1` / `MT4 Input 1`, `--fresh-starts 2`, same count/interval/timeout.
+Defaults: `MT4 Output 1` / `MT4 Input 1`, `--fresh-starts 2`, `--count 100`,
+`--interval 0.01`, `--reply-timeout 3`. Logs under `tests/lab-logs/sysex-matrix-bank/`.
+
+Hardware control (do not reopen): macOS Apple palier 2 already 100 % — see
+`docs/tests/lab-reports/macos-sysex-paliers-2026-08-07.md`.
 
 ## Pass criteria (strict 100 %)
 
@@ -76,5 +82,10 @@ Do not blame the Matrix if MT4 DIN LEDs show activity on a Fail.
 
 - macOS Apple control 2026-08-07: stamp `20260807T171139Z`, ports `MT4 Port 1`/`MT4 Port 1`,
   2×100 = 100 %, `overall_pass=true` — see `tests/lab-logs/sysex-matrix-bank-macos/`.
-- Windows Bridge bank lab: not run in this pass (harness supports `--with-bridge`).
-- Palier 3 mega-SysEx: deferred pending device→host hardware decision.
+- Windows Bridge bank lab: **closed** 2026-08-07 — stamp `20260807T191915Z`,
+  ports `MT4 Output 1`/`MT4 Input 1`, 2×100 = 100 %, `overall_pass=true`
+  (`tests/lab-logs/sysex-matrix-bank/`; bridge `bridge-20260807T191915Z-start{1,2}.log`).
+  Bridge counters: `inquiry_out=0` / `identity_reply_in=0` both Starts; leading-F0 repair
+  still fired once per cold Start (palier-1 guard retained).
+  Command: `python scripts/lab/sysex-matrix-bank-loop.py --with-bridge --pass-percent 100`.
+- Palier 3 mega-SysEx: deferred (out of scope for this checklist).
