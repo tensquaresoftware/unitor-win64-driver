@@ -382,6 +382,18 @@ std::size_t WinUsbTransport::BulkInReadCapacity() const noexcept
     return 64;
 }
 
+bool WinUsbTransport::BeginShortBulkInDrain(std::string& errorOut)
+{
+    errorOut = "WinUSB BeginShortBulkInDrain requires Windows";
+    return false;
+}
+
+bool WinUsbTransport::RestoreSessionBulkTimeouts(std::string& errorOut)
+{
+    errorOut = "WinUSB RestoreSessionBulkTimeouts requires Windows";
+    return false;
+}
+
 bool WinUsbTransport::WriteBulk(
     const uint8_t* /*data*/,
     std::size_t /*size*/,

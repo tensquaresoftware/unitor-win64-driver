@@ -76,7 +76,10 @@ void printDeviceHostCounters(const DeviceHostCounterSnapshot& snapshot)
     std::cout << "device-host counters: bulk_in_bytes=" << snapshot.bulkBytes
               << " demux_spans=" << snapshot.demuxSpans
               << " send_ok_msgs=" << snapshot.sendOk
-              << " send_fail_msgs=" << snapshot.sendFail << '\n'
+              << " send_fail_msgs=" << snapshot.sendFail
+              << " host_out_ok=" << snapshot.hostOutOk
+              << " inquiry_out=" << snapshot.inquiryOut
+              << " identity_reply_in=" << snapshot.identityReplyIn << '\n'
               << std::flush;
 }
 
@@ -85,6 +88,12 @@ bool shouldPrintDeviceHostCounters(
     const DeviceHostCounterSnapshot& current)
 {
     if (current.sendFail != previous.sendFail)
+    {
+        return true;
+    }
+    if (current.inquiryOut != previous.inquiryOut
+        || current.identityReplyIn != previous.identityReplyIn
+        || current.hostOutOk != previous.hostOutOk)
     {
         return true;
     }
@@ -171,6 +180,8 @@ void printSessionStartedBanner()
     std::cout << "MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)\n";
     std::cout << "device-host counters will print in this window on USB IN activity"
                  " (same thread as this message)\n";
+    std::cout << "Device Inquiry lab: watch inquiry_out vs identity_reply_in"
+                 " (expect them to stay close)\n";
 }
 
 int runMt4MidiSession(bool allowZadigFallback)

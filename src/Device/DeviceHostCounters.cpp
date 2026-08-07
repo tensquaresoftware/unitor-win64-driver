@@ -8,6 +8,9 @@ void DeviceHostCounters::Reset() noexcept
     demuxSpans_.store(0);
     sendOk_.store(0);
     sendFail_.store(0);
+    hostOutOk_.store(0);
+    inquiryOut_.store(0);
+    identityReplyIn_.store(0);
     firstBulkLogged_.store(false);
 }
 
@@ -35,6 +38,21 @@ void DeviceHostCounters::AddSendFail() noexcept
     sendFail_.fetch_add(1);
 }
 
+void DeviceHostCounters::AddHostOutOk() noexcept
+{
+    hostOutOk_.fetch_add(1);
+}
+
+void DeviceHostCounters::AddInquiryOut() noexcept
+{
+    inquiryOut_.fetch_add(1);
+}
+
+void DeviceHostCounters::AddIdentityReplyIn() noexcept
+{
+    identityReplyIn_.fetch_add(1);
+}
+
 DeviceHostCounterSnapshot DeviceHostCounters::Snapshot() const noexcept
 {
     DeviceHostCounterSnapshot snapshot;
@@ -42,6 +60,9 @@ DeviceHostCounterSnapshot DeviceHostCounters::Snapshot() const noexcept
     snapshot.demuxSpans = demuxSpans_.load();
     snapshot.sendOk = sendOk_.load();
     snapshot.sendFail = sendFail_.load();
+    snapshot.hostOutOk = hostOutOk_.load();
+    snapshot.inquiryOut = inquiryOut_.load();
+    snapshot.identityReplyIn = identityReplyIn_.load();
     return snapshot;
 }
 
@@ -61,6 +82,9 @@ void DeviceHostCounters::PrintLine(const DeviceHostCounterSnapshot& snapshot)
     std::cerr << "device-host counters: bulk_in_bytes=" << snapshot.bulkBytes
               << " demux_spans=" << snapshot.demuxSpans
               << " send_ok_msgs=" << snapshot.sendOk
-              << " send_fail_msgs=" << snapshot.sendFail << '\n'
+              << " send_fail_msgs=" << snapshot.sendFail
+              << " host_out_ok=" << snapshot.hostOutOk
+              << " inquiry_out=" << snapshot.inquiryOut
+              << " identity_reply_in=" << snapshot.identityReplyIn << '\n'
               << std::flush;
 }

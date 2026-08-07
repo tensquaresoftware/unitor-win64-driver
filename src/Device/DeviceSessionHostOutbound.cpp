@@ -3,6 +3,7 @@
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionSupport.h"
 
+#include <iostream>
 #include <mutex>
 #include <string>
 
@@ -73,6 +74,7 @@ void DeviceSession::handleHostMidi(
         }
     }
 
+    // VirtualMIDI thread: do not poll bulk IN here — reader may own a pending ReadBulk.
     drainHostOutbound();
 }
 
@@ -85,7 +87,13 @@ void DeviceSession::drainHostOutbound()
     {
         return;
     }
-    drainHostOutboundLocked();
+    drainHostOutboundLocked(false);
+}
+
+void DeviceSession::drainHostOutboundFromReader()
+{
+    std::lock_guard<std::mutex> lock(usbIoMutex_);
+    drainHostOutboundLocked(true);
 }
 
 void DeviceSession::failHostOutboundDrain(const std::string& reason)
@@ -98,6 +106,18 @@ void DeviceSession::failHostOutboundDrain(const std::string& reason)
     recordPumpFailure(reason + " (discarded " + std::to_string(discarded) + " queued message(s))");
 }
 
+void DeviceSession::noteHostOutboundCounters(const HostOutboundItem& item) noexcept
+{
+    deviceHostCounters_.AddHostOutOk();
+    if (isUniversalDeviceInquiry(item.midi.data(), item.midi.size()))
+    {
+        deviceHostCounters_.AddInquiryOut();
+        std::cerr << "host→device: Device Inquiry WriteBulk ok (out_port="
+                  << (item.outPortIndex + 1) << " bytes=" << item.midi.size() << ")\n"
+                  << std::flush;
+    }
+}
+
 bool DeviceSession::writeHostOutboundItem(
     const HostOutboundItem& item,
     HostEncodeScratch& scratch)
@@ -105,6 +125,7 @@ bool DeviceSession::writeHostOutboundItem(
     std::string error;
     if (transport_.WriteBulk(scratch.bytes, scratch.size, error))
     {
+        noteHostOutboundCounters(item);
         return true;
     }
     const std::size_t discarded = clearHostOutboundQueue();
@@ -114,40 +135,68 @@ bool DeviceSession::writeHostOutboundItem(
     return false;
 }
 
-void DeviceSession::drainHostOutboundLocked()
+bool DeviceSession::encodeWritePopOneHostOutbound(
+    HostEncodeScratch& scratch,
+    uint8_t* readBuffer,
+    std::size_t readCapacity,
+    bool drainInAfterWrite)
+{
+    HostOutboundItem item;
+    {
+        std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
+        if (!hostOutbound_.TryCopyFront(item))
+        {
+            return false;
+        }
+    }
+
+    scratch.size = 0;
+    scratch.cableIndex = 0;
+    if (!encodeHostMidiLocked(item.outPortIndex, item.midi.data(), item.midi.size(), scratch))
+    {
+        failHostOutboundDrain("Host→device encode path aborted");
+        return false;
+    }
+    if (stopPump_.load() || !running_.load())
+    {
+        failHostOutboundDrain("Host→device pump stopped during drain");
+        return false;
+    }
+    if (!writeHostOutboundItem(item, scratch))
+    {
+        return false;
+    }
+    if (drainInAfterWrite && readCapacity > 0
+        && !drainPendingBulkInBurst(readBuffer, readCapacity))
+    {
+        return false;
+    }
+
+    std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
+    HostOutboundItem committed;
+    return hostOutbound_.TryPop(committed);
+}
+
+void DeviceSession::drainHostOutboundLocked(bool drainInAfterEachWrite)
 {
     uint8_t encodeBytes[kEncodeBufferCapacity] = {};
+    uint8_t readBuffer[512] = {};
+    const std::size_t readCapacity = transport_.BulkInReadCapacity();
+    const std::size_t burstCapacity =
+        (readCapacity > 0 && readCapacity <= sizeof(readBuffer)) ? readCapacity : 0;
+    HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
+
     while (!stopPump_.load())
     {
-        HostOutboundItem item;
         {
             std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
-            if (!hostOutbound_.TryCopyFront(item))
+            if (hostOutbound_.MessageCount() == 0)
             {
                 return;
             }
         }
-
-        HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
-        if (!encodeHostMidiLocked(
-                item.outPortIndex, item.midi.data(), item.midi.size(), scratch))
-        {
-            failHostOutboundDrain("Host→device encode path aborted");
-            return;
-        }
-        if (stopPump_.load() || !running_.load())
-        {
-            failHostOutboundDrain("Host→device pump stopped during drain");
-            return;
-        }
-        if (!writeHostOutboundItem(item, scratch))
-        {
-            return;
-        }
-
-        std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
-        HostOutboundItem committed;
-        if (!hostOutbound_.TryPop(committed))
+        if (!encodeWritePopOneHostOutbound(
+                scratch, readBuffer, burstCapacity, drainInAfterEachWrite))
         {
             return;
         }

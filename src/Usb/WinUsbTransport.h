@@ -63,6 +63,11 @@ public:
     // True when the last ReadBulk failed because PIPE_TRANSFER_TIMEOUT elapsed.
     bool LastReadTimedOut() const noexcept;
 
+    // Lab half-duplex: after OUT (or between IN packets) briefly poll bulk IN, then
+    // restore the normal session PIPE_TRANSFER_TIMEOUT on both pipes.
+    bool BeginShortBulkInDrain(std::string& errorOut);
+    bool RestoreSessionBulkTimeouts(std::string& errorOut);
+
 private:
 #ifdef _WIN32
     bool discoverBulkPipes(std::string& errorOut);

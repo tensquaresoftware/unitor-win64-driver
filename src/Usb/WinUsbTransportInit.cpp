@@ -114,6 +114,16 @@ bool WinUsbTransport::armShortInDrainTimeout(std::string& errorOut)
         errorOut);
 }
 
+bool WinUsbTransport::BeginShortBulkInDrain(std::string& errorOut)
+{
+    return armShortInDrainTimeout(errorOut);
+}
+
+bool WinUsbTransport::RestoreSessionBulkTimeouts(std::string& errorOut)
+{
+    return setBulkTransferTimeoutMs(kSessionBulkTimeoutMs, errorOut);
+}
+
 bool WinUsbTransport::WriteEmagicInitSequence(
     std::string& errorOut,
     std::size_t* drainedBytesOut)

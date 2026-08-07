@@ -81,12 +81,14 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(BridgeTests
     tests/unit/DeviceProfileTests.cpp
+    tests/unit/DeviceInquiryHelpersTests.cpp
     tests/unit/EmagicCableMapperTests.cpp
     tests/unit/MidiMessageFramerTests.cpp
     tests/unit/MidiMessageFramerSysexTests.cpp
     tests/unit/HostOutboundQueueTests.cpp
     tests/unit/TeVirtualMidiLimitsTests.cpp
     src/Device/HostOutboundQueue.cpp
+    src/Device/DeviceSessionSupport.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp

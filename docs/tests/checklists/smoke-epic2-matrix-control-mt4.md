@@ -35,7 +35,7 @@ On Fail, write English notes with **Port N / cable / direction / validation-matr
 **In scope (story 2.4)**
 
 - Hard gates (validation-matrix numbering):
-  1. Device Inquiry round-trip
+  1. Device Inquiry round-trip — also see focused Bridge flap retest `smoke-mt4-device-inquiry-bridge.md`
   2. Single patch dump (~275 B)
   3. Master dump (~351 B)
   4. Edit-buffer / patch push (outbound ~275 B; slot `01` and/or edit-buffer `0D`)
