@@ -29,7 +29,7 @@ bool DeviceSession::sendComputerModeChannelKick(std::string& errorOut)
     {
         return false;
     }
-    if (!transport_.WriteBulk(framed, buffer.size, errorOut))
+    if (!transport_.WriteEmagicHostMidi(framed, buffer.size, errorOut))
     {
         errorOut = "Computer-mode channel kick WriteBulk failed: " + errorOut;
         return false;
@@ -58,6 +58,10 @@ bool DeviceSession::sendInitMagic(std::string& errorOut)
         return false;
     }
     drainedBytes += kickDrained;
+    if (mapper_ != nullptr)
+    {
+        mapper_->ResetInputState();
+    }
     std::cout << "Emagic init/computer-mode: drained " << drainedBytes
               << " bulk IN byte(s); post-kick drain=" << kickDrained
               << "; read capacity="
@@ -184,8 +188,10 @@ bool DeviceSession::createPortsAndStartPump(
 
 bool DeviceSession::armBulkInAsyncRing(std::string& errorOut)
 {
+    transport_.SetBulkInPacketHandler(&DeviceSession::bulkInPacketThunk, this);
     if (!transport_.StartBulkInAsyncRing(errorOut))
     {
+        transport_.ClearBulkInPacketHandler();
         stopPump_.store(true);
         errorOut = "DeviceSession failed to arm bulk IN async ring: " + errorOut;
         return false;
@@ -203,8 +209,27 @@ bool DeviceSession::armBulkInAsyncRing(std::string& errorOut)
 void DeviceSession::enableHostMidiSink()
 {
     running_.store(true);
+    hostOutEarliestSteady_ = std::chrono::steady_clock::now();
     midiBackend_->SetHostToDeviceSink(&DeviceSession::hostToDeviceThunk, this);
     std::cout << "Host MIDI sink live (bulk IN ring already active)\n" << std::flush;
+}
+
+void DeviceSession::queuePostStartPipePrime()
+{
+    // First host→device WriteBulk after Start often correlates with a dropped IN
+    // head on the following librarian dump. Burn that on a quiet CC (SoundDiver-style).
+    const uint8_t cc7Quiet[] = {0xB0, 0x07, 0x00};
+    {
+        std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
+        if (!hostOutbound_.TryPush(0, cc7Quiet, sizeof(cc7Quiet)))
+        {
+            std::cerr << "Post-start pipe prime: outbound queue rejected quiet CC\n"
+                      << std::flush;
+            return;
+        }
+    }
+    std::cout << "Post-start pipe prime queued (quiet CC on Out1)\n" << std::flush;
+    drainHostOutbound();
 }
 
 bool DeviceSession::startPump(std::string& errorOut)
@@ -217,8 +242,13 @@ bool DeviceSession::startPump(std::string& errorOut)
     deviceHostCounters_.Reset();
     resetInFramers();
     (void)clearHostOutboundQueue();
+    {
+        std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
+        bulkInDeliverQueue_.clear();
+    }
     firstHostInquiryLogged_.store(false);
     bulkInRingArmedSteadyMs_.store(-1, std::memory_order_relaxed);
+    lastBulkInPacketSteady_ = {};
     stopPump_.store(false);
 
     // Arm INPUT_URBS, start the reader Wait loop, then open the host sink so
@@ -241,6 +271,7 @@ bool DeviceSession::startPump(std::string& errorOut)
     }
 
     enableHostMidiSink();
+    queuePostStartPipePrime();
     return true;
 }
 

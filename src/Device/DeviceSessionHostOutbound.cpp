@@ -142,7 +142,7 @@ bool DeviceSession::writeHostOutboundItem(
     HostEncodeScratch& scratch)
 {
     std::string error;
-    if (transport_.WriteBulk(scratch.bytes, scratch.size, error))
+    if (transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error))
     {
         noteHostOutboundCounters(item, scratch.size);
         return true;
@@ -197,6 +197,15 @@ void DeviceSession::drainHostOutboundLocked()
             failHostOutboundDrain(
                 "Host→device WriteBulk skipped: bulk IN async ring inactive");
         }
+        return;
+    }
+    if (std::chrono::steady_clock::now() < hostOutEarliestSteady_)
+    {
+        return;
+    }
+    // handleHostMidi also drains — must not WriteBulk mid–SysEx hold (drops F7 URB).
+    if (anyInFramerHoldingSysex())
+    {
         return;
     }
 

@@ -4,81 +4,12 @@
 
 #ifdef _WIN32
 
-#include "Usb/WinUsbOpenDetail.h"
-#include "Usb/WinUsbOpenSupport.h"
+#include "Usb/WinUsbBulkInAsyncRing.h"
 
 #include <cstring>
 
-namespace
-{
-struct BulkInAsyncSlotState
-{
-    OVERLAPPED overlapped = {};
-    HANDLE event = nullptr;
-    uint8_t buffer[512] = {};
-    bool pending = false;
-};
-
-struct BulkInAsyncRingState
-{
-    BulkInAsyncSlotState slots[kBulkInAsyncSlotCount] = {};
-    std::size_t capacity = 0;
-    bool active = false;
-};
-
-BulkInAsyncRingState* asRing(void* pointer) noexcept
-{
-    return static_cast<BulkInAsyncRingState*>(pointer);
-}
-
-bool collectBulkInAsyncEvents(
-    BulkInAsyncRingState& ring,
-    HANDLE* eventsOut,
-    std::string& errorOut)
-{
-    for (std::size_t index = 0; index < kBulkInAsyncSlotCount; ++index)
-    {
-        eventsOut[index] = ring.slots[index].event;
-        if (eventsOut[index] == nullptr)
-        {
-            errorOut = "WinUSB bulk IN async event is missing";
-            return false;
-        }
-    }
-    return true;
-}
-
-int completeBulkInAsyncSlot(
-    WINUSB_INTERFACE_HANDLE winUsb,
-    BulkInAsyncSlotState& state,
-    BulkInAsyncPacket& packetOut,
-    std::string& errorOut)
-{
-    DWORD transferred = 0;
-    if (!WinUsb_GetOverlappedResult(winUsb, &state.overlapped, &transferred, FALSE))
-    {
-        const DWORD code = GetLastError();
-        state.pending = false;
-        if (code == ERROR_OPERATION_ABORTED)
-        {
-            errorOut = "WinUSB bulk IN async aborted";
-            return -1;
-        }
-        errorOut = formatWin32Error("WinUsb_GetOverlappedResult failed for Emagic bulk IN", code);
-        return -1;
-    }
-
-    state.pending = false;
-    packetOut.data = state.buffer;
-    packetOut.size = static_cast<std::size_t>(transferred);
-    errorOut.clear();
-    return 1;
-}
-} // namespace
-
 bool WinUsbTransport::armInfiniteBulkInTimeout(std::string& errorOut)
 {
-    // 0 = wait until data or AbortPipe (matches always-pending Linux URBs).
     return setPipeTransferTimeoutMs(
         bulkInPipeId_,
         0,
@@ -86,9 +17,27 @@ bool WinUsbTransport::armInfiniteBulkInTimeout(std::string& errorOut)
         errorOut);
 }
 
+bool WinUsbTransport::enableBulkInRawIo(std::string& errorOut)
+{
+    UCHAR rawIo = TRUE;
+    if (!WinUsb_SetPipePolicy(
+            static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
+            bulkInPipeId_,
+            RAW_IO,
+            sizeof(rawIo),
+            &rawIo))
+    {
+        errorOut = formatWin32Error(
+            "WinUsb_SetPipePolicy(RAW_IO) failed for Emagic bulk IN", GetLastError());
+        return false;
+    }
+    errorOut.clear();
+    return true;
+}
+
 void WinUsbTransport::releaseBulkInAsyncSlots() noexcept
 {
-    auto* ring = asRing(bulkInAsyncRing_);
+    auto* ring = bulkInAsRing(bulkInAsyncRing_);
     if (ring == nullptr)
     {
         return;
@@ -110,7 +59,7 @@ void WinUsbTransport::releaseBulkInAsyncSlots() noexcept
 
 bool WinUsbTransport::submitBulkInAsyncSlot(std::size_t slot, std::string& errorOut)
 {
-    auto* ring = asRing(bulkInAsyncRing_);
+    auto* ring = bulkInAsRing(bulkInAsyncRing_);
     if (ring == nullptr || !ring->active || slot >= kBulkInAsyncSlotCount)
     {
         errorOut = "WinUSB bulk IN async slot is not armed";
@@ -155,6 +104,7 @@ bool WinUsbTransport::submitBulkInAsyncSlot(std::size_t slot, std::string& error
             return false;
         }
     }
+    state.submitSeq = ring->nextSubmitSeq++;
     state.pending = true;
     errorOut.clear();
     return true;
@@ -163,7 +113,6 @@ bool WinUsbTransport::submitBulkInAsyncSlot(std::size_t slot, std::string& error
 bool WinUsbTransport::StartBulkInAsyncRing(std::string& errorOut)
 {
     StopBulkInAsyncRing();
-
     if (!IsOpen())
     {
         errorOut = "WinUSB StartBulkInAsyncRing requires an open transport with bulk pipes";
@@ -176,7 +125,7 @@ bool WinUsbTransport::StartBulkInAsyncRing(std::string& errorOut)
         errorOut = "WinUSB bulk IN read capacity is invalid for async ring";
         return false;
     }
-    if (!armInfiniteBulkInTimeout(errorOut))
+    if (!armInfiniteBulkInTimeout(errorOut) || !enableBulkInRawIo(errorOut))
     {
         return false;
     }
@@ -191,7 +140,8 @@ bool WinUsbTransport::StartBulkInAsyncRing(std::string& errorOut)
         HANDLE event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
         if (event == nullptr)
         {
-            errorOut = formatWin32Error("CreateEventW failed for Emagic bulk IN async", GetLastError());
+            errorOut =
+                formatWin32Error("CreateEventW failed for Emagic bulk IN async", GetLastError());
             StopBulkInAsyncRing();
             return false;
         }
@@ -203,13 +153,18 @@ bool WinUsbTransport::StartBulkInAsyncRing(std::string& errorOut)
         }
     }
 
+    if (!startBulkInCompletionThread(errorOut))
+    {
+        StopBulkInAsyncRing();
+        return false;
+    }
     errorOut.clear();
     return true;
 }
 
 void WinUsbTransport::AbortBulkInAsyncRing() noexcept
 {
-    auto* ring = asRing(bulkInAsyncRing_);
+    auto* ring = bulkInAsRing(bulkInAsyncRing_);
     if (ring == nullptr || !ring->active || !IsOpen())
     {
         return;
@@ -218,53 +173,63 @@ void WinUsbTransport::AbortBulkInAsyncRing() noexcept
         static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_), bulkInPipeId_);
 }
 
-void WinUsbTransport::StopBulkInAsyncRing() noexcept
+namespace
 {
-    auto* ring = asRing(bulkInAsyncRing_);
-    if (ring == nullptr)
+void drainPendingBulkInSlot(
+    WINUSB_INTERFACE_HANDLE winUsb,
+    UCHAR pipeId,
+    bool deviceOpen,
+    BulkInAsyncSlotState& slot)
+{
+    if (!slot.pending || slot.event == nullptr)
     {
         return;
     }
+    for (int attempt = 0; attempt < 5; ++attempt)
+    {
+        if (WaitForSingleObject(slot.event, 1000) == WAIT_OBJECT_0)
+        {
+            break;
+        }
+        if (deviceOpen)
+        {
+            (void)WinUsb_AbortPipe(winUsb, pipeId);
+        }
+    }
+    DWORD transferred = 0;
+    (void)WinUsb_GetOverlappedResult(winUsb, &slot.overlapped, &transferred, FALSE);
+    slot.pending = false;
+}
+} // namespace
 
-    ring->active = false;
+void WinUsbTransport::StopBulkInAsyncRing() noexcept
+{
+    auto* ring = bulkInAsRing(bulkInAsyncRing_);
+    if (ring == nullptr && !bulkInCompletionThread_.joinable())
+    {
+        return;
+    }
+    if (ring != nullptr)
+    {
+        ring->active = false;
+    }
     if (IsOpen())
     {
         (void)WinUsb_AbortPipe(
             static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_), bulkInPipeId_);
     }
+    stopBulkInCompletionThread();
 
-    for (std::size_t index = 0; index < kBulkInAsyncSlotCount; ++index)
+    ring = bulkInAsRing(bulkInAsyncRing_);
+    if (ring != nullptr)
     {
-        BulkInAsyncSlotState& slot = ring->slots[index];
-        if (!slot.pending || slot.event == nullptr)
+        auto* winUsb = static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_);
+        for (std::size_t index = 0; index < kBulkInAsyncSlotCount; ++index)
         {
-            continue;
+            drainPendingBulkInSlot(winUsb, bulkInPipeId_, IsOpen(), ring->slots[index]);
         }
-        // Retry Abort+wait so we do not free OVERLAPPED while I/O is outstanding.
-        for (int attempt = 0; attempt < 5; ++attempt)
-        {
-            const DWORD wait = WaitForSingleObject(slot.event, 1000);
-            if (wait == WAIT_OBJECT_0)
-            {
-                break;
-            }
-            if (IsOpen())
-            {
-                (void)WinUsb_AbortPipe(
-                    static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_), bulkInPipeId_);
-            }
-        }
-        DWORD transferred = 0;
-        (void)WinUsb_GetOverlappedResult(
-            static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
-            &slot.overlapped,
-            &transferred,
-            FALSE);
-        slot.pending = false;
+        releaseBulkInAsyncSlots();
     }
-
-    releaseBulkInAsyncSlots();
-
     if (IsOpen())
     {
         std::string ignored;
@@ -274,58 +239,107 @@ void WinUsbTransport::StopBulkInAsyncRing() noexcept
 
 bool WinUsbTransport::IsBulkInAsyncRingActive() const noexcept
 {
-    const auto* ring = asRing(bulkInAsyncRing_);
+    const auto* ring = bulkInAsRing(bulkInAsyncRing_);
     return ring != nullptr && ring->active;
 }
 
-int WinUsbTransport::WaitBulkInAsyncPacket(
-    std::uint32_t timeoutMs,
-    BulkInAsyncPacket& packetOut,
-    std::string& errorOut)
+void WinUsbTransport::SetBulkInPacketHandler(
+    BulkInPacketHandler handler,
+    void* context) noexcept
 {
-    packetOut = {};
-    auto* ring = asRing(bulkInAsyncRing_);
+    bulkInPacketHandler_ = handler;
+    bulkInPacketHandlerCtx_ = context;
+}
+
+void WinUsbTransport::ClearBulkInPacketHandler() noexcept
+{
+    bulkInPacketHandler_ = nullptr;
+    bulkInPacketHandlerCtx_ = nullptr;
+}
+
+int WinUsbTransport::tryPopBulkInPacket(BulkInAsyncPacket& packetOut, std::string& errorOut)
+{
+    if (bulkInCompletionFailed_.load())
+    {
+        errorOut = bulkInCompletionError_.empty()
+            ? "WinUSB bulk IN completion thread failed"
+            : bulkInCompletionError_;
+        return -1;
+    }
+    auto* ring = bulkInAsRing(bulkInAsyncRing_);
     if (ring == nullptr || !ring->active)
     {
         errorOut = "WinUSB bulk IN async ring is not active";
         return -1;
     }
-
-    HANDLE events[kBulkInAsyncSlotCount] = {};
-    if (!collectBulkInAsyncEvents(*ring, events, errorOut))
+    if (!bulkInPopNextOrdered(*ring, packetOut))
     {
-        return -1;
-    }
-
-    const DWORD wait = WaitForMultipleObjects(
-        static_cast<DWORD>(kBulkInAsyncSlotCount),
-        events,
-        FALSE,
-        timeoutMs);
-    if (wait == WAIT_TIMEOUT)
-    {
-        errorOut.clear();
         return 0;
     }
-    if (wait < WAIT_OBJECT_0 || wait >= WAIT_OBJECT_0 + kBulkInAsyncSlotCount)
+    errorOut.clear();
+    return 1;
+}
+
+int WinUsbTransport::WaitBulkInReaderTick(std::uint32_t timeoutMs, std::string& errorOut)
+{
+    auto* dataReady = static_cast<HANDLE>(bulkInDataReadyEvent_);
+    if (dataReady == nullptr)
     {
-        errorOut = formatWin32Error(
-            "WaitForMultipleObjects failed for Emagic bulk IN async", GetLastError());
+        errorOut = "WinUSB bulk IN async ring is not active";
         return -1;
     }
-
-    const std::size_t slot = static_cast<std::size_t>(wait - WAIT_OBJECT_0);
-    packetOut.slot = slot;
-    return completeBulkInAsyncSlot(
-        static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
-        ring->slots[slot],
-        packetOut,
-        errorOut);
+    if (bulkInCompletionFailed_.load())
+    {
+        errorOut = bulkInCompletionError_.empty()
+            ? "WinUSB bulk IN completion thread failed"
+            : bulkInCompletionError_;
+        return -1;
+    }
+    const DWORD wait = WaitForSingleObject(dataReady, timeoutMs);
+    if (wait == WAIT_FAILED)
+    {
+        errorOut = formatWin32Error(
+            "WaitForSingleObject failed for Emagic bulk IN reader tick", GetLastError());
+        return -1;
+    }
+    if (bulkInCompletionFailed_.load())
+    {
+        errorOut = bulkInCompletionError_.empty()
+            ? "WinUSB bulk IN completion thread failed"
+            : bulkInCompletionError_;
+        return -1;
+    }
+    errorOut.clear();
+    return 1;
 }
 
 bool WinUsbTransport::ResubmitBulkInAsyncSlot(std::size_t slot, std::string& errorOut)
 {
+    auto* ring = bulkInAsRing(bulkInAsyncRing_);
+    if (ring != nullptr && slot < kBulkInAsyncSlotCount && ring->slots[slot].pending)
+    {
+        errorOut.clear();
+        return true;
+    }
     return submitBulkInAsyncSlot(slot, errorOut);
+}
+
+int WinUsbTransport::PumpBulkInAsyncCompletions(std::string& errorOut)
+{
+    if (!IsBulkInAsyncRingActive())
+    {
+        errorOut = "WinUSB bulk IN async ring is not active";
+        return -1;
+    }
+    if (bulkInCompletionFailed_.load())
+    {
+        errorOut = bulkInCompletionError_.empty()
+            ? "WinUSB bulk IN completion thread failed"
+            : bulkInCompletionError_;
+        return -1;
+    }
+    errorOut.clear();
+    return 1;
 }
 
 #else // !_WIN32
@@ -336,7 +350,10 @@ bool WinUsbTransport::StartBulkInAsyncRing(std::string& errorOut)
     return false;
 }
 
-void WinUsbTransport::StopBulkInAsyncRing() noexcept {}
+void WinUsbTransport::StopBulkInAsyncRing() noexcept
+{
+    ClearBulkInPacketHandler();
+}
 
 bool WinUsbTransport::IsBulkInAsyncRingActive() const noexcept
 {
@@ -345,13 +362,21 @@ bool WinUsbTransport::IsBulkInAsyncRingActive() const noexcept
 
 void WinUsbTransport::AbortBulkInAsyncRing() noexcept {}
 
-int WinUsbTransport::WaitBulkInAsyncPacket(
+void WinUsbTransport::SetBulkInPacketHandler(
+    BulkInPacketHandler handler,
+    void* context) noexcept
+{
+    (void)handler;
+    (void)context;
+}
+
+void WinUsbTransport::ClearBulkInPacketHandler() noexcept {}
+
+int WinUsbTransport::WaitBulkInReaderTick(
     std::uint32_t /*timeoutMs*/,
-    BulkInAsyncPacket& packetOut,
     std::string& errorOut)
 {
-    packetOut = {};
-    errorOut = "WinUSB WaitBulkInAsyncPacket requires Windows";
+    errorOut = "WinUSB WaitBulkInReaderTick requires Windows";
     return -1;
 }
 
@@ -359,6 +384,12 @@ bool WinUsbTransport::ResubmitBulkInAsyncSlot(std::size_t /*slot*/, std::string&
 {
     errorOut = "WinUSB ResubmitBulkInAsyncSlot requires Windows";
     return false;
+}
+
+int WinUsbTransport::PumpBulkInAsyncCompletions(std::string& errorOut)
+{
+    errorOut = "WinUSB PumpBulkInAsyncCompletions requires Windows";
+    return -1;
 }
 
 #endif // _WIN32

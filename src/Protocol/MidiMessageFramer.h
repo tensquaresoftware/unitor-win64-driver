@@ -26,6 +26,11 @@ public:
     // Oversize SysEx that hit kMaxSysexHoldBytes (English-diagnosable failure path).
     std::uint64_t OversizeSysexRejectCount() const noexcept;
     std::uint64_t ConsumeOversizeSysexRejectCount() noexcept;
+    bool IsHoldingSysEx() const noexcept { return inSysex_; }
+    std::size_t HeldSysexSize() const noexcept { return buffer_.size(); }
+    // Close an open SysEx with a trailing F7 (WinUSB first-burst may drop the
+    // device's closing packet while all prior bytes are already held).
+    void FinalizeHeldSysex(const MidiFramedMessageSink& sink);
 
 private:
     void emitBuffer(const MidiFramedMessageSink& sink);

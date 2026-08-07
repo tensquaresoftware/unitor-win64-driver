@@ -163,6 +163,15 @@ void MidiMessageFramer::endSysEx(const MidiFramedMessageSink& sink)
     inSysex_ = false;
 }
 
+void MidiMessageFramer::FinalizeHeldSysex(const MidiFramedMessageSink& sink)
+{
+    if (!inSysex_ || buffer_.size() < 2)
+    {
+        return;
+    }
+    endSysEx(sink);
+}
+
 void MidiMessageFramer::handleStatusByte(uint8_t status, const MidiFramedMessageSink& sink)
 {
     if (isRealtimeStatus(status))

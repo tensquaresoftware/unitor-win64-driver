@@ -1,6 +1,8 @@
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionSupport.h"
 
+#include <chrono>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -18,6 +20,73 @@ void DeviceSession::resetInFramers() noexcept
     for (std::size_t index = 0; index < kMaxMidiBackendInPorts; ++index)
     {
         inFramers_[index].Reset();
+    }
+}
+
+bool DeviceSession::anyInFramerHoldingSysex() const noexcept
+{
+    for (std::size_t index = 0; index < inPortCount_; ++index)
+    {
+        if (inFramers_[index].IsHoldingSysEx())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void DeviceSession::finalizeOneHeldSysex(std::size_t inPortIndex)
+{
+    MidiMessageFramer& framer = inFramers_[inPortIndex];
+    const uint8_t cableIndex = inCableByPort_[inPortIndex];
+    const std::size_t held = framer.HeldSysexSize();
+    framer.FinalizeHeldSysex(
+        [this, inPortIndex, cableIndex](const uint8_t* framed, std::size_t framedSize) {
+            sendFramedToHost(inPortIndex, cableIndex, framed, framedSize);
+        });
+    std::cerr << "SysEx idle-finalize: in_port=" << inPortIndex << " cable="
+              << static_cast<unsigned>(cableIndex) << " held_before_f7=" << held
+              << "\n"
+              << std::flush;
+    const std::uint64_t rejects = framer.ConsumeOversizeSysexRejectCount();
+    if (rejects > 0)
+    {
+        noteFramerOversizeRejects(inPortIndex, cableIndex, rejects);
+    }
+}
+
+void DeviceSession::finalizeIdleHeldSysex()
+{
+    // Only when hold is exactly one byte short of a known Matrix dump (trailing
+    // F7 URB lost). Linux never synthesizes F7 — keep this narrow.
+    constexpr auto kIdleFinalize = std::chrono::milliseconds(80);
+    const auto now = std::chrono::steady_clock::now();
+    if (lastBulkInPacketSteady_.time_since_epoch().count() == 0
+        || now - lastBulkInPacketSteady_ < kIdleFinalize)
+    {
+        return;
+    }
+    for (std::size_t index = 0; index < inPortCount_; ++index)
+    {
+        const std::size_t held = inFramers_[index].HeldSysexSize();
+        if (!inFramers_[index].IsHoldingSysEx())
+        {
+            continue;
+        }
+        if (held == 274 || held == 350)
+        {
+            finalizeOneHeldSysex(index);
+            continue;
+        }
+        // Rate-limited diagnosis: first-dump holes often demux without a hold.
+        static thread_local auto lastDiag = std::chrono::steady_clock::time_point{};
+        if (lastDiag.time_since_epoch().count() == 0 || now - lastDiag > std::chrono::milliseconds(500))
+        {
+            lastDiag = now;
+            std::cerr << "SysEx idle hold (no finalize): in_port=" << index
+                      << " held=" << held << "\n"
+                      << std::flush;
+        }
     }
 }
 
@@ -193,92 +262,96 @@ bool DeviceSession::processAsyncBulkInPacket(const BulkInAsyncPacket& packet)
     return true;
 }
 
-bool DeviceSession::processAndResubmitAsyncPacket(const BulkInAsyncPacket& packet)
+bool DeviceSession::bulkInPacketThunk(
+    void* context,
+    const uint8_t* data,
+    std::size_t size)
 {
-    std::string error;
-    if (!processAsyncBulkInPacket(packet))
+    auto* session = static_cast<DeviceSession*>(context);
+    if (session == nullptr || session->stopPump_.load())
+    {
+        return true;
+    }
+    return session->enqueueBulkInPacket(data, size);
+}
+
+bool DeviceSession::enqueueBulkInPacket(const uint8_t* data, std::size_t size)
+{
+    if (size > 512)
     {
         return false;
     }
-    if (!transport_.ResubmitBulkInAsyncSlot(packet.slot, error))
+    std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
+    if (bulkInDeliverQueue_.size() >= kMaxQueuedBulkInPackets)
     {
-        if (!stopPump_.load())
-        {
-            failReaderOnReadBulkError(error);
-        }
         return false;
     }
+    QueuedBulkInPacket packet;
+    packet.size = size;
+    if (size > 0 && data != nullptr)
+    {
+        std::memcpy(packet.data.data(), data, size);
+    }
+    bulkInDeliverQueue_.push_back(packet);
     return true;
 }
 
-int DeviceSession::harvestReadyAsyncPackets(BulkInAsyncPacket firstPacket)
+int DeviceSession::drainQueuedBulkInPackets()
 {
-    BulkInAsyncPacket packet = firstPacket;
-    for (;;)
+    std::deque<QueuedBulkInPacket> batch;
     {
-        if (!processAndResubmitAsyncPacket(packet))
-        {
-            return stopPump_.load() ? 0 : -1;
-        }
+        std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
+        batch.swap(bulkInDeliverQueue_);
+    }
+    for (const QueuedBulkInPacket& queued : batch)
+    {
         if (stopPump_.load())
         {
             return 0;
         }
-
-        BulkInAsyncPacket more;
-        std::string error;
-        const int moreRc = transport_.WaitBulkInAsyncPacket(0, more, error);
-        if (moreRc == 0)
+        BulkInAsyncPacket packet;
+        packet.data = queued.data.data();
+        packet.size = queued.size;
+        if (!processAsyncBulkInPacket(packet))
         {
-            return 1;
-        }
-        if (moreRc < 0)
-        {
-            // AbortPipe during Stop is expected — do not record a false pump failure.
-            if (stopPump_.load())
-            {
-                return 0;
-            }
-            failReaderOnReadBulkError(error);
             return -1;
         }
-        packet = more;
     }
+    return 1;
 }
 
 int DeviceSession::readerWaitOnceAsync()
 {
-    // No usbIoMutex_ during Wait — other IN slots stay pending while OUT writes.
+    // Completion thread: harvest → reorder → enqueue. Reader: demux + VirtualMIDI + OUT.
     const std::uint32_t timeoutMs =
         hostOutboundPending() ? kReaderOutboundWaitMs : kReaderIdleWaitMs;
 
-    BulkInAsyncPacket packet;
     std::string error;
-    const int waitRc = transport_.WaitBulkInAsyncPacket(timeoutMs, packet, error);
+    const int waitRc = transport_.WaitBulkInReaderTick(timeoutMs, error);
     if (stopPump_.load())
     {
         return 0;
     }
     if (waitRc < 0)
     {
-        if (stopPump_.load())
-        {
-            return 0;
-        }
         failReaderOnReadBulkError(error);
         return -1;
     }
-    if (waitRc == 1)
+
+    const int drainRc = drainQueuedBulkInPackets();
+    if (drainRc <= 0)
     {
-        // Harvest completed slots before sleeping (keep INPUT_URBS depth).
-        const int harvestRc = harvestReadyAsyncPackets(packet);
-        if (harvestRc <= 0)
-        {
-            return harvestRc;
-        }
+        return drainRc;
     }
 
-    drainHostOutbound();
+    if (anyInFramerHoldingSysex())
+    {
+        finalizeIdleHeldSysex();
+    }
+    if (!anyInFramerHoldingSysex())
+    {
+        drainHostOutbound();
+    }
     return 1;
 }
 
@@ -294,6 +367,7 @@ void DeviceSession::readerLoop()
     }
 
     transport_.StopBulkInAsyncRing();
+    transport_.ClearBulkInPacketHandler();
 }
 
 void DeviceSession::appendPendingProductMidi(
@@ -307,5 +381,7 @@ void DeviceSession::appendPendingProductMidi(
     {
         return;
     }
+    // Only MIDI bytes reset the SysEx idle-finalize clock (pad-only USB packets must not).
+    lastBulkInPacketSteady_ = std::chrono::steady_clock::now();
     pending.emplace_back(cableIndex, std::vector<uint8_t>(midi, midi + n));
 }

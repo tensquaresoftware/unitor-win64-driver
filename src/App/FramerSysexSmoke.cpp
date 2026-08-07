@@ -254,6 +254,36 @@ bool testFramerNestedF0AbandonsOpenSysex()
     return true;
 }
 
+bool testFramerIdleFinalizeMissingF7()
+{
+    MidiMessageFramer framer;
+    MessageList messages;
+    auto sink = makeCollector(messages);
+
+    const uint8_t almost[] = {kSysexStart, 0x10, 0x06, 0x01, 0x00, 0x2C};
+    framer.Push(almost, sizeof(almost), sink);
+    if (!messages.empty() || !framer.IsHoldingSysEx()
+        || framer.HeldSysexSize() != sizeof(almost))
+    {
+        std::cerr << "Framer should hold patch body without F7\n";
+        return false;
+    }
+
+    framer.FinalizeHeldSysex(sink);
+    if (messages.size() != 1 || messages[0].size() != sizeof(almost) + 1
+        || messages[0].back() != kSysexEnd)
+    {
+        std::cerr << "Framer FinalizeHeldSysex must append F7 and emit\n";
+        return false;
+    }
+    if (framer.IsHoldingSysEx())
+    {
+        std::cerr << "Framer must clear SysEx hold after FinalizeHeldSysex\n";
+        return false;
+    }
+    return true;
+}
+
 using FramerTestFn = bool (*)();
 } // namespace
 
@@ -267,7 +297,8 @@ bool runFramerSysexTests()
         testFramerPatchSplitAcrossPushes,
         testFramerClockAndQuarterFrameMidLibrarianSysex,
         testFramerOversizeSysexObservableFailure,
-        testFramerNestedF0AbandonsOpenSysex};
+        testFramerNestedF0AbandonsOpenSysex,
+        testFramerIdleFinalizeMissingF7};
     for (FramerTestFn test : tests)
     {
         if (!test())

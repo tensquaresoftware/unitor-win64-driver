@@ -70,6 +70,9 @@ public:
     bool IsProductOutCable(uint8_t cableIndex) const noexcept;
     bool IsProductInCable(uint8_t cableIndex) const noexcept;
 
+    // Clear split-F5 / cable demux state after sync init drains (or lab settle).
+    void ResetInputState() noexcept;
+
 private:
     bool appendPortSwitch(uint8_t cableIndex, EncodeBuffer& buffer, std::string& errorOut);
     bool appendMidiBytes(const EncodeRequest& request, EncodeBuffer& buffer, std::string& errorOut);

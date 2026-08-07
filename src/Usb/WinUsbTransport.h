@@ -5,9 +5,12 @@
 
 #include "Profile/DeviceProfile.h"
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 #include <string>
+#include <thread>
 
 // Single source of truth for the project WinUSB DeviceInterfaceGUID.
 // Must match installer/mt4-winusb.inf DeviceInterfaceGUIDs value exactly.
@@ -34,6 +37,11 @@ struct BulkInAsyncPacket
     std::size_t slot = 0;
 };
 
+// Linux urb complete → protocol input: invoked from the bulk IN completion thread
+// with a stable packet copy (ring mutex not held). Return false on fatal demux error.
+using BulkInPacketHandler =
+    bool (*)(void* context, const uint8_t* data, std::size_t size);
+
 class WinUsbTransport
 {
 public:
@@ -54,6 +62,9 @@ public:
 
     // Synchronous bulk OUT/IN on discovered Emagic MIDI pipes (after successful Open).
     bool WriteBulk(const uint8_t* data, std::size_t size, std::string& errorOut);
+    // Host MIDI path: Linux snd_usbmidi_emagic_output — each USB packet ≤ wMaxPacket
+    // and ends with 0xFF (strips a trailing encode pad, then re-chunks).
+    bool WriteEmagicHostMidi(const uint8_t* data, std::size_t size, std::string& errorOut);
     bool ReadBulk(
         uint8_t* buffer,
         std::size_t capacity,
@@ -90,14 +101,18 @@ public:
     bool StartBulkInAsyncRing(std::string& errorOut);
     void StopBulkInAsyncRing() noexcept;
     bool IsBulkInAsyncRingActive() const noexcept;
-    // AbortPipe to wake WaitBulkInAsyncPacket during session Stop.
+    // AbortPipe to wake WaitBulkInReaderTick / completion waits during session Stop.
     void AbortBulkInAsyncRing() noexcept;
-    // 1 = packet ready, 0 = wait timeout (ring still armed), -1 = fatal / aborted.
-    int WaitBulkInAsyncPacket(
-        std::uint32_t timeoutMs,
-        BulkInAsyncPacket& packetOut,
-        std::string& errorOut);
+    // Optional: demux on the completion thread (set before StartBulkInAsyncRing).
+    void SetBulkInPacketHandler(BulkInPacketHandler handler, void* context) noexcept;
+    void ClearBulkInPacketHandler() noexcept;
+    // Reader tick: 1 = woke (delivery or timeout), 0 unused, -1 = fatal / aborted.
+    int WaitBulkInReaderTick(std::uint32_t timeoutMs, std::string& errorOut);
+    // Complete signaled slots into the reorder buffer and resubmit immediately
+    // (Linux snd_usbmidi_in_urb_complete). Does not pop/deliver MIDI.
+    int PumpBulkInAsyncCompletions(std::string& errorOut);
     bool ResubmitBulkInAsyncSlot(std::size_t slot, std::string& errorOut);
+    void signalBulkInDataReady() noexcept;
 
 private:
 #ifdef _WIN32
@@ -117,6 +132,15 @@ private:
     bool submitBulkInAsyncSlot(std::size_t slot, std::string& errorOut);
     void releaseBulkInAsyncSlots() noexcept;
     bool armInfiniteBulkInTimeout(std::string& errorOut);
+    bool enableBulkInRawIo(std::string& errorOut);
+    void bulkInCompletionLoop();
+    bool startBulkInCompletionThread(std::string& errorOut);
+    void stopBulkInCompletionThread() noexcept;
+    void failBulkInCompletion(std::string error) noexcept;
+    bool armBulkInCompletionWait(void* waitHandlesOut) noexcept;
+    bool harvestBulkInCompletionOnce() noexcept;
+    bool deliverOrderedBulkInPackets() noexcept;
+    int tryPopBulkInPacket(BulkInAsyncPacket& packetOut, std::string& errorOut);
 
     void* deviceHandle_ = nullptr;   // HANDLE
     void* winUsbHandle_ = nullptr;   // WINUSB_INTERFACE_HANDLE (ifnum match)
@@ -130,6 +154,15 @@ private:
     bool pipesReady_ = false;
     bool lastReadTimedOut_ = false;
     void* bulkInAsyncRing_ = nullptr; // BulkInAsyncRingState*
+    // Completion thread owns harvest+resubmit (+ optional demux handler).
+    std::mutex bulkInRingMutex_;
+    std::thread bulkInCompletionThread_;
+    void* bulkInDataReadyEvent_ = nullptr; // HANDLE auto-reset
+    void* bulkInStopEvent_ = nullptr;      // HANDLE manual-reset
+    std::atomic<bool> bulkInCompletionFailed_{false};
+    std::string bulkInCompletionError_;
+    BulkInPacketHandler bulkInPacketHandler_ = nullptr;
+    void* bulkInPacketHandlerCtx_ = nullptr;
 #else
     bool open_ = false;
     bool lastReadTimedOut_ = false;

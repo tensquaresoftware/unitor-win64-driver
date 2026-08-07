@@ -54,6 +54,12 @@ bool EmagicCableMapper::IsProductInCable(uint8_t cableIndex) const noexcept
     return maskHasProductCable(profile_.inCables, cableIndex);
 }
 
+void EmagicCableMapper::ResetInputState() noexcept
+{
+    currentInCable_ = 0;
+    seenF5_ = false;
+}
+
 bool EmagicCableMapper::appendPortSwitch(
     uint8_t cableIndex,
     EncodeBuffer& buffer,

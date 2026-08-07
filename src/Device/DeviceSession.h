@@ -12,9 +12,11 @@
 #include "Usb/WinUsbTransport.h"
 
 #include <atomic>
+#include <array>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -71,6 +73,7 @@ private:
     bool startPump(std::string& errorOut);
     bool armBulkInAsyncRing(std::string& errorOut);
     void enableHostMidiSink();
+    void queuePostStartPipePrime();
     void stopPumpAndJoin() noexcept;
     void readerLoop();
     void failReaderOnReadBulkError(const std::string& error);
@@ -106,11 +109,11 @@ private:
     bool encodeWritePopOneHostOutbound(HostEncodeScratch& scratch);
     bool hostOutboundPending() const;
     bool processAsyncBulkInPacket(const BulkInAsyncPacket& packet);
-    bool processAndResubmitAsyncPacket(const BulkInAsyncPacket& packet);
-    // 1=continue, 0=stop, -1=fatal. Starts from an already-completed packet.
-    int harvestReadyAsyncPackets(BulkInAsyncPacket firstPacket);
-    // One Wait (+ optional demux/outbound). 1=continue, 0=stop, -1=fatal.
+    // One Wait (+ idle finalize / outbound). 1=continue, 0=stop, -1=fatal.
     int readerWaitOnceAsync();
+    static bool bulkInPacketThunk(void* context, const uint8_t* data, std::size_t size);
+    bool enqueueBulkInPacket(const uint8_t* data, std::size_t size);
+    int drainQueuedBulkInPackets();
     // Clears queued host→device work; returns how many messages were discarded.
     std::size_t clearHostOutboundQueue() noexcept;
     void appendPendingProductMidi(
@@ -142,6 +145,9 @@ private:
     void recordPumpFailure(const std::string& message);
     std::size_t findInPortIndex(uint8_t cableIndex) const noexcept;
     void resetInFramers() noexcept;
+    bool anyInFramerHoldingSysex() const noexcept;
+    void finalizeIdleHeldSysex();
+    void finalizeOneHeldSysex(std::size_t inPortIndex);
 
     static void hostToDeviceThunk(
         void* context,
@@ -173,4 +179,18 @@ private:
     // Steady-clock ms at ring arm (-1 = not armed); read from host MIDI callbacks.
     std::atomic<std::int64_t> bulkInRingArmedSteadyMs_{-1};
     std::atomic<bool> firstHostInquiryLogged_{false};
+    std::chrono::steady_clock::time_point lastBulkInPacketSteady_{};
+    std::chrono::steady_clock::time_point hostOutEarliestSteady_{};
+
+    // Completion thread enqueues USB packets; reader demuxes + SendToHost (teVirtualMIDI
+    // is not safe to call from the WinUSB completion thread — lab saw send_ok with
+    // host TIMEOUT last=none).
+    struct QueuedBulkInPacket
+    {
+        std::array<uint8_t, 512> data{};
+        std::size_t size = 0;
+    };
+    static constexpr std::size_t kMaxQueuedBulkInPackets = 512;
+    std::mutex bulkInDeliverMutex_;
+    std::deque<QueuedBulkInPacket> bulkInDeliverQueue_;
 };
