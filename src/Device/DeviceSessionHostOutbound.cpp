@@ -3,14 +3,16 @@
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionSupport.h"
 
+#include <atomic>
 #include <chrono>
 #include <iostream>
 #include <mutex>
 #include <string>
+#include <utility>
 
 namespace
 {
-constexpr std::size_t kEncodeBufferCapacity = 4096;
+constexpr std::size_t kEncodeBufferCapacity = 16384;
 
 void appendDiscardedSuffix(std::string& detail, std::size_t discarded)
 {
@@ -174,7 +176,7 @@ void DeviceSession::drainHostOutbound()
     {
         return;
     }
-    drainHostOutboundLocked();
+    drainHostOutboundLocked(lock);
 }
 
 void DeviceSession::failHostOutboundDrain(const std::string& reason)
@@ -225,9 +227,13 @@ void DeviceSession::noteHostOutboundCounters(
 
 bool DeviceSession::writeHostOutboundItem(
     const HostOutboundItem& item,
-    HostEncodeScratch& scratch)
+    HostEncodeScratch& scratch,
+    std::unique_lock<std::mutex>& /*usbIoLock*/)
 {
     std::string error;
+    // Keep usbIoMutex_ held for the whole Emagic multi-packet OUT. Unlocking
+    // between packets to demux IN was tried for truncation under load; lab then
+    // stalled on reply timeouts (host_out crawled while IN bytes ballooned).
     if (transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error))
     {
         noteHostOutboundCounters(item, scratch.size);
@@ -245,7 +251,9 @@ bool DeviceSession::writeHostOutboundItem(
     return false;
 }
 
-bool DeviceSession::encodeWritePopOneHostOutbound(HostEncodeScratch& scratch)
+bool DeviceSession::encodeWritePopOneHostOutbound(
+    HostEncodeScratch& scratch,
+    std::unique_lock<std::mutex>& usbIoLock)
 {
     HostOutboundItem item;
     {
@@ -268,7 +276,7 @@ bool DeviceSession::encodeWritePopOneHostOutbound(HostEncodeScratch& scratch)
         failHostOutboundDrain("Host→device pump stopped during drain");
         return false;
     }
-    if (!writeHostOutboundItem(item, scratch))
+    if (!writeHostOutboundItem(item, scratch, usbIoLock))
     {
         return false;
     }
@@ -278,7 +286,7 @@ bool DeviceSession::encodeWritePopOneHostOutbound(HostEncodeScratch& scratch)
     return hostOutbound_.TryPop(committed);
 }
 
-void DeviceSession::drainHostOutboundLocked()
+void DeviceSession::drainHostOutboundLocked(std::unique_lock<std::mutex>& usbIoLock)
 {
     // Never WriteBulk while the async IN ring is down (Start race / Stop teardown).
     if (!transport_.IsBulkInAsyncRingActive())
@@ -312,8 +320,13 @@ void DeviceSession::drainHostOutboundLocked()
         {
             return;
         }
-        if (!encodeWritePopOneHostOutbound(scratch))
+        if (!encodeWritePopOneHostOutbound(scratch, usbIoLock))
         {
+            return;
+        }
+        if (!usbIoLock.owns_lock())
+        {
+            failHostOutboundDrain("Host→device usbIoMutex lost during OUT chunking");
             return;
         }
     }

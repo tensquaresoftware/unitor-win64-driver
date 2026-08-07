@@ -66,7 +66,15 @@ public:
     bool WriteBulk(const uint8_t* data, std::size_t size, std::string& errorOut);
     // Host MIDI path: Linux snd_usbmidi_emagic_output — each USB packet ≤ wMaxPacket
     // and ends with 0xFF (strips a trailing encode pad, then re-chunks).
-    bool WriteEmagicHostMidi(const uint8_t* data, std::size_t size, std::string& errorOut);
+    // Optional betweenChunks runs after each USB packet so the reader can drain IN
+    // while a long SysEx OUT is still in flight (DIN loopback bursts).
+    using BetweenChunksFn = void (*)(void* context);
+    bool WriteEmagicHostMidi(
+        const uint8_t* data,
+        std::size_t size,
+        std::string& errorOut,
+        BetweenChunksFn betweenChunks = nullptr,
+        void* betweenChunksCtx = nullptr);
     bool ReadBulk(
         uint8_t* buffer,
         std::size_t capacity,

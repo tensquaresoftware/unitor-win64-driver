@@ -32,6 +32,10 @@ from pathlib import Path
 
 MIN_INTERVAL_S = 0.05
 DEFAULT_SIZES = (1024, 4096)
+# Stop a stuck run after this many consecutive TIMEOUT/FAIL trials (per payload).
+DEFAULT_ABORT_AFTER_TIMEOUTS = 3
+# Exit when the lab aborts early (stuck / wall clock), distinct from fail (2).
+EXIT_ABORTED = 3
 # Non-commercial / lab manufacturer id (0x7D) + 'L''B' tag — synthetic frames only.
 SYNTH_MARK = bytes([0x7D, 0x4C, 0x42])
 
@@ -99,7 +103,47 @@ def _require_mido():
         ) from exc
     import mido
 
+    _patch_rtmidi_input_queue()
     return mido
+
+
+def _patch_rtmidi_input_queue() -> None:
+    """Raise python-rtmidi MidiIn queue + WinMM SysEx buffers for long loopback.
+
+    Stock 1.5.8 on Windows discards SysEx > ~1024 B (RtMidi WinMM MIDIHDR size).
+    Need python-rtmidi >= 1.6 with MidiIn.set_buffer_size (GitHub main / newer wheels).
+    """
+    try:
+        import rtmidi
+    except ImportError:
+        return
+    if getattr(rtmidi, "_unitor_queue_patched", False):
+        return
+    _orig = rtmidi.MidiIn
+
+    def _MidiIn(*args, **kwargs):
+        kwargs.setdefault("queue_size_limit", 65536)
+        inst = _orig(*args, **kwargs)
+        # Must run before open_port — WinMM MIDIHDR size is fixed at open.
+        if hasattr(inst, "set_buffer_size"):
+            inst.set_buffer_size(65535, 16)
+
+        return inst
+
+    rtmidi.MidiIn = _MidiIn  # type: ignore[misc,assignment]
+    rtmidi._unitor_queue_patched = True  # type: ignore[attr-defined]
+
+
+def _prepare_mido_input(inport) -> None:
+    """Confirm WinMM SysEx buffers were enlarged before open_port."""
+    rt = getattr(inport, "_rt", None)
+    if rt is None or not hasattr(rt, "set_buffer_size"):
+        raise SystemExit(
+            "This lab needs python-rtmidi >= 1.6 with MidiIn.set_buffer_size "
+            "(Windows WinMM otherwise drops SysEx above ~1024 bytes).\n"
+            "Install with:\n"
+            "  python -m pip install -U \"git+https://github.com/SpotlightKid/python-rtmidi.git\"\n"
+        )
 
 
 def _fresh_midi_port_names() -> tuple[list[str], list[str]]:
@@ -249,15 +293,23 @@ def _wait_exact_sysex(
     started = time.monotonic()
     deadline = started + timeout_s
     last_note = "none"
+    saw_types: dict[str, int] = {}
     while time.monotonic() < deadline:
-        for frame in _iter_completed_sysex(inport, assembler):
-            if frame == expected:
-                return frame, (time.monotonic() - started) * 1000.0, "match"
-            last_note = (
-                f"mismatch {_frame_head_tail(frame)} "
-                f"(expected_len={len(expected)})"
-            )
+        for message in inport.iter_pending():
+            saw_types[message.type] = saw_types.get(message.type, 0) + 1
+            if message.type != "sysex":
+                continue
+            data_len = len(message.data)
+            for frame in assembler.push_mido_sysex_data(message.data):
+                if frame == expected:
+                    return frame, (time.monotonic() - started) * 1000.0, "match"
+                last_note = (
+                    f"mismatch {_frame_head_tail(frame)} "
+                    f"(expected_len={len(expected)}; mido_data_len={data_len})"
+                )
         time.sleep(0.005)
+    if saw_types and last_note == "none":
+        last_note = "none types=" + ",".join(f"{k}:{v}" for k, v in sorted(saw_types.items()))
     return None, (time.monotonic() - started) * 1000.0, last_note
 
 
@@ -327,18 +379,60 @@ class ScenarioStats:
     ok: int = 0
     fail_lines: list[str] = field(default_factory=list)
     elapsed_s: float = 0.0
+    aborted: bool = False
+    abort_reason: str = ""
 
     @property
     def rate(self) -> float:
         return (100.0 * self.ok / self.sent) if self.sent else 0.0
 
     def summary(self, pass_percent: float) -> str:
-        passed = self.rate >= pass_percent and self.sent > 0
+        passed = (not self.aborted) and self.rate >= pass_percent and self.sent > 0
+        extra = f" abort={self.abort_reason}" if self.aborted else ""
         return (
             f"summary[{self.name}]: sent={self.sent} ok={self.ok} "
             f"rate={self.rate:.1f}% elapsed_s={self.elapsed_s:.2f} "
-            f"pass={str(passed).lower()} (need>={pass_percent:.0f}%)"
+            f"pass={str(passed).lower()} (need>={pass_percent:.0f}%){extra}"
         )
+
+
+class LabAbort(RuntimeError):
+    """Raised when wall-clock or consecutive-timeout guard fires."""
+
+
+def _payload_count(args: argparse.Namespace) -> int:
+    return len(args.sizes) + (0 if args.skip_fixture else 1)
+
+
+def _session_count(args: argparse.Namespace) -> int:
+    if args.with_bridge:
+        return args.fresh_starts
+    return args.fresh_sessions
+
+
+def _auto_max_wall_seconds(args: argparse.Namespace) -> float:
+    """Healthy-ish budget plus a few timeouts — not a full timeout storm.
+
+    Consecutive-timeout abort stops pure hangs; wall clock is the hard backstop.
+    """
+    sessions = _session_count(args)
+    payloads = _payload_count(args)
+    abort_n = max(1, int(args.abort_after_timeouts))
+    slow_per_payload = abort_n * args.reply_timeout
+    fast_per_payload = max(0, args.count - abort_n) * max(args.interval, 0.2)
+    per_session = payloads * (slow_per_payload + fast_per_payload + 5.0)
+    if args.with_bridge:
+        bridge_overhead = sessions * (args.bridge_ready_timeout + 20.0)
+    else:
+        bridge_overhead = sessions * 10.0
+    return bridge_overhead + sessions * per_session + 30.0
+
+
+def _check_wall_deadline(deadline_mono: float | None, where: str) -> None:
+    if deadline_mono is None:
+        return
+    if time.monotonic() >= deadline_mono:
+        raise LabAbort(f"max-wall-seconds exceeded at {where}")
 
 
 class BridgeSession:
@@ -479,6 +573,7 @@ def _run_loopback_session(
     args: argparse.Namespace,
     lines: list[str],
     start_index: int,
+    deadline_mono: float | None = None,
 ) -> bool:
     plan = _payload_plan(args)
     lines.append(f"# start_index: {start_index}")
@@ -487,6 +582,9 @@ def _run_loopback_session(
     lines.append(f"# count_per_payload: {args.count}")
     lines.append(f"# interval_s: {args.interval}")
     lines.append(f"# reply_timeout_s: {args.reply_timeout}")
+    lines.append(f"# abort_after_timeouts: {args.abort_after_timeouts}")
+    if args.max_wall_seconds > 0:
+        lines.append(f"# max_wall_seconds: {args.max_wall_seconds}")
     lines.append(
         "# payloads: "
         + ", ".join(f"{name}={len(payload)}B" for name, payload in plan)
@@ -495,6 +593,7 @@ def _run_loopback_session(
 
     all_ok = True
     with mido.open_input(in_name) as inport, mido.open_output(out_name) as outport:
+        _prepare_mido_input(inport)
         _drain_input(inport, settle_s=0.2)
         # Brief settle so CoreMIDI / DIN loopback is live before the first large send.
         time.sleep(0.5)
@@ -502,52 +601,82 @@ def _run_loopback_session(
         for name, payload in plan:
             stats = ScenarioStats(name=name)
             started = time.monotonic()
-            for index in range(1, args.count + 1):
-                cycle_started = time.monotonic()
-                _drain_input(inport, settle_s=0.01)
-                stats.sent += 1
-                try:
-                    _send_sysex(outport, mido, payload)
-                except Exception as exc:  # noqa: BLE001 — lab must record send fails
-                    fail = (
-                        f"{index:04d} FAIL {name} send_error={exc!r} "
-                        f"{_frame_head_tail(payload)}"
+            consecutive_timeouts = 0
+            try:
+                for index in range(1, args.count + 1):
+                    _check_wall_deadline(
+                        deadline_mono, f"start={start_index} payload={name} before={index}"
                     )
-                    stats.fail_lines.append(fail)
-                    lines.append(fail)
-                    print(fail)
-                else:
-                    send_line = (
-                        f"{index:04d} SEND {name} {_frame_head_tail(payload)} "
-                        f"t_mono={cycle_started:.3f}"
-                    )
-                    lines.append(send_line)
-                    print(send_line)
-                    reply, dt_ms, note = _wait_exact_sysex(
-                        inport, payload, args.reply_timeout
-                    )
-                    if reply is not None:
-                        stats.ok += 1
-                        result = (
-                            f"{index:04d} RECV {name} match "
-                            f"{_frame_head_tail(reply)} dt_ms={dt_ms:.1f}"
+                    cycle_started = time.monotonic()
+                    _drain_input(inport, settle_s=0.01)
+                    stats.sent += 1
+                    try:
+                        _send_sysex(outport, mido, payload)
+                    except Exception as exc:  # noqa: BLE001 — lab must record send fails
+                        fail = (
+                            f"{index:04d} FAIL {name} send_error={exc!r} "
+                            f"{_frame_head_tail(payload)}"
                         )
-                        lines.append(result)
-                        print(result)
+                        stats.fail_lines.append(fail)
+                        lines.append(fail)
+                        print(fail)
+                        consecutive_timeouts += 1
                     else:
-                        result = (
-                            f"{index:04d} TIMEOUT {name} "
-                            f"expected_len={len(payload)} waited_ms={dt_ms:.1f} "
-                            f"last={note}"
+                        send_line = (
+                            f"{index:04d} SEND {name} {_frame_head_tail(payload)} "
+                            f"t_mono={cycle_started:.3f}"
                         )
-                        stats.fail_lines.append(result)
-                        lines.append(result)
-                        print(result)
+                        lines.append(send_line)
+                        print(send_line)
+                        reply, dt_ms, note = _wait_exact_sysex(
+                            inport, payload, args.reply_timeout
+                        )
+                        if reply is not None:
+                            stats.ok += 1
+                            consecutive_timeouts = 0
+                            result = (
+                                f"{index:04d} RECV {name} match "
+                                f"{_frame_head_tail(reply)} dt_ms={dt_ms:.1f}"
+                            )
+                            lines.append(result)
+                            print(result)
+                        else:
+                            consecutive_timeouts += 1
+                            result = (
+                                f"{index:04d} TIMEOUT {name} "
+                                f"expected_len={len(payload)} waited_ms={dt_ms:.1f} "
+                                f"last={note}"
+                            )
+                            stats.fail_lines.append(result)
+                            lines.append(result)
+                            print(result)
 
-                if index < args.count:
-                    remaining = args.interval - (time.monotonic() - cycle_started)
-                    if remaining > 0:
-                        time.sleep(remaining)
+                    if (
+                        args.abort_after_timeouts > 0
+                        and consecutive_timeouts >= args.abort_after_timeouts
+                    ):
+                        raise LabAbort(
+                            f"{consecutive_timeouts} consecutive timeouts/fails "
+                            f"on {name} (abort-after-timeouts="
+                            f"{args.abort_after_timeouts})"
+                        )
+
+                    if index < args.count:
+                        remaining = args.interval - (time.monotonic() - cycle_started)
+                        if remaining > 0:
+                            time.sleep(remaining)
+            except LabAbort as abort:
+                stats.aborted = True
+                stats.abort_reason = str(abort)
+                abort_line = f"ABORT {name}: {abort}"
+                lines.append(abort_line)
+                print(abort_line)
+                all_ok = False
+                stats.elapsed_s = time.monotonic() - started
+                summary = stats.summary(args.pass_percent)
+                lines.append(summary)
+                print(summary)
+                raise
 
             stats.elapsed_s = time.monotonic() - started
             summary = stats.summary(args.pass_percent)
@@ -562,6 +691,7 @@ def _run_midi_lab_in_fresh_process(
     args: argparse.Namespace,
     log_path: Path,
     start_index: int,
+    deadline_mono: float | None = None,
 ) -> int:
     cmd = [
         sys.executable,
@@ -587,12 +717,34 @@ def _run_midi_lab_in_fresh_process(
         "--start-index",
         str(start_index),
         "--append-log",
+        "--abort-after-timeouts",
+        str(args.abort_after_timeouts),
     ]
+    if args.max_wall_seconds > 0:
+        # Child inherits remaining wall budget so nested sessions stop together.
+        remaining = (
+            max(1.0, deadline_mono - time.monotonic())
+            if deadline_mono is not None
+            else args.max_wall_seconds
+        )
+        cmd.extend(["--max-wall-seconds", f"{remaining:.1f}"])
     if args.skip_fixture:
         cmd.append("--skip-fixture")
     print("Launching fresh MIDI lab process (port refresh) ...")
     print(" ".join(cmd))
-    completed = subprocess.run(cmd, cwd=str(_repo_root()))
+    popen_timeout = None
+    if deadline_mono is not None:
+        popen_timeout = max(1.0, deadline_mono - time.monotonic())
+    try:
+        completed = subprocess.run(
+            cmd, cwd=str(_repo_root()), timeout=popen_timeout
+        )
+    except subprocess.TimeoutExpired:
+        print(
+            f"ABORT: child MIDI lab exceeded wall budget "
+            f"(start={start_index}); killed"
+        )
+        return EXIT_ABORTED
     return int(completed.returncode)
 
 
@@ -612,6 +764,16 @@ def run_lab(args: argparse.Namespace) -> int:
             "(append-log is reserved for child session processes)."
         )
 
+    if args.max_wall_seconds < 0:
+        raise SystemExit("--max-wall-seconds must be >= 0 (0 = auto)")
+    if args.max_wall_seconds == 0 and not args.list_ports:
+        args.max_wall_seconds = _auto_max_wall_seconds(args)
+        print(f"auto max-wall-seconds={args.max_wall_seconds:.1f}")
+
+    deadline_mono = (
+        time.monotonic() + args.max_wall_seconds if args.max_wall_seconds > 0 else None
+    )
+
     stamp = _lab_stamp()
     log_dir = _resolve_log_dir(args)
     if args.log:
@@ -624,6 +786,7 @@ def run_lab(args: argparse.Namespace) -> int:
 
     if args.with_bridge:
         overall_ok = True
+        aborted = False
         header_lines = [
             "# SysEx long DIN loopback lab log",
             f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
@@ -636,12 +799,24 @@ def run_lab(args: argparse.Namespace) -> int:
             f"# interval_s: {args.interval}",
             f"# reply_timeout_s: {args.reply_timeout}",
             f"# pass_percent: {args.pass_percent}",
+            f"# abort_after_timeouts: {args.abort_after_timeouts}",
+            f"# max_wall_seconds: {args.max_wall_seconds}",
             f"# stamp: {stamp}",
             "---",
         ]
         log_path.write_text("\n".join(header_lines) + "\n", encoding="utf-8")
 
         for start_index in range(1, args.fresh_starts + 1):
+            try:
+                _check_wall_deadline(deadline_mono, f"before Bridge start {start_index}")
+            except LabAbort as abort:
+                aborted = True
+                overall_ok = False
+                with log_path.open("a", encoding="utf-8") as handle:
+                    handle.write(f"# ABORT: {abort}\n")
+                print(f"ABORT: {abort}")
+                break
+
             bridge_log = (
                 Path(args.bridge_log)
                 if args.bridge_log and args.fresh_starts == 1
@@ -663,8 +838,13 @@ def run_lab(args: argparse.Namespace) -> int:
                     f"Bridge start {start_index}/{args.fresh_starts} ports ready: "
                     f"OUT={out_name} IN={in_name}"
                 )
-                rc = _run_midi_lab_in_fresh_process(args, log_path, start_index)
-                if rc != 0:
+                rc = _run_midi_lab_in_fresh_process(
+                    args, log_path, start_index, deadline_mono
+                )
+                if rc == EXIT_ABORTED:
+                    aborted = True
+                    overall_ok = False
+                elif rc != 0:
                     overall_ok = False
                 fail_hits = _bridge_fail_lines(bridge.captured_text())
                 with log_path.open("a", encoding="utf-8") as handle:
@@ -686,18 +866,26 @@ def run_lab(args: argparse.Namespace) -> int:
             finally:
                 bridge.stop()
                 print(f"Wrote {bridge_log}")
+            if aborted:
+                break
 
         with log_path.open("a", encoding="utf-8") as handle:
             handle.write(
                 f"# finished_utc: {datetime.now(timezone.utc).isoformat()}\n"
             )
             handle.write(f"# overall_pass: {str(overall_ok).lower()}\n")
+            if aborted:
+                handle.write("# aborted: true\n")
         print(f"Wrote {log_path}")
         print(f"overall_pass={str(overall_ok).lower()}")
+        if aborted:
+            print("aborted=true")
+            return EXIT_ABORTED
         return 0 if overall_ok else 2
 
     if args.fresh_sessions > 1 and not args.append_log:
         overall_ok = True
+        aborted = False
         header_lines = [
             "# SysEx long DIN loopback lab log",
             f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
@@ -711,6 +899,8 @@ def run_lab(args: argparse.Namespace) -> int:
             f"# interval_s: {args.interval}",
             f"# reply_timeout_s: {args.reply_timeout}",
             f"# pass_percent: {args.pass_percent}",
+            f"# abort_after_timeouts: {args.abort_after_timeouts}",
+            f"# max_wall_seconds: {args.max_wall_seconds}",
             f"# out_port_needle: {args.out_port}",
             f"# in_port_needle: {args.in_port}",
             f"# stamp: {stamp}",
@@ -719,6 +909,17 @@ def run_lab(args: argparse.Namespace) -> int:
         log_path.write_text("\n".join(header_lines) + "\n", encoding="utf-8")
 
         for start_index in range(1, args.fresh_sessions + 1):
+            try:
+                _check_wall_deadline(
+                    deadline_mono, f"before MIDI session {start_index}"
+                )
+            except LabAbort as abort:
+                aborted = True
+                overall_ok = False
+                with log_path.open("a", encoding="utf-8") as handle:
+                    handle.write(f"# ABORT: {abort}\n")
+                print(f"ABORT: {abort}")
+                break
             if start_index > 1 and args.session_gap > 0:
                 print(
                     f"Fresh session gap {args.session_gap:.1f}s "
@@ -729,7 +930,13 @@ def run_lab(args: argparse.Namespace) -> int:
                 f"MIDI-only fresh session {start_index}/{args.fresh_sessions} "
                 f"(new process; ports reopen)"
             )
-            rc = _run_midi_lab_in_fresh_process(args, log_path, start_index)
+            rc = _run_midi_lab_in_fresh_process(
+                args, log_path, start_index, deadline_mono
+            )
+            if rc == EXIT_ABORTED:
+                aborted = True
+                overall_ok = False
+                break
             if rc != 0:
                 overall_ok = False
 
@@ -738,8 +945,13 @@ def run_lab(args: argparse.Namespace) -> int:
                 f"# finished_utc: {datetime.now(timezone.utc).isoformat()}\n"
             )
             handle.write(f"# overall_pass: {str(overall_ok).lower()}\n")
+            if aborted:
+                handle.write("# aborted: true\n")
         print(f"Wrote {log_path}")
         print(f"overall_pass={str(overall_ok).lower()}")
+        if aborted:
+            print("aborted=true")
+            return EXIT_ABORTED
         return 0 if overall_ok else 2
 
     lines: list[str] = []
@@ -759,6 +971,8 @@ def run_lab(args: argparse.Namespace) -> int:
                 f"# interval_s: {args.interval}",
                 f"# reply_timeout_s: {args.reply_timeout}",
                 f"# pass_percent: {args.pass_percent}",
+                f"# abort_after_timeouts: {args.abort_after_timeouts}",
+                f"# max_wall_seconds: {args.max_wall_seconds}",
             ]
         )
 
@@ -769,11 +983,27 @@ def run_lab(args: argparse.Namespace) -> int:
     print(f"log={log_path}")
     lines.append(f"# session_index: {args.start_index}")
 
-    all_ok = _run_loopback_session(
-        mido, out_name, in_name, args, lines, args.start_index
-    )
+    aborted = False
+    try:
+        all_ok = _run_loopback_session(
+            mido,
+            out_name,
+            in_name,
+            args,
+            lines,
+            args.start_index,
+            deadline_mono,
+        )
+    except LabAbort as abort:
+        aborted = True
+        all_ok = False
+        lines.append(f"# ABORT: {abort}")
+        print(f"ABORT: {abort}")
+
     lines.append(f"# finished_utc: {datetime.now(timezone.utc).isoformat()}")
     lines.append(f"# start_pass: {str(all_ok).lower()}")
+    if aborted:
+        lines.append("# aborted: true")
     if not args.append_log:
         lines.append(f"# overall_pass: {str(all_ok).lower()}")
 
@@ -783,6 +1013,9 @@ def run_lab(args: argparse.Namespace) -> int:
     print(f"Wrote {log_path}")
     if not args.append_log:
         print(f"overall_pass={str(all_ok).lower()}")
+    if aborted:
+        print("aborted=true")
+        return EXIT_ABORTED
     return 0 if all_ok else 2
 
 
@@ -890,6 +1123,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Seconds to wait for exact loopback reply (default: 8.0)",
     )
     parser.add_argument(
+        "--abort-after-timeouts",
+        type=int,
+        default=DEFAULT_ABORT_AFTER_TIMEOUTS,
+        help=(
+            "Abort the current session after N consecutive TIMEOUT/FAIL trials "
+            f"per payload (default: {DEFAULT_ABORT_AFTER_TIMEOUTS}; 0 disables)"
+        ),
+    )
+    parser.add_argument(
+        "--max-wall-seconds",
+        type=float,
+        default=0.0,
+        help=(
+            "Hard wall-clock budget for the whole lab (default: 0 = auto from "
+            "count/sizes/timeouts/starts). Child processes inherit the remaining budget."
+        ),
+    )
+    parser.add_argument(
         "--pass-percent",
         type=float,
         default=100.0,
@@ -931,6 +1182,10 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"--interval must be >= {MIN_INTERVAL_S}")
     if args.reply_timeout <= 0:
         raise SystemExit("--reply-timeout must be > 0")
+    if args.abort_after_timeouts < 0:
+        raise SystemExit("--abort-after-timeouts must be >= 0")
+    if args.max_wall_seconds < 0:
+        raise SystemExit("--max-wall-seconds must be >= 0 (0 = auto)")
     if args.bridge_ready_timeout <= 0:
         raise SystemExit("--bridge-ready-timeout must be > 0")
     if args.fresh_starts < 1:

@@ -7,9 +7,9 @@
 #include <functional>
 #include <vector>
 
-// Hard SysEx hold cap (device→host). V1 Matrix frames (275 / 351 B) fit; do not
-// grow unbounded. Oversize hits are counted — not silent drops.
-inline constexpr std::size_t kMaxSysexHoldBytes = 1024;
+// Hard SysEx hold cap (device→host). Clears long-loopback fixture (~14708 B)
+// with headroom; do not grow unbounded. Oversize hits are counted — not silent drops.
+inline constexpr std::size_t kMaxSysexHoldBytes = 16384;
 
 using MidiFramedMessageSink =
     std::function<void(const uint8_t* midiBytes, std::size_t byteCount)>;

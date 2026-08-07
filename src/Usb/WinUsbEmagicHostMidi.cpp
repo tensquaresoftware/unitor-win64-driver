@@ -10,7 +10,9 @@
 bool WinUsbTransport::WriteEmagicHostMidi(
     const uint8_t* data,
     std::size_t size,
-    std::string& errorOut)
+    std::string& errorOut,
+    BetweenChunksFn betweenChunks,
+    void* betweenChunksCtx)
 {
     if (!IsOpen())
     {
@@ -53,6 +55,10 @@ bool WinUsbTransport::WriteEmagicHostMidi(
             return false;
         }
         offset += chunk;
+        if (betweenChunks != nullptr && offset < payload)
+        {
+            betweenChunks(betweenChunksCtx);
+        }
     }
     errorOut.clear();
     return true;
@@ -63,7 +69,9 @@ bool WinUsbTransport::WriteEmagicHostMidi(
 bool WinUsbTransport::WriteEmagicHostMidi(
     const uint8_t* /*data*/,
     std::size_t /*size*/,
-    std::string& errorOut)
+    std::string& errorOut,
+    BetweenChunksFn /*betweenChunks*/,
+    void* /*betweenChunksCtx*/)
 {
     errorOut = "WinUSB WriteEmagicHostMidi requires Windows";
     return false;

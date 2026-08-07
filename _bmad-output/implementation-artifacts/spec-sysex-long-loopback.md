@@ -81,6 +81,9 @@ python3 scripts/lab/sysex-long-loopback.py \
 
 Rough round-trip on this Mac: ~0.35 s (1 KiB), ~1.3 s (4 KiB), ~4.7 s (14.7 KiB).
 
+Windows Bridge Mac-parity gate (hold + encode raised to 16384): see
+[`spec-sysex-long-loopback-2.md`](spec-sysex-long-loopback-2.md).
+
 ## Verification
 
 **Commands:**

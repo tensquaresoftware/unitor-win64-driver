@@ -16,9 +16,9 @@ struct HostOutboundItem
 class HostOutboundQueue
 {
 public:
-    // Design target: ~100 × 275 B Matrix patch frames with headroom.
+    // Design target: librarian bursts + long DIN loopback fixture (~14708 B).
     static constexpr std::size_t kMaxMessages = 128;
-    static constexpr std::size_t kMaxQueuedBytes = 128 * 400;
+    static constexpr std::size_t kMaxQueuedBytes = 128 * 512;
 
     bool TryPush(std::size_t outPortIndex, const uint8_t* midi, std::size_t byteCount);
     bool TryCopyFront(HostOutboundItem& out) const;

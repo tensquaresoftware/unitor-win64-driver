@@ -109,10 +109,15 @@ private:
         std::size_t byteCount,
         HostEncodeScratch& scratch);
     void drainHostOutbound();
-    void drainHostOutboundLocked();
+    void drainHostOutboundLocked(std::unique_lock<std::mutex>& usbIoLock);
     void failHostOutboundDrain(const std::string& reason);
-    bool writeHostOutboundItem(const HostOutboundItem& item, HostEncodeScratch& scratch);
-    bool encodeWritePopOneHostOutbound(HostEncodeScratch& scratch);
+    bool writeHostOutboundItem(
+        const HostOutboundItem& item,
+        HostEncodeScratch& scratch,
+        std::unique_lock<std::mutex>& usbIoLock);
+    bool encodeWritePopOneHostOutbound(
+        HostEncodeScratch& scratch,
+        std::unique_lock<std::mutex>& usbIoLock);
     bool hostOutboundPending() const;
     bool processAsyncBulkInPacket(const BulkInAsyncPacket& packet);
     // One Wait (+ idle finalize / outbound). 1=continue, 0=stop, -1=fatal.
@@ -218,7 +223,10 @@ private:
         std::array<uint8_t, 512> data{};
         std::size_t size = 0;
     };
-    static constexpr std::size_t kMaxQueuedBulkInPackets = 512;
+    // While WriteEmagicHostMidi holds usbIoMutex_, IN cannot demux — completion
+    // only enqueues. Long SysEx + DIN loopback noise can land thousands of 32 B
+    // URBs before the next reader drain (lab: 4096 overflowed mid-4096/14 KiB).
+    static constexpr std::size_t kMaxQueuedBulkInPackets = 32768;
     std::mutex bulkInDeliverMutex_;
     std::deque<QueuedBulkInPacket> bulkInDeliverQueue_;
 };

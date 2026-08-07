@@ -1,3 +1,4 @@
-# Windows Boot Camp lab helper for Device Inquiry loops (replaces manual MIDI-OX send).
+# Windows Boot Camp lab helper for Device Inquiry / SysEx loop labs.
 mido>=1.3.0
-python-rtmidi>=1.5.0
+# 1.5.8 WinMM discards SysEx >~1024; need set_buffer_size (1.6+).
+python-rtmidi>=1.6.0

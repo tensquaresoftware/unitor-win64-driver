@@ -59,7 +59,11 @@ void DeviceSession::finalizeIdleHeldSysex()
     // Only when hold is exactly one byte short of a known Matrix dump (trailing
     // F7 URB lost). Linux never synthesizes F7 — keep this narrow.
     constexpr auto kIdleFinalize = std::chrono::milliseconds(80);
+    // Abandon only small stuck holds (noise / truncated Matrix). Long loopback
+    // SysEx (1–14 KiB) can pause on pad-only USB URBs without MIDI bytes; a
+    // 500 ms abandon there dropped F7 and yielded lab TIMEOUT last=none.
     constexpr auto kAbandonHold = std::chrono::milliseconds(500);
+    constexpr std::size_t kAbandonMaxHeldBytes = 400;
     const auto now = std::chrono::steady_clock::now();
     if (lastBulkInPacketSteady_.time_since_epoch().count() == 0
         || now - lastBulkInPacketSteady_ < kIdleFinalize)
@@ -78,7 +82,8 @@ void DeviceSession::finalizeIdleHeldSysex()
             finalizeOneHeldSysex(index);
             continue;
         }
-        if (now - lastBulkInPacketSteady_ >= kAbandonHold)
+        if (held <= kAbandonMaxHeldBytes
+            && now - lastBulkInPacketSteady_ >= kAbandonHold)
         {
             abandonIdlePartialSysexHold(index);
         }
@@ -104,6 +109,12 @@ void DeviceSession::abandonIdlePartialSysexHold(std::size_t inPortIndex)
 void DeviceSession::noteBulkReadCounters(std::size_t bulkBytes, std::size_t demuxSpans)
 {
     deviceHostCounters_.AddBulkAndDemux(bulkBytes, demuxSpans);
+    // Pad-only Emagic URBs produce no MIDI; keep the hold idle clock alive while
+    // any IN framer is assembling SysEx so long loopbacks are not starved.
+    if (bulkBytes > 0 && anyInFramerHoldingSysex())
+    {
+        lastBulkInPacketSteady_ = std::chrono::steady_clock::now();
+    }
 }
 
 void DeviceSession::sendFramedToHost(
@@ -328,11 +339,18 @@ bool DeviceSession::enqueueBulkInPacket(const uint8_t* data, std::size_t size)
 {
     if (size > 512)
     {
+        recordPumpFailure(
+            "Device→host bulk IN enqueue rejected: packet size "
+            + std::to_string(size) + " exceeds 512");
         return false;
     }
     std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
     if (bulkInDeliverQueue_.size() >= kMaxQueuedBulkInPackets)
     {
+        recordPumpFailure(
+            "Device→host bulk IN enqueue rejected: deliver queue full ("
+            + std::to_string(kMaxQueuedBulkInPackets)
+            + ") during host→device WriteBurst");
         return false;
     }
     QueuedBulkInPacket packet;

@@ -1,46 +1,77 @@
-/bmad-quick-dev
+# Lab prompt — palier 3 long SysEx DIN loopback (Windows Bridge, Mac parity)
+
+## Contexte
+
+Après paliers 1 et 2 Windows verts, prouver que le Bridge transporte aussi de **gros SysEx** (1024 / 4096 / fixture ~14 708 o) sans corruption, en boucle DIN, **sans** Matrix.
 
 ## Objectif
 
-Stress SysEx **palier 3** : prouver que le Bridge MT4 transporte sans perte des SysEx **beaucoup plus longs** que patch/master, dans les deux sens, via un outil lab automatisé (pas Matrix-Control). À faire **seulement** si paliers 1 et 2 sont à 100 %.
+Stress SysEx **palier 3** sur **Bridge Windows** : intégrité octet à octet via **boucle DIN Out1→In1** (option A), à **100 %**, avec les plafonds Bridge relevés à **16384** (hold + encode).
+
+**Spec:** `_bmad-output/implementation-artifacts/spec-sysex-long-loopback-2.md`  
+**Contrôle macOS (déjà done):** `_bmad-output/implementation-artifacts/spec-sysex-long-loopback.md`  
+**Rapport hardware SSOT:** `docs/tests/lab-reports/macos-sysex-paliers-2026-08-07.md`
 
 ## Prérequis (bloquant)
-- Palier 1 (275/351 o) et palier 2 (rafale banque / 100× patch) verts en lab.
-- Harness `scripts/lab/` existant à prolonger.
 
-## Intention produit
-On ne dépend plus du contenu réel du Matrix pour le stress extrême :
-- **Host→device** : le lab envoie un SysEx très long (payload bidon mais trame MIDI valide `F0 … F7`, octets &lt; 0x80 dans le body) sur `MT4 Output Y`.
-- **Device→host** (option A, préférée si simple) : un petit **répondeur lab** sur une machine/processus qui écoute un port MIDI et, sur réception d’un dump request (ou d’un trigger lab dédié), renvoie un SysEx de longueur configurable (ex. 4 KiB, 16 KiB, 64 KiB — plafonds à trancher sous `kMaxSysexHoldBytes` / capacité Bridge).
-- **Device→host** (option B) : boucle Bridge seule impossible sans second endpoint ; si pas de second port MIDI physique, utiliser teVirtualMIDI/loopback **hors** MT4 pour le répondeur, **ou** documenter que le stress device→host long se fait en injectant via un second sender sur le chemin USB seulement si l’archi lab le permet.
+- Palier 1 **et** palier 2 Windows à **100 %** sur cette machine.
+- Harness : `scripts/lab/sysex-long-loopback.py`
+- Fixture : `tests/fixtures/sysex/long-loopback-14708.syx` (~14 708 o) — même fichier que macOS.
+- Checklist : `docs/tests/checklists/smoke-mt4-sysex-long-loopback.md`
+- Câble DIN Out1 → In1 en place ; Matrix hors de ces jacks.
+- Fermer DAW / MIDI-OX / Matrix-Control sur ports MT4.
+- Zadig + Bridge Debug (via `--with-bridge`).
 
-Recommandation BMad : **répondeur Python** (même stack mido/rtmidi que le harness) + scénario host→device long direct sur MT4 ; device→host long via répondeur branché sur DIN In du Matrix **seulement si** le lab a un second interface, sinon stress host→device long + rafale déjà prouvée au palier 2 comme preuve IN, et device→host long via répondeur sur VirtualMIDI **non-MT4** n’éprouve pas le Bridge — donc **exiger** soit Matrix+second path DIN, soit accepter que palier 3 gate = **host→device long sur MT4** + mesure Bridge counters, et reporter device→host mega-frame en Ask First hardware.
+## Plafonds Bridge (décision déjà prise)
 
-Clarifier au démarrage avec Guillaume (une question numérotée) quel hardware est dispo pour le sens device→host mega-SysEx.
+Guillaume a choisi le stress type macOS (y compris la fixture 14 ko). Les deux plafonds sont à **16384** :
 
-## Livrables
-1. Outil lab : générateur / répondeur SysEx long (script Python kebab-case sous `scripts/lab/`), longueurs CLI (`--size`, `--count`, `--interval`).
-2. Harness orchestrateur `--with-bridge` qui :
-   - envoie N SysEx host→device de taille S ;
-   - (si mode répondeur MT4 possible) envoie trigger et attend N réponses de taille S sur Input ;
-   - logs + `pass=true` à 100 %.
-3. Respecter les limites Bridge documentées (hold SysEx / queue outbound) : si S dépasse un plafond volontaire, Pass = échec **anglais explicite** (pas hang silencieux) — distinguer « stress transport OK sous plafond » vs « rejet propre oversize ».
-4. Spec EN + checklist EN ; ≥2 Starts frais ; barre 100 % sous le plafond choisi.
-5. C++ seulement si trou lab ; sinon script-only.
+- `kMaxSysexHoldBytes` — `src/Protocol/MidiMessageFramer.h` (device→host)
+- `kEncodeBufferCapacity` — `src/Device/DeviceSessionHostOutbound.cpp` (host→device)
 
-## Tailles de départ suggérées
-- S1 = 1024 o, S2 = 4096 o, S3 = min(16384, plafond hold documenté − marge)
-- count ≥ 20 @ interval ≥ 50–100 ms (ajustable)
-- Ne pas commencer à 1 Mo d’emblée.
+Oversize **au-dessus** de 16384 : rejet anglais observable (pas Pass partiel silencieux).
 
-## Hors scope
-- Remplacer Matrix-Control
-- Windows MIDI Services / MidiView / AMT8 / Unitor8
-- Changer heartbeat MC
-- Faire du palier 3 un substitut au palier 1/2 (formes Matrix réelles restent la crédibilité éditeur)
+Ne pas accuser le câble DIN ni la MT4 si Windows échoue sous le même topo que le contrôle Apple.
+
+## Commande Windows (gate Pass)
+
+```text
+python scripts/lab/sysex-long-loopback.py --with-bridge --pass-percent 100
+```
+
+Defaults : `MT4 Output 1` / `MT4 Input 1`, `--sizes 1024,4096`, fixture on, `--fresh-starts 2`,
+`--count 20`, `--interval 0.05`, `--reply-timeout 8`.  
+Logs : `tests/lab-logs/sysex-long-loopback/` (+ `bridge-<UTC>-startN.log`).
+
+## Setup
+
+- Confirmer la boucle DIN **avant** Start (un `TIMEOUT last=none` en tête = souvent boucle pas encore live).
+- Matrix hors de ces jacks.
+- Rebuild Debug Bridge après changement des plafonds.
+
+## Contraintes Bridge
+
+- Pas de `SendToHost` depuis le thread completion WinUSB.
+- Anneau USB always-pending + resubmit immédiat.
+- Pass = trame reçue **identique** à l’envoyée (réassemblage jusqu’à `F7`).
 
 ## Méthode
-1. Spec single-goal ; trancher le mode device→host selon hardware.
-2. Implémenter générateur/répondeur + harness ; lancer le lab toi-même.
-3. Documenter plafond vs Pass ; pas de rustine timing opaque.
-4. Pense à t'appuyer sur le code du driver Linux si tu dois intervenir sur le code de notre driver MT4, car à plusieurs reprises tu y as trouvé des points qui ont permi de débloquer certaines situations, le driver de Linux semble bien fait et robuste.
+
+1. Rebuild + framer unit / FramerSysex smoke.
+2. Lab toi-même ; ≥2 Starts frais ; pas de warm-up opaque.
+3. Sur KO ≤14708 : instrumenter (len, mismatch offset, compteurs Bridge) — défaut Bridge.
+4. Fix C++ minimal si trou prouvé ; `lint-touched.py` clean.
+5. Une piste → rebuild → lab → conclusion.
+
+## Hors scope
+
+- Option B répondeur Python sans Ask First
+- Matrix-Control / formes Matrix comme gate
+- Windows MIDI Services / MidiView / AMT8 / Unitor8
+- Baisser la barre 100 %
+
+## Livrable
+
+- `overall_pass=true` exit 0 documenté (stamp sous `tests/lab-logs/sysex-long-loopback/`)
+- Spec / checklist à jour
+- Commit seulement sur demande explicite de Guillaume
