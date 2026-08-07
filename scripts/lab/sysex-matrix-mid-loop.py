@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
 """Automate MT4 mid-size Matrix SysEx lab (push + dump, optional Bridge start/stop).
 
-Preferred one-shot (starts Bridge, runs scenarios, optional fresh Starts, stops):
+Preferred one-shot on Windows (starts Bridge, runs scenarios, optional fresh
+Starts, stops):
 
   python -m pip install -r scripts/lab/requirements-device-inquiry.txt
   python scripts/lab/sysex-matrix-mid-loop.py --with-bridge --pass-percent 100
 
-Close MIDI-OX / Matrix-Control on MT4 ports first. Matrix-1000 must be powered
-and DIN-cabled (Out1 <-> In1).
+macOS Apple-driver control (no Bridge) — list ports, then pass real names:
+
+  python3 scripts/lab/sysex-matrix-mid-loop.py --list-ports
+  python3 scripts/lab/sysex-matrix-mid-loop.py \\
+    --out-port \"<Apple Out1>\" --in-port \"<Apple In1>\" \\
+    --pass-percent 100 --fresh-sessions 2 \\
+    --log-dir tests/lab-logs/sysex-matrix-mid-macos
+
+Close MIDI-OX / Matrix-Control / DAWs on MT4 ports first. Matrix-1000 must be
+powered and DIN-cabled (Out1 <-> In1).
 
 Logs (default under tests/lab-logs/sysex-matrix-mid/):
   sysex-matrix-mid-<UTC>.log  — SEND / RECV / FAIL / TIMEOUT + per-scenario summary
@@ -70,7 +79,16 @@ def _lab_stamp() -> str:
 
 
 def _default_log_dir() -> Path:
-    out_dir = _repo_root() / "tests" / "lab-logs" / "sysex-matrix-mid"
+    return _repo_root() / "tests" / "lab-logs" / "sysex-matrix-mid"
+
+
+def _resolve_log_dir(args: argparse.Namespace) -> Path:
+    if args.log_dir:
+        out_dir = Path(args.log_dir)
+        if not out_dir.is_absolute():
+            out_dir = _repo_root() / out_dir
+    else:
+        out_dir = _default_log_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir
 
@@ -678,7 +696,7 @@ def _run_midi_lab_in_fresh_process(
         cmd.append("--dumps-only")
     if not args.include_dump:
         cmd.append("--pushes-only")
-    print("Launching fresh MIDI lab process (WinMM port refresh) ...")
+    print("Launching fresh MIDI lab process (port refresh) ...")
     print(" ".join(cmd))
     completed = subprocess.run(cmd, cwd=str(_repo_root()))
     return int(completed.returncode)
@@ -689,9 +707,31 @@ def run_lab(args: argparse.Namespace) -> int:
     if args.list_ports:
         return _list_ports(mido)
 
+    if args.with_bridge and args.fresh_sessions > 1:
+        raise SystemExit(
+            "Use --fresh-starts with --with-bridge; "
+            "--fresh-sessions is for MIDI-only (no Bridge) runs."
+        )
+    if args.fresh_sessions > 1 and args.append_log:
+        raise SystemExit(
+            "--append-log cannot be combined with --fresh-sessions > 1 "
+            "(append-log is reserved for child session processes)."
+        )
+    if args.pushes_only and args.fresh_sessions > 1:
+        raise SystemExit(
+            "--pushes-only cannot be combined with --fresh-sessions > 1 "
+            "(later sessions are dumps-only by design)."
+        )
+
     stamp = _lab_stamp()
-    log_dir = _default_log_dir()
-    log_path = Path(args.log) if args.log else log_dir / f"sysex-matrix-mid-{stamp}.log"
+    log_dir = _resolve_log_dir(args)
+    if args.log:
+        log_path = Path(args.log)
+        if not log_path.is_absolute():
+            # Prefer landing under --log-dir when both are given.
+            log_path = log_dir / log_path
+    else:
+        log_path = log_dir / f"sysex-matrix-mid-{stamp}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
 
     if args.with_bridge:
@@ -771,10 +811,57 @@ def run_lab(args: argparse.Namespace) -> int:
         print(f"overall_pass={str(overall_ok).lower()}")
         return 0 if overall_ok else 2
 
-    # MIDI-only path (Bridge already running).
+    # MIDI-only path (Apple driver on macOS, or Bridge already running on Windows).
+    if args.fresh_sessions > 1 and not args.append_log:
+        overall_ok = True
+        header_lines = [
+            "# SysEx Matrix mid-size lab log (automated; no MIDI-OX Thru)",
+            f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
+            "# with_bridge: false",
+            f"# fresh_sessions: {args.fresh_sessions}",
+            f"# session_gap_s: {args.session_gap}",
+            f"# count_per_scenario: {args.count}",
+            f"# interval_s: {args.interval}",
+            f"# reply_timeout_s: {args.reply_timeout}",
+            f"# pass_percent: {args.pass_percent}",
+            f"# out_port_needle: {args.out_port}",
+            f"# in_port_needle: {args.in_port}",
+            f"# stamp: {stamp}",
+            "---",
+        ]
+        log_path.write_text("\n".join(header_lines) + "\n", encoding="utf-8")
+
+        for start_index in range(1, args.fresh_sessions + 1):
+            if start_index > 1 and args.session_gap > 0:
+                print(
+                    f"Fresh session gap {args.session_gap:.1f}s "
+                    f"before session {start_index}/{args.fresh_sessions} ..."
+                )
+                time.sleep(args.session_gap)
+            print(
+                f"MIDI-only fresh session {start_index}/{args.fresh_sessions} "
+                f"(new process; ports reopen)"
+            )
+            # First session: pushes + dumps. Later sessions: dumps only
+            # (fresh-session gate targets the dump pair / first dump).
+            args.include_push = start_index == 1 and not args.dumps_only
+            args.include_dump = not args.pushes_only
+            rc = _run_midi_lab_in_fresh_process(args, log_path, start_index)
+            if rc != 0:
+                overall_ok = False
+
+        with log_path.open("a", encoding="utf-8") as handle:
+            handle.write(
+                f"# finished_utc: {datetime.now(timezone.utc).isoformat()}\n"
+            )
+            handle.write(f"# overall_pass: {str(overall_ok).lower()}\n")
+        print(f"Wrote {log_path}")
+        print(f"overall_pass={str(overall_ok).lower()}")
+        return 0 if overall_ok else 2
+
     lines: list[str] = []
     if args.append_log and log_path.is_file():
-        # Child process under --with-bridge: append scenario body only.
+        # Child process under --with-bridge / --fresh-sessions: append body only.
         pass
     else:
         lines.extend(
@@ -782,6 +869,7 @@ def run_lab(args: argparse.Namespace) -> int:
                 "# SysEx Matrix mid-size lab log (automated; no MIDI-OX Thru)",
                 f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
                 "# with_bridge: false",
+                f"# fresh_sessions: {args.fresh_sessions}",
                 f"# count_per_scenario: {args.count}",
                 f"# interval_s: {args.interval}",
                 f"# reply_timeout_s: {args.reply_timeout}",
@@ -797,17 +885,22 @@ def run_lab(args: argparse.Namespace) -> int:
     print(f"OUT={out_name}")
     print(f"IN={in_name}")
     print(f"log={log_path}")
+    lines.append(f"# session_index: {args.start_index}")
 
     _, all_ok = _run_all_scenarios(
         mido, out_name, in_name, args, lines, args.start_index
     )
     lines.append(f"# finished_utc: {datetime.now(timezone.utc).isoformat()}")
     lines.append(f"# start_pass: {str(all_ok).lower()}")
+    if not args.append_log:
+        lines.append(f"# overall_pass: {str(all_ok).lower()}")
 
     mode = "a" if args.append_log else "w"
     with log_path.open(mode, encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")
     print(f"Wrote {log_path}")
+    if not args.append_log:
+        print(f"overall_pass={str(all_ok).lower()}")
     return 0 if all_ok else 2
 
 
@@ -857,6 +950,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Fresh Bridge Starts when --with-bridge (default: 2)",
     )
     parser.add_argument(
+        "--fresh-sessions",
+        type=int,
+        default=1,
+        help=(
+            "Fresh MIDI-only sessions (new process / reopen ports; no Bridge). "
+            "Session 1: pushes+dumps; later: dumps only. Default: 1"
+        ),
+    )
+    parser.add_argument(
+        "--session-gap",
+        type=float,
+        default=2.0,
+        help="Seconds between MIDI-only fresh sessions (default: 2.0)",
+    )
+    parser.add_argument(
         "--out-port",
         default="MT4 Output 1",
         help="MIDI output port name (default: MT4 Output 1)",
@@ -901,9 +1009,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to Master.syx (351 B)",
     )
     parser.add_argument(
+        "--log-dir",
+        default="",
+        help=(
+            "Lab log directory (default: tests/lab-logs/sysex-matrix-mid). "
+            "Use tests/lab-logs/sysex-matrix-mid-macos on Apple-driver labs."
+        ),
+    )
+    parser.add_argument(
         "--log",
         default="",
-        help="Lab log path (default: tests/lab-logs/sysex-matrix-mid/sysex-matrix-mid-<utc>.log)",
+        help="Lab log path (default: <log-dir>/sysex-matrix-mid-<utc>.log)",
     )
     parser.add_argument(
         "--start-index",
@@ -941,6 +1057,10 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("--bridge-ready-timeout must be > 0")
     if args.fresh_starts < 1:
         raise SystemExit("--fresh-starts must be >= 1")
+    if args.fresh_sessions < 1:
+        raise SystemExit("--fresh-sessions must be >= 1")
+    if args.session_gap < 0:
+        raise SystemExit("--session-gap must be >= 0")
     if args.dumps_only and args.pushes_only:
         raise SystemExit("Use only one of --dumps-only / --pushes-only")
     args.include_push = not args.dumps_only
