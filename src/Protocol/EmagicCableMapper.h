@@ -54,6 +54,7 @@ public:
     explicit EmagicCableMapper(const DeviceProfile& profile);
 
     // Host MIDI for one Emagic cable → framed bulk OUT bytes (F5 switch + pad).
+    // Trailing pad is a single 0xFF (Linux snd_usbmidi_emagic_output short URB).
     bool EncodeToDevice(
         const EncodeRequest& request,
         EncodeBuffer& buffer,

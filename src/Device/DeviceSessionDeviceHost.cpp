@@ -8,7 +8,9 @@
 
 namespace
 {
-constexpr std::size_t kBulkInBurstMaxPackets = 8;
+// Wake often enough to drain host→device while IN URBs stay pending (Linux model).
+constexpr std::uint32_t kReaderIdleWaitMs = 50;
+constexpr std::uint32_t kReaderOutboundWaitMs = 5;
 } // namespace
 
 void DeviceSession::resetInFramers() noexcept
@@ -168,152 +170,130 @@ bool DeviceSession::processBulkReadLocked(
     return true;
 }
 
-int DeviceSession::readAndProcessOneBurstPacket(uint8_t* readBuffer, std::size_t capacity)
+bool DeviceSession::hostOutboundPending() const
 {
+    std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
+    return hostOutbound_.MessageCount() > 0;
+}
+
+bool DeviceSession::processAsyncBulkInPacket(const BulkInAsyncPacket& packet)
+{
+    if (packet.size == 0)
+    {
+        return true;
+    }
+
+    std::string error;
+    std::lock_guard<std::mutex> lock(usbIoMutex_);
+    if (!processBulkReadLocked(packet.data, packet.size, error))
+    {
+        recordPumpFailure("Device→host DecodeFromDevice failed: " + error);
+        return false;
+    }
+    return true;
+}
+
+bool DeviceSession::processAndResubmitAsyncPacket(const BulkInAsyncPacket& packet)
+{
+    std::string error;
+    if (!processAsyncBulkInPacket(packet))
+    {
+        return false;
+    }
+    if (!transport_.ResubmitBulkInAsyncSlot(packet.slot, error))
+    {
+        if (!stopPump_.load())
+        {
+            failReaderOnReadBulkError(error);
+        }
+        return false;
+    }
+    return true;
+}
+
+int DeviceSession::harvestReadyAsyncPackets(BulkInAsyncPacket firstPacket)
+{
+    BulkInAsyncPacket packet = firstPacket;
+    for (;;)
+    {
+        if (!processAndResubmitAsyncPacket(packet))
+        {
+            return stopPump_.load() ? 0 : -1;
+        }
+        if (stopPump_.load())
+        {
+            return 0;
+        }
+
+        BulkInAsyncPacket more;
+        std::string error;
+        const int moreRc = transport_.WaitBulkInAsyncPacket(0, more, error);
+        if (moreRc == 0)
+        {
+            return 1;
+        }
+        if (moreRc < 0)
+        {
+            // AbortPipe during Stop is expected — do not record a false pump failure.
+            if (stopPump_.load())
+            {
+                return 0;
+            }
+            failReaderOnReadBulkError(error);
+            return -1;
+        }
+        packet = more;
+    }
+}
+
+int DeviceSession::readerWaitOnceAsync()
+{
+    // No usbIoMutex_ during Wait — other IN slots stay pending while OUT writes.
+    const std::uint32_t timeoutMs =
+        hostOutboundPending() ? kReaderOutboundWaitMs : kReaderIdleWaitMs;
+
+    BulkInAsyncPacket packet;
+    std::string error;
+    const int waitRc = transport_.WaitBulkInAsyncPacket(timeoutMs, packet, error);
     if (stopPump_.load())
     {
         return 0;
     }
-
-    std::size_t bytesRead = 0;
-    std::string error;
-    if (!transport_.ReadBulk(readBuffer, capacity, bytesRead, error))
+    if (waitRc < 0)
     {
-        if (transport_.LastReadTimedOut())
+        if (stopPump_.load())
         {
             return 0;
         }
         failReaderOnReadBulkError(error);
         return -1;
     }
-    if (bytesRead == 0)
+    if (waitRc == 1)
     {
-        return 0;
+        // Harvest completed slots before sleeping (keep INPUT_URBS depth).
+        const int harvestRc = harvestReadyAsyncPackets(packet);
+        if (harvestRc <= 0)
+        {
+            return harvestRc;
+        }
     }
-    if (!processBulkReadLocked(readBuffer, bytesRead, error))
-    {
-        recordPumpFailure("Device→host DecodeFromDevice failed: " + error);
-        return -1;
-    }
+
+    drainHostOutbound();
     return 1;
-}
-
-bool DeviceSession::drainPendingBulkInBurst(uint8_t* readBuffer, std::size_t capacity)
-{
-    // Caller must hold usbIoMutex_ and must not have another ReadBulk pending.
-    if (readBuffer == nullptr || capacity == 0 || stopPump_.load())
-    {
-        return true;
-    }
-
-    std::string error;
-    if (!transport_.BeginShortBulkInDrain(error))
-    {
-        recordPumpFailure("Device→host short bulk IN drain arm failed: " + error);
-        return false;
-    }
-
-    bool ok = true;
-    for (std::size_t packet = 0; packet < kBulkInBurstMaxPackets; ++packet)
-    {
-        const int step = readAndProcessOneBurstPacket(readBuffer, capacity);
-        if (step == 0)
-        {
-            break;
-        }
-        if (step < 0)
-        {
-            ok = false;
-            break;
-        }
-    }
-
-    std::string restoreError;
-    if (!transport_.RestoreSessionBulkTimeouts(restoreError))
-    {
-        recordPumpFailure(
-            "Device→host failed to restore session bulk timeouts: " + restoreError);
-        return false;
-    }
-    return ok;
-}
-
-bool DeviceSession::handleReaderAfterSuccessfulRead(
-    uint8_t* readBuffer,
-    std::size_t capacity,
-    std::size_t bytesRead,
-    std::string& errorOut)
-{
-    if (bytesRead != 0 && !processBulkRead(readBuffer, bytesRead, errorOut))
-    {
-        recordPumpFailure("Device→host DecodeFromDevice failed: " + errorOut);
-        return false;
-    }
-    if (bytesRead > 0)
-    {
-        // Catch a second USB packet that arrived during demux/forward.
-        std::lock_guard<std::mutex> lock(usbIoMutex_);
-        if (!drainPendingBulkInBurst(readBuffer, capacity))
-        {
-            return false;
-        }
-    }
-    drainHostOutboundFromReader();
-    return true;
 }
 
 void DeviceSession::readerLoop()
 {
-    const std::size_t capacity = transport_.BulkInReadCapacity();
-    uint8_t readBuffer[512] = {};
-    if (capacity == 0 || capacity > sizeof(readBuffer))
-    {
-        recordPumpFailure("Device→host bulk IN read capacity is invalid");
-        return;
-    }
-
+    // Ring is armed in startPump before the host MIDI sink goes live.
     while (!stopPump_.load())
     {
-        std::size_t bytesRead = 0;
-        std::string error;
-        const bool readOk = transport_.ReadBulk(readBuffer, capacity, bytesRead, error);
-        if (stopPump_.load())
-        {
-            break;
-        }
-        if (!readOk && transport_.LastReadTimedOut())
-        {
-            // No pending Read: safe to Write then briefly poll IN (Emagic half-duplex).
-            drainHostOutboundFromReader();
-            continue;
-        }
-        if (!readOk)
-        {
-            failReaderOnReadBulkError(error);
-            break;
-        }
-        if (!handleReaderAfterSuccessfulRead(readBuffer, capacity, bytesRead, error))
+        if (readerWaitOnceAsync() <= 0)
         {
             break;
         }
     }
-}
 
-bool DeviceSession::processBulkRead(
-    const uint8_t* readBuffer,
-    std::size_t bytesRead,
-    std::string& errorOut)
-{
-    std::vector<std::pair<uint8_t, std::vector<uint8_t>>> pending;
-    {
-        std::lock_guard<std::mutex> lock(usbIoMutex_);
-        if (!collectBulkReadPending(readBuffer, bytesRead, pending, errorOut))
-        {
-            return false;
-        }
-    }
-    forwardPendingProductMidi(pending);
-    return true;
+    transport_.StopBulkInAsyncRing();
 }
 
 void DeviceSession::appendPendingProductMidi(

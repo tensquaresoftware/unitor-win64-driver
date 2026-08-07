@@ -3,6 +3,7 @@
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionSupport.h"
 
+#include <chrono>
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -74,26 +75,20 @@ void DeviceSession::handleHostMidi(
         }
     }
 
-    // VirtualMIDI thread: do not poll bulk IN here — reader may own a pending ReadBulk.
+    // try_lock drain when the reader is between Wait timeouts (IN URBs stay pending).
     drainHostOutbound();
 }
 
 void DeviceSession::drainHostOutbound()
 {
-    // try_lock: if processBulkRead holds usbIoMutex_, leave work queued; the
-    // reader loop drains after releasing the decode lock.
+    // Opportunistic drain when the reader is waiting (lock free). WriteBulk runs
+    // while other bulk IN async slots remain submitted (Linux INPUT_URBS model).
     std::unique_lock<std::mutex> lock(usbIoMutex_, std::try_to_lock);
     if (!lock.owns_lock())
     {
         return;
     }
-    drainHostOutboundLocked(false);
-}
-
-void DeviceSession::drainHostOutboundFromReader()
-{
-    std::lock_guard<std::mutex> lock(usbIoMutex_);
-    drainHostOutboundLocked(true);
+    drainHostOutboundLocked();
 }
 
 void DeviceSession::failHostOutboundDrain(const std::string& reason)
@@ -106,16 +101,40 @@ void DeviceSession::failHostOutboundDrain(const std::string& reason)
     recordPumpFailure(reason + " (discarded " + std::to_string(discarded) + " queued message(s))");
 }
 
-void DeviceSession::noteHostOutboundCounters(const HostOutboundItem& item) noexcept
+void DeviceSession::noteHostOutboundCounters(
+    const HostOutboundItem& item,
+    std::size_t encodedBytes) noexcept
 {
     deviceHostCounters_.AddHostOutOk();
-    if (isUniversalDeviceInquiry(item.midi.data(), item.midi.size()))
+    if (!isUniversalDeviceInquiry(item.midi.data(), item.midi.size()))
     {
-        deviceHostCounters_.AddInquiryOut();
-        std::cerr << "host→device: Device Inquiry WriteBulk ok (out_port="
-                  << (item.outPortIndex + 1) << " bytes=" << item.midi.size() << ")\n"
-                  << std::flush;
+        return;
     }
+
+    deviceHostCounters_.AddInquiryOut();
+    const bool ringActive = transport_.IsBulkInAsyncRingActive();
+    const bool firstShot = !firstHostInquiryLogged_.exchange(true);
+    long long msSinceRing = -1;
+    const std::int64_t armedMs =
+        bulkInRingArmedSteadyMs_.load(std::memory_order_acquire);
+    if (armedMs >= 0)
+    {
+        const auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::steady_clock::now().time_since_epoch())
+                               .count();
+        msSinceRing = nowMs - armedMs;
+    }
+    // Single 0xFF pad → midi+1; F5 + cable + midi + pad → midi+3.
+    const bool includedF5 = encodedBytes >= item.midi.size() + 3;
+
+    std::cerr << "host→device: Device Inquiry WriteBulk ok (out_port="
+              << (item.outPortIndex + 1) << " midi_bytes=" << item.midi.size()
+              << " encoded_bytes=" << encodedBytes
+              << " f5_switch=" << (includedF5 ? "yes" : "no")
+              << " ring_active=" << (ringActive ? "yes" : "no")
+              << " ms_since_ring_arm=" << msSinceRing
+              << " first_after_start=" << (firstShot ? "yes" : "no") << ")\n"
+              << std::flush;
 }
 
 bool DeviceSession::writeHostOutboundItem(
@@ -125,7 +144,7 @@ bool DeviceSession::writeHostOutboundItem(
     std::string error;
     if (transport_.WriteBulk(scratch.bytes, scratch.size, error))
     {
-        noteHostOutboundCounters(item);
+        noteHostOutboundCounters(item, scratch.size);
         return true;
     }
     const std::size_t discarded = clearHostOutboundQueue();
@@ -135,11 +154,7 @@ bool DeviceSession::writeHostOutboundItem(
     return false;
 }
 
-bool DeviceSession::encodeWritePopOneHostOutbound(
-    HostEncodeScratch& scratch,
-    uint8_t* readBuffer,
-    std::size_t readCapacity,
-    bool drainInAfterWrite)
+bool DeviceSession::encodeWritePopOneHostOutbound(HostEncodeScratch& scratch)
 {
     HostOutboundItem item;
     {
@@ -166,24 +181,26 @@ bool DeviceSession::encodeWritePopOneHostOutbound(
     {
         return false;
     }
-    if (drainInAfterWrite && readCapacity > 0
-        && !drainPendingBulkInBurst(readBuffer, readCapacity))
-    {
-        return false;
-    }
 
     std::lock_guard<std::mutex> queueLock(hostOutboundMutex_);
     HostOutboundItem committed;
     return hostOutbound_.TryPop(committed);
 }
 
-void DeviceSession::drainHostOutboundLocked(bool drainInAfterEachWrite)
+void DeviceSession::drainHostOutboundLocked()
 {
+    // Never WriteBulk while the async IN ring is down (Start race / Stop teardown).
+    if (!transport_.IsBulkInAsyncRingActive())
+    {
+        if (running_.load() && hostOutboundPending())
+        {
+            failHostOutboundDrain(
+                "Host→device WriteBulk skipped: bulk IN async ring inactive");
+        }
+        return;
+    }
+
     uint8_t encodeBytes[kEncodeBufferCapacity] = {};
-    uint8_t readBuffer[512] = {};
-    const std::size_t readCapacity = transport_.BulkInReadCapacity();
-    const std::size_t burstCapacity =
-        (readCapacity > 0 && readCapacity <= sizeof(readBuffer)) ? readCapacity : 0;
     HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
 
     while (!stopPump_.load())
@@ -195,8 +212,7 @@ void DeviceSession::drainHostOutboundLocked(bool drainInAfterEachWrite)
                 return;
             }
         }
-        if (!encodeWritePopOneHostOutbound(
-                scratch, readBuffer, burstCapacity, drainInAfterEachWrite))
+        if (!encodeWritePopOneHostOutbound(scratch))
         {
             return;
         }

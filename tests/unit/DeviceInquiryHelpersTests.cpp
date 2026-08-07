@@ -34,3 +34,11 @@ TEST_CASE("Inquiry helpers reject null or short buffers", "[inquiry]")
     REQUIRE_FALSE(isIdentityReply(nullptr, 5));
     REQUIRE_FALSE(isIdentityReply(shortBuf, sizeof(shortBuf)));
 }
+
+TEST_CASE("formatMidiBytesHex renders compact uppercase hex", "[inquiry]")
+{
+    const uint8_t reply[] = {0xF0, 0x7E, 0x00, 0x06, 0x02};
+    REQUIRE(formatMidiBytesHex(reply, sizeof(reply)) == "F0 7E 00 06 02");
+    REQUIRE(formatMidiBytesHex(nullptr, 3).empty());
+    REQUIRE(formatMidiBytesHex(reply, 0).empty());
+}

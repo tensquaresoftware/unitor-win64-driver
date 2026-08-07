@@ -121,3 +121,21 @@ TEST_CASE("EncodeToDevice rejects tiny buffer", "[mapper]")
     REQUIRE_FALSE(mapper.EncodeToDevice(request, buffer, error));
     REQUIRE_FALSE(error.empty());
 }
+
+TEST_CASE("EncodeToDevice appends a single trailing 0xFF pad", "[mapper]")
+{
+    const DeviceProfile& mt4 = requireMt4Profile();
+    EmagicCableMapper mapper(mt4);
+
+    const uint8_t inquiry[] = {0xF0, 0x7E, 0x7F, 0x06, 0x01, 0xF7};
+    uint8_t outBuffer[64] = {};
+    std::string error;
+    // Cable 0: first encode emits F5 01 + inquiry + one 0xFF (Linux short URB).
+    EncodeRequest request{0, inquiry, sizeof(inquiry)};
+    EncodeBuffer buffer{outBuffer, sizeof(outBuffer), 0};
+
+    REQUIRE(mapper.EncodeToDevice(request, buffer, error));
+    REQUIRE(error.empty());
+    REQUIRE(buffer.size == sizeof(inquiry) + 2 + 1);
+    REQUIRE(outBuffer[buffer.size - 1] == 0xFF);
+}

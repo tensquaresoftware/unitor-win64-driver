@@ -91,11 +91,15 @@ bool EmagicCableMapper::appendMidiBytes(
 
 void EmagicCableMapper::appendTrailingPad(EncodeBuffer& buffer) noexcept
 {
-    // One trailing 0xFF when framed data was written and free space remains.
-    if (buffer.size > 0 && buffer.size < buffer.capacity)
+    if (buffer.size == 0 || buffer.size >= buffer.capacity)
     {
-        buffer.bytes[buffer.size++] = kEmagicEndOfValidData;
+        return;
     }
+
+    // Linux snd_usbmidi_emagic_output: one trailing 0xFF, then a short URB
+    // (transfer length = data + 1). Do not fill to wMaxPacketSize — lab showed
+    // full-packet pad did not fix Device Inquiry Identity loss (~45 % still).
+    buffer.bytes[buffer.size++] = kEmagicEndOfValidData;
 }
 
 bool EmagicCableMapper::EncodeToDevice(

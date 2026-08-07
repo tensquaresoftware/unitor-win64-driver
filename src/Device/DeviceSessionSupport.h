@@ -17,3 +17,6 @@ bool isUniversalDeviceInquiry(const uint8_t* midiBytes, std::size_t byteCount) n
 
 // Identity Reply: F0 7E xx 06 02 ...
 bool isIdentityReply(const uint8_t* midiBytes, std::size_t byteCount) noexcept;
+
+// Compact uppercase hex for lab dumps (e.g. "F0 7E 00"); empty if no bytes.
+std::string formatMidiBytesHex(const uint8_t* midiBytes, std::size_t byteCount);

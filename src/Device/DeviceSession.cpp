@@ -1,6 +1,7 @@
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionSupport.h"
 
+#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <system_error>
@@ -47,8 +48,19 @@ bool DeviceSession::sendInitMagic(std::string& errorOut)
     {
         return false;
     }
+    // Kick has no Emagic reply framing we need; flush residual IN before the
+    // async ring so the first host Inquiry burst keeps full INPUT_URBS depth.
+    std::size_t kickDrained = 0;
+    std::string drainError;
+    if (!transport_.DrainBulkInBestEffort(8, kickDrained, drainError))
+    {
+        errorOut = "DeviceSession post-kick bulk IN drain failed: " + drainError;
+        return false;
+    }
+    drainedBytes += kickDrained;
     std::cout << "Emagic init/computer-mode: drained " << drainedBytes
-              << " bulk IN byte(s); read capacity="
+              << " bulk IN byte(s); post-kick drain=" << kickDrained
+              << "; read capacity="
               << transport_.BulkInReadCapacity()
               << "; channel CC kick sent (manual Computer Mode)\n"
               << std::flush;
@@ -170,6 +182,31 @@ bool DeviceSession::createPortsAndStartPump(
     return startPump(errorOut);
 }
 
+bool DeviceSession::armBulkInAsyncRing(std::string& errorOut)
+{
+    if (!transport_.StartBulkInAsyncRing(errorOut))
+    {
+        stopPump_.store(true);
+        errorOut = "DeviceSession failed to arm bulk IN async ring: " + errorOut;
+        return false;
+    }
+    const auto armedAt = std::chrono::steady_clock::now().time_since_epoch();
+    bulkInRingArmedSteadyMs_.store(
+        std::chrono::duration_cast<std::chrono::milliseconds>(armedAt).count(),
+        std::memory_order_release);
+    std::cout << "Bulk IN async ring armed (" << kBulkInAsyncSlotCount
+              << " slots) before host MIDI sink\n"
+              << std::flush;
+    return true;
+}
+
+void DeviceSession::enableHostMidiSink()
+{
+    running_.store(true);
+    midiBackend_->SetHostToDeviceSink(&DeviceSession::hostToDeviceThunk, this);
+    std::cout << "Host MIDI sink live (bulk IN ring already active)\n" << std::flush;
+}
+
 bool DeviceSession::startPump(std::string& errorOut)
 {
     {
@@ -180,11 +217,16 @@ bool DeviceSession::startPump(std::string& errorOut)
     deviceHostCounters_.Reset();
     resetInFramers();
     (void)clearHostOutboundQueue();
-
+    firstHostInquiryLogged_.store(false);
+    bulkInRingArmedSteadyMs_.store(-1, std::memory_order_relaxed);
     stopPump_.store(false);
-    // Accept host→device as soon as the sink is live (before Start returns).
-    running_.store(true);
-    midiBackend_->SetHostToDeviceSink(&DeviceSession::hostToDeviceThunk, this);
+
+    // Arm INPUT_URBS, start the reader Wait loop, then open the host sink so
+    // completions are harvested before any host→device WriteBulk.
+    if (!armBulkInAsyncRing(errorOut))
+    {
+        return false;
+    }
 
     try
     {
@@ -193,21 +235,20 @@ bool DeviceSession::startPump(std::string& errorOut)
     catch (const std::system_error& ex)
     {
         stopPump_.store(true);
-        running_.store(false);
-        {
-            std::lock_guard<std::mutex> lock(usbIoMutex_);
-            midiBackend_->SetHostToDeviceSink(nullptr, nullptr);
-        }
+        transport_.StopBulkInAsyncRing();
         errorOut = std::string("DeviceSession failed to start MIDI reader thread: ") + ex.what();
         return false;
     }
 
+    enableHostMidiSink();
     return true;
 }
 
 void DeviceSession::stopPumpAndJoin() noexcept
 {
     stopPump_.store(true);
+    // Wake WaitForMultipleObjects on infinite-timeout IN URBs.
+    transport_.AbortBulkInAsyncRing();
     if (readerThread_.joinable())
     {
         readerThread_.join();
@@ -260,7 +301,7 @@ bool DeviceSession::Start(const DeviceSessionStartRequest& request, std::string&
 
 void DeviceSession::Stop() noexcept
 {
-    // Join reader before Close so in-flight ReadBulk can finish via IN timeout.
+    // Join reader before Close so AbortBulkInAsyncRing can finish in-flight IN.
     stopPumpAndJoin();
     resetInFramers();
 

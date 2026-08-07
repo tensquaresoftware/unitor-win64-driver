@@ -12,6 +12,7 @@
 #include "Usb/WinUsbTransport.h"
 
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -68,13 +69,11 @@ private:
         const PortNameSet& portNames,
         std::string& errorOut);
     bool startPump(std::string& errorOut);
+    bool armBulkInAsyncRing(std::string& errorOut);
+    void enableHostMidiSink();
     void stopPumpAndJoin() noexcept;
     void readerLoop();
     void failReaderOnReadBulkError(const std::string& error);
-    bool processBulkRead(
-        const uint8_t* readBuffer,
-        std::size_t bytesRead,
-        std::string& errorOut);
     // Decode into pending while usbIoMutex_ is already held.
     bool collectBulkReadPending(
         const uint8_t* readBuffer,
@@ -83,7 +82,7 @@ private:
         std::string& errorOut);
     void forwardPendingProductMidi(
         const std::vector<std::pair<uint8_t, std::vector<uint8_t>>>& pending);
-    // Decode + forward while usbIoMutex_ is already held (burst drain path).
+    // Decode + forward while usbIoMutex_ is already held.
     bool processBulkReadLocked(
         const uint8_t* readBuffer,
         std::size_t bytesRead,
@@ -101,27 +100,17 @@ private:
         std::size_t byteCount,
         HostEncodeScratch& scratch);
     void drainHostOutbound();
-    // Reader-owned drain: may briefly poll bulk IN after each host→device Write
-    // (Emagic half-duplex — OUT without a pending Read can drop the next IN burst).
-    void drainHostOutboundFromReader();
-    void drainHostOutboundLocked(bool drainInAfterEachWrite);
+    void drainHostOutboundLocked();
     void failHostOutboundDrain(const std::string& reason);
     bool writeHostOutboundItem(const HostOutboundItem& item, HostEncodeScratch& scratch);
-    // Poll immediate bulk IN packets with a short timeout (caller owns reader / no concurrent Read).
-    bool drainPendingBulkInBurst(uint8_t* readBuffer, std::size_t capacity);
-    // One short-timeout Read + demux step for drainPendingBulkInBurst.
-    // Returns: 1 = more packets possible, 0 = idle/timeout done, -1 = fatal.
-    int readAndProcessOneBurstPacket(uint8_t* readBuffer, std::size_t capacity);
-    bool handleReaderAfterSuccessfulRead(
-        uint8_t* readBuffer,
-        std::size_t capacity,
-        std::size_t bytesRead,
-        std::string& errorOut);
-    bool encodeWritePopOneHostOutbound(
-        HostEncodeScratch& scratch,
-        uint8_t* readBuffer,
-        std::size_t readCapacity,
-        bool drainInAfterWrite);
+    bool encodeWritePopOneHostOutbound(HostEncodeScratch& scratch);
+    bool hostOutboundPending() const;
+    bool processAsyncBulkInPacket(const BulkInAsyncPacket& packet);
+    bool processAndResubmitAsyncPacket(const BulkInAsyncPacket& packet);
+    // 1=continue, 0=stop, -1=fatal. Starts from an already-completed packet.
+    int harvestReadyAsyncPackets(BulkInAsyncPacket firstPacket);
+    // One Wait (+ optional demux/outbound). 1=continue, 0=stop, -1=fatal.
+    int readerWaitOnceAsync();
     // Clears queued host→device work; returns how many messages were discarded.
     std::size_t clearHostOutboundQueue() noexcept;
     void appendPendingProductMidi(
@@ -147,7 +136,9 @@ private:
         uint8_t cableIndex,
         std::uint64_t rejectCount);
     void noteBulkReadCounters(std::size_t bulkBytes, std::size_t demuxSpans);
-    void noteHostOutboundCounters(const HostOutboundItem& item) noexcept;
+    void noteHostOutboundCounters(
+        const HostOutboundItem& item,
+        std::size_t encodedBytes) noexcept;
     void recordPumpFailure(const std::string& message);
     std::size_t findInPortIndex(uint8_t cableIndex) const noexcept;
     void resetInFramers() noexcept;
@@ -178,5 +169,8 @@ private:
     MidiMessageFramer inFramers_[kMaxMidiBackendInPorts];
     DeviceHostCounters deviceHostCounters_;
     HostOutboundQueue hostOutbound_;
-    std::mutex hostOutboundMutex_;
+    mutable std::mutex hostOutboundMutex_;
+    // Steady-clock ms at ring arm (-1 = not armed); read from host MIDI callbacks.
+    std::atomic<std::int64_t> bulkInRingArmedSteadyMs_{-1};
+    std::atomic<bool> firstHostInquiryLogged_{false};
 };
