@@ -2,7 +2,7 @@
 title: 'Fix Matrix cold-start first dump_patch after Bridge Start'
 type: 'bugfix'
 created: '2026-08-08'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '12003de771f2ac943dbf3ba636f88f781d7b1f6d'
 review_loop_iteration: 0
 context:
@@ -68,10 +68,10 @@ context:
 - [x] If mid green but bank still red only on mid-burst rares -- Document residual in deferred-work; Ask First before Start-settle widening
 
 **Acceptance Criteria:**
-- Given a fresh Bridge Start with Matrix on DIN Out1↔In (not Thru), when Lab B mid runs `--fresh-starts 5 --count 10 --pass-percent 100`, then every Start passes 100% including dump #1 (no `TIMEOUT last=none` on the first `dump_patch`).
-- Given the same setup, when Lab A bank runs `--fresh-starts 20 --count 100 --pass-percent 100`, then every Start passes 100%.
-- Given expect armed and a first IN span of one byte `0x10`, when `maybePrependLostLeadingF0` runs, then it prepends `F0` and diagnostics show a leading-F0 repair (not silence until lab timeout).
-- Given expect not armed (or framer already holding SysEx), when a span starts with `0x10`, then no F0 is prepended.
+- Given a fresh Bridge Start with Matrix on DIN Out1↔In (not Thru), when Lab B mid runs `--fresh-starts 5 --count 10 --pass-percent 100`, then every Start passes 100% including dump #1 (no `TIMEOUT last=none` on the first `dump_patch`). **Met** (`post-epic2-cr-coldfix` mid 5/5).
+- Given the same setup, when Lab A bank runs `--fresh-starts 20 --count 100 --pass-percent 100`, then every Start passes 100%. **Cold-start residual mid-burst left bank red once; closed by follow-up `spec-mid-burst-bank-timeout-matrix.md` / `cd64193` (`post-epic2-cr-midburst-final` 20/20).**
+- Given expect armed and a first IN span of one byte `0x10`, when `maybePrependLostLeadingF0` runs, then it prepends `F0` and diagnostics show a leading-F0 repair (not silence until lab timeout). **Met** (unit `[f0-repair]` + lab first-burst logs).
+- Given expect not armed (or framer already holding SysEx), when a span starts with `0x10`, then no F0 is prepended. **Met** (unit).
 - Given success, when reporting, then Pass/Fail table + log paths are delivered; no commit unless Guillaume asks.
 
 ## Spec Change Log
@@ -98,8 +98,8 @@ Pipe-prime / post-calm settle remains secondary: calm already reports ready on f
 **Commands:**
 - `cmake --build --preset debug` -- Bridge builds
 - `python scripts/quality/lint-touched.py` -- no new §3 violations on touched C++
-- `python scripts/lab/sysex-matrix-mid-loop.py --with-bridge --out-port "MT4 Out 1" --in-port "MT4 In 1" --pass-percent 100 --count 10 --fresh-starts 5 --bridge-exe builds\debug\Debug\Bridge.exe --log-dir tests\lab-logs\sysex-matrix-mid\post-epic2-cr-coldfix` -- 5/5 Starts at 100%
-- `python scripts/lab/sysex-matrix-bank-loop.py --with-bridge --out-port "MT4 Out 1" --in-port "MT4 In 1" --pass-percent 100 --count 100 --fresh-starts 20 --bridge-exe builds\debug\Debug\Bridge.exe --log-dir tests\lab-logs\sysex-matrix-bank\post-epic2-cr-coldfix` -- 20/20 Starts at 100%
+- Mid `post-epic2-cr-coldfix` -- 5/5 Starts @ 100% (first dump included)
+- Bank cold-start residual closed later: `post-epic2-cr-midburst-final` -- 20/20 @ 100% (`cd64193`)
 
 **Manual checks (if no CLI):**
 - Hardware: MT4 USB + Matrix Out1↔In (not Thru); ports free (no MIDI-OX / Matrix-Control).
