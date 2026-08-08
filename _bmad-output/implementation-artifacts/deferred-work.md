@@ -166,3 +166,15 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - SysEx holds >400 bytes never abandoned while `anyInFramerHoldingSysex` gates all host OUT — long SysEx / palier-3 concern, not the short dump overnight hole.
 - Removed sync bulk-IN capacity guard and soft `LastReadTimedOut` continue — async IN ring model; revisit only if Start/pump evidence shows mis-sized reads.
 - `AddHostOutOk` on dump-request retry masks short-dump reject rate in counters — hygiene only.
+
+## Deferred from: quick-dev spec-post-epic2-cr-bank-mid-day-gate.md (2026-08-08)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-post-epic2-cr-bank-mid-day-gate.md`
+  summary: Cold-start first dump_patch after fresh Bridge start still TIMEOUT last=none (Lab B 5/5; many Lab A index 0001).
+  evidence: Day-gate labs post-835c992; warm path mostly healthy; Bridge up, send_fail~0.
+- source_spec: `_bmad-output/implementation-artifacts/spec-post-epic2-cr-bank-mid-day-gate.md`
+  summary: Absolute 100%-per-start bank/mid day gate remains red (~50% bank starts fail at 98-99%).
+  evidence: Lab A 10/20 starts fail; 13 TIMEOUT last=none total; residual intermittency under gate.
+- source_spec: `_bmad-output/implementation-artifacts/spec-post-epic2-cr-bank-mid-day-gate.md`
+  summary: Day-gate harness scores cold first dump with no warmup discard — optional settle vs Bridge fix decision.
+  evidence: Blind Hunter; do not auto-mask first dump without product decision.
