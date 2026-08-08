@@ -172,21 +172,26 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-post-epic2-cr-bank-mid-day-gate.md`
   summary: Cold-start first dump_patch after fresh Bridge start still TIMEOUT last=none (Lab B 5/5; many Lab A index 0001).
   evidence: Day-gate labs post-835c992; warm path mostly healthy; Bridge up, send_fail~0.
+  status: resolved-by-615882d
 - source_spec: `_bmad-output/implementation-artifacts/spec-post-epic2-cr-bank-mid-day-gate.md`
   summary: Absolute 100%-per-start bank/mid day gate remains red (~50% bank starts fail at 98-99%).
   evidence: Lab A 10/20 starts fail; 13 TIMEOUT last=none total; residual intermittency under gate.
+  status: resolved-by-cd64193
 - source_spec: `_bmad-output/implementation-artifacts/spec-post-epic2-cr-bank-mid-day-gate.md`
   summary: Day-gate harness scores cold first dump with no warmup discard — optional settle vs Bridge fix decision.
   evidence: Blind Hunter; do not auto-mask first dump without product decision.
+  status: resolved-keep-scoring
 
 ## Deferred from: quick-dev spec-cold-start-premier-dump-matrix.md (2026-08-08)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-cold-start-premier-dump-matrix.md`
   summary: Rare mid-burst bank TIMEOUT last=none after cold-start F0 repair (1/20 Starts at 99%; slot 08 index 0009).
   evidence: Mid 5×10 all green; bank 19/20 at 100%; sole miss was mid-burst not first dump; dump 0001 RECV on failing Start.
+  status: resolved-by-cd64193
 - source_spec: `_bmad-output/implementation-artifacts/spec-cold-start-premier-dump-matrix.md`
   summary: Absolute 100%-per-start bank day gate still red until mid-burst residual is closed or gate policy relaxed.
   evidence: post-epic2-cr-coldfix bank run 20260808T162947Z overall_pass=false.
+  status: resolved-by-cd64193
 
 ## Deferred from: quick-dev spec-mid-burst-bank-timeout-matrix.md (2026-08-08)
 
