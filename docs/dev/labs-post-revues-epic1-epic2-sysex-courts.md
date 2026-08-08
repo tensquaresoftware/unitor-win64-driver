@@ -109,13 +109,4 @@ Répéter Lab A avec `--fresh-starts 50`, ou enchaîner mid+bank en boucle ~30�
 
 ---
 
-## Amorce courte (si tu préfères une seule ligne d’ouverture)
-
-```text
-/bmad-quick-dev
-
-Lis et exécute docs/dev/labs-post-revues-epic1-epic2-sysex-courts.md
-Gate jour bank+mid après correctifs 835c992. Pas de commit. Français clair.
-```
-
 Bonne lab — et bon signal avant le prochain overnight.
