@@ -8,7 +8,9 @@
 #include "Midi/TeVirtualMidiApi.h"
 #endif
 
+#include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <mutex>
 
 class VirtualMidiBackend : public MidiBackend
@@ -84,5 +86,6 @@ private:
     void* hostToDeviceContext_ = nullptr;
     // Guards sink + context pair (session thread vs teVirtualMIDI OUT callbacks).
     mutable std::mutex hostToDeviceMutex_;
+    std::atomic<std::uint64_t> nullSinkDrops_{0};
     bool portsCreated_ = false;
 };

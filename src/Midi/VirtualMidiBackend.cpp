@@ -1,5 +1,8 @@
 #include "Midi/VirtualMidiBackend.h"
 
+#include <atomic>
+#include <cstdint>
+#include <iostream>
 #include <sstream>
 
 #ifndef _WIN32
@@ -328,6 +331,18 @@ void VirtualMidiBackend::forwardHostToDevice(
     }
     if (sink == nullptr || midiBytes == nullptr || byteCount == 0)
     {
+        if (sink == nullptr && midiBytes != nullptr && byteCount > 0)
+        {
+            const std::uint64_t drops =
+                nullSinkDrops_.fetch_add(1, std::memory_order_relaxed) + 1;
+            if (drops <= 8 || (drops % 256) == 0)
+            {
+                std::cerr << "VirtualMIDI host→device dropped (sink unset) out_port="
+                          << (outPortIndex + 1) << " bytes=" << byteCount
+                          << " drops=" << drops << "\n"
+                          << std::flush;
+            }
+        }
         return;
     }
     sink(context, outPortIndex, midiBytes, byteCount);
