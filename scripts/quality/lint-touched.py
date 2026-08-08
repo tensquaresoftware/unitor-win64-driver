@@ -85,16 +85,25 @@ class Finding:
     score: float
 
 
-def git_lines(command: list[str]) -> list[str]:
+def decode_git_bytes(raw: bytes) -> str:
+    """Decode git stdout; never crash the gate on a corrupt working-tree encoding."""
+    return raw.decode("utf-8", errors="replace")
+
+
+def git_output(command: list[str]) -> str:
     try:
-        out = subprocess.check_output(
+        raw = subprocess.check_output(
             command,
             cwd=REPO_ROOT,
-            text=True,
             stderr=subprocess.DEVNULL,
-        ).strip()
+        )
     except subprocess.CalledProcessError:
-        return []
+        return ""
+    return decode_git_bytes(raw)
+
+
+def git_lines(command: list[str]) -> list[str]:
+    out = git_output(command).strip()
     return [line for line in out.splitlines() if line]
 
 
@@ -187,34 +196,16 @@ def parse_diff_line_ranges(base: str) -> dict[str, set[int]]:
             for n in range(start, start + count):
                 ranges[current].add(n)
 
-    blobs: list[str] = []
-    for cmd in (
-        ["git", "diff", "-U0", "HEAD"],
-        ["git", "diff", "-U0", "--cached"],
-    ):
-        try:
-            blobs.append(
-                subprocess.check_output(
-                    cmd, cwd=REPO_ROOT, text=True, stderr=subprocess.DEVNULL
-                )
-            )
-        except subprocess.CalledProcessError:
-            pass
+    blobs: list[str] = [
+        git_output(["git", "diff", "-U0", "HEAD"]),
+        git_output(["git", "diff", "-U0", "--cached"]),
+    ]
     if git_lines(["git", "rev-parse", "--verify", base]):
-        try:
-            blobs.append(
-                subprocess.check_output(
-                    ["git", "diff", "-U0", f"{base}...HEAD"],
-                    cwd=REPO_ROOT,
-                    text=True,
-                    stderr=subprocess.DEVNULL,
-                )
-            )
-        except subprocess.CalledProcessError:
-            pass
+        blobs.append(git_output(["git", "diff", "-U0", f"{base}...HEAD"]))
 
     for blob in blobs:
-        ingest(blob)
+        if blob:
+            ingest(blob)
 
     for rel in git_lines(["git", "ls-files", "--others", "--exclude-standard"]):
         norm = rel.replace("\\", "/")
@@ -262,15 +253,14 @@ def base_file_useful_lines(rel: str, base: str) -> int | None:
     if not git_lines(["git", "rev-parse", "--verify", base]):
         return None
     try:
-        blob = subprocess.check_output(
+        raw = subprocess.check_output(
             ["git", "show", f"{base}:{rel}"],
             cwd=REPO_ROOT,
-            text=True,
             stderr=subprocess.DEVNULL,
         )
     except subprocess.CalledProcessError:
         return None
-    return useful_line_count(blob)
+    return useful_line_count(decode_git_bytes(raw))
 
 
 def analyse_file(
@@ -438,7 +428,7 @@ def print_report(findings: list[Finding], *, report_worst: int) -> None:
         ranked = sorted(file_scores.items(), key=lambda kv: -kv[1])[:report_worst]
         print(f"\n=== WORST FILES (top {len(ranked)}) ===")
         for path, score in ranked:
-            print(f"  {path}  (score≈{score:.0f}, findings={file_hits[path]})")
+            print(f"  {path}  (score~={score:.0f}, findings={file_hits[path]})")
 
 
 def main() -> int:
