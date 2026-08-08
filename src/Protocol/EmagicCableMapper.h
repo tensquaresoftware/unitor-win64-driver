@@ -73,6 +73,10 @@ public:
     // Clear split-F5 / cable demux state after sync init drains (or lab settle).
     void ResetInputState() noexcept;
 
+    // Out-cable sticky state for EncodeToDevice (rollback if USB write fails after encode).
+    uint8_t CurrentOutCable() const noexcept { return currentOutCable_; }
+    void RestoreOutCable(uint8_t cableIndex) noexcept { currentOutCable_ = cableIndex; }
+
 private:
     bool appendPortSwitch(uint8_t cableIndex, EncodeBuffer& buffer, std::string& errorOut);
     bool appendMidiBytes(const EncodeRequest& request, EncodeBuffer& buffer, std::string& errorOut);

@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace
 {
@@ -53,6 +54,35 @@ TEST_CASE("mapper smoke split F5 across two DecodeFromDevice calls", "[mapper]")
 {
     std::ostringstream err;
     requireSmokeOk(runEmagicMapperSmokeDecodeSplitF5(requireMt4Profile(), err), err);
+}
+
+TEST_CASE("mapper sticky F5 then mid-SysEx data byte is not a cable index", "[mapper]")
+{
+    EmagicCableMapper mapper(requireMt4Profile());
+    std::string error;
+    std::vector<uint8_t> cables;
+    std::vector<std::vector<uint8_t>> spans;
+
+    auto sink = [&](uint8_t cableIndex, const uint8_t* midi, std::size_t n) {
+        cables.push_back(cableIndex);
+        spans.emplace_back(midi, midi + n);
+    };
+
+    const uint8_t first[] = {0xF5}; // cable byte arrives later / missing
+    REQUIRE(mapper.DecodeFromDevice(first, sizeof(first), sink, error));
+
+    // Empty/pad-only follow-up (truncate at FF → zero remaining) keeps sticky F5.
+    const uint8_t padOnly[] = {0xFF};
+    REQUIRE(mapper.DecodeFromDevice(padOnly, sizeof(padOnly), sink, error));
+
+    // Mid-SysEx data 0x10 must NOT become cable 15 ((0x10-1)&15); stay on cable 0.
+    const uint8_t data[] = {0x10, 0x20, 0xF7, 0xFF};
+    REQUIRE(mapper.DecodeFromDevice(data, sizeof(data), sink, error));
+    REQUIRE(cables.size() == 1);
+    REQUIRE(cables[0] == 0);
+    REQUIRE(spans.size() == 1);
+    REQUIRE(spans[0].size() == 3);
+    REQUIRE(spans[0][0] == 0x10);
 }
 
 TEST_CASE("mapper smoke encode Timing Clock Continue and Stop", "[mapper]")

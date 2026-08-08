@@ -156,6 +156,7 @@ bool EmagicCableMapper::consumePendingPortSwitch(
     const uint8_t*& cursor,
     std::size_t& remaining) noexcept
 {
+    // Split F5: wait for the cable byte on a later URB (do not clear seenF5_).
     if (remaining == 0)
     {
         return true;
@@ -163,9 +164,19 @@ bool EmagicCableMapper::consumePendingPortSwitch(
 
     if (cursor[0] < 0x80)
     {
-        currentInCable_ = static_cast<uint8_t>((cursor[0] - 1) & 15);
-        ++cursor;
-        --remaining;
+        // Emagic port switch is 1..16 → cable 0..15. Accept only product IN cables so
+        // mid-SysEx data (e.g. 0x10) after a sticky F5 is not stolen as a port index.
+        const uint8_t portOneBased = cursor[0];
+        if (portOneBased >= 1 && portOneBased <= 16)
+        {
+            const uint8_t cable = static_cast<uint8_t>((portOneBased - 1) & 15);
+            if (IsProductInCable(cable))
+            {
+                currentInCable_ = cable;
+                ++cursor;
+                --remaining;
+            }
+        }
     }
 
     seenF5_ = false;
