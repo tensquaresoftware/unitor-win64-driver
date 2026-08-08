@@ -320,6 +320,11 @@ bool WinUsbTransport::ReadBulk(
         errorOut = "WinUSB ReadBulk requires an open transport with bulk pipes";
         return false;
     }
+    if (IsBulkInAsyncRingActive())
+    {
+        errorOut = "WinUSB ReadBulk is blocked while the bulk IN async ring is active";
+        return false;
+    }
     if (buffer == nullptr || capacity == 0)
     {
         errorOut = "WinUSB ReadBulk buffer is missing";

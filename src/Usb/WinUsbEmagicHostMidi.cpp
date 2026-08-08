@@ -46,26 +46,50 @@ void invokeBetweenChunks(const WinUsbTransport::EmagicBetweenChunks* betweenChun
     }
 }
 
-bool waitEmagicOutOverlapped(
-    WINUSB_INTERFACE_HANDLE winUsb,
-    OVERLAPPED& overlapped,
-    const WinUsbTransport::EmagicBetweenChunks* betweenChunks,
-    std::string& errorOut)
+bool betweenChunksAbortRequested(const WinUsbTransport::EmagicBetweenChunks* betweenChunks)
+{
+    return betweenChunks != nullptr && betweenChunks->abortRequested != nullptr
+        && *betweenChunks->abortRequested;
+}
+
+struct EmagicOutWait
+{
+    WINUSB_INTERFACE_HANDLE winUsb = nullptr;
+    UCHAR pipeId = 0;
+    OVERLAPPED* overlapped = nullptr;
+    const WinUsbTransport::EmagicBetweenChunks* betweenChunks = nullptr;
+};
+
+void abortEmagicOutWait(const EmagicOutWait& wait) noexcept
+{
+    (void)WinUsb_AbortPipe(wait.winUsb, wait.pipeId);
+    ULONG ignored = 0;
+    (void)WinUsb_GetOverlappedResult(wait.winUsb, wait.overlapped, &ignored, TRUE);
+}
+
+bool waitEmagicOutOverlapped(const EmagicOutWait& wait, std::string& errorOut)
 {
     for (;;)
     {
         // Demux IN while OUT is in flight — sync WritePipe starved completions
         // under DIN-rate full duplex (lab: 128 B gaps on 4096).
-        invokeBetweenChunks(betweenChunks);
-        const DWORD wait = WaitForSingleObject(overlapped.hEvent, kOutWaitSliceMs);
-        if (wait == WAIT_OBJECT_0)
+        invokeBetweenChunks(wait.betweenChunks);
+        if (betweenChunksAbortRequested(wait.betweenChunks))
+        {
+            errorOut = "WinUSB Emagic bulk OUT aborted: between-chunk IN demux failed";
+            abortEmagicOutWait(wait);
+            return false;
+        }
+        const DWORD result = WaitForSingleObject(wait.overlapped->hEvent, kOutWaitSliceMs);
+        if (result == WAIT_OBJECT_0)
         {
             return true;
         }
-        if (wait != WAIT_TIMEOUT)
+        if (result != WAIT_TIMEOUT)
         {
             errorOut = formatWin32Error(
                 "WaitForSingleObject failed for Emagic bulk OUT", GetLastError());
+            abortEmagicOutWait(wait);
             return false;
         }
     }
@@ -121,8 +145,12 @@ bool writeEmagicOutChunkOverlapped(const EmagicOutChunkWrite& write, std::string
         return false;
     }
 
-    const bool waited =
-        waitEmagicOutOverlapped(write.winUsb, overlapped, write.betweenChunks, errorOut);
+    EmagicOutWait wait;
+    wait.winUsb = write.winUsb;
+    wait.pipeId = write.pipeId;
+    wait.overlapped = &overlapped;
+    wait.betweenChunks = write.betweenChunks;
+    const bool waited = waitEmagicOutOverlapped(wait, errorOut);
     const bool finished =
         waited && finishEmagicOutOverlapped(
                       write.winUsb, overlapped, write.packetSize, errorOut);
@@ -158,9 +186,19 @@ bool writeEmagicHostMidiChunks(const EmagicHostMidiChunkJob& job, std::string& e
         {
             return false;
         }
+        if (betweenChunksAbortRequested(job.betweenChunks))
+        {
+            errorOut = "WinUSB Emagic bulk OUT aborted: between-chunk IN demux failed";
+            return false;
+        }
         offset += chunk;
     }
     invokeBetweenChunks(job.betweenChunks);
+    if (betweenChunksAbortRequested(job.betweenChunks))
+    {
+        errorOut = "WinUSB Emagic bulk OUT aborted: between-chunk IN demux failed";
+        return false;
+    }
     return true;
 }
 } // namespace

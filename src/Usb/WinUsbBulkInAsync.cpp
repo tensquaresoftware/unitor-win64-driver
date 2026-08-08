@@ -232,6 +232,13 @@ void WinUsbTransport::StopBulkInAsyncRing() noexcept
     }
     if (IsOpen())
     {
+        UCHAR rawIo = FALSE;
+        (void)WinUsb_SetPipePolicy(
+            static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_),
+            bulkInPipeId_,
+            RAW_IO,
+            sizeof(rawIo),
+            &rawIo);
         std::string ignored;
         (void)RestoreSessionBulkTimeouts(ignored);
     }
@@ -245,7 +252,7 @@ bool WinUsbTransport::IsBulkInAsyncRingActive() const noexcept
 
 std::size_t WinUsbTransport::CountPendingBulkInSlots() noexcept
 {
-    std::lock_guard<std::mutex> lock(bulkInRingMutex_);
+    std::lock_guard lock(bulkInRingMutex_);
     const auto* ring = bulkInAsRing(bulkInAsyncRing_);
     if (ring == nullptr || !ring->active)
     {
@@ -266,12 +273,14 @@ void WinUsbTransport::SetBulkInPacketHandler(
     BulkInPacketHandler handler,
     void* context) noexcept
 {
+    std::lock_guard lock(bulkInRingMutex_);
     bulkInPacketHandler_ = handler;
     bulkInPacketHandlerCtx_ = context;
 }
 
 void WinUsbTransport::ClearBulkInPacketHandler() noexcept
 {
+    std::lock_guard lock(bulkInRingMutex_);
     bulkInPacketHandler_ = nullptr;
     bulkInPacketHandlerCtx_ = nullptr;
 }
@@ -280,6 +289,7 @@ int WinUsbTransport::tryPopBulkInPacket(BulkInAsyncPacket& packetOut, std::strin
 {
     if (bulkInCompletionFailed_.load())
     {
+        std::lock_guard lock(bulkInRingMutex_);
         errorOut = bulkInCompletionError_.empty()
             ? "WinUSB bulk IN completion thread failed"
             : bulkInCompletionError_;
@@ -309,6 +319,7 @@ int WinUsbTransport::WaitBulkInReaderTick(std::uint32_t timeoutMs, std::string& 
     }
     if (bulkInCompletionFailed_.load())
     {
+        std::lock_guard lock(bulkInRingMutex_);
         errorOut = bulkInCompletionError_.empty()
             ? "WinUSB bulk IN completion thread failed"
             : bulkInCompletionError_;
@@ -323,6 +334,7 @@ int WinUsbTransport::WaitBulkInReaderTick(std::uint32_t timeoutMs, std::string& 
     }
     if (bulkInCompletionFailed_.load())
     {
+        std::lock_guard lock(bulkInRingMutex_);
         errorOut = bulkInCompletionError_.empty()
             ? "WinUSB bulk IN completion thread failed"
             : bulkInCompletionError_;
@@ -352,6 +364,7 @@ int WinUsbTransport::PumpBulkInAsyncCompletions(std::string& errorOut)
     }
     if (bulkInCompletionFailed_.load())
     {
+        std::lock_guard lock(bulkInRingMutex_);
         errorOut = bulkInCompletionError_.empty()
             ? "WinUSB bulk IN completion thread failed"
             : bulkInCompletionError_;

@@ -75,6 +75,8 @@ public:
     {
         BetweenChunksFn fn = nullptr;
         void* ctx = nullptr;
+        // When non-null and true after fn(), abort the remaining OUT chunks.
+        const bool* abortRequested = nullptr;
     };
     bool WriteEmagicHostMidi(
         const uint8_t* data,
@@ -158,6 +160,11 @@ private:
     bool armBulkInCompletionWait(void* waitHandlesOut) noexcept;
     bool harvestBulkInCompletionOnce() noexcept;
     bool deliverOrderedBulkInPackets() noexcept;
+    bool popOrderedPacketCopy(
+        uint8_t* copy,
+        std::size_t copyCapacity,
+        std::size_t& sizeOut,
+        std::string& errorOut) noexcept;
     int tryPopBulkInPacket(BulkInAsyncPacket& packetOut, std::string& errorOut);
 
     void* deviceHandle_ = nullptr;   // HANDLE
@@ -173,7 +180,7 @@ private:
     bool lastReadTimedOut_ = false;
     void* bulkInAsyncRing_ = nullptr; // BulkInAsyncRingState*
     // Completion thread owns harvest+resubmit (+ optional demux handler).
-    std::mutex bulkInRingMutex_;
+    std::recursive_mutex bulkInRingMutex_;
     std::thread bulkInCompletionThread_;
     void* bulkInDataReadyEvent_ = nullptr; // HANDLE auto-reset
     void* bulkInStopEvent_ = nullptr;      // HANDLE manual-reset

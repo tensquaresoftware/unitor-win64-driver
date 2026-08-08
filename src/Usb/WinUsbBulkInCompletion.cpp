@@ -54,7 +54,10 @@ void WinUsbTransport::signalBulkInDataReady() noexcept
 void WinUsbTransport::failBulkInCompletion(std::string error) noexcept
 {
     bulkInCompletionFailed_.store(true);
-    bulkInCompletionError_ = std::move(error);
+    {
+        std::lock_guard lock(bulkInRingMutex_);
+        bulkInCompletionError_ = std::move(error);
+    }
     signalBulkInDataReady();
 }
 
@@ -62,7 +65,7 @@ bool WinUsbTransport::armBulkInCompletionWait(void* waitHandlesOut) noexcept
 {
     HANDLE stop = static_cast<HANDLE>(bulkInStopEvent_);
     auto* waitHandles = static_cast<HANDLE*>(waitHandlesOut);
-    std::lock_guard<std::mutex> lock(bulkInRingMutex_);
+    std::lock_guard lock(bulkInRingMutex_);
     auto* ring = bulkInAsRing(bulkInAsyncRing_);
     if (ring == nullptr || !ring->active || stop == nullptr)
     {
@@ -77,11 +80,44 @@ bool WinUsbTransport::armBulkInCompletionWait(void* waitHandlesOut) noexcept
     return true;
 }
 
+bool WinUsbTransport::popOrderedPacketCopy(
+    uint8_t* copy,
+    std::size_t copyCapacity,
+    std::size_t& sizeOut,
+    std::string& errorOut) noexcept
+{
+    BulkInAsyncPacket packet;
+    const int popped = tryPopBulkInPacket(packet, errorOut);
+    if (popped <= 0)
+    {
+        sizeOut = 0;
+        return popped == 0;
+    }
+    if (packet.size > copyCapacity)
+    {
+        errorOut = "WinUSB bulk IN delivered packet exceeds copy buffer";
+        return false;
+    }
+    sizeOut = packet.size;
+    if (sizeOut > 0 && packet.data != nullptr)
+    {
+        std::memcpy(copy, packet.data, sizeOut);
+    }
+    return true;
+}
+
 bool WinUsbTransport::deliverOrderedBulkInPackets() noexcept
 {
-    if (bulkInPacketHandler_ == nullptr)
+    BulkInPacketHandler handler = nullptr;
+    void* handlerCtx = nullptr;
     {
-        std::lock_guard<std::mutex> lock(bulkInRingMutex_);
+        std::lock_guard lock(bulkInRingMutex_);
+        handler = bulkInPacketHandler_;
+        handlerCtx = bulkInPacketHandlerCtx_;
+    }
+    if (handler == nullptr)
+    {
+        std::lock_guard lock(bulkInRingMutex_);
         auto* ring = bulkInAsRing(bulkInAsyncRing_);
         if (ring != nullptr && bulkInFindReorderBySeq(*ring, ring->nextCompleteSeq) != nullptr)
         {
@@ -94,33 +130,22 @@ bool WinUsbTransport::deliverOrderedBulkInPackets() noexcept
     {
         uint8_t copy[512] = {};
         std::size_t size = 0;
+        std::string popError;
+        bool ok = false;
         {
-            std::lock_guard<std::mutex> lock(bulkInRingMutex_);
-            std::string error;
-            BulkInAsyncPacket packet;
-            const int popped = tryPopBulkInPacket(packet, error);
-            if (popped < 0)
-            {
-                failBulkInCompletion(std::move(error));
-                return false;
-            }
-            if (popped == 0)
-            {
-                return true;
-            }
-            if (packet.size > sizeof(copy))
-            {
-                failBulkInCompletion("WinUSB bulk IN delivered packet exceeds copy buffer");
-                return false;
-            }
-            size = packet.size;
-            if (size > 0 && packet.data != nullptr)
-            {
-                std::memcpy(copy, packet.data, size);
-            }
+            std::lock_guard lock(bulkInRingMutex_);
+            ok = popOrderedPacketCopy(copy, sizeof(copy), size, popError);
         }
-
-        if (!bulkInPacketHandler_(bulkInPacketHandlerCtx_, copy, size))
+        if (!ok)
+        {
+            failBulkInCompletion(std::move(popError));
+            return false;
+        }
+        if (size == 0)
+        {
+            return true;
+        }
+        if (!handler(handlerCtx, copy, size))
         {
             failBulkInCompletion("WinUSB bulk IN packet handler failed");
             return false;
@@ -132,7 +157,7 @@ bool WinUsbTransport::deliverOrderedBulkInPackets() noexcept
 bool WinUsbTransport::harvestBulkInCompletionOnce() noexcept
 {
     {
-        std::lock_guard<std::mutex> lock(bulkInRingMutex_);
+        std::lock_guard lock(bulkInRingMutex_);
         auto* ring = bulkInAsRing(bulkInAsyncRing_);
         if (ring == nullptr || !ring->active)
         {
@@ -185,7 +210,10 @@ bool WinUsbTransport::startBulkInCompletionThread(std::string& errorOut)
 {
     stopBulkInCompletionThread();
     bulkInCompletionFailed_.store(false);
-    bulkInCompletionError_.clear();
+    {
+        std::lock_guard lock(bulkInRingMutex_);
+        bulkInCompletionError_.clear();
+    }
 
     HANDLE dataReady = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     HANDLE stop = CreateEventW(nullptr, TRUE, FALSE, nullptr);

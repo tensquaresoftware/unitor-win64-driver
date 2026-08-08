@@ -181,6 +181,11 @@ inline int bulkInHarvestSignaled(
         std::size_t size = 0;
         if (bulkInCompleteSlot(winUsb, state, size, errorOut) < 0)
         {
+            if (!ring.active && errorOut == "WinUSB bulk IN async aborted")
+            {
+                errorOut.clear();
+                return 1;
+            }
             return -1;
         }
         if (!bulkInStoreReorder(ring, index, size, errorOut))
