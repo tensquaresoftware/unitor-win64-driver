@@ -1,0 +1,89 @@
+# SysEx Matrix mid-size lab log (automated; no MIDI-OX Thru)
+# started_utc: 2026-08-07T23:26:55.991828+00:00
+# with_bridge: true
+# fresh_starts: 1
+# count_per_scenario: 10
+# interval_s: 1.0
+# reply_timeout_s: 3.0
+# pass_percent: 100.0
+# stamp: 20260807T232655Z
+---
+# session_index: 1
+# start_index: 1
+# out_port: MT4 Out 1 1
+# in_port: MT4 In 1 0
+# patch_fixture: C:\Users\Guillaume\Dev\Projects\unitor-win64-driver\tests\fixtures\sysex\Patch.syx (275 B)
+# master_fixture: C:\Users\Guillaume\Dev\Projects\unitor-win64-driver\tests\fixtures\sysex\Master.syx (351 B)
+# patch_dump_request: F0 10 06 04 01 00 F7
+# master_dump_request: F0 10 06 04 03 00 F7
+---
+0001 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18572.781
+0001 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0002 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18573.781
+0002 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0003 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18574.781
+0003 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0004 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18575.781
+0004 TIMEOUT dump_patch expected_len=275 waited_ms=3000.0 last=none
+0005 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18578.812
+0005 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0006 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18579.812
+0006 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0007 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18580.812
+0007 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0008 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18581.812
+0008 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0009 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18582.812
+0009 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0010 SEND dump_patch_request F0 10 06 04 01 00 F7 t_mono=18583.812
+0010 RECV dump_patch len=275 head=F0 10 06 01 tail=00 00 2C F7 len=275 dt_ms=125.0
+0001 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18583.968
+0001 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=156.0
+0002 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18584.968
+0002 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=140.0
+0003 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18585.968
+0003 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=156.0
+0004 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18586.968
+0004 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=140.0
+0005 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18587.968
+0005 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=140.0
+0006 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18588.968
+0006 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=140.0
+0007 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18589.968
+0007 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=140.0
+0008 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18590.968
+0008 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=140.0
+0009 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18591.968
+0009 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=140.0
+0010 SEND dump_master_request F0 10 06 04 03 00 F7 t_mono=18592.968
+0010 RECV dump_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 dt_ms=156.0
+0001 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0002 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0003 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0004 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0005 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0006 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0007 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0008 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0009 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0010 SEND push_patch len=275 head=F0 10 06 01 tail=00 00 67 F7 len=275 ok
+0001 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0002 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0003 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0004 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0005 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0006 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0007 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0008 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0009 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+0010 SEND push_master len=351 head=F0 10 06 03 tail=00 00 4D F7 len=351 ok
+summary[dump_patch]: sent=10 ok=9 rate=90.0% pass=false (need>=100%)
+summary[dump_master]: sent=10 ok=10 rate=100.0% pass=true (need>=100%)
+summary[push_patch]: sent=10 ok=10 rate=100.0% pass=true (need>=100%)
+summary[push_master]: sent=10 ok=10 rate=100.0% pass=true (need>=100%)
+# finished_utc: 2026-08-07T23:27:36.420223+00:00
+# start_pass: false
+# bridge_log_start1: C:\Users\Guillaume\Dev\Projects\unitor-win64-driver\tests\lab-logs\overnight-matrix\cycle-0061-mid\bridge-20260807T232655Z-start1.log
+# bridge_fail_start1: count=0
+# finished_utc: 2026-08-07T23:27:36.573480+00:00
+# overall_pass: false
