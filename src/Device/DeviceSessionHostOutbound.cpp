@@ -80,12 +80,18 @@ bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
     if (dumpRequestRetryRemaining_ == 0 || lastDumpRequest_.empty())
     {
         clearExpectInBurst();
+        recordPumpFailure(
+            "Matrix dump reply rejected (short SysEx; no retry left) got_len="
+            + std::to_string(gotLength));
         return false;
     }
     --dumpRequestRetryRemaining_;
     if (!rewriteLastDumpRequestLocked())
     {
         clearExpectInBurst();
+        recordPumpFailure(
+            "Matrix dump reply rejected (short SysEx; dump-request retry failed) got_len="
+            + std::to_string(gotLength));
         return false;
     }
     expectInBurstUntil_ = std::chrono::steady_clock::now() + std::chrono::milliseconds(3500);
@@ -110,7 +116,7 @@ bool DeviceSession::rewriteLastDumpRequestLocked()
     deferHostSendDuringOut_ = true;
     std::string error;
     const WinUsbTransport::EmagicBetweenChunks between{
-        &DeviceSession::betweenOutChunksDrainIn, this};
+        &DeviceSession::betweenOutChunksDrainIn, this, &betweenOutChunkDemuxFailed_};
     const bool wrote =
         transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error, &between);
     flushDeferredHostSends();
@@ -205,6 +211,7 @@ void DeviceSession::failHostOutboundDrain(const std::string& reason)
     const std::size_t discarded = clearHostOutboundQueue();
     if (discarded == 0)
     {
+        recordPumpFailure(reason);
         return;
     }
     recordPumpFailure(reason + " (discarded " + std::to_string(discarded) + " queued message(s))");
@@ -290,7 +297,7 @@ bool DeviceSession::writeHostOutboundItem(
     // Drain+frame IN between Emagic OUT packets while usbIoMutex_ stays held;
     // SendToHost is deferred until Write finishes (avoid nested teVirtualMIDI).
     const WinUsbTransport::EmagicBetweenChunks between{
-        &DeviceSession::betweenOutChunksDrainIn, this};
+        &DeviceSession::betweenOutChunksDrainIn, this, &betweenOutChunkDemuxFailed_};
     const bool wrote =
         transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error, &between);
     flushDeferredHostSends();
@@ -303,6 +310,14 @@ bool DeviceSession::writeHostOutboundItem(
     finish.deliverDepthAtStart = deliverDepthAtStart;
     finish.wrote = wrote;
     return finishHostOutboundWrite(finish);
+}
+
+void DeviceSession::restoreMapperOutCable(uint8_t previousOutCable) noexcept
+{
+    if (mapper_ != nullptr)
+    {
+        mapper_->RestoreOutCable(previousOutCable);
+    }
 }
 
 bool DeviceSession::encodeWritePopOneHostOutbound(
@@ -320,6 +335,8 @@ bool DeviceSession::encodeWritePopOneHostOutbound(
 
     scratch.size = 0;
     scratch.cableIndex = 0;
+    const uint8_t previousOutCable =
+        mapper_ != nullptr ? mapper_->CurrentOutCable() : static_cast<uint8_t>(0xFF);
     if (!encodeHostMidiLocked(item.outPortIndex, item.midi.data(), item.midi.size(), scratch))
     {
         failHostOutboundDrain("Host→device encode path aborted");
@@ -327,11 +344,13 @@ bool DeviceSession::encodeWritePopOneHostOutbound(
     }
     if (stopPump_.load() || !running_.load())
     {
+        restoreMapperOutCable(previousOutCable);
         failHostOutboundDrain("Host→device pump stopped during drain");
         return false;
     }
     if (!writeHostOutboundItem(item, scratch, usbIoLock))
     {
+        restoreMapperOutCable(previousOutCable);
         return false;
     }
 

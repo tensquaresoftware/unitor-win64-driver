@@ -427,6 +427,14 @@ void DeviceSession::Stop() noexcept
         running_.store(false);
     }
     (void)clearHostOutboundQueue();
+    {
+        std::lock_guard<std::mutex> deliverLock(bulkInDeliverMutex_);
+        bulkInDeliverQueue_.clear();
+    }
+    deferredHostSends_.clear();
+    deferHostSendDuringOut_ = false;
+    betweenOutChunkDemuxFailed_ = false;
+    clearExpectInBurst();
 
     // DestroyPortSet outside usbIoMutex_: teVirtualMIDI may wait for OUT callbacks.
     destroyPortsBestEffort();

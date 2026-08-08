@@ -54,19 +54,14 @@ void DeviceSession::finalizeOneHeldSysex(std::size_t inPortIndex)
     }
 }
 
-void DeviceSession::finalizeIdleHeldSysex()
+void DeviceSession::noteBulkReadCounters(std::size_t bulkBytes, std::size_t demuxSpans)
 {
-    // Only when hold is exactly one byte short of a known Matrix dump (trailing
-    // F7 URB lost). Linux never synthesizes F7 — keep this narrow.
-    constexpr auto kIdleFinalize = std::chrono::milliseconds(80);
-    // Abandon only small stuck holds (noise / truncated Matrix). Long loopback
-    // SysEx (1–14 KiB) can pause on pad-only USB URBs without MIDI bytes; a
-    // 500 ms abandon there dropped F7 and yielded lab TIMEOUT last=none.
-    constexpr auto kAbandonHold = std::chrono::milliseconds(500);
-    constexpr std::size_t kAbandonMaxHeldBytes = 400;
-    const auto now = std::chrono::steady_clock::now();
-    if (lastBulkInPacketSteady_.time_since_epoch().count() == 0
-        || now - lastBulkInPacketSteady_ < kIdleFinalize)
+    deviceHostCounters_.AddBulkAndDemux(bulkBytes, demuxSpans);
+    // Pad-only Emagic URBs produce no MIDI. Refresh the idle clock for long /
+    // partial SysEx holds so they are not abandoned mid-transfer — but never for
+    // Matrix near-complete holds (274/350): pad must not postpone trailing-F7
+    // idle-finalize (overnight TIMEOUT with no frames).
+    if (bulkBytes == 0 || !anyInFramerHoldingSysex())
     {
         return;
     }
@@ -77,43 +72,11 @@ void DeviceSession::finalizeIdleHeldSysex()
             continue;
         }
         const std::size_t held = inFramers_[index].HeldSysexSize();
-        if (held == 274 || held == 350)
+        if (held != 274 && held != 350)
         {
-            finalizeOneHeldSysex(index);
-            continue;
+            lastBulkInPacketSteady_ = std::chrono::steady_clock::now();
+            return;
         }
-        if (held <= kAbandonMaxHeldBytes
-            && now - lastBulkInPacketSteady_ >= kAbandonHold)
-        {
-            abandonIdlePartialSysexHold(index);
-        }
-    }
-}
-
-void DeviceSession::abandonIdlePartialSysexHold(std::size_t inPortIndex)
-{
-    std::lock_guard<std::mutex> lock(usbIoMutex_);
-    if (!inFramers_[inPortIndex].IsHoldingSysEx())
-    {
-        return;
-    }
-    const std::size_t abandoned = inFramers_[inPortIndex].HeldSysexSize();
-    inFramers_[inPortIndex].Reset();
-    // Do not clearExpectInBurst here — a dump may still be in flight on another
-    // completion; abandoning a partial hold must not re-open WriteBulk early.
-    std::cerr << "SysEx hold abandoned after idle: in_port=" << inPortIndex
-              << " held=" << abandoned << "\n"
-              << std::flush;
-}
-
-void DeviceSession::noteBulkReadCounters(std::size_t bulkBytes, std::size_t demuxSpans)
-{
-    deviceHostCounters_.AddBulkAndDemux(bulkBytes, demuxSpans);
-    // Pad-only Emagic URBs produce no MIDI; keep the hold idle clock alive while
-    // any IN framer is assembling SysEx so long loopbacks are not starved.
-    if (bulkBytes > 0 && anyInFramerHoldingSysex())
-    {
-        lastBulkInPacketSteady_ = std::chrono::steady_clock::now();
     }
 }
 

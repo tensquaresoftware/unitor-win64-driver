@@ -123,3 +123,56 @@ bool DeviceSession::drainQueuedBulkInPacketsHoldingUsbIo()
         }
     }
 }
+
+void DeviceSession::finalizeIdleHeldSysex()
+{
+    // Matrix dump one byte short of trailing F7 — narrow idle finalize only.
+    constexpr auto kIdleFinalize = std::chrono::milliseconds(80);
+    // Abandon only small stuck holds. Long SysEx can pause on pad-only URBs.
+    constexpr auto kAbandonHold = std::chrono::milliseconds(500);
+    constexpr std::size_t kAbandonMaxHeldBytes = 400;
+    const auto now = std::chrono::steady_clock::now();
+    if (lastBulkInPacketSteady_.time_since_epoch().count() == 0
+        || now - lastBulkInPacketSteady_ < kIdleFinalize)
+    {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(usbIoMutex_);
+    for (std::size_t index = 0; index < inPortCount_; ++index)
+    {
+        if (!inFramers_[index].IsHoldingSysEx())
+        {
+            continue;
+        }
+        const std::size_t held = inFramers_[index].HeldSysexSize();
+        if (held == 274 || held == 350)
+        {
+            finalizeOneHeldSysex(index);
+            continue;
+        }
+        if (held <= kAbandonMaxHeldBytes
+            && now - lastBulkInPacketSteady_ >= kAbandonHold)
+        {
+            abandonIdlePartialSysexHoldUnlocked(index);
+        }
+    }
+}
+
+void DeviceSession::abandonIdlePartialSysexHoldUnlocked(std::size_t inPortIndex)
+{
+    if (!inFramers_[inPortIndex].IsHoldingSysEx())
+    {
+        return;
+    }
+    const std::size_t abandoned = inFramers_[inPortIndex].HeldSysexSize();
+    inFramers_[inPortIndex].Reset();
+    std::cerr << "SysEx hold abandoned after idle: in_port=" << inPortIndex
+              << " held=" << abandoned << "\n"
+              << std::flush;
+}
+
+void DeviceSession::abandonIdlePartialSysexHold(std::size_t inPortIndex)
+{
+    std::lock_guard<std::mutex> lock(usbIoMutex_);
+    abandonIdlePartialSysexHoldUnlocked(inPortIndex);
+}

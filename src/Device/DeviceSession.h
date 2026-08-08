@@ -129,6 +129,7 @@ private:
     bool encodeWritePopOneHostOutbound(
         HostEncodeScratch& scratch,
         std::unique_lock<std::mutex>& usbIoLock);
+    void restoreMapperOutCable(uint8_t previousOutCable) noexcept;
     bool hostOutboundPending() const;
     // One Wait (+ idle finalize / outbound). 1=continue, 0=stop, -1=fatal.
     int readerWaitOnceAsync();
@@ -199,6 +200,7 @@ private:
     void finalizeIdleHeldSysex();
     void finalizeOneHeldSysex(std::size_t inPortIndex);
     void abandonIdlePartialSysexHold(std::size_t inPortIndex);
+    void abandonIdlePartialSysexHoldUnlocked(std::size_t inPortIndex);
 
     static void hostToDeviceThunk(
         void* context,
