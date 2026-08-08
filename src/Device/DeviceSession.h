@@ -147,7 +147,7 @@ private:
         std::chrono::milliseconds outMs,
         std::size_t deliverDepthAtStart);
     bool failHostOutboundBetweenChunkDemux(std::size_t outPortIndex, uint8_t cableIndex);
-    bool rewriteLastDumpRequestLocked();
+    bool rewriteLastDumpRequestLocked(unsigned retriesLeftAfterRewrite);
     // Clears queued host→device work; returns how many messages were discarded.
     std::size_t clearHostOutboundQueue() noexcept;
     void appendPendingProductMidi(
@@ -241,6 +241,9 @@ private:
     std::vector<uint8_t> lastDumpRequest_{};
     std::size_t lastDumpOutPort_ = 0;
     unsigned dumpRequestRetryRemaining_ = 0;
+    // True while rewriteLastDumpRequestLocked runs (Write + flush) so a short
+    // frame demuxed mid-rewrite cannot start a nested WriteEmagicHostMidi.
+    bool matrixDumpRewriteInProgress_ = false;
     // Temporary lab diag: log first product IN spans after Start (F0 / hold).
     std::atomic<unsigned> firstBurstDiagRemaining_{0};
 

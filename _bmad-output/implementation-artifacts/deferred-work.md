@@ -187,3 +187,12 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-cold-start-premier-dump-matrix.md`
   summary: Absolute 100%-per-start bank day gate still red until mid-burst residual is closed or gate policy relaxed.
   evidence: post-epic2-cr-coldfix bank run 20260808T162947Z overall_pass=false.
+
+## Deferred from: quick-dev spec-mid-burst-bank-timeout-matrix.md (2026-08-08)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-mid-burst-bank-timeout-matrix.md`
+  summary: Mid-SysEx bulk-IN URB loss (275−N×32 short F0…F7) still occurs under bank load; ring 32 + two size-reject rewrites mask it for the day gate.
+  evidence: Lab post-epic2-cr-midburst still had dual-short exhaust at 1/20; retry2 gate green with many retries_left logs; root assembler drop not eliminated.
+- source_spec: `_bmad-output/implementation-artifacts/spec-mid-burst-bank-timeout-matrix.md`
+  summary: abandonIdlePartialSysexHoldUnlocked can feed non-reply hold sizes into rejectShortMatrixDumpAndRetry under expect.
+  evidence: Pre-existing path; larger rewrite budget could burn dump re-requests on stuck non-dump holds.

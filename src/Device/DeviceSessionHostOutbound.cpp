@@ -62,7 +62,7 @@ void DeviceSession::armExpectInBurstAfterHostSysex(
     expectInBurstUntil_ = std::chrono::steady_clock::now() + kExpectWindow;
     lastDumpOutPort_ = outPortIndex;
     lastDumpRequest_.assign(midiBytes, midiBytes + midiBytesCount);
-    dumpRequestRetryRemaining_ = 1;
+    dumpRequestRetryRemaining_ = kMatrixDumpSizeRejectRetries;
 }
 
 void DeviceSession::clearExpectInBurst() noexcept

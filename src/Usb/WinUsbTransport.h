@@ -19,11 +19,13 @@ inline constexpr const char* kMt4WinUsbDeviceInterfaceGuid =
     "{aa209017-cf8a-49ad-a0e7-701187ff7e05}";
 
 // Linux snd-usb-midi INPUT_URBS — keep this many bulk IN transfers always pending.
-// Lab mid-SysEx discards (correct F0…F7, wrong length) correlated with thin depth
-// under Matrix dump burst rates; 32 keeps more completions in flight than 16.
-// Lab mid-SysEx discards (correct F0…F7, wrong length) correlated with thin depth
-// under Matrix dump burst rates; 16 keeps more completions in flight than stock 7/8.
-inline constexpr std::size_t kBulkInAsyncSlotCount = 16;
+// Lab bank mid-burst: correct F0…F7 at 275−N×32 (243/211/…) → size-reject exhaust →
+// TIMEOUT last=none. Thin depth (16) drops mid-SysEx URBs under Matrix dump rates;
+// 32 keeps more completions in flight (still under WaitForMultipleObjects 64 limit).
+inline constexpr std::size_t kBulkInAsyncSlotCount = 32;
+static_assert(
+    kBulkInAsyncSlotCount >= 32 && kBulkInAsyncSlotCount + 1 <= 64,
+    "bulk IN ring must stay deep enough for Matrix bursts and under WFMO limit");
 
 struct WinUsbOpenOptions
 {

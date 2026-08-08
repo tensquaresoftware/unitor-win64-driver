@@ -86,3 +86,33 @@ TEST_CASE("leading-F0 repair ignores multi-byte span that is not 10 06", "[inqui
     REQUIRE(view.count == 2);
     REQUIRE(storage.empty());
 }
+
+TEST_CASE("exact Matrix dump lengths are 275 and 351 only", "[inquiry][matrix-dump]")
+{
+    REQUIRE(isExactMatrixDumpLength(275));
+    REQUIRE(isExactMatrixDumpLength(351));
+    // Lab mid-burst shorts: missing N×32 USB packets under 275.
+    REQUIRE_FALSE(isExactMatrixDumpLength(243));
+    REQUIRE_FALSE(isExactMatrixDumpLength(211));
+    REQUIRE_FALSE(isExactMatrixDumpLength(179));
+    REQUIRE_FALSE(isExactMatrixDumpLength(319)); // 351 − 32
+    REQUIRE_FALSE(isExactMatrixDumpLength(287)); // 351 − 64
+    REQUIRE_FALSE(isExactMatrixDumpLength(274));
+    REQUIRE_FALSE(isExactMatrixDumpLength(0));
+}
+
+TEST_CASE("Matrix dump reply matcher accepts patch and master prefixes", "[inquiry][matrix-dump]")
+{
+    const uint8_t patch[] = {0xF0, 0x10, 0x06, 0x01, 0x00};
+    const uint8_t master[] = {0xF0, 0x10, 0x06, 0x03, 0x00};
+    const uint8_t other[] = {0xF0, 0x10, 0x06, 0x04, 0x00};
+    REQUIRE(isMatrixDumpReply(patch, sizeof(patch)));
+    REQUIRE(isMatrixDumpReply(master, sizeof(master)));
+    REQUIRE_FALSE(isMatrixDumpReply(other, sizeof(other)));
+    REQUIRE_FALSE(isMatrixDumpReply(nullptr, 5));
+}
+
+TEST_CASE("Matrix dump size-reject retry budget is at least two", "[inquiry][matrix-dump]")
+{
+    REQUIRE(kMatrixDumpSizeRejectRetries >= 2);
+}

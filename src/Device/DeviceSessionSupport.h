@@ -75,3 +75,8 @@ bool isMatrixDumpReply(const uint8_t* midiBytes, std::size_t byteCount) noexcept
 bool isExactMatrixDumpLength(std::size_t byteCount) noexcept;
 // Matrix dump request: F0 10 06 04 <type> <slot> F7 (7 bytes).
 bool isMatrixDumpRequest(const uint8_t* midiBytes, std::size_t byteCount) noexcept;
+
+// Size-reject rewrite attempts after a short Matrix dump under expect.
+// Arm with this value: original request + up to this many re-requests.
+// Lab: dual N×32 URB loss can exhaust a single rewrite; two recover the day gate.
+inline constexpr unsigned kMatrixDumpSizeRejectRetries = 2;

@@ -7,6 +7,25 @@
 #include <iostream>
 #include <string>
 
+namespace
+{
+struct MatrixDumpRewriteGuard
+{
+    bool& flag;
+    explicit MatrixDumpRewriteGuard(bool& inProgress) noexcept
+        : flag(inProgress)
+    {
+        flag = true;
+    }
+    ~MatrixDumpRewriteGuard()
+    {
+        flag = false;
+    }
+    MatrixDumpRewriteGuard(const MatrixDumpRewriteGuard&) = delete;
+    MatrixDumpRewriteGuard& operator=(const MatrixDumpRewriteGuard&) = delete;
+};
+} // namespace
+
 void DeviceSession::clearExpectInBurstIfExpired() noexcept
 {
     if (expectInBurstUntil_.time_since_epoch().count() == 0)
@@ -25,6 +44,14 @@ bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
     std::cerr << "SysEx size reject: len=" << gotLength
               << " (Matrix dump; keeping expect window)\n"
               << std::flush;
+    if (matrixDumpRewriteInProgress_)
+    {
+        // Drop the short frame; do not nest WriteEmagicHostMidi / flush during OUT.
+        std::cerr << "SysEx size reject: short during active dump rewrite; "
+                     "dropping frame (expect kept)\n"
+                  << std::flush;
+        return true;
+    }
     if (dumpRequestRetryRemaining_ == 0 || lastDumpRequest_.empty())
     {
         // Fail this frame only — do not tear down the Bridge mid bank-burst.
@@ -35,7 +62,8 @@ bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
         return false;
     }
     --dumpRequestRetryRemaining_;
-    if (!rewriteLastDumpRequestLocked())
+    const unsigned retriesLeftAfterRewrite = dumpRequestRetryRemaining_;
+    if (!rewriteLastDumpRequestLocked(retriesLeftAfterRewrite))
     {
         clearExpectInBurst();
         recordPumpFailure(
@@ -50,13 +78,14 @@ bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
     }
     expectInBurstUntil_ = std::chrono::steady_clock::now() + std::chrono::milliseconds(3500);
     std::cerr << "SysEx size reject: re-sent dump request (" << lastDumpRequest_.size()
-              << " B)\n"
+              << " B) retries_left=" << dumpRequestRetryRemaining_ << "\n"
               << std::flush;
     return true;
 }
 
-bool DeviceSession::rewriteLastDumpRequestLocked()
+bool DeviceSession::rewriteLastDumpRequestLocked(unsigned retriesLeftAfterRewrite)
 {
+    MatrixDumpRewriteGuard rewriteGuard(matrixDumpRewriteInProgress_);
     uint8_t encodeBytes[64] = {};
     HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
     if (!encodeHostMidiLocked(
@@ -76,8 +105,8 @@ bool DeviceSession::rewriteLastDumpRequestLocked()
     {
         armExpectInBurstAfterHostSysex(
             lastDumpOutPort_, lastDumpRequest_.data(), lastDumpRequest_.size());
-        // armExpect resets retry to 1; this rewrite already consumed the budget.
-        dumpRequestRetryRemaining_ = 0;
+        // armExpect resets the budget; restore remaining before flush can see shorts.
+        dumpRequestRetryRemaining_ = retriesLeftAfterRewrite;
     }
     flushDeferredHostSends();
     if (!wrote)
