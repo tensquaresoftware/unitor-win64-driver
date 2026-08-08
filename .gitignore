@@ -42,3 +42,15 @@ _local/
 # Lab-signed WinUSB catalog (regenerate with installer/sign-lab-package.ps1)
 installer/*.cat
 installer/*.cdf
+
+# Bulky / ephemeral Windows lab capture trees.
+# Keep small curated suites under tests/lab-logs/ (device-inquiry, smoke-epic2, *-macos)
+# and durable capsules under docs/tests/lab-evidence/.
+tests/lab-logs/overnight-matrix/
+tests/lab-logs/sysex-matrix-mid/
+tests/lab-logs/sysex-matrix-bank/
+tests/lab-logs/sysex-long-loopback/
+
+# Local review scratch (not product docs)
+_edge_diff.txt
+_bmad-output/implementation-artifacts/_cr-epic1-group-*.diff
