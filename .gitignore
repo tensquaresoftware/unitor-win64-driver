@@ -54,3 +54,4 @@ tests/lab-logs/sysex-long-loopback/
 # Local review scratch (not product docs)
 _edge_diff.txt
 _bmad-output/implementation-artifacts/_cr-epic1-group-*.diff
+_bmad-output/implementation-artifacts/_cr-epic2-group-*.diff

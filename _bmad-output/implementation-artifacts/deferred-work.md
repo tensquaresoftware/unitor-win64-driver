@@ -158,3 +158,11 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: _bmad-output/implementation-artifacts/spec-sysex-matrix-bank-burst-2.md
   summary: Update macOS paliers lab report Windows narrative now that Bridge bank gate is closed.
   evidence: Blind review; report still frames early Windows Bridge first-dump losses - do not reopen hardware control, but refresh Windows status later.
+
+## Deferred from: code review Epic 2 Group A (2026-08-08)
+
+- Idle-finalize synthesizes trailing F7 for 274/350-byte holds — deferred (A3): Reporté pour ne pas bloquer les correctifs overnight 99/100 (expect/flush, retry, abandon).
+- Post-Start IN calm timeout still opens librarian OUT — deferred (B3): Reporté pour ne pas bloquer les correctifs overnight 99/100 (expect/flush, retry, abandon).
+- SysEx holds >400 bytes never abandoned while `anyInFramerHoldingSysex` gates all host OUT — long SysEx / palier-3 concern, not the short dump overnight hole.
+- Removed sync bulk-IN capacity guard and soft `LastReadTimedOut` continue — async IN ring model; revisit only if Start/pump evidence shows mis-sized reads.
+- `AddHostOutOk` on dump-request retry masks short-dump reject rate in counters — hygiene only.
