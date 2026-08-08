@@ -116,6 +116,13 @@ void DeviceSession::sendFramedToHost(
 
     if (deferHostSendDuringOut_)
     {
+        if (deferredHostSends_.size() >= kMaxDeferredHostSends)
+        {
+            recordPumpFailure(
+                "Device→host deferred SendToHost overflow during OUT (cap="
+                + std::to_string(kMaxDeferredHostSends) + ")");
+            return;
+        }
         DeferredHostSend deferred;
         deferred.inPortIndex = inPortIndex;
         deferred.cableIndex = cableIndex;
@@ -371,6 +378,7 @@ int DeviceSession::readerWaitOnceAsync()
     {
         finalizeIdleHeldSysex();
     }
+    clearExpectInBurstIfExpired();
     if (!hostOutboundWriteBlocked())
     {
         drainHostOutbound();

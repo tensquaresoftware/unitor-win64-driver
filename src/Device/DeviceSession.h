@@ -191,6 +191,7 @@ private:
     bool anyInFramerHoldingSysex() const noexcept;
     bool hostOutboundWriteBlocked() const noexcept;
     bool expectInBurstActive() const noexcept;
+    void clearExpectInBurstIfExpired() noexcept;
     void armExpectInBurstAfterHostSysex(
         std::size_t outPortIndex,
         const uint8_t* midiBytes,
@@ -269,6 +270,8 @@ private:
         uint8_t cableIndex = 0;
         std::vector<uint8_t> midi;
     };
+    // Bound deferred SendToHost while OUT holds usbIoMutex_ (bank-burst safety).
+    static constexpr std::size_t kMaxDeferredHostSends = 64;
     std::vector<DeferredHostSend> deferredHostSends_;
     void flushDeferredHostSends();
 };

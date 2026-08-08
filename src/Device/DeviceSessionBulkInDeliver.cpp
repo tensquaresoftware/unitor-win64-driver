@@ -28,10 +28,10 @@ bool DeviceSession::failHostOutboundBetweenChunkDemux(
 {
     const std::size_t discarded = clearHostOutboundQueue();
     std::string detail =
-        "IN demux failed during hostâ†’device WriteEmagicHostMidi chunking";
+        "IN demux failed during hostâ??device WriteEmagicHostMidi chunking";
     appendDiscardedSuffix(detail, discarded);
     recordPumpFailure(
-        formatPortCableFailure("Hostâ†’device WriteBulk", outPortIndex, cableIndex, detail));
+        formatPortCableFailure("Hostâ??device WriteBulk", outPortIndex, cableIndex, detail));
     return false;
 }
 
@@ -51,7 +51,7 @@ void DeviceSession::logLongSysexHostOutWrite(
     {
         return;
     }
-    std::cerr << "hostâ†’device: long SysEx WriteBulk ok (out_port=" << (item.outPortIndex + 1)
+    std::cerr << "hostâ??device: long SysEx WriteBulk ok (out_port=" << (item.outPortIndex + 1)
               << " midi_bytes=" << item.midi.size() << " encoded_bytes=" << encodedBytes
               << " out_ms=" << outMs.count()
               << " deliver_q=" << deliverDepthAtStart << "->" << bulkInDeliverQueueDepth()
@@ -73,7 +73,7 @@ void DeviceSession::betweenOutChunksDrainIn(void* context)
         session->betweenOutChunkDemuxFailed_ = true;
         return;
     }
-    // Overlapped OUT already pumps this callback during Wait â€” no Sleep here
+    // Overlapped OUT already pumps this callback during Wait â?? no Sleep here
     // (Sleep under usbIoMutex_ only delayed the next chunk without helping IN).
 }
 
@@ -118,7 +118,7 @@ bool DeviceSession::drainQueuedBulkInPacketsHoldingUsbIo()
         std::string error;
         if (!processBulkReadLocked(queued.data.data(), queued.size, error))
         {
-            recordPumpFailure("Deviceâ†’host DecodeFromDevice failed: " + error);
+            recordPumpFailure("Deviceâ??host DecodeFromDevice failed: " + error);
             return false;
         }
     }
@@ -126,7 +126,7 @@ bool DeviceSession::drainQueuedBulkInPacketsHoldingUsbIo()
 
 void DeviceSession::finalizeIdleHeldSysex()
 {
-    // Matrix dump one byte short of trailing F7 — narrow idle finalize only.
+    // Matrix dump one byte short of trailing F7 ? narrow idle finalize only.
     constexpr auto kIdleFinalize = std::chrono::milliseconds(80);
     // Abandon only small stuck holds. Long SysEx can pause on pad-only URBs.
     constexpr auto kAbandonHold = std::chrono::milliseconds(500);
@@ -169,6 +169,12 @@ void DeviceSession::abandonIdlePartialSysexHoldUnlocked(std::size_t inPortIndex)
     std::cerr << "SysEx hold abandoned after idle: in_port=" << inPortIndex
               << " held=" << abandoned << "\n"
               << std::flush;
+    // While waiting for a Matrix dump, abandon must not leave a silent expect
+    // window (lab TIMEOUT last=none). Re-issue the dump request once if allowed.
+    if (expectInBurstActive() && !lastDumpRequest_.empty())
+    {
+        (void)rejectShortMatrixDumpAndRetry(abandoned);
+    }
 }
 
 void DeviceSession::abandonIdlePartialSysexHold(std::size_t inPortIndex)

@@ -50,7 +50,7 @@ struct MidiPushView
 };
 
 // Narrow Matrix dump guard: prepend F0 when the first IN URB dropped it (body
-// starts with 0x10). repairStorage must outlive the returned view.
+// starts with 0x10 0x06). repairStorage must outlive the returned view.
 MidiPushView maybePrependLostLeadingF0(
     bool armRepair,
     const uint8_t* midiBytes,

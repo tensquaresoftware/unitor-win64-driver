@@ -111,7 +111,9 @@ MidiPushView maybePrependLostLeadingF0(
     std::size_t byteCount,
     std::vector<uint8_t>& repairStorage)
 {
-    if (!armRepair || midiBytes == nullptr || byteCount == 0 || midiBytes[0] != 0x10)
+    // Matrix manuf id follows a lost F0: body starts 10 06 …
+    if (!armRepair || midiBytes == nullptr || byteCount < 2 || midiBytes[0] != 0x10
+        || midiBytes[1] != 0x06)
     {
         return {midiBytes, byteCount};
     }
@@ -119,7 +121,7 @@ MidiPushView maybePrependLostLeadingF0(
     repairStorage.push_back(0xF0);
     repairStorage.insert(repairStorage.end(), midiBytes, midiBytes + byteCount);
     std::cerr << "SysEx leading-F0 repair: prepended F0 (span_len=" << byteCount
-              << " head_was=10)\n"
+              << " head_was=10 06)\n"
               << std::flush;
     return {repairStorage.data(), repairStorage.size()};
 }

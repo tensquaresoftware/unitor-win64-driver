@@ -72,69 +72,6 @@ void DeviceSession::clearExpectInBurst() noexcept
     lastDumpRequest_.clear();
 }
 
-bool DeviceSession::rejectShortMatrixDumpAndRetry(std::size_t gotLength)
-{
-    std::cerr << "SysEx size reject: len=" << gotLength
-              << " (Matrix dump; keeping expect window)\n"
-              << std::flush;
-    if (dumpRequestRetryRemaining_ == 0 || lastDumpRequest_.empty())
-    {
-        clearExpectInBurst();
-        recordPumpFailure(
-            "Matrix dump reply rejected (short SysEx; no retry left) got_len="
-            + std::to_string(gotLength));
-        return false;
-    }
-    --dumpRequestRetryRemaining_;
-    if (!rewriteLastDumpRequestLocked())
-    {
-        clearExpectInBurst();
-        recordPumpFailure(
-            "Matrix dump reply rejected (short SysEx; dump-request retry failed) got_len="
-            + std::to_string(gotLength));
-        return false;
-    }
-    expectInBurstUntil_ = std::chrono::steady_clock::now() + std::chrono::milliseconds(3500);
-    deviceHostCounters_.AddHostOutOk();
-    std::cerr << "SysEx size reject: re-sent dump request (" << lastDumpRequest_.size()
-              << " B)\n"
-              << std::flush;
-    return true;
-}
-
-bool DeviceSession::rewriteLastDumpRequestLocked()
-{
-    uint8_t encodeBytes[64] = {};
-    HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
-    if (!encodeHostMidiLocked(
-            lastDumpOutPort_, lastDumpRequest_.data(), lastDumpRequest_.size(), scratch))
-    {
-        return false;
-    }
-    betweenOutChunkDemuxFailed_ = false;
-    deferredHostSends_.clear();
-    deferHostSendDuringOut_ = true;
-    std::string error;
-    const WinUsbTransport::EmagicBetweenChunks between{
-        &DeviceSession::betweenOutChunksDrainIn, this, &betweenOutChunkDemuxFailed_};
-    const bool wrote =
-        transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error, &between);
-    flushDeferredHostSends();
-    if (!wrote)
-    {
-        std::cerr << "SysEx size reject: dump-request retry WriteBulk failed: " << error
-                  << "\n"
-                  << std::flush;
-        return false;
-    }
-    if (betweenOutChunkDemuxFailed_)
-    {
-        std::cerr << "SysEx size reject: dump-request retry IN demux failed\n" << std::flush;
-        return false;
-    }
-    return true;
-}
-
 void DeviceSession::hostToDeviceThunk(
     void* context,
     std::size_t outPortIndex,
@@ -190,8 +127,8 @@ void DeviceSession::handleHostMidi(
     }
 
     transport_.signalBulkInDataReady();
-    // Opportunistic drain when the reader is waiting (lock free).
-    drainHostOutbound();
+    // Do not drain here: WriteBulk / SendToHost must stay on the reader thread
+    // (teVirtualMIDI PARSE_RX must not nest host→device OUT or deferred SendToHost).
 }
 
 void DeviceSession::drainHostOutbound()
@@ -300,7 +237,7 @@ bool DeviceSession::writeHostOutboundItem(
         &DeviceSession::betweenOutChunksDrainIn, this, &betweenOutChunkDemuxFailed_};
     const bool wrote =
         transport_.WriteEmagicHostMidi(scratch.bytes, scratch.size, error, &between);
-    flushDeferredHostSends();
+    // Arm expect before flush so an early dump reply can clearExpect (no phantom window).
     HostOutWriteFinishArgs finish;
     finish.item = &item;
     finish.cableIndex = scratch.cableIndex;
@@ -309,7 +246,9 @@ bool DeviceSession::writeHostOutboundItem(
     finish.outStarted = outStarted;
     finish.deliverDepthAtStart = deliverDepthAtStart;
     finish.wrote = wrote;
-    return finishHostOutboundWrite(finish);
+    const bool finishedOk = finishHostOutboundWrite(finish);
+    flushDeferredHostSends();
+    return finishedOk;
 }
 
 void DeviceSession::restoreMapperOutCable(uint8_t previousOutCable) noexcept
@@ -361,7 +300,6 @@ bool DeviceSession::encodeWritePopOneHostOutbound(
 
 void DeviceSession::drainHostOutboundLocked(std::unique_lock<std::mutex>& usbIoLock)
 {
-    // Never WriteBulk while the async IN ring is down (Start race / Stop teardown).
     if (!transport_.IsBulkInAsyncRingActive())
     {
         if (running_.load() && hostOutboundPending())
@@ -371,7 +309,7 @@ void DeviceSession::drainHostOutboundLocked(std::unique_lock<std::mutex>& usbIoL
         }
         return;
     }
-    // Post-start calm, mid–SysEx hold, or post-dump-request expect-IN window.
+    clearExpectInBurstIfExpired();
     if (hostOutboundWriteBlocked())
     {
         return;
@@ -379,7 +317,6 @@ void DeviceSession::drainHostOutboundLocked(std::unique_lock<std::mutex>& usbIoL
 
     uint8_t encodeBytes[kEncodeBufferCapacity] = {};
     HostEncodeScratch scratch{encodeBytes, sizeof(encodeBytes), 0, 0};
-
     while (!stopPump_.load())
     {
         {
@@ -389,11 +326,7 @@ void DeviceSession::drainHostOutboundLocked(std::unique_lock<std::mutex>& usbIoL
                 return;
             }
         }
-        if (hostOutboundWriteBlocked())
-        {
-            return;
-        }
-        if (!encodeWritePopOneHostOutbound(scratch, usbIoLock))
+        if (hostOutboundWriteBlocked() || !encodeWritePopOneHostOutbound(scratch, usbIoLock))
         {
             return;
         }
@@ -403,7 +336,6 @@ void DeviceSession::drainHostOutboundLocked(std::unique_lock<std::mutex>& usbIoL
             return;
         }
     }
-
     failHostOutboundDrain("Host→device pump stopped");
 }
 
