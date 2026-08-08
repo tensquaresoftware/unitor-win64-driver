@@ -49,8 +49,9 @@ struct MidiPushView
     std::size_t count = 0;
 };
 
-// Narrow Matrix dump guard: prepend F0 when the first IN URB dropped it (body
-// starts with 0x10 0x06). repairStorage must outlive the returned view.
+// Narrow Matrix dump guard: prepend F0 when the first IN URB dropped it.
+// Under expect, Emagic demux may deliver a lone 0x10 span (then 0x06…) or a
+// multi-byte span starting 10 06. repairStorage must outlive the returned view.
 MidiPushView maybePrependLostLeadingF0(
     bool armRepair,
     const uint8_t* midiBytes,

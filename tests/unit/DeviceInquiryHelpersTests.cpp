@@ -5,6 +5,7 @@
 #include "Device/DeviceSessionSupport.h"
 
 #include <cstdint>
+#include <vector>
 
 TEST_CASE("Universal Device Inquiry matcher accepts F0 7E 7F 06 01 F7", "[inquiry]")
 {
@@ -41,4 +42,47 @@ TEST_CASE("formatMidiBytesHex renders compact uppercase hex", "[inquiry]")
     REQUIRE(formatMidiBytesHex(reply, sizeof(reply)) == "F0 7E 00 06 02");
     REQUIRE(formatMidiBytesHex(nullptr, 3).empty());
     REQUIRE(formatMidiBytesHex(reply, 0).empty());
+}
+
+TEST_CASE("leading-F0 repair prepends on lone 0x10 under expect", "[inquiry][f0-repair]")
+{
+    const uint8_t span[] = {0x10};
+    std::vector<uint8_t> storage;
+    const MidiPushView view = maybePrependLostLeadingF0(true, span, sizeof(span), storage);
+    REQUIRE(view.count == 2);
+    REQUIRE(view.bytes[0] == 0xF0);
+    REQUIRE(view.bytes[1] == 0x10);
+    REQUIRE(storage.size() == 2);
+}
+
+TEST_CASE("leading-F0 repair prepends on same-span 10 06 under expect", "[inquiry][f0-repair]")
+{
+    const uint8_t span[] = {0x10, 0x06, 0x01};
+    std::vector<uint8_t> storage;
+    const MidiPushView view = maybePrependLostLeadingF0(true, span, sizeof(span), storage);
+    REQUIRE(view.count == 4);
+    REQUIRE(view.bytes[0] == 0xF0);
+    REQUIRE(view.bytes[1] == 0x10);
+    REQUIRE(view.bytes[2] == 0x06);
+    REQUIRE(view.bytes[3] == 0x01);
+}
+
+TEST_CASE("leading-F0 repair leaves span unchanged when expect idle", "[inquiry][f0-repair]")
+{
+    const uint8_t span[] = {0x10};
+    std::vector<uint8_t> storage;
+    const MidiPushView view = maybePrependLostLeadingF0(false, span, sizeof(span), storage);
+    REQUIRE(view.bytes == span);
+    REQUIRE(view.count == 1);
+    REQUIRE(storage.empty());
+}
+
+TEST_CASE("leading-F0 repair ignores multi-byte span that is not 10 06", "[inquiry][f0-repair]")
+{
+    const uint8_t span[] = {0x10, 0x07};
+    std::vector<uint8_t> storage;
+    const MidiPushView view = maybePrependLostLeadingF0(true, span, sizeof(span), storage);
+    REQUIRE(view.bytes == span);
+    REQUIRE(view.count == 2);
+    REQUIRE(storage.empty());
 }

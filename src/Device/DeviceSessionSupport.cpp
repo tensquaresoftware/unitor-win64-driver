@@ -111,17 +111,22 @@ MidiPushView maybePrependLostLeadingF0(
     std::size_t byteCount,
     std::vector<uint8_t>& repairStorage)
 {
-    // Matrix manuf id follows a lost F0: body starts 10 06 …
-    if (!armRepair || midiBytes == nullptr || byteCount < 2 || midiBytes[0] != 0x10
-        || midiBytes[1] != 0x06)
+    // Lost leading F0: Matrix body starts 10 06…. Emagic demux often delivers
+    // that as a lone 0x10 span (then 0x06…), not as a same-span 10 06 pair.
+    if (!armRepair || midiBytes == nullptr || byteCount < 1 || midiBytes[0] != 0x10)
+    {
+        return {midiBytes, byteCount};
+    }
+    if (byteCount >= 2 && midiBytes[1] != 0x06)
     {
         return {midiBytes, byteCount};
     }
     repairStorage.clear();
     repairStorage.push_back(0xF0);
     repairStorage.insert(repairStorage.end(), midiBytes, midiBytes + byteCount);
+    const std::size_t headBytes = (byteCount < 2) ? byteCount : 2;
     std::cerr << "SysEx leading-F0 repair: prepended F0 (span_len=" << byteCount
-              << " head_was=10 06)\n"
+              << " head_was=" << formatMidiBytesHex(midiBytes, headBytes) << ")\n"
               << std::flush;
     return {repairStorage.data(), repairStorage.size()};
 }
