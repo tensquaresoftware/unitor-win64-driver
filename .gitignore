@@ -43,10 +43,12 @@ _local/
 installer/*.cat
 installer/*.cdf
 
-# Bulky / ephemeral Windows lab capture trees.
+# Bulky / ephemeral lab capture trees (Windows + overnight Mac).
 # Keep small curated suites under tests/lab-logs/ (device-inquiry, smoke-epic2, *-macos)
 # and durable capsules under docs/tests/lab-evidence/.
 tests/lab-logs/overnight-matrix/
+tests/lab-logs/overnight-macos/
+tests/lab-logs/overnight-macos-smoke/
 tests/lab-logs/sysex-matrix-mid/
 tests/lab-logs/sysex-matrix-bank/
 tests/lab-logs/sysex-long-loopback/
