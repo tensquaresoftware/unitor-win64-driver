@@ -139,9 +139,13 @@ def _patch_rtmidi_input_queue() -> None:
 
 
 def _prepare_mido_input(inport) -> None:
-    """Confirm WinMM SysEx buffers were enlarged before open_port."""
+    """Prepare MidiIn for long SysEx; require WinMM buffer enlarge only on Windows."""
     rt = getattr(inport, "_rt", None)
-    if rt is None or not hasattr(rt, "set_buffer_size"):
+    # Stock 1.5.8 WinMM drops SysEx > ~1024 B unless set_buffer_size ran before open.
+    # CoreMIDI (macOS) does not need that API — do not hard-fail Darwin labs on 1.5.8.
+    if sys.platform == "win32" and (
+        rt is None or not hasattr(rt, "set_buffer_size")
+    ):
         raise SystemExit(
             "This lab needs python-rtmidi >= 1.6 with MidiIn.set_buffer_size "
             "(Windows WinMM otherwise drops SysEx above ~1024 bytes).\n"
@@ -149,7 +153,7 @@ def _prepare_mido_input(inport) -> None:
             "  python -m pip install -U \"git+https://github.com/SpotlightKid/python-rtmidi.git\"\n"
         )
     # Belt-and-suspenders: mido already enables SysEx in Input._open.
-    if hasattr(rt, "ignore_types"):
+    if rt is not None and hasattr(rt, "ignore_types"):
         rt.ignore_types(False, False, True)
 
 
