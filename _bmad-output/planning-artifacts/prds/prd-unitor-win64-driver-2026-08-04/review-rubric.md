@@ -71,7 +71,7 @@ No findings.
 **Assumptions Index roundtrip — partial gap.** Three Assumptions Index entries (§13) lack inline `[ASSUMPTION: …]` tags in the body:
 - "macOS-class installer" (installer intent only in FR-12 prose and addendum)
 - "Reason Studios 12" SKU string (no inline tag)
-- ShowMIDI availability/substitute (no inline tag)
+- MIDI-OX availability/substitute (no inline tag)
 
 Conversely, all inline `[ASSUMPTION]` tags in FR-5, FR-9, NFR-P1, NFR-P2 appear in the index. *Fix:* Add inline tags at first use or drop index-only entries into a "Document assumptions" subsection — prefer inline tags for extractor tooling.
 

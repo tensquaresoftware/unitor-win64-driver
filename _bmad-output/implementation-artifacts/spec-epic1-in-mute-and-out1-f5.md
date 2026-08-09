@@ -40,7 +40,7 @@ context:
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| P0 note In 1 | DIN note on In 1 during `--start-session --dev-zadig` | Complete note appears on virtual `MT4 Port 1` IN (ShowMIDI or Live) | Failed `SendToHost` stays diagnosable (English); do not silent-drop framed messages |
+| P0 note In 1 | DIN note on In 1 during `--start-session --dev-zadig` | Complete note appears on virtual `MT4 Port 1` IN (MIDI-OX or Live) | Failed `SendToHost` stays diagnosable (English); do not silent-drop framed messages |
 | P0 note In 2 | DIN note on In 2 | Same on `MT4 Port 2` IN only (no mix with Port 1) | Non-product cables ignored |
 | P0 CC | DIN CC on In 1/2 | CC visible on matching virtual IN | Same as notes |
 | Partial USB slice | Note bytes split across bulk IN reads | Hold until complete channel message, then `SendToHost` | Do not kill session on incomplete slice; do not emit partial note/CC to host |
@@ -69,7 +69,7 @@ context:
 - [x] Rebuild Debug under `builds/` and run mapper smoke / lint-touched on C++ diff -- local gate before hardware retest
 
 **Acceptance Criteria:**
-- Given a live `--start-session --dev-zadig` session with DIN activity on In 1 and In 2, when notes/CC are played, then matching virtual `MT4 Port 1/2` IN show traffic in ShowMIDI or Ableton without cross-mixing ports
+- Given a live `--start-session --dev-zadig` session with DIN activity on In 1 and In 2, when notes/CC are played, then matching virtual `MT4 Port 1/2` IN show traffic in MIDI-OX or Ableton without cross-mixing ports
 - Given a fresh session, when the first notes are sent to Out 1, then only Out 1 green LED activity occurs (no four-LED fan)
 - Given mapper unit smoke, when encoding cable 0 on a fresh mapper, then the frame starts with `F5 01`
 - Given the Bridge console during IN activity, when bulk IN delivers data, then ASCII counters move in a way that distinguishes USB / demux / SendToHost
@@ -89,7 +89,7 @@ context:
 - Mapper smoke path already wired in Bridge (`--test-mapper` or equivalent) -- expected: pass with new cable-0 F5 expectation
 
 **Manual checks (if no CLI):**
-- PowerShell: start session with `--start-session --dev-zadig` only; DIN → ShowMIDI/Live on `MT4 Port 1/2` IN; first Out 1 notes → single Out LED; Ctrl+C teardown still clean
+- PowerShell: start session with `--start-session --dev-zadig` only; DIN → MIDI-OX/Live on `MT4 Port 1/2` IN; first Out 1 notes → single Out LED; Ctrl+C teardown still clean
 
 ## Suggested Review Order
 

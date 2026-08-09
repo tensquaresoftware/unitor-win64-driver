@@ -25,7 +25,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 | Attente / rescan | Après déconnexion : sondage jusqu’à GUID WinUSB **Absent** (efface un Present périmé), puis jusqu’à **Present** — toutes les **2 s**, progression toutes les **30 s**, échec fermé après **900 s** avec diagnostics anglais — pas de hang silencieux |
 | Recréation | **Nouvelle** `DeviceSession::Start` sous l’identité AD-6 (V1 une unité : noms `MT4 In N` / `MT4 Out N` ; le raccourci AD-5 « `MT4 Port N` » désigne la même identité câble). L’App **ne** doit **pas** appeler `CreatePortSet` / `DestroyPortSet` |
 | AQ-2 (préférence UX) | Défaut V1 = **recréation silencieuse dans le même process** + diagnostics console anglais ; pas de boîte tray/GUI à valider |
-| Visibilité côté hôte | Ableton / Reason / ShowMIDI peuvent demander un **rescan** MIDI ; un redémarrage Bridge supervisé est une **échappatoire autorisée** (AD-10), pas le seul chemin |
+| Visibilité côté hôte | Ableton / Reason / MIDI-OX peuvent demander un **rescan** MIDI ; un redémarrage Bridge supervisé est une **échappatoire autorisée** (AD-10), pas le seul chemin |
 | Labo one-shot | `Bridge.exe --start-session` / `--run-midi` **quittent** encore sur perte USB en milieu de session (scripts labo qui attendent la fin du process) |
 | Échappatoire | Redémarrage Bridge supervisé OK si la recréation in-process ne suffit pas ; reboot Windows requis = **échec V1** |
 | Arrêt propre | Préfère **Ctrl+C** (pas la croix). Risque reporté : `CTRL_CLOSE` peut laisser des ports orphelins (`deferred-work.md`) |
@@ -34,7 +34,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 
 | Sujet | Story |
 |---|---|
-| Multi-client DAW + ShowMIDI (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
+| Multi-client DAW + MIDI-OX (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
 | Noms / persistance pour deux MT4 | **3.4** |
 | Chapitre hot-plug poli dans `docs/user/` | **4.2** |
 | Installateur public | **4.1** |
@@ -54,7 +54,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 - Epic 1–2 déjà OK (notes/CC + bind WinUSB)
 - VirtualMIDI installé
 - `Bridge.exe` sous `builds/` (ex. `builds/debug`)
-- Un hôte de la matrice ouvert pendant le drill : ShowMIDI et/ou une DAW qui liste les ports virtuels
+- Un hôte de la matrice ouvert pendant le drill : MIDI-OX et/ou une DAW qui liste les ports virtuels
 
 ## Comment noter
 
@@ -66,7 +66,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 
 | # | Vérification | Win10 x64 | Win11 x64 | Notes |
 |---|---|---|---|---|
-| 1 | `--auto-session` live + ShowMIDI et/ou DAW de la matrice → ports utilisables (`MT4 In N` / `MT4 Out N`) | | | |
+| 1 | `--auto-session` live + MIDI-OX et/ou DAW de la matrice → ports utilisables (`MT4 In N` / `MT4 Out N`) | | | |
 | 2 | Débrancher le MT4 → ports détruits (pas de noms orphelins sur le happy path / arrêt Ctrl+C) ; le **process** Bridge **reste vivant** en `--auto-session` (console d’attente replug). Si tu as utilisé un redémarrage Bridge supervisé, note-le | | | |
 | 3 | Rebrancher le MT4 → ports utilisables **sans reboot Windows** | | | |
 | 4 | Rescan MIDI hôte (ou redémarrage Bridge supervisé documenté) restaure la visibilité si besoin | | | |
@@ -83,7 +83,7 @@ builds\debug\Bridge.exe --test-mapper
 builds\debug\Bridge.exe --test-port-names
 ```
 
-**Drill produit :** démarre avec `--auto-session`, ouvre ShowMIDI/DAW, débranche, attends la bannière d’attente (anglais), rebranche, confirme le retour des ports, rescane l’hôte si besoin.
+**Drill produit :** démarre avec `--auto-session`, ouvre MIDI-OX/DAW, débranche, attends la bannière d’attente (anglais), rebranche, confirme le retour des ports, rescane l’hôte si besoin.
 
 **Labo one-shot :** `--start-session` / `--run-midi` quittent au débranche (scripts qui attendent la fin du process). Ne les utilise **pas** seuls pour claimer la récupération FR-11.
 
@@ -100,7 +100,7 @@ builds\debug\Bridge.exe --test-port-names
 ## Docs liées
 
 - Auto-Start (3.1) : [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
-- Multi-client DAW + ShowMIDI (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
+- Multi-client DAW + MIDI-OX (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
 - Ownership longévité : [`checklists/smoke-epic2-longevity-mt4.md`](checklists/smoke-epic2-longevity-mt4.md)
 - Smoke transport Epic 2 : [`smoke-epic2-mt4.md`](smoke-epic2-mt4.md)
 - Bind WinUSB (admin une fois) : [`../dev/winusb-bind.md`](../dev/winusb-bind.md)

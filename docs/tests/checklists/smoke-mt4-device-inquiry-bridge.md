@@ -18,7 +18,7 @@ Lab gate for the Bridge bug where Universal Device Inquiry (`F0 7E 7F 06 01 F7`)
 1. Win10/11 x64 Boot Camp (or native), Zadig-bound MT4, Bridge built under `builds/`.
 2. Session: `Bridge --start-session --dev-zadig` (or project equivalent).
 3. Matrix-1000 on physical DIN Out 1 ↔ In 1 (or matching Y/X under test).
-4. Host MIDI tool: automated `scripts/lab/device-inquiry-loop.py` (preferred) or MIDI-OX (not MidiView).
+4. Host MIDI tool: automated `scripts/lab/device-inquiry-loop.py` (preferred) or **MIDI-OX** (not MidiView / ShowMIDI — retired).
 5. Prefer opening **only** `MT4 Output 1` and `MT4 Input 1` (close MIDI-OX if the script uses those ports).
 
 ## Bridge console counters
@@ -81,7 +81,7 @@ Scarlett (or other non-Bridge interface) at 1 Inquiry/s should remain ~100 %. Do
 ## Out of scope here
 
 - Changing Matrix-Control heartbeat as the primary fix
-- MidiView
+- MidiView / ShowMIDI (retired — use MIDI-OX)
 - AMT8 / Unitor8
 - Windows MIDI Services migration
 

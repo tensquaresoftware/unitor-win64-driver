@@ -34,7 +34,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 - Matrix-Control minimum SysEx vectors → story 2.4 (`smoke-epic2-matrix-control-mt4.md`)
 - ~4 h longevity → story **2.5** (`smoke-epic2-longevity-mt4.md`)
 - Latency / jitter Studio-Done numbers → Epic 5
-- ShowMIDI alone as sole clock-slave proof when a Validation Matrix DAW is available
+- MIDI-OX alone as sole clock-slave proof when a Validation Matrix DAW is available
 
 **Dropout definition:** Bridge-induced loss or stall of clock/transport under a normal short sequencing smoke (not a multi-hour soak, not Epic 5 p99 thresholds). If the DAW loses sync or Start/Stop/Continue is missing while notes still flow, that is a Fail.
 
@@ -44,7 +44,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 2. Windows 10 x64 (mandatory matrix row) or Windows 11 x64 when that hardware is available.
 3. WinUSB-bound MT4 + teVirtualMIDI present (same lab path as Epic 1).
 4. Validation Matrix DAW: **Ableton Live 12** or **Reason Studios 12** (minimum: one of these).
-5. Optional observer: ShowMIDI — may watch bytes; does not replace DAW slave/observe for this story.
+5. Optional observer: MIDI-OX — may watch bytes; does not replace DAW slave/observe for this story.
 6. Bridge build that includes story 2.1 framer/mapper smoke vectors (`Bridge --test-mapper` exit 0).
 
 ## Synthetic gate (no hardware)
@@ -131,7 +131,7 @@ Port N:
 Cable index:
 Direction: host→device | device→host
 Symptom: missing Start | missing Stop | clock gaps | sync lost | other
-Observer: Ableton | Reason | ShowMIDI | DIN LED | slave device
+Observer: Ableton | Reason | MIDI-OX | DIN LED | slave device
 Bridge version / commit:
 ```
 

@@ -40,7 +40,7 @@ so that long writing/editing days stay trustworthy.
 
 - [x] Task 2: Author the Win10 stability sample plan (AC: 2)
   - [x] In `docs/tests/smoke-epic2-longevity-mt4.md`, define a reproducible ~**4 hour** sample with Pass/Fail rows for at least Win10 x64 (mandatory); Win11 x64 when available
-  - [x] Sample **must include SysEx activity** (not notes-only): e.g. periodic Inquiry / patch-shaped / short Matrix-Control or ShowMIDI SysEx exchanges interleaved with ordinary notes/CC; clock and/or MTC welcome when those lab rows are green
+  - [x] Sample **must include SysEx activity** (not notes-only): e.g. periodic Inquiry / patch-shaped / short Matrix-Control or MIDI-OX SysEx exchanges interleaved with ordinary notes/CC; clock and/or MTC welcome when those lab rows are green
   - [x] Prerequisites: Epic 1 notes/CC green; Story **2.3** pipe+buffer green (synthetic minimum); prefer Story **2.4** hard gates green or in-progress with honest note if Matrix-Control vectors still open — longevity sample may use any host that can send librarian-scale SysEx, but record which host
   - [x] Procedure vehicle: leave `Bridge --start-session` / `--run-midi` running (alias pair already shipped — **do not** invent a mandatory new soak CLI unless lab proves the 3 s heartbeat / cancel path is unusable for a 4 h run)
   - [x] Pass bar: session reaches ~4 h without **mandatory** Bridge restart for normal operation; Virtual Ports remain usable; no Bridge-induced silent MIDI death that forces a restart to recover
@@ -94,7 +94,7 @@ so that long writing/editing days stay trustworthy.
 | Dependency | Status | How this story treats it |
 |---|---|---|
 | Story **2.3** SysEx transport + burst buffering | **done** | Hard prerequisite for SysEx portion of design/sample — reuse pipe + `HostOutboundQueue` |
-| Story **2.4** Matrix-Control minimum vectors | **in-progress** (lab) | Soft — prefer hard gates green before claiming SM-3 “studio editor day”; sample may use ShowMIDI/SysEx tools if Matrix-Control lab still open; record honesty |
+| Story **2.4** Matrix-Control minimum vectors | **in-progress** (lab) | Soft — prefer hard gates green before claiming SM-3 “studio editor day”; sample may use MIDI-OX/SysEx tools if Matrix-Control lab still open; record honesty |
 | Stories **2.1** / **2.2** clock + MTC | **review** (Win10 DAW lab pending) | Soft — synthetic gates must stay green; include clock/MTC in soak when hardware rows exist; do not block longevity **design** on DAW lab blanks |
 | Epic 1 notes/CC all-ports | lab OK | Baseline Virtual Ports + Computer Mode path |
 | Win10 x64 lab time (~4 h wall clock) | scheduling | Required to **close** the sample matrix; design + plan can land first with blank rows |
@@ -125,7 +125,7 @@ Story **2.5** closes the epic’s longevity commitment (SM-3). Implementation re
 Pipeline (unchanged):
 
 ```text
-DAW / ShowMIDI / Matrix-Control ↔ Virtual Ports ↔ VirtualMidiBackend
+DAW / MIDI-OX / Matrix-Control ↔ Virtual Ports ↔ VirtualMidiBackend
   ↔ MidiMessageFramer (device→host) / HostOutboundQueue (host→device)
   ↔ EmagicCableMapper ↔ WinUsbTransport ↔ MT4
 ```
@@ -260,7 +260,7 @@ From `deferred-work.md` — treat as **watch list** during design + sample:
 | Existing Epic 2 smoke doc pattern | Claiming SM-3 from Matrix-Control vector Pass alone |
 | English diagnostics + defect log in `deferred-work.md` | Silent restart loops |
 | Win10 x64 Validation Matrix row | Skipping Win10 because Win11 is “newer” |
-| ShowMIDI / DAW / Matrix-Control as external hosts | Embedding Matrix-Control (CAP-8) |
+| MIDI-OX / DAW / Matrix-Control as external hosts | Embedding Matrix-Control (CAP-8) |
 | Nonzero WinUSB `PIPE_TRANSFER_TIMEOUT` (already 3000 ms) | Timeout 0 for bulk pipes on long sessions without rationale |
 
 ### File structure requirements
@@ -371,7 +371,7 @@ Patterns to extend: Epic 2 `docs/tests/smoke-epic2-*.md` scaffolds, explicit out
 
 - `conventions.md` §3 quality gate, §6 C++ style
 - No `project-context.md` in-repo yet — follow architecture spine + conventions
-- Keep hardware/protocol names in English (MT4, WinUSB, VirtualMIDI, MIDI, SysEx, Matrix-Control, Ableton, Reason, ShowMIDI)
+- Keep hardware/protocol names in English (MT4, WinUSB, VirtualMIDI, MIDI, SysEx, Matrix-Control, Ableton, Reason, MIDI-OX)
 
 ### Anti-patterns to forbid
 

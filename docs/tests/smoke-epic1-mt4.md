@@ -54,13 +54,13 @@ Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, 
 1. PC sous **Windows 10 ou 11 64 bits**.
 2. Interface **MT4** Emagic, câble USB.
 3. Au moins une source MIDI physique branchée sur un **IN** du MT4 (clavier, contrôleur), **ou** un moyen d’envoyer du MIDI vers un **OUT** physique (module, autre boîtier, LED/activité sur le MT4).
-4. Écouteurs / enceintes / module si tu veux **entendre** le retour — sinon ShowMIDI (ou équivalent) suffit pour **voir** les messages.
+4. Écouteurs / enceintes / module si tu veux **entendre** le retour — sinon MIDI-OX (ou équivalent) suffit pour **voir** les messages.
 
 ### 0.2 Logiciels à avoir installés
 
 1. **Outils de build** déjà utilisés pour ce projet (CMake + Visual Studio / Build Tools x64) — pour compiler le Bridge avec les correctifs d’aujourd’hui.
 2. **VirtualMIDI** (teVirtualMIDI) : en pratique, installer **loopMIDI** (ou rtpMIDI) depuis le site Tobias Erichsen, pour que `teVirtualMIDI.dll` soit disponible sur la machine.
-3. Un utilitaire pour **voir** le MIDI entrant, par ex. **ShowMIDI** (recommandé dans la Validation Matrix du projet). Une DAW (Ableton, Reason, etc.) convient aussi.
+3. Un utilitaire pour **voir** le MIDI entrant, par ex. **MIDI-OX** (recommandé dans la Validation Matrix du projet). Une DAW (Ableton, Reason, etc.) convient aussi.
 4. (Optionnel) Un moyen d’**envoyer** du MIDI depuis le PC vers un port OUT virtuel (DAW, clavier virtuel, utilitaire MIDI out).
 
 ### 0.3 Code à tester
@@ -75,7 +75,7 @@ Validation :
 - Dépôt présent sur le PC Windows : ✅
 - Je suis bien à la racine du dépôt (je vois `CMakeLists.txt`, `src/`, `installer/`) : ✅
 - VirtualMIDI / loopMIDI installé : ✅ (installé via loopMIDI)
-  - ShowMIDI (ou DAW) prêt : ✅ (Ableton Live 12 Suite & ShowMIDI installés)
+  - MIDI-OX (ou DAW) prêt : ✅ (Ableton Live 12 Suite & MIDI-OX installés)
 
 📌 Remarques GD :
 
@@ -243,7 +243,7 @@ Objectif : créer les ports `MT4 Input` / `MT4 Output` et laisser la pompe notes
 
 ### 4.1 Avant de lancer
 
-1. ShowMIDI (ou la DAW) peut être déjà ouvert, mais **rafraîchis / rouvre** la liste des ports MIDI **après** le démarrage de la session.
+1. MIDI-OX (ou la DAW) peut être déjà ouvert, mais **rafraîchis / rouvre** la liste des ports MIDI **après** le démarrage de la session.
 2. Un seul Bridge de session à la fois.
 
 ### 4.2 Lancer
@@ -273,11 +273,11 @@ builds\debug\Debug\Bridge.exe --start-session --dev-zadig
 
 Le processus **reste ouvert** (curseur qui clignote) : **c’est normal**. Ne ferme pas la fenêtre tant que tu testes ; **Ctrl+C** pour arrêter.
 
-**loopMIDI** n’affiche en général **pas** les ports créés par Bridge (il ne liste que ses propres ports). Regarde dans **Ableton / ShowMIDI**.
+**loopMIDI** n’affiche en général **pas** les ports créés par Bridge (il ne liste que ses propres ports). Regarde dans **Ableton / MIDI-OX**.
 
 ### 4.4 Vérifier les ports côté Windows
 
-Dans ShowMIDI / DAW, tu dois voir **par unité MT4** :
+Dans MIDI-OX / DAW, tu dois voir **par unité MT4** :
 
 - **2 ports d’entrée** (MIDI IN côté apps) : `MT4 Input 1`, `MT4 Input 2`
 - **4 ports de sortie** (MIDI OUT côté apps) : `MT4 Output 1` … `MT4 Output 4`
@@ -300,18 +300,18 @@ Validation :
 
 ## 5. Sens boîtier → PC (câbles IN physiques → ports virtuels IN)
 
-Objectif : ce qui entre dans le MT4 apparaît sur `MT4 Input 1` / `MT4 Input 2` dans ShowMIDI / DAW.
+Objectif : ce qui entre dans le MT4 apparaît sur `MT4 Input 1` / `MT4 Input 2` dans MIDI-OX / DAW.
 
 ### 5.1 Préparer l’écoute
 
-1. Dans ShowMIDI (ou DAW), sélectionne / surveille **`MT4 Input 1`** (entrée).
+1. Dans MIDI-OX (ou DAW), sélectionne / surveille **`MT4 Input 1`** (entrée).
 2. Branche un clavier (ou contrôleur) sur l’**entrée physique 1** du MT4.
 
 ### 5.2 Tester Port 1
 
 1. Joue quelques **notes**.
 2. Bouge un **CC** (mod wheel, fader, etc.).
-3. Confirme que ShowMIDI / DAW affiche bien notes + CC sur **`MT4 Input 1`**.
+3. Confirme que MIDI-OX / DAW affiche bien notes + CC sur **`MT4 Input 1`**.
 
 Validation Port 1 IN :
 
@@ -320,7 +320,7 @@ Validation Port 1 IN :
 
 ### 5.3 Tester Port 2
 
-1. Surveille **`MT4 Input 2`** (entrée) dans ShowMIDI / DAW.
+1. Surveille **`MT4 Input 2`** (entrée) dans MIDI-OX / DAW.
 2. Branche la source sur l’**entrée physique 2** du MT4 (ou change de câble).
 3. Notes + CC à nouveau.
 
@@ -417,7 +417,7 @@ Objectif : ranger les ports virtuels et l’USB proprement.
 1. Remets le focus sur la fenêtre console du Bridge.
 2. Appuie sur **Ctrl+C** (une fois, puis attends jusqu’à ~3 s : le thread USB IN peut finir un `ReadBulk` borné avant de joindre).
 3. Le processus doit se terminer.
-4. Dans ShowMIDI / DAW, **rafraîchis** la liste des ports : les `MT4 Input` / `MT4 Output` de cette session doivent **disparaître** (ou ne plus être sélectionnables comme ports live).
+4. Dans MIDI-OX / DAW, **rafraîchis** la liste des ports : les `MT4 Input` / `MT4 Output` de cette session doivent **disparaître** (ou ne plus être sélectionnables comme ports live).
 
 Validation :
 
@@ -506,7 +506,7 @@ Remplis après les tests (même partiels).
 | Zadig sans menu Interface 2 | Normal en cas B : Install WinUSB sur l’entrée « MT4 » seule. |
 | `--probe-usb` / init : erreur 121 sur OUT 0x2 | Bon canal trouvé mais le boîtier ne répond pas. Débranche/rebranche ; remplace Zadig par `installer\mt4-winusb.inf` (Disque fourni) ; autre port USB ; redémarrage PC. |
 | Session échoue, parle de VirtualMIDI / DLL / Win32=1379 | Installer loopMIDI / teVirtualMIDI ; si « existe déjà » : fermer une ancienne session Bridge (ports `MT4 Input` / `MT4 Output` ou anciens `MT4 Port N` zombies) et les entrées loopMIDI homonymes, puis relancer. |
-| Aucun port `MT4 Input`/`MT4 Output` dans loopMIDI | **Normal** — Bridge crée les ports via teVirtualMIDI ; regarde Ableton / ShowMIDI. |
+| Aucun port `MT4 Input`/`MT4 Output` dans loopMIDI | **Normal** — Bridge crée les ports via teVirtualMIDI ; regarde Ableton / MIDI-OX. |
 | Aucun port `MT4 Input`/`MT4 Output` dans la DAW | La session n’a pas démarré ; ou DAW ouverte **avant** sans refresh. |
 | Ports présents mais silence total (PC→boîtier) | Mauvais câble ; mauvais port OUT ; Track non coché dans Live. |
 | LEDs In MT4 OK, silence dans la DAW (boîtier→PC) | Ancien P0 (lab matin) — **corrigé** au retest soir ; si ça revient : rebuild + vérifier piste Live armée sur `MT4 Input N`. |

@@ -67,7 +67,7 @@ Logs : `tests/lab-logs/sysex-long-loopback/` (+ `bridge-<UTC>-startN.log`).
 
 - Option B répondeur Python sans Ask First
 - Matrix-Control / formes Matrix comme gate
-- Windows MIDI Services / MidiView / AMT8 / Unitor8
+- Windows MIDI Services / MidiView+ShowMIDI (retired; use MIDI-OX) / AMT8 / Unitor8
 - Baisser la barre 100 %
 
 ## Livrable

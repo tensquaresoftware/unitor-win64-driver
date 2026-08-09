@@ -47,7 +47,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 2. Prefer stories 2.1 / 2.2 synthetic gates green (`Bridge --test-mapper`); hardware clock/MTC rows may still be pending.
 3. Windows 10 x64 (mandatory matrix row) or Windows 11 x64 when that hardware is available.
 4. WinUSB-bound MT4 + teVirtualMIDI present (same lab path as Epic 1).
-5. Host options for **this** story: ShowMIDI / SysEx file sender / DAW SysEx, **and/or** Matrix-Control when installed. Matrix-Control is welcome but **not** required to close synthetic work.
+5. Host options for **this** story: MIDI-OX / SysEx file sender / DAW SysEx, **and/or** Matrix-Control when installed. Matrix-Control is welcome but **not** required to close synthetic work.
 6. Bridge build that includes story 2.3 framer/mapper SysEx vectors (`Bridge --test-mapper` exit 0).
 
 ## Synthetic gate (no hardware)
@@ -73,7 +73,7 @@ Expect Pass, including Catch2 `[framer][sysex]`, `[mapper][sysex]`, and `[queue]
 1. Start Bridge session (`--start-session` / `--run-midi` per Epic 1 lab habit).
 2. Confirm Computer Mode is active (channel CC kick already in session start — **SysEx alone does not wake Computer Mode**).
 3. Pick ≥1 Virtual IN and ≥1 Virtual OUT (record Port N / cable).
-4. **Device → host:** send librarian-sized SysEx into MT4 physical IN; observe complete frames on the matching Virtual IN (ShowMIDI / SysEx tool / Matrix-Control).
+4. **Device → host:** send librarian-sized SysEx into MT4 physical IN; observe complete frames on the matching Virtual IN (MIDI-OX / SysEx tool / Matrix-Control).
 5. **Host → device:** send librarian-sized SysEx to Virtual OUT; observe complete frames on MT4 physical OUT (LED / external MIDI monitor / Matrix-Control).
 6. **Short burst:** send several sequential ~275 B frames (or equivalent bank-export pacing, ≥10 ms between frames if using Matrix-Control stock pacing) without restarting Bridge.
 7. On any Fail, capture English Bridge diagnostics (Port N / cable / direction) and whether the dump was truncated, dropped, or forced a restart.

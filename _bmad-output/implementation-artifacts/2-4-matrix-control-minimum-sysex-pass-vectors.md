@@ -400,7 +400,7 @@ Patterns to extend: kebab-case smoke docs under `docs/tests/`, prove-don’t-rei
 
 - `conventions.md` §3 quality gate, §6 C++ style
 - No `project-context.md` in-repo yet — follow architecture spine + conventions
-- Keep hardware/protocol names in English (MT4, WinUSB, VirtualMIDI, MIDI, SysEx, Matrix-Control, Oberheim, Ableton, Reason, ShowMIDI)
+- Keep hardware/protocol names in English (MT4, WinUSB, VirtualMIDI, MIDI, SysEx, Matrix-Control, Oberheim, Ableton, Reason, MIDI-OX)
 
 ### Anti-patterns to forbid
 

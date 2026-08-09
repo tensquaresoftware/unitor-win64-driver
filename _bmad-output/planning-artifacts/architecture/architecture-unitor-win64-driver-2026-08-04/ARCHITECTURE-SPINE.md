@@ -126,7 +126,7 @@ flowchart TB
 
 - **Binds:** FR-9, SM-7
 - **Prevents:** Designing exclusive-lock MIDI ownership in the Bridge
-- **Rule:** VirtualMIDI supports multiple applications opening the same virtual port concurrently (author docs: up to **8** clients per port). V1 acceptance hosts are those locked in the PRD Validation Matrix (Ableton Live 12, Reason Studios 12, ShowMIDI, Matrix-Control on Win10 x64 + Win11 x64) — Architecture does not reopen host SKUs. Concurrent DAW + ShowMIDI on the same relevant ports is required. The Bridge must not add an exclusive-open policy on top. Document the 8-client ceiling in user/tech docs. Host-specific quirks (if any) are documented when observed — they do not change this rule.
+- **Rule:** VirtualMIDI supports multiple applications opening the same virtual port concurrently (author docs: up to **8** clients per port). V1 acceptance hosts are those locked in the PRD Validation Matrix (Ableton Live 12, Reason Studios 12, MIDI-OX, Matrix-Control on Win10 x64 + Win11 x64) — Architecture does not reopen host SKUs. Concurrent DAW + MIDI-OX on the same relevant ports is required. The Bridge must not add an exclusive-open policy on top. Document the 8-client ceiling in user/tech docs. Host-specific quirks (if any) are documented when observed — they do not change this rule.
 
 ### AD-9 — Port lifecycle tied to DeviceSession
 
@@ -225,7 +225,7 @@ flowchart TB
 | Build output | `builds/` only |
 | USB identity | VID/PID hex uppercase in docs (`086A:0003`); WinUSB DeviceInterfaceGUID `aa209017-cf8a-49ad-a0e7-701187ff7e05` |
 | Cable masks | Linux quirk bitmasks; Port N = N-th set bit ascending (AD-3) |
-| Validation Matrix | Inherited from PRD §10 — Ableton Live 12, Reason Studios 12, Matrix-Control, ShowMIDI; Win10 x64 + Win11 x64 |
+| Validation Matrix | Inherited from PRD §10 — Ableton Live 12, Reason Studios 12, Matrix-Control, MIDI-OX; Win10 x64 + Win11 x64 |
 | Public facade | Ten Square Software |
 | Errors | Fail closed on missing VirtualMIDI / WinUSB bind; user-visible message + doc link — no silent empty success |
 | Logging | English diagnostic strings; enough to diagnose session start/stop, hot-plug, SysEx burst failures |
@@ -273,7 +273,7 @@ unitor-win64-driver/
 flowchart TB
   subgraph pc [Windows PC]
     DAW[Ableton / Reason]
-    Show[ShowMIDI]
+    Show[MIDI-OX]
     MC[Matrix-Control]
     Bridge[Bridge user-session process]
     VMd[VirtualMIDI driver]

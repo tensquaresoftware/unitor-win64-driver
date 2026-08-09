@@ -12,7 +12,7 @@ Status: done
 
 As a DAW user,
 I want the Bridge to create 2 IN + 4 OUT Virtual Ports named `MT4 Port N` via the VirtualMIDI SDK,
-so that Ableton Live 12 / Reason / ShowMIDI / Matrix-Control can select physical-shaped endpoints.
+so that Ableton Live 12 / Reason / MIDI-OX / Matrix-Control can select physical-shaped endpoints.
 
 ## Acceptance Criteria
 
@@ -116,7 +116,7 @@ This story lands **FR-2 / CAP-2 (VirtualMIDI port lifecycle portion)**, **FR-4 /
 | Unit-1 names `MT4 Port 1`…`4` via `DeviceSessionManager` | Multi-unit `MT4 #K` proof + serial/topology registry → **3.4** / AQ-1 |
 | Fail closed if VirtualMIDI driver/DLL missing | Public Installer VirtualMIDI UX / MSI embed → **4.1** / OQ-1 |
 | AD-9 session-owned lifecycle | Hot-plug product recovery → **3.2** |
-| AD-8 “no exclusive lock” design note | Concurrent DAW + ShowMIDI acceptance → **3.3** |
+| AD-8 “no exclusive lock” design note | Concurrent DAW + MIDI-OX acceptance → **3.3** |
 | | Clock / MTC / SysEx product paths → Epic **2** |
 | | Windows MIDI Services backend → post-V1 |
 | | Session-0 Windows Service → forbidden forever (AD-20) |

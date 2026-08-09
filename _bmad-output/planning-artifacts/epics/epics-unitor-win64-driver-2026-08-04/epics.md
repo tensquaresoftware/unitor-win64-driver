@@ -50,7 +50,7 @@ FR-5: Stable Port Names: unit 1 `MT4 Port N`; unit K≥2 `MT4 #K Port N`; distin
 FR-6: Transport notes, CC, and common channel/system MIDI — CAP-6
 FR-7: Transport MIDI clock (`0xF8`), Start/Stop/Continue, and MTC (quarter-frame + full-frame) — CAP-7
 FR-8: Transparent SysEx at editor/librarian scale; Matrix-Control validates, not a runtime dependency — CAP-8
-FR-9: Multi-client: DAW + ShowMIDI concurrent on same relevant ports (no Bridge exclusive lock) — CAP-9
+FR-9: Multi-client: DAW + MIDI-OX concurrent on same relevant ports (no Bridge exclusive lock) — CAP-9
 FR-10: Multi-MT4: two independent DeviceSessions / port sets (not Emagic cascade) — CAP-10
 FR-11: Hot-plug recovery without Windows reboot (rescan / supervised Bridge restart OK) — CAP-11
 FR-12: Public Installer UX bar + VirtualMIDI prerequisite fail-closed messaging — CAP-12
@@ -69,7 +69,7 @@ CAP-5: Locked port naming (AD-5 / AD-6)
 CAP-6: Channel / system MIDI transport
 CAP-7: Clock + Start/Stop/Continue + MTC
 CAP-8: Transparent SysEx; Matrix-Control pass vectors
-CAP-9: Multi-client DAW + ShowMIDI
+CAP-9: Multi-client DAW + MIDI-OX
 CAP-10: Two independent MT4 sessions
 CAP-11: Hot-plug without Windows reboot
 CAP-12: Public Installer + VirtualMIDI prerequisite UX (AD-12)
@@ -129,7 +129,7 @@ NFR-Q3: `MidiBackend` abstraction for future Windows MIDI Services (Win11-only) 
 
 #### Validation Matrix (inherit — do not reopen hosts)
 
-- Hosts: Ableton Live 12, Reason Studios 12, Matrix-Control, ShowMIDI
+- Hosts: Ableton Live 12, Reason Studios 12, Matrix-Control, MIDI-OX
 - OS: Win10 x64 (mandatory) + Win11 x64
 - Hardware: ≥1 MT4 `086A:0003`; second unit when available for FR-10 proof
 - SysEx minimum pass vectors: Device Inquiry; single patch dump (~275 B); master dump (~351 B); edit-buffer/patch push; live editor stream; optional bank stress; mixed-wire tolerance (see Spec `validation-matrix.md` + PRD extract)
@@ -143,7 +143,7 @@ NFR-Q3: `MidiBackend` abstraction for future Windows MIDI Services (Win11-only) 
 - SM-4: Hot-plug recovery without Windows reboot
 - SM-5: Install + Auto-Start path to first MIDI without daily admin
 - SM-6: Community release honesty — MIT vs VirtualMIDI; MSI clearance before redistributable Public Installer; SmartScreen docs if unsigned
-- SM-7: Multi-client — DAW + ShowMIDI concurrent
+- SM-7: Multi-client — DAW + MIDI-OX concurrent
 - SM-8: Multi-MT4 design present; honest docs if only one unit physically validated
 - SM-9: Studio-Done Gate — MIDI Path harness published; provisional anchors confirmed or revised
 
@@ -196,7 +196,7 @@ FR-5: Epic 1 — Locked Port Names (`MT4 Port N`); Epic 3 verifies multi-unit `M
 FR-6: Epic 1 — Notes / CC / common channel MIDI
 FR-7: Epic 2 — MIDI clock + Start/Stop/Continue + MTC
 FR-8: Epic 2 — Transparent SysEx (Matrix-Control pass vectors)
-FR-9: Epic 3 — Multi-client DAW + ShowMIDI
+FR-9: Epic 3 — Multi-client DAW + MIDI-OX
 FR-10: Epic 3 — Two independent MT4 DeviceSessions
 FR-11: Epic 3 — Hot-plug recovery without Windows reboot
 FR-12: Epic 4 — Public Installer UX bar + VirtualMIDI prerequisite
@@ -226,7 +226,7 @@ After this epic, Validation Matrix DAWs can use clock / Start-Stop-Continue / MT
 **User journeys:** Completes UJ-1 MIDI depth + UJ-2
 
 ### Epic 3: Daily Studio Resilience
-After this epic, daily use needs no manual Bridge launch; unplug/replug restores ports without a Windows reboot; a DAW and ShowMIDI can share ports; two MT4s get distinguishable `MT4 #K Port N` names via separate sessions.
+After this epic, daily use needs no manual Bridge launch; unplug/replug restores ports without a Windows reboot; a DAW and MIDI-OX can share ports; two MT4s get distinguishable `MT4 #K Port N` names via separate sessions.
 **FRs covered:** FR-3, FR-9, FR-10, FR-11 (plus FR-5 multi-unit verification)
 **Also:** CAP-3, CAP-9..11; AD-8, AD-9, AD-10, AD-6 (ordinal stability); SM-4, SM-5 (Auto-Start part), SM-7, SM-8
 **User journeys:** UJ-3, UJ-4; hardens UJ-1/UJ-2 for real sessions
@@ -325,7 +325,7 @@ So that physical IN/OUT cables map correctly without any custom kernel MIDI driv
 
 As a DAW user,
 I want the Bridge to create 2 IN + 4 OUT Virtual Ports named `MT4 Port N` via the VirtualMIDI SDK,
-So that Ableton Live 12 / Reason / ShowMIDI / Matrix-Control can select physical-shaped endpoints.
+So that Ableton Live 12 / Reason / MIDI-OX / Matrix-Control can select physical-shaped endpoints.
 
 **Acceptance Criteria:**
 
@@ -352,7 +352,7 @@ So that I can play and automate through the Bridge on every IN/OUT.
 
 **Given** Virtual Ports are live with a connected MT4 (Stories 1.3–1.5)
 **When** notes and CC are sent/received on each of the 2 IN and 4 OUT ports
-**Then** round-trips succeed for Validation Matrix hosts that are available in the test loop (at minimum one DAW or ShowMIDI smoke) — FR-6 / CAP-6
+**Then** round-trips succeed for Validation Matrix hosts that are available in the test loop (at minimum one DAW or MIDI-OX smoke) — FR-6 / CAP-6
 **And** common channel/system messages required for basic playability are carried (not notes-only stubs that drop obvious channel traffic)
 **And** no Bridge restart is required for sustained note/CC smoke of a normal short session
 **And** failures are diagnosable via English logs (which port/cable failed)
@@ -458,7 +458,7 @@ So that long writing/editing days stay trustworthy.
 
 ## Epic 3: Daily Studio Resilience
 
-After this epic, daily use needs no manual Bridge launch; unplug/replug restores ports without a Windows reboot; a DAW and ShowMIDI can share ports; two MT4s get distinguishable `MT4 #K Port N` names via separate sessions.
+After this epic, daily use needs no manual Bridge launch; unplug/replug restores ports without a Windows reboot; a DAW and MIDI-OX can share ports; two MT4s get distinguishable `MT4 #K Port N` names via separate sessions.
 
 **FRs covered:** FR-3, FR-9, FR-10, FR-11 (FR-5 multi-unit verification)  
 **CAPs:** CAP-3, CAP-9, CAP-10, CAP-11  
@@ -489,7 +489,7 @@ So that a rack move does not kill the whole PC session.
 
 **Acceptance Criteria:**
 
-**Given** a live session with Virtual Ports and a Validation Matrix host open (DAW and/or ShowMIDI)
+**Given** a live session with Virtual Ports and a Validation Matrix host open (DAW and/or MIDI-OX)
 **When** the MT4 is unplugged and then replugged
 **Then** usable Virtual Ports return without requiring a Windows reboot — FR-11 / CAP-11 / NFR-R2
 **And** recovery is a **new** DeviceSession that recreates ports under AD-6 identity; teardown destroys ports via `MidiBackend` (no orphan ports) — AD-9
@@ -498,16 +498,16 @@ So that a rack move does not kill the whole PC session.
 
 **Traces:** FR-11, CAP-11, AD-9, AD-10, SM-4; deferred AQ-2
 
-### Story 3.3: Multi-client DAW plus ShowMIDI
+### Story 3.3: Multi-client DAW plus MIDI-OX
 
 As a studio user,
-I want a DAW and ShowMIDI to open the same relevant Virtual Ports at once,
+I want a DAW and MIDI-OX to open the same relevant Virtual Ports at once,
 So that I can monitor MIDI while sequencing without exclusive-lock dead ends.
 
 **Acceptance Criteria:**
 
 **Given** Virtual Ports are live
-**When** Ableton Live 12 or Reason Studios 12 and ShowMIDI open the same relevant ports concurrently
+**When** Ableton Live 12 or Reason Studios 12 and MIDI-OX open the same relevant ports concurrently
 **Then** both observe MIDI activity per VirtualMIDI multi-client semantics — FR-9 / CAP-9 / AD-8
 **And** the Bridge does not add an exclusive-open policy on top of VirtualMIDI
 **And** user/tech docs mention the VirtualMIDI ceiling of up to **8** clients per port

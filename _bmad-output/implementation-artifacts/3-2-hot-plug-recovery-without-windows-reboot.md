@@ -16,7 +16,7 @@ so that a rack move does not kill the whole PC session.
 
 ## Acceptance Criteria
 
-1. **Given** a live session with Virtual Ports and a Validation Matrix host open (DAW and/or ShowMIDI)  
+1. **Given** a live session with Virtual Ports and a Validation Matrix host open (DAW and/or MIDI-OX)  
    **When** the MT4 is unplugged and then replugged  
    **Then** usable Virtual Ports return without requiring a Windows reboot — FR-11 / CAP-11 / NFR-R2
 
@@ -54,7 +54,7 @@ so that a rack move does not kill the whole PC session.
 
 - [x] Task 4: Operator smoke + contributor cross-links (AC: 1, 3, 4)
   - [x] Smoke matrix rows (Win10 x64 mandatory; Win11 when available):
-    1. Live session + ShowMIDI and/or Validation Matrix DAW open → Virtual Ports usable
+    1. Live session + MIDI-OX and/or Validation Matrix DAW open → Virtual Ports usable
     2. Unplug MT4 → ports tear down (no orphan names on happy path / Ctrl+C-class stop); Bridge process stays alive for product `--auto-session` path (or supervised restart is documented and used)
     3. Replug MT4 → usable Virtual Ports return **without Windows reboot**
     4. Host rescan (or documented supervised Bridge restart) restores host visibility if needed
@@ -181,7 +181,7 @@ Epic 3 (“Daily Studio Resilience”) makes daily studio use survivable: no han
 2. **Teardown:** `session.Stop()` → AD-9 destroy ports; English log e.g. `MT4 disconnected; waiting for replug...`.
 3. **Wait:** Reuse presence poll (2 s cadence; document timeout — may reuse 900 s or a shorter hot-plug-specific bound documented in smoke).
 4. **Recreate:** Build PortNameSet via `DeviceSessionManager` (K=1), `session.Start(...)` again (or a fresh `DeviceSession` instance — either OK if Stop completed), print started banner.
-5. **Host visibility:** Document that Ableton/Reason/ShowMIDI may need a MIDI device rescan; supervised Bridge restart is allowed if in-process recreate is insufficient.
+5. **Host visibility:** Document that Ableton/Reason/MIDI-OX may need a MIDI device rescan; supervised Bridge restart is allowed if in-process recreate is insufficient.
 6. **Cancel:** Ctrl+C still exits cleanly (prefer over console close — CTRL_CLOSE orphan risk remains deferred).
 
 **Anti-patterns (do not)**

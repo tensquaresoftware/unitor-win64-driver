@@ -79,7 +79,7 @@ This story lands the **FR-7 / CAP-7 clock + Start/Stop/Continue** portion of AD-
 | Framer/mapper synthetic vectors for realtime interleave | Transparent SysEx / Matrix-Control vectors → **2.3** / **2.4** |
 | Treat Bridge-induced clock/transport dropouts as defects | ~4h longevity design → **2.5** |
 | Document Win10 (mandatory) / Win11 (when available) smoke | Auto-Start → **3.1**; hot-plug → **3.2** |
-| Fix framer/pump only if smoke fails | Multi-client DAW+ShowMIDI → **3.3**; multi-MT4 → **3.4** |
+| Fix framer/pump only if smoke fails | Multi-client DAW+MIDI-OX → **3.3**; multi-MT4 → **3.4** |
 | | Public Installer / MSI → **4.1** / OQ-1 |
 | | MIDI Path latency/jitter harness + Studio-Done thresholds → Epic **5** / AD-11 |
 | | `0xFF` System Reset vs Emagic pad escaping — still deferred |
@@ -220,7 +220,7 @@ From `deferred-work.md` and Story 1.6 review:
 | Existing `MidiMessageFramer` + DeviceSession pump | New ClockEngine / message allowlist |
 | Existing `EmagicCableMapper` opaque path | Reimplementing F5 for realtime |
 | Ableton Live 12 or Reason Studios 12 for smoke | Claiming full SM-1 including MTC |
-| ShowMIDI as optional observer | ShowMIDI alone as sole clock-slave proof if DAW available |
+| MIDI-OX as optional observer | MIDI-OX alone as sole clock-slave proof if DAW available |
 | `FramerSmoke` / Catch2 already in tree | New third-party test frameworks |
 | English diagnostics with Port N / cable | Silent success when clock is dropped |
 
@@ -277,7 +277,7 @@ From `deferred-work.md` and Story 1.6 review:
 
 **Dropout definition for this story:** Bridge-induced loss or stall of clock/transport under a normal short sequencing smoke (not a multi-hour soak, not Epic 5 p99 thresholds). If the DAW loses sync or Start/Stop/Continue is missing while notes still flow, that is a fail.
 
-Validation Matrix hosts: Ableton Live 12, Reason Studios 12 — **minimum for this story** is one of those DAWs. ShowMIDI may observe but does not replace DAW slave/observe for SM-1 clock portion.
+Validation Matrix hosts: Ableton Live 12, Reason Studios 12 — **minimum for this story** is one of those DAWs. MIDI-OX may observe but does not replace DAW slave/observe for SM-1 clock portion.
 
 ### Previous story intelligence
 
@@ -335,7 +335,7 @@ Patterns to extend: synthetic smoke in App + Catch2, flag-gated hardware paths, 
 - Inverting TX/RX flags
 - French comments; kebab-case sources under `src/`
 - Committing proprietary VirtualMIDI SDK binaries
-- Treating ShowMIDI-only observation as full DAW clock-slave proof when a matrix DAW is available
+- Treating MIDI-OX-only observation as full DAW clock-slave proof when a matrix DAW is available
 
 ### References
 

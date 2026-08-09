@@ -31,7 +31,7 @@
 | AD-3 MT4 profile: `086A:0003`, `in_cables=0x8003`, `out_cables=0x800f`, `ifnum=2` | Linux `quirks-table.h` (`USB_DEVICE(0x086a, 0x0003)`, `QUIRK_DATA_MIDI_EMAGIC(2)`) | **Exact match** in upstream kernel |
 | AD-14: `QUIRK_MIDI_EMAGIC` in `sound/usb/midi.c` + `quirks-table.h` | torvalds/linux master | Still present; Emagic F5 port-switch protocol documented |
 | AD-7: Do not fork `aaron1a12/virtual-midi` (GPL) | github.com/aaron1a12/virtual-midi | Exists; **GPL-3.0**; uses VirtualMIDI SDK — spine correct |
-| AD-8: ShowMIDI as concurrent monitor | github.com/gbevin/ShowMIDI | Active; Windows builds available |
+| AD-8: MIDI-OX as concurrent monitor | midiox.com (MIDI-OX) | V1 matrix utility; ShowMIDI (gbevin) and MidiView retired after lab |
 | AD-8: Ableton Live 12 | ableton.com release notes | Current line (12.4.x, July 2026) — valid acceptance host |
 | AD-12 dev fallback: Zadig | zadig.akeo.ie | **v2.9** (2024-06-13); WinUSB install still supported |
 | AD-8: VirtualMIDI multi-client up to 8 | Author docs (pre-checked) | Accepted per review brief |
@@ -45,13 +45,13 @@
 
 ### F1 — MEDIUM: AD-8 names **Reason Studios 12** for V1 multi-client acceptance
 
-**Spine:** AD-8 requires Ableton Live 12 or **Reason Studios 12** concurrently with ShowMIDI.
+**Spine:** AD-8 requires Ableton Live 12 or **Reason Studios 12** concurrently with MIDI-OX.
 
 **Reality (web, May 2026):** Reason **14** is GA worldwide (Reason Studios press, 2026-05-11). Reason 12 remains installable but is **three major versions behind** the current perpetual/subscription line.
 
 **Risk:** Acceptance matrix anchored to a legacy DAW version may miss Win11 MIDI stack quirks visible only in current hosts; reviewers may install Reason 14 by default.
 
-**Recommendation:** Update acceptance wording to **Reason 14** (or “current Reason perpetual / Reason+”) while keeping ShowMIDI + Ableton Live 12. Note Reason 14 supports Win10+ per vendor specs.
+**Recommendation:** Update acceptance wording to **Reason 14** (or “current Reason perpetual / Reason+”) while keeping MIDI-OX + Ableton Live 12. Note Reason 14 supports Win10+ per vendor specs.
 
 **Evidence:** [Reason 14 press release](https://www.reasonstudios.com/press/reason-14-available-worldwide), [Sound on Sound](https://www.soundonsound.com/news/reason-14-now-available)
 

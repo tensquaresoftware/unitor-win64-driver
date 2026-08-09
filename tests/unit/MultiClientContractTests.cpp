@@ -1,5 +1,5 @@
 // Offline contract: VirtualMIDI create-flag mask has no exclusive-open policy (AD-8 / SM-7).
-// Hardware SM-7 (DAW + ShowMIDI concurrent) remains the product gate — see
+// Hardware SM-7 (DAW + MIDI-OX concurrent) remains the product gate — see
 // docs/tests/smoke-epic3-multiclient-mt4.md.
 
 #include <catch2/catch_test_macros.hpp>

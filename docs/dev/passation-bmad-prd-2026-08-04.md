@@ -39,7 +39,7 @@ Contenu déjà dans le draft :
   - **Ableton Live 12**
   - **Reason Studios 12** (à confirmer le libellé SKU exact si besoin)
   - **Matrix-Control** (SysEx first-party, pas une dépendance runtime)
-  - **ShowMIDI** (utilitaire multi-client ; pas MIDI-OX)
+  - **MIDI-OX** (utilitaire multi-client V1 ; ShowMIDI / MidiView retirés)
   - **Win10 x64 obligatoire** + **Win11 x64**
 - Timing : ancres provisoires + **Studio-Done Gate** (mesurer le chemin MIDI avant de dire « done studio »)
 - Risques, open questions, traçabilité vers le brief
@@ -85,7 +85,7 @@ Prompt de reprise possible sur le Mac :
 | 4 | Doc protocole Emagic vs fallback Linux + captures USB | Reporter ; Orientation Architecture |
 | 5 | CI/CD Mac edit / Win10 validate | Au minimum : build Windows en CI ; détail Architecture |
 | 6 | Orthographe exacte des noms si 2× MT4 | **Architecture / UX** — règle produit déjà posée |
-| 7 | Multi-client VirtualMIDI + ShowMIDI / DAW | **Architecture** à confirmer |
+| 7 | Multi-client VirtualMIDI + MIDI-OX / DAW | **Architecture** à confirmer |
 | 8 | Vecteurs SysEx Matrix-Control « pass » | À préciser (Guillaume) quand possible ; sinon open avec owner |
 
 Rien de tout ça ne doit **rouvrir** : usermode, VirtualMIDI V1, MIT, MT4-only validé, SysEx V1, Win10 obligatoire.

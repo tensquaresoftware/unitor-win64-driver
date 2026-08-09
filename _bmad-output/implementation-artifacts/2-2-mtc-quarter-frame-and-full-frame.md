@@ -88,7 +88,7 @@ This story lands the **FR-7 / CAP-7 MTC** portion of AD-17 / SM-1. Story 2.1 alr
 | Prove MTC full-frame SysEx used for sync (`F0 7F … 01 01 … F7`) both directions | Matrix-Control minimum SysEx vectors → **2.4** |
 | Framer/mapper synthetic vectors for QF + full-frame (+ interleave with notes/clock) | ~4h longevity design → **2.5** |
 | Treat Bridge-induced MTC dropouts as defects | Auto-Start → **3.1**; hot-plug → **3.2** |
-| Document Win10 (mandatory) / Win11 (when available) smoke | Multi-client DAW+ShowMIDI → **3.3**; multi-MT4 → **3.4** |
+| Document Win10 (mandatory) / Win11 (when available) smoke | Multi-client DAW+MIDI-OX → **3.3**; multi-MT4 → **3.4** |
 | Fix framer/pump only if smoke fails | Public Installer / MSI → **4.1** / OQ-1 |
 | | MIDI Path latency/jitter harness + Studio-Done thresholds → Epic **5** / AD-11 |
 | | `0xFF` System Reset vs Emagic pad escaping — still deferred |
@@ -241,7 +241,7 @@ From `deferred-work.md` and Story 2.1 review:
 | Existing `MidiMessageFramer` + DeviceSession pump | New MtcEngine / message allowlist |
 | Existing `EmagicCableMapper` opaque path | Reimplementing F5 for MTC |
 | Ableton Live 12 or Reason Studios 12 for smoke | Claiming full SM-1 SysEx librarian |
-| ShowMIDI as optional observer / loopback helper | ShowMIDI alone as sole MTC-slave proof if DAW available |
+| MIDI-OX as optional observer / loopback helper | MIDI-OX alone as sole MTC-slave proof if DAW available |
 | `FramerSmoke` / Catch2 already in tree | New third-party test frameworks |
 | English diagnostics with Port N / cable | Silent success when MTC is dropped |
 | Fixed byte vectors for QF + full-frame | Runtime SMPTE math library |
@@ -304,7 +304,7 @@ From `deferred-work.md` and Story 2.1 review:
 
 **Dropout definition for this story:** Bridge-induced loss or stall of MTC quarter-frame / full-frame under a normal short sync smoke (not a multi-hour soak, not Epic 5 p99 thresholds). If the DAW loses timecode lock or full-frame cues never arrive while notes still flow, that is a fail.
 
-Validation Matrix hosts: Ableton Live 12, Reason Studios 12 — **minimum for this story** is one of those DAWs exercising MTC send and/or slave/observe. ShowMIDI may observe bytes but does not replace DAW MTC proof for SM-1 when a matrix DAW is available.
+Validation Matrix hosts: Ableton Live 12, Reason Studios 12 — **minimum for this story** is one of those DAWs exercising MTC send and/or slave/observe. MIDI-OX may observe bytes but does not replace DAW MTC proof for SM-1 when a matrix DAW is available.
 
 **DAW tip (lab):** Prefer a port dedicated to MTC when the DAW allows — MTC can be chatty; Bridge must still carry it on a shared Virtual Port without dropouts under short smoke.
 
@@ -362,7 +362,7 @@ Patterns to extend: split Protocol smoke TUs by topic, Catch2 thin wrappers over
 - Inverting TX/RX flags
 - French comments; kebab-case sources under `src/`
 - Committing proprietary VirtualMIDI SDK binaries
-- Treating ShowMIDI-only observation as full DAW MTC proof when a matrix DAW is available
+- Treating MIDI-OX-only observation as full DAW MTC proof when a matrix DAW is available
 - Growing `EmagicMapperSmokeSupport.cpp` instead of a dedicated MTC smoke TU
 
 ### References

@@ -70,7 +70,7 @@ Do not blame the Matrix if MT4 DIN LEDs show activity on a Fail.
 - Dump request All / ~100× bank stress
 - Synthetic very-long SysEx
 - Matrix-Control UI as the primary gate
-- Windows MIDI Services, MidiView, AMT8 / Unitor8
+- Windows MIDI Services; **MidiView** / **ShowMIDI** (retired — use **MIDI-OX**); AMT8 / Unitor8
 
 ## Lab notes (2026-08-07)
 

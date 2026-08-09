@@ -35,7 +35,7 @@ so that Virtual Ports are ready without launching the Bridge by hand every sessi
   - [x] State explicitly: Bridge is a **user-session** process; **forbidden** Session-0 Windows Service / SCM service project (AD-20)
   - [x] Choose and document the registration mechanism (implementation detail under AD-20). **Recommended default:** per-user Task Scheduler task at logon with `TASK_LOGON_INTERACTIVE_TOKEN` / “Run only when user is logged on”, **RunLevel Limited** (not “highest privileges”), action = absolute path to `Bridge.exe` + auto-session flag. **Allowed alternate:** `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` equivalent. USB-arrival may be combined (see Task 3)
   - [x] State privilege bar: WinUSB INF bind / lab signing remain one-time Administrator (install) — daily Auto-Start register/run/unregister must work as the interactive user without elevation (NFR-D2)
-  - [x] Explicit fences: mid-session unplug/replug recovery → **3.2**; multi-client DAW+ShowMIDI policy → **3.3**; dual-MT4 ordinal naming → **3.4**; Public Installer UX packaging of Auto-Start → **4.1**; end-user docs polish → **4.2**; MIDI Path latency harness → Epic **5**
+  - [x] Explicit fences: mid-session unplug/replug recovery → **3.2**; multi-client DAW+MIDI-OX policy → **3.3**; dual-MT4 ordinal naming → **3.4**; Public Installer UX packaging of Auto-Start → **4.1**; end-user docs polish → **4.2**; MIDI Path latency harness → Epic **5**
   - [x] Cite SSOT: epics Story 3.1; PRD FR-3 / NFR-D2 / SM-5 (Auto-Start portion); AD-10, AD-12 items (6)(7), AD-20; SPEC CAP-3
 
 - [x] Task 2: Registration + unregister CLI (AC: 2, 3)

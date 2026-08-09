@@ -37,7 +37,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 - Latency / jitter Studio-Done numbers → Epic 5
 - SMPTE user-bits / MMC / MTC cueing variants beyond full-frame sync
 - Building an MTC generator UI or SMPTE display — Bridge carries bytes only
-- ShowMIDI alone as sole MTC-slave proof when a Validation Matrix DAW is available
+- MIDI-OX alone as sole MTC-slave proof when a Validation Matrix DAW is available
 
 **Important:** Full-frame MTC is SysEx-shaped, but **this story’s acceptance is MTC sync only**. Passing full-frame here does **not** claim Matrix-Control / librarian SysEx done (stories 2.3 / 2.4).
 
@@ -50,7 +50,7 @@ Mark each validation line **Pass** or **Fail**. On Fail, write English notes wit
 3. Windows 10 x64 (mandatory matrix row) or Windows 11 x64 when that hardware is available.
 4. WinUSB-bound MT4 + teVirtualMIDI present (same lab path as Epic 1).
 5. Validation Matrix DAW: **Ableton Live 12** or **Reason Studios 12** (minimum: one of these).
-6. Optional observer: ShowMIDI — may watch bytes / loopback; does not replace DAW MTC send/slave/observe for this story when a matrix DAW is available.
+6. Optional observer: MIDI-OX — may watch bytes / loopback; does not replace DAW MTC send/slave/observe for this story when a matrix DAW is available.
 7. Bridge build that includes story 2.2 framer/mapper MTC smoke vectors (`Bridge --test-mapper` exit 0).
 
 **DAW tip:** Prefer a port dedicated to MTC when the DAW allows — MTC can be chatty; Bridge must still carry it on a shared Virtual Port without dropouts under short smoke.
@@ -92,7 +92,7 @@ If dense quarter-frame rate (~4× SMPTE frame rate) shows Bridge-induced dropout
 
 ## Matrix A — Host → device (DAW OUT → MT4 physical OUT)
 
-**Goal:** DAW sends MTC to a Virtual OUT; MT4 physical OUT carries quarter-frame and at least one full-frame cue (DIN LED / slave device / ShowMIDI-on-loopback / DAW MTC observe).
+**Goal:** DAW sends MTC to a Virtual OUT; MT4 physical OUT carries quarter-frame and at least one full-frame cue (DIN LED / slave device / MIDI-OX-on-loopback / DAW MTC observe).
 
 | Check | Win10 x64 | Win11 x64 (when available) | Notes (Port N / cable / direction) |
 |---|---|---|---|
@@ -143,7 +143,7 @@ Port N:
 Cable index:
 Direction: host→device | device→host
 Symptom: missing quarter-frame | missing full-frame | timecode lock lost | garbled full-frame | other
-Observer: Ableton | Reason | ShowMIDI | DIN LED | slave device
+Observer: Ableton | Reason | MIDI-OX | DIN LED | slave device
 Bridge version / commit:
 ```
 

@@ -1,5 +1,5 @@
 # generated: 2026-08-04T21:38:31Z
-# last_updated: 2026-08-10T02:00:00Z
+# last_updated: 2026-08-10T01:54:00Z
 # project: unitor-win64-driver
 # project_key: NOKEY
 # tracking_system: file-system
@@ -7,7 +7,7 @@
 #
 # SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
 # READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
-# NEXT: Epic 3 in-progress — 3-3 review (multi-client); 3-2/3-1 done; next backlog 3-4 dual-MT4; Epic 2 done (PC-only barème); deferred: Scarlett/DAW clock+MTC UAT, Matrix-Control GUI UAT, 8h soak
+# NEXT: Epic 3 in-progress — 3-3 done (multi-client; Live+MIDI-OX lab Pass; matrix utility=MIDI-OX); next backlog 3-4 dual-MT4; 3-2/3-1 done; Epic 2 done (PC-only barème); deferred: Scarlett/DAW clock+MTC UAT, Matrix-Control GUI UAT, 8h soak
 #
 # DEFERRED (do not block sprint):
 #   AQ-1…AQ-4 (architecture spine)
@@ -51,7 +51,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-10T02:00:00Z"
+last_updated: "2026-08-10T01:54:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -81,7 +81,7 @@ development_status:
   epic-3: in-progress
   3-1-auto-start-without-daily-administrator: done
   3-2-hot-plug-recovery-without-windows-reboot: done
-  3-3-multi-client-daw-plus-showmidi: review
+  3-3-multi-client-daw-plus-showmidi: done
   3-4-two-mt4-units-with-stable-distinguishable-names: backlog
   epic-3-retrospective: optional
 

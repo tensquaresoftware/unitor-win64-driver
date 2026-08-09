@@ -44,7 +44,7 @@ context:
 **Never:**
 - Dump request All / ~100× bank stress; synthetic very-long SysEx generator; fake echo app.
 - Matrix-Control UI as the gate (Python harness is the gate).
-- Windows MIDI Services, MidiView, AMT8 / Unitor8.
+- Windows MIDI Services; MidiView/ShowMIDI (retired; use MIDI-OX); AMT8 / Unitor8.
 - Changing Matrix-Control heartbeat.
 - Claiming Pass from unit smokes alone without this lab.
 

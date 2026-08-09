@@ -102,10 +102,10 @@ Passation explicitly forbids reopening: usermode, VirtualMIDI V1, MIT, MT4-only 
 
 ## What is already well covered (no patch required)
 
-- Validation matrix lock (Ableton Live 12, Reason Studios 12, Matrix-Control, ShowMIDI, Win10 mandatory + Win11).
+- Validation matrix lock (Ableton Live 12, Reason Studios 12, Matrix-Control, MIDI-OX, Win10 mandatory + Win11).
 - Studio-Done Gate + MIDI Path (not ASIO) measurement policy.
 - VirtualMIDI redistribution as Public Installer release gate (conceptual).
-- ShowMIDI over MIDI-OX; multi-client FR-9 with Architecture assumption.
+- MIDI-OX as V1 multi-client utility (ShowMIDI / MidiView retired); multi-client FR-9 with Architecture assumption.
 - Backend abstraction for future Windows MIDI Services (NFR-Q3, addendum).
 - Authenticode strongly recommended, not hard gate V1.
 - Brief locked decisions in §11; traceability §14.

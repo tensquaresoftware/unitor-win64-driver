@@ -35,7 +35,7 @@ context:
 - WinUSB / session timeout refactors as a “fix” for this issue.
 - Windows MIDI Services migration or dropping Win10.
 - Matrix-Control code changes (Device Inquiry filter already shipped there).
-- MidiView-based lab (known BSOD).
+- MidiView/ShowMIDI labs (retired; MidiView known BSOD — use MIDI-OX).
 - Rewriting historical epic story markdown as part of this ship; live docs + code SSOT only.
 
 ## I/O & Edge-Case Matrix
@@ -100,7 +100,7 @@ Golden names (unit 1): `MT4 Input 1`, `MT4 Input 2`, `MT4 Output 1`, `MT4 Output
 - `python scripts/quality/lint-touched.py` -- expected: clean on touched C++ diff
 
 **Manual checks (if no CLI):**
-- Lab: send Device Inquiry to `MT4 Output N`; confirm it does not appear on `MT4 Input X` (MIDI-OX). Presence soak 2–5 min with filtered Matrix-Control. Do not use MidiView.
+- Lab: send Device Inquiry to `MT4 Output N`; confirm it does not appear on `MT4 Input X` (MIDI-OX). Presence soak 2–5 min with filtered Matrix-Control. Do not use MidiView or ShowMIDI (retired — use MIDI-OX).
 
 ## Suggested Review Order
 

@@ -90,7 +90,7 @@ FR-7: MIDI clock and MTC — MIDI clock (`0xF8`), Start/Stop/Continue, and MTC (
 
 FR-8: SysEx as a V1 requirement — transparent SysEx at editor/librarian scale including Matrix-Control minimum pass vectors; Matrix-Control is not a Bridge runtime dependency; mixed-wire tolerance required.
 
-FR-9: Multi-client access — DAW + MIDI utility (ShowMIDI) concurrent on relevant Virtual Ports without Bridge exclusive-lock dead ends.
+FR-9: Multi-client access — DAW + MIDI utility (MIDI-OX) concurrent on relevant Virtual Ports without Bridge exclusive-lock dead ends.
 
 FR-10: Multi-MT4 instances — two independent MT4 units / sessions supported (not Emagic cascade); honest docs if only one unit physically validated.
 
@@ -196,7 +196,7 @@ NFR / Spec capability coverage (epics inventory):
 | FR-6 | Notes / CC / channel MIDI | Epic 1 · Story 1.6 | Covered |
 | FR-7 | Clock + Start/Stop/Continue + MTC | Epic 2 · Stories 2.1 / 2.2 | Covered |
 | FR-8 | SysEx / Matrix-Control vectors | Epic 2 · Stories 2.3 / 2.4 | Covered |
-| FR-9 | Multi-client DAW + ShowMIDI | Epic 3 · Story 3.3 | Covered |
+| FR-9 | Multi-client DAW + MIDI-OX | Epic 3 · Story 3.3 | Covered |
 | FR-10 | Multi-MT4 instances | Epic 3 · Story 3.4 | Covered |
 | FR-11 | Hot-plug without reboot | Epic 3 · Story 3.2 | Covered |
 | FR-12 | Public Installer UX bar | Epic 4 · Story 4.1 | Covered |

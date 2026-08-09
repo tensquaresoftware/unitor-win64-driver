@@ -50,7 +50,7 @@ Useful URLs:
 | Vendor GPL Linux sources into tree | Rejected | Would force GPL; conflicts with MIT intent |
 | Fork `aaron1a12/virtual-midi` as project base | Rejected | GPL + vendored SDK; use only as integration existence proof |
 | Guarantee AMT8/Unitor8 in V1 | Rejected | No test hardware commitment |
-| MIDI-OX as primary Validation Matrix utility | Deferred/replaced | PRD locks **ShowMIDI** as the V1 multi-client utility |
+| ShowMIDI / MidiView as Validation Matrix utility | Retired | Lab: MidiView BSOD; ShowMIDI weak / no practical file log. PRD locks **MIDI-OX** as the V1 multi-client utility (2026-08-10) |
 
 ## Community evidence (problem persistence)
 

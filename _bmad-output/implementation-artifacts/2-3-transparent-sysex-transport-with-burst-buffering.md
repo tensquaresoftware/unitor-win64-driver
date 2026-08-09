@@ -59,14 +59,14 @@ so that editors complete transfers without a Bridge restart under normal librari
 - [x] Task 4: Host→device path — verify, only harden framer if lab fails (AC: 1, 2)
   - [x] Default assumption: with `PARSE_RX`, teVirtualMIDI delivers **complete** SysEx units up to `maxSysexLength` → existing `EncodeToDevice` + `WriteBulk` is enough once Task 3 buffering exists
   - [x] Confirm `kEncodeBufferCapacity` (**4096**) remains sufficient for F5 wrap of a 351 B frame (+ pad); raise only if encode smoke proves overflow
-  - [x] On Windows hardware smoke: confirm host → Virtual OUT → MT4 physical OUT carries librarian-sized SysEx (ShowMIDI / SysEx tool / Matrix-Control when available — see Task 5 fence)
+  - [x] On Windows hardware smoke: confirm host → Virtual OUT → MT4 physical OUT carries librarian-sized SysEx (MIDI-OX / SysEx tool / Matrix-Control when available — see Task 5 fence)
   - [x] **Only if** lab shows incomplete host→device SysEx spans: add a symmetric host→device framer. Do **not** add it preemptively
   - [x] Computer Mode wake: keep the existing channel CC kick — **SysEx alone does not wake Computer Mode**
 
 - [x] Task 5: Document hardware SysEx transport smoke (AC: 1, 2, 4)
   - [x] Add `docs/tests/smoke-epic2-sysex-mt4.md` (kebab-case) with checklist: ≥1 IN + ≥1 OUT; librarian-sized SysEx both directions; short burst (≥ several 275 B frames or equivalent) without Bridge restart; English failure notes (Port N / cable / direction)
   - [x] Win10 x64 = mandatory matrix row; Win11 x64 = document when hardware available
-  - [x] Host options for this story: ShowMIDI / SysEx file sender / DAW SysEx, **and/or** Matrix-Control when installed — but do **not** claim SM-2 / Story **2.4** minimum pass-vector table complete
+  - [x] Host options for this story: MIDI-OX / SysEx file sender / DAW SysEx, **and/or** Matrix-Control when installed — but do **not** claim SM-2 / Story **2.4** minimum pass-vector table complete
   - [x] Cross-link from `docs/tests/smoke-epic2-mtc-mt4.md` and `docs/tests/smoke-epic2-clock-mt4.md` (those stay clock/MTC; SysEx librarian transport lives here)
   - [x] Explicit fences: Matrix-Control locked minimum vectors (Inquiry + patch + master + push + live edits + mixed-wire) → **2.4**; ~4 h longevity → **2.5**; full-frame MTC sync already covered by **2.2**
 
@@ -107,7 +107,7 @@ This story lands **FR-8 / AD-16 transparent SysEx** plus **NFR-R3 / AD-18 burst 
 | Transparent carry of Oberheim Matrix-**shaped** SysEx (no Emagic rewrite) | Locked Matrix-Control minimum pass-vector table → **2.4** |
 | Framer/mapper synthetic vectors for Inquiry / 275 B / 351 B (+ interleave) | ~4 h longevity design / soak sample → **2.5** |
 | Bounded burst buffering/queue so librarian-scale dumps need no Bridge restart | Auto-Start → **3.1**; hot-plug → **3.2** |
-| Oversize / overflow / corrupt dumps treated as failures (English diagnostics) | Multi-client DAW+ShowMIDI → **3.3**; multi-MT4 → **3.4** |
+| Oversize / overflow / corrupt dumps treated as failures (English diagnostics) | Multi-client DAW+MIDI-OX → **3.3**; multi-MT4 → **3.4** |
 | teVirtualMIDI max SysEx length check on SendToHost | Public Installer / MSI → **4.1** / OQ-1 |
 | Document Win10 (mandatory) / Win11 (when available) SysEx transport smoke | MIDI Path latency/jitter harness + Studio-Done thresholds → Epic **5** / AD-11 |
 | Fix framer/pump/queue only as needed for AC | `0xFF` System Reset vs Emagic pad escaping — still deferred |
@@ -281,7 +281,7 @@ From `deferred-work.md` and Stories 2.1 / 2.2:
 | Existing `MidiMessageFramer` + DeviceSession pump | New SysexEngine / Oberheim allowlist |
 | Existing `EmagicCableMapper` opaque path | Reimplementing F5 for SysEx |
 | Fixed synthetic 275/351 B vectors (from extract sizes) | Vendoring Matrix-Control sources |
-| ShowMIDI / SysEx tools / Matrix-Control (optional host) for hardware smoke | Claiming SM-2 / 2.4 complete |
+| MIDI-OX / SysEx tools / Matrix-Control (optional host) for hardware smoke | Claiming SM-2 / 2.4 complete |
 | Bounded queue in Device (or Midi) | Unbounded memory growth “just in case” |
 | `FramerSmoke` / Catch2 already in tree | New third-party test frameworks |
 | English diagnostics with Port N / cable | Silent success when SysEx is dropped |
@@ -400,7 +400,7 @@ Patterns to extend: split Protocol smoke TUs by topic, Catch2 thin wrappers over
 
 - `conventions.md` §3 quality gate, §6 C++ style
 - No `project-context.md` in-repo yet — follow architecture spine + conventions
-- Keep hardware/protocol names in English (MT4, WinUSB, VirtualMIDI, MIDI, SysEx, Matrix-Control, Oberheim, Ableton, Reason, ShowMIDI)
+- Keep hardware/protocol names in English (MT4, WinUSB, VirtualMIDI, MIDI, SysEx, Matrix-Control, Oberheim, Ableton, Reason, MIDI-OX)
 
 ### Anti-patterns to forbid
 

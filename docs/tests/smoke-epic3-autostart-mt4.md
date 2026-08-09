@@ -37,7 +37,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 | Sujet | Story |
 |---|---|
 | Débranche / rebranche en session | **3.2** |
-| Multi-client DAW + ShowMIDI (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
+| Multi-client DAW + MIDI-OX (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
 | Noms stables pour deux MT4 | **3.4** |
 | Packaging Auto-Start dans l’installeur public | **4.1** |
 | Doc utilisateur polie | **4.2** |
@@ -95,6 +95,6 @@ builds\debug\Bridge.exe --test-port-names
 ## Docs liées
 
 - Hot-plug (3.2) : [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
-- Multi-client DAW + ShowMIDI (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
+- Multi-client DAW + MIDI-OX (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
 - Bind WinUSB (admin une fois) : [`../dev/winusb-bind.md`](../dev/winusb-bind.md)
 - Smoke transport Epic 2 : [`smoke-epic2-mt4.md`](smoke-epic2-mt4.md)

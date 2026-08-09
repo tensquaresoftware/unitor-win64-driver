@@ -37,7 +37,7 @@ sources:
 
 - **CAP-4**
   - **intent:** Each connected MT4 exposes physical-shaped Virtual Ports: **2 input** and **4 output**.
-  - **success:** Ableton Live 12, Reason Studios 12, ShowMIDI, and Matrix-Control each see 2 IN + 4 OUT endpoints per MT4 instance.
+  - **success:** Ableton Live 12, Reason Studios 12, MIDI-OX, and Matrix-Control each see 2 IN + 4 OUT endpoints per MT4 instance.
 
 - **CAP-5**
   - **intent:** Port Names stay stable across launches/replugs and remain distinguishable when multiple MT4s are present, using the locked Architecture spelling.
@@ -57,7 +57,7 @@ sources:
 
 - **CAP-9**
   - **intent:** A DAW and a MIDI utility can use the same relevant Virtual Ports concurrently without Bridge-imposed exclusive locks.
-  - **success:** Ableton Live 12 or Reason Studios 12 plus ShowMIDI open the same relevant ports concurrently and both observe MIDI activity (VirtualMIDI multi-client; document 8-client ceiling).
+  - **success:** Ableton Live 12 or Reason Studios 12 plus MIDI-OX open the same relevant ports concurrently and both observe MIDI activity (VirtualMIDI multi-client; document 8-client ceiling).
 
 - **CAP-10**
   - **intent:** Two independent MT4 units on one PC are a supported design (separate sessions and port sets — not Emagic cascade).
@@ -123,7 +123,7 @@ sources:
 
 ## Success signal
 
-On Win10 x64 and Win11 x64, a user installs once, plugs an MT4, and finds stable **MT4 Port N** endpoints that Ableton Live 12 and Reason Studios 12 use for notes/CC/clock/Start-Stop-Continue/MTC; Matrix-Control completes the minimum SysEx vectors; ShowMIDI can observe concurrently with a DAW; ~4h sessions and hot-plug recovery work without Windows reboot; public materials state MIT vs VirtualMIDI honestly — and timing is only called Studio-Done after the MIDI Path harness confirms or revises provisional anchors.
+On Win10 x64 and Win11 x64, a user installs once, plugs an MT4, and finds stable **MT4 Port N** endpoints that Ableton Live 12 and Reason Studios 12 use for notes/CC/clock/Start-Stop-Continue/MTC; Matrix-Control completes the minimum SysEx vectors; MIDI-OX can observe concurrently with a DAW; ~4h sessions and hot-plug recovery work without Windows reboot; public materials state MIT vs VirtualMIDI honestly — and timing is only called Studio-Done after the MIDI Path harness confirms or revises provisional anchors.
 
 ## Assumptions
 
@@ -132,7 +132,7 @@ On Win10 x64 and Win11 x64, a user installs once, plugs an MT4, and finds stable
 - “macOS-class installer” means the AD-12 short checklist (few steps, progress, success, VirtualMIDI explicit, WinUSB bind, Auto-Start, one-time admin, minimal jargon).
 - VirtualMIDI multi-client meets CAP-9 (author docs: up to 8 clients/port); host quirks documented when observed.
 - **Reason Studios 12** means the Reason 12 DAW product line (exact SKU string confirmable in user-facing docs later).
-- ShowMIDI remains available as the V1 multi-client utility; substitution is a PRD change.
+- MIDI-OX remains available as the V1 multi-client utility; substitution is a PRD change.
 - Matrix-Control SysEx vectors match current Oberheim Matrix-1000 traffic; Guillaume may refine sizes/timeouts without reopening SysEx-as-required.
 - Typical MT4 USB serial string may suffice for stable unit ordinal `K`; else topology-path map is authoritative (AQ-1 / AD-6).
 - First MIDI Path harness iteration uses Bridge-mediated Virtual Port software loop; hardware loopback when available (AD-11).

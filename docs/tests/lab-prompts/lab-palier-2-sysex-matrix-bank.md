@@ -71,7 +71,7 @@ Logs : `tests/lab-logs/sysex-matrix-bank/` (+ `bridge-<stamp>-startN.log`).
 
 - Palier 3 (SysEx ultra-long / boucle DIN sans Matrix)
 - Matrix-Control UI comme gate
-- Windows MIDI Services, MidiView, AMT8 / Unitor8
+- Windows MIDI Services; MidiView/ShowMIDI (retired; use MIDI-OX); AMT8 / Unitor8
 - Heartbeat Matrix-Control comme fix
 - Baisser la barre 100 % ou « Pass avec warm-up »
 

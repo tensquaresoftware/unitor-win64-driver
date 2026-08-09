@@ -18,7 +18,7 @@ so that I can play and automate through the Bridge on every IN/OUT.
 
 1. **Given** Virtual Ports are live with a connected MT4 (Stories 1.3–1.5)  
    **When** notes and CC are sent/received on each of the 2 IN and 4 OUT ports  
-   **Then** round-trips succeed for Validation Matrix hosts that are available in the test loop (at minimum one DAW or ShowMIDI smoke) — FR-6 / CAP-6
+   **Then** round-trips succeed for Validation Matrix hosts that are available in the test loop (at minimum one DAW or MIDI-OX smoke) — FR-6 / CAP-6
 
 2. **And** common channel/system messages required for basic playability are carried (not notes-only stubs that drop obvious channel traffic) — FR-6 / AD-17 (channel portion)
 
@@ -75,7 +75,7 @@ This story lands **FR-6 / CAP-6** (notes, CC, common channel/system MIDI) and th
 | Notes + CC + common channel/system on **all** 2 IN + 4 OUT | Transparent SysEx / Matrix-Control vectors → **2.3** / **2.4** |
 | Short session without Bridge restart | ~4h longevity design → **2.5** |
 | English diagnostics with Port N / cable | Auto-Start → **3.1**; hot-plug → **3.2** |
-| Safe Stop vs blocked `ReadBulk` (timeout/join) | Multi-client DAW+ShowMIDI acceptance → **3.3** |
+| Safe Stop vs blocked `ReadBulk` (timeout/join) | Multi-client DAW+MIDI-OX acceptance → **3.3** |
 | | Multi-MT4 `MT4 #K` proof → **3.4** |
 | | Public Installer / MSI → **4.1** / OQ-1 |
 | | MIDI Path latency harness → Epic **5** / AD-11 |
@@ -89,7 +89,7 @@ Stories 1.2–1.5 shipped profile, GUID-first WinUSB, DeviceSession + Emagic map
 Pipeline (architecture spine):
 
 ```text
-WinUsbTransport ↔ EmagicCableMapper ↔ MidiBackend (VirtualMidiBackend) ↔ Virtual Ports ↔ DAW/ShowMIDI
+WinUsbTransport ↔ EmagicCableMapper ↔ MidiBackend (VirtualMidiBackend) ↔ Virtual Ports ↔ DAW/MIDI-OX
 ```
 
 ### Architecture compliance (must follow)
@@ -286,7 +286,7 @@ std::size_t outPortCount_ = 0;
 | `virtualMIDISendData` + create callback | Polling-only design that blocks Stop without timeout |
 | `EmagicCableMapper` encode/decode | Reimplementing F5 in Midi or Device |
 | Profile `collectProductCableIndices` | Hard-coded second cable table in Midi |
-| ShowMIDI and/or one Validation Matrix DAW for smoke | Claiming full SM-1 clock/MTC done |
+| MIDI-OX and/or one Validation Matrix DAW for smoke | Claiming full SM-1 clock/MTC done |
 | Fail-closed English diagnostics | Silent drop of an entire Port with success claim |
 
 ### File structure requirements
@@ -326,7 +326,7 @@ std::size_t outPortCount_ = 0;
 | Compile (Windows CI) | Existing workflow green; no proprietary SDK committed |
 | Mapper regression | `Bridge --test-mapper` still exit 0 |
 | Port names regression | `Bridge --test-port-names` still exit 0 |
-| Hardware notes/CC (Windows) | WinUSB-bound MT4 + loopMIDI/rtpMIDI → `--start-session` (or `--run-midi`) stays up; smoke **each** of 2 IN + 4 OUT with ShowMIDI and/or Ableton/Reason — notes + CC both directions |
+| Hardware notes/CC (Windows) | WinUSB-bound MT4 + loopMIDI/rtpMIDI → `--start-session` (or `--run-midi`) stays up; smoke **each** of 2 IN + 4 OUT with MIDI-OX and/or Ableton/Reason — notes + CC both directions |
 | Common channel traffic | At least one non-note channel message type (e.g. CC + pitch bend or program change) observed through a port — proves not notes-only |
 | Short session | Several minutes of play/automation without Bridge restart |
 | Fail diagnostics | Force a failure path (bad index in unit-level if available, or unplug during run) → English log mentions Port/cable/direction |
@@ -334,7 +334,7 @@ std::size_t outPortCount_ = 0;
 | Isolation | Grep Protocol/Profile: no VirtualMIDI / WinUSB |
 | Lint | `python scripts/quality/lint-touched.py` on touched C++ |
 
-Validation Matrix hosts (PRD): Ableton Live 12, Reason Studios 12, ShowMIDI, Matrix-Control — **minimum for this story** is one DAW **or** ShowMIDI smoke covering all ports. Full multi-host / multi-OS matrix depth continues across later epics.
+Validation Matrix hosts (PRD): Ableton Live 12, Reason Studios 12, MIDI-OX, Matrix-Control — **minimum for this story** is one DAW **or** MIDI-OX smoke covering all ports. Full multi-host / multi-OS matrix depth continues across later epics.
 
 ### Previous story intelligence
 
@@ -434,7 +434,7 @@ Composer (Cursor agent router)
 - WinUSB bulk IN `PIPE_TRANSFER_TIMEOUT` = 100 ms so Stop can join a blocked `ReadBulk`
 - `--start-session` / `--run-midi` stay alive until Ctrl+C; pump failures exit non-zero with direction/Port/cable detail
 - MT4 cable↔port order still asserted in profile smoke (`matchesMt4ProductCableOrder`)
-- Hardware notes/CC round-trip on all 2 IN + 4 OUT remains a Windows validation step (ShowMIDI or one Validation Matrix DAW)
+- Hardware notes/CC round-trip on all 2 IN + 4 OUT remains a Windows validation step (MIDI-OX or one Validation Matrix DAW)
 
 ### File List
 
@@ -458,7 +458,7 @@ Composer (Cursor agent router)
 
 ### Review Findings
 
-- [x] [Review][Defer] Hardware AC1/AC2 proof vs review status — deferred: infra OK for story close; Windows ShowMIDI/DAW smoke on all 2 IN + 4 OUT remains a manual checklist (user choice 2026-08-05)
+- [x] [Review][Defer] Hardware AC1/AC2 proof vs review status — deferred: infra OK for story close; Windows MIDI-OX/DAW smoke on all 2 IN + 4 OUT remains a manual checklist (user choice 2026-08-05)
 - [x] [Review][Patch] Close host→device startup window before `running_` is set [`src/Device/DeviceSession.cpp:294`]
 - [x] [Review][Patch] Clear host→device sink under `usbIoMutex_` before DestroyPortSet [`src/Device/DeviceSession.cpp:312`]
 - [x] [Review][Patch] Make `IsRunning()` false after pump fatal stop [`src/Device/DeviceSession.cpp:382`]

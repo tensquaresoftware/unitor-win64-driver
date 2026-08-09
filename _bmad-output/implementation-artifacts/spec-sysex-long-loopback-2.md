@@ -40,7 +40,7 @@ context:
 
 **Never:**
 - Under-1024-only gate as the Pass definition for this story (Guillaume chose Mac-parity stress including the 14 KiB fixture).
-- Matrix-Control / real Matrix forms as this gate; Windows MIDI Services / MidiView; AMT8 / Unitor8.
+- Matrix-Control / real Matrix forms as this gate; Windows MIDI Services; MidiView/ShowMIDI (retired; use MIDI-OX); AMT8 / Unitor8.
 - Silent hang on oversize; French in source; commit without Guillaume’s explicit ask.
 
 ## I/O & Edge-Case Matrix

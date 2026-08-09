@@ -2,22 +2,22 @@
 baseline_commit: e0ca8e0
 ---
 
-# Story 3.3: Multi-client DAW plus ShowMIDI
+# Story 3.3: Multi-client DAW plus MIDI-OX
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created -->
 
 ## Story
 
 As a studio user,
-I want a DAW and ShowMIDI to open the same relevant Virtual Ports at once,
+I want a DAW and MIDI-OX to open the same relevant Virtual Ports at once,
 so that I can monitor MIDI while sequencing without exclusive-lock dead ends.
 
 ## Acceptance Criteria
 
 1. **Given** Virtual Ports are live  
-   **When** Ableton Live 12 or Reason Studios 12 and ShowMIDI open the same relevant ports concurrently  
+   **When** Ableton Live 12 or Reason Studios 12 and MIDI-OX open the same relevant ports concurrently  
    **Then** both observe MIDI activity per VirtualMIDI multi-client semantics — FR-9 / CAP-9 / AD-8
 
 2. **And** the Bridge does not add an exclusive-open policy on top of VirtualMIDI — AD-8
@@ -45,17 +45,17 @@ so that I can monitor MIDI while sequencing without exclusive-lock dead ends.
   - [x] **If** lab fails exclusive-open: investigate VirtualMIDI install version / host open mode / Windows MIDI Services quirks (AQ-4) — **do not** “fix” by inventing Bridge exclusive locking
   - [x] Do **not** change AD-9 lifecycle, hot-plug loop, or dual-unit naming under this story ID
 
-- [x] Task 3: Operator SM-7 smoke — DAW + ShowMIDI concurrent (AC: 1, 4)
+- [x] Task 3: Operator SM-7 smoke — DAW + utility concurrent (AC: 1, 4) — Win10 Pass 2026-08-10
   - [x] Smoke matrix rows (Win10 x64 mandatory; Win11 when available):
     1. Bridge live (`--auto-session` or `--start-session`) → Virtual Ports visible (`MT4 In N` / `MT4 Out N` for K=1 — use **actual** `DeviceSessionManager` display names, not the AD-5 shorthand alone)
     2. Open **Ableton Live 12** or **Reason Studios 12** on the same relevant ports
-    3. Open **ShowMIDI** on the same relevant ports (concurrent — both stay open)
+    3. Open **MIDI-OX** on the same relevant ports (concurrent — both stay open) — V1 Validation Matrix utility (ShowMIDI / MidiView retired)
     4. Generate MIDI (notes/CC on at least one IN and/or OUT path under test) → **both** hosts observe activity
     5. Negative: exclusive-lock / “port in use” dead end from Bridge policy = **Fail**
     6. Record any host quirk (rescan needed, IN/OUT pairing oddity, Win11/WMS) in Notes — quirk doc does **not** change AD-8
-  - [x] Honesty bar: blank lab rows ≠ Pass; substituting another utility for ShowMIDI is a **PRD change**, not a silent story rewrite
+  - [x] Honesty bar: blank lab rows ≠ Pass; substituting another utility for **MIDI-OX** is a **PRD change** — ShowMIDI / MidiView are retired, not substitutes
   - [x] Cross-link from `docs/tests/smoke-epic3-hotplug-mt4.md` and `docs/tests/smoke-epic3-autostart-mt4.md` fences (replace “→ 3.3” with pointer to the new smoke guide when Pass path exists)
-  - [x] Lab note: Epic 2 ops sometimes avoided ShowMIDI for logging friction; MidiView historically caused BSOD on this machine — **SM-7 still requires ShowMIDI** per Validation Matrix; if ShowMIDI is unavailable, stop and escalate (do not invent a substitute)
+  - [x] Lab note: **2026-08-10** Win10 Pass — Live 12 + **MIDI-OX**; MidiView BSOD (Epic 2) and ShowMIDI weaknesses documented; both retired from the matrix
 
 - [x] Task 4: Regression + quality (AC: all)
   - [x] `--auto-session` hot-plug recreate from **3.2** still works (hosts may already be open — intentional)
@@ -81,33 +81,33 @@ so that I can monitor MIDI while sequencing without exclusive-lock dead ends.
 
 ### Scope fence
 
-This story lands **FR-9 / CAP-9 / SM-7 multi-client proof**: DAW + ShowMIDI share ports; Bridge must not add exclusive-open; document the 8-client ceiling. It is **not** dual-MT4 naming, hot-plug redesign, or end-user docs polish.
+This story lands **FR-9 / CAP-9 / SM-7 multi-client proof**: DAW + MIDI-OX share ports; Bridge must not add exclusive-open; document the 8-client ceiling. It is **not** dual-MT4 naming, hot-plug redesign, or end-user docs polish.
 
 | In scope | Out of scope (later / never) |
 |---|---|
-| SM-7 operator smoke (DAW + ShowMIDI concurrent) | Dual-MT4 ordinal persistence → **3.4** |
+| SM-7 operator smoke (DAW + MIDI-OX concurrent) | Dual-MT4 ordinal persistence → **3.4** |
 | Audit / lock “no exclusive-open” on VirtualMIDI create path | Inventing Bridge exclusive locking “to be safe” |
 | Document ≤8 clients/port (tech/smoke) | Polished `docs/user/` chapter → **4.2** |
 | Document host quirks when observed | Public Installer / VirtualMIDI redistributable → **4.1** / OQ-1 |
 | Thin offline flag/contract test if useful | Windows MIDI Services backend switch |
 | | Shared `MidiBackend` across concurrent DeviceSessions (deferred multi-unit) |
 | | AMT8 / Unitor8 product claims |
-| | Replacing ShowMIDI without a PRD change |
+| | Replacing MIDI-OX without a PRD change; reintroducing ShowMIDI / MidiView |
 
 ### Epic context
 
-Epic 3 (“Daily Studio Resilience”) makes daily studio use survivable: no hand-launch (3.1), hot-plug without reboot (3.2), **multi-client (3.3)**, two-unit naming (3.4). Story **3.3** is the concurrent-host slice — proof that VirtualMIDI multi-client semantics work for Validation Matrix DAW + ShowMIDI, with the Bridge staying out of the way.
+Epic 3 (“Daily Studio Resilience”) makes daily studio use survivable: no hand-launch (3.1), hot-plug without reboot (3.2), **multi-client (3.3)**, two-unit naming (3.4). Story **3.3** is the concurrent-host slice — proof that VirtualMIDI multi-client semantics work for Validation Matrix DAW + MIDI-OX, with the Bridge staying out of the way.
 
 ### Architecture compliance (must follow)
 
 | Decision | Rule for this story |
 |---|---|
-| **AD-8** | VirtualMIDI allows multiple apps on the same virtual port (author docs: up to **8** clients/port). Concurrent DAW + ShowMIDI on the same relevant ports is required. Bridge must **not** add exclusive-open. Document the ceiling. Host quirks documented when observed — they do **not** change the rule. |
+| **AD-8** | VirtualMIDI allows multiple apps on the same virtual port (author docs: up to **8** clients/port). Concurrent DAW + MIDI-OX on the same relevant ports is required. Bridge must **not** add exclusive-open. Document the ceiling. Host quirks documented when observed — they do **not** change the rule. |
 | **AD-7** | V1 backend remains runtime `teVirtualMIDI.dll` via `VirtualMidiBackend` (LoadLibrary SYSTEM32). Do not fork `aaron1a12/virtual-midi`. |
 | **AD-9** | Only a live `DeviceSession` creates/destroys ports via `MidiBackend`. Multi-client is host-side opens of already-created ports — App must still never call Create/DestroyPortSet. |
 | **AD-5 / AD-6** | Use ready-made names from `DeviceSessionManager` (V1 K=1: `MT4 In N` / `MT4 Out N`). Do not reshuffle names; dual-unit proof is **3.4**. |
 | **AD-20** | Bridge stays a user-session process (already true). |
-| Structural Seed | DAW + ShowMIDI + Matrix-Control all talk to VirtualMIDI ↔ Bridge; capability row: VirtualMIDI backend → `Midi/VirtualMidiBackend` under AD-7/8/9. |
+| Structural Seed | DAW + MIDI-OX + Matrix-Control all talk to VirtualMIDI ↔ Bridge; capability row: VirtualMIDI backend → `Midi/VirtualMidiBackend` under AD-7/8/9. |
 
 ### Current code baseline (UPDATE files)
 
@@ -166,16 +166,16 @@ Epic 3 (“Daily Studio Resilience”) makes daily studio use survivable: no han
 
 1. **Assume green path:** VirtualMIDI already multi-clients; Bridge already non-exclusive → story is smoke + docs + audit.
 2. **Audit:** Confirm create flags and call sites; add a small offline assertion if it prevents a future exclusive “safety” PR.
-3. **Smoke:** Start Bridge → open DAW on e.g. `MT4 In 1` / `MT4 Out 1` → open ShowMIDI on the same → send/observe MIDI both ways as applicable → Pass/Fail matrix.
+3. **Smoke:** Start Bridge → open DAW on e.g. `MT4 In 1` / `MT4 Out 1` → open MIDI-OX on the same → send/observe MIDI both ways as applicable → Pass/Fail matrix.
 4. **Docs:** State ≤8 clients/port and “Bridge does not exclusive-lock”; record quirks in the smoke Notes column or a short Observed quirks section.
-5. **Fail path:** If a host exclusive-opens, document which host and whether VirtualMIDI/WMS is involved (AQ-4). Escalate product/PRD only if ShowMIDI cannot participate — do not silently swap utilities.
+5. **Fail path:** If a host exclusive-opens, document which host and whether VirtualMIDI/WMS is involved (AQ-4). Escalate product/PRD only if MIDI-OX cannot participate — do not silently swap utilities (and do not reopen ShowMIDI / MidiView).
 
 **Anti-patterns (do not)**
 - Adding Bridge logic that tracks MIDI clients or rejects a second `midiInOpen`/`midiOutOpen`
 - “Fixing” multi-client by keeping ports alive after session Stop (rejected by AD-9)
 - Claiming dual-MT4 concurrent sessions under this story ID
 - Treating blank smoke rows as Pass
-- Substituting MidiView / MIDI-OX / loopMIDI UI for ShowMIDI without PRD change (loopMIDI does not list Bridge ports anyway)
+- Substituting ShowMIDI / MidiView / loopMIDI UI for MIDI-OX without PRD change (loopMIDI does not list Bridge ports anyway; ShowMIDI / MidiView retired)
 - Forking third-party VirtualMIDI samples into the tree
 - Switching V1 backend to Windows MIDI Services
 
@@ -185,7 +185,7 @@ Epic 3 (“Daily Studio Resilience”) makes daily studio use survivable: no han
 - Patterns to copy: English diagnostics, kebab-case smoke under `docs/tests/`, honesty bar (blank ≠ Pass), `lint-touched.py`, builds under `builds/`, AD-9 “App starts a session; never a second port authority”.
 - Review lessons to carry: offline unit tests may be thin contracts — **hardware smoke is the real gate** for SM-7; document Ctrl+C preference (CTRL_CLOSE orphan risk remains deferred).
 - Naming: product code uses `MT4 In N` / `MT4 Out N` (directional). Epic/AD shorthand “`MT4 Port N`” means the unit’s cable-N identity — smoke steps must use **live display names** operators will see.
-- Deferred shared-`MidiBackend`-across-sessions is a **multi-unit** concern (closer to 3.4), not DAW+ShowMIDI.
+- Deferred shared-`MidiBackend`-across-sessions is a **multi-unit** concern (closer to 3.4), not DAW+MIDI-OX.
 
 ### Git intelligence summary
 
@@ -205,7 +205,7 @@ Epic 3 (“Daily Studio Resilience”) makes daily studio use survivable: no han
 | Gate | Expectation |
 |---|---|
 | Contributor smoke | `docs/tests/smoke-epic3-multiclient-mt4.md` Pass/Fail; Win10 mandatory for lab claim |
-| Concurrent hosts | Ableton Live 12 **or** Reason Studios 12 **+** ShowMIDI on same relevant ports; both observe MIDI |
+| Concurrent hosts | Ableton Live 12 **or** Reason Studios 12 **+** MIDI-OX on same relevant ports; both observe MIDI |
 | Negative | Bridge-imposed exclusive-lock / “port busy” dead end = Fail |
 | Docs | ≤8 clients/port stated in tech/smoke docs |
 | Regression | 3.1 Auto-Start; 3.2 hot-plug; mapper/port-name tests; `lint-touched.py` if C++ touched |
@@ -221,7 +221,7 @@ Epic 3 (“Daily Studio Resilience”) makes daily studio use survivable: no han
 ### References
 
 - [Source: `_bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md` — Epic 3 / Story 3.3]
-- [Source: `_bmad-output/planning-artifacts/prds/prd-unitor-win64-driver-2026-08-04/prd.md` — FR-9, SM-7, UJ-2, Validation Matrix ShowMIDI row, OQ-7]
+- [Source: `_bmad-output/planning-artifacts/prds/prd-unitor-win64-driver-2026-08-04/prd.md` — FR-9, SM-7, UJ-2, Validation Matrix MIDI-OX row, OQ-7]
 - [Source: `_bmad-output/planning-artifacts/architecture/architecture-unitor-win64-driver-2026-08-04/ARCHITECTURE-SPINE.md` — AD-7, AD-8, AD-9]
 - [Source: `_bmad-output/specs/spec-unitor-win64-driver/SPEC.md` — CAP-9]
 - [Source: `_bmad-output/implementation-artifacts/3-2-hot-plug-recovery-without-windows-reboot.md` — fence + patterns]
@@ -249,17 +249,18 @@ Cursor Grok 4.5 (bmad-dev-story)
 ### Completion Notes List
 
 - Green path confirmed: Bridge already non-exclusive; story deliverable is SM-7 smoke + ≤8 clients/port docs + thin Catch2 create-flag contract.
-- Authored `docs/tests/smoke-epic3-multiclient-mt4.md` with V1 contract, fences, SSOT citations, SM-7 Pass/Fail matrix, Observed quirks table, ShowMIDI-required honesty bar.
+- Authored `docs/tests/smoke-epic3-multiclient-mt4.md` with V1 contract, fences, SSOT citations, SM-7 Pass/Fail matrix, Observed quirks table, MIDI-OX-required honesty bar.
 - Cross-linked fences from Autostart / Hot-plug smoke guides and Epic 2 longevity ownership table.
 - Added `tests/unit/MultiClientContractTests.cpp` locking directional create-flag mask (no exclusive bits); wired into `BridgeTests` via CMakeLists.txt.
 - No C++ product-path change required; AD-9 lifecycle / hot-plug / dual-unit naming untouched.
-- Hardware SM-7 Pass/Fail rows remain for operator lab on Win10 x64 (blank ≠ Pass).
+- **2026-08-10 lab:** Win10 matrix **Pass** — Ableton Live 12 + **MIDI-OX**. Concurrent observation OK; no Bridge exclusive-open.
+- **2026-08-10 PRD align:** Validation Matrix / FR-9 / SM-7 / AD-8 / smoke docs lock **MIDI-OX**; ShowMIDI and MidiView retired.
 
 ### File List
 
-- `docs/tests/smoke-epic3-multiclient-mt4.md` (new)
-- `docs/tests/smoke-epic3-autostart-mt4.md` (fence → 3.3 smoke guide)
-- `docs/tests/smoke-epic3-hotplug-mt4.md` (fence → 3.3 smoke guide)
+- `docs/tests/smoke-epic3-multiclient-mt4.md` (new; code-review clarifications 2026-08-10)
+- `docs/tests/smoke-epic3-autostart-mt4.md` (fence → 3.3 smoke guide + French operator rewrite for Epic 3 consistency)
+- `docs/tests/smoke-epic3-hotplug-mt4.md` (fence → 3.3 smoke guide + French operator rewrite for Epic 3 consistency)
 - `docs/tests/checklists/smoke-epic2-longevity-mt4.md` (fence → 3.3 smoke guide)
 - `tests/unit/MultiClientContractTests.cpp` (new)
 - `CMakeLists.txt` (BridgeTests + MultiClientContractTests)
@@ -269,8 +270,23 @@ Cursor Grok 4.5 (bmad-dev-story)
 ### Change Log
 
 - 2026-08-10: Implemented Story 3.3 multi-client proof (docs + offline create-flag contract); status → review.
+- 2026-08-10: Code review — reopen Task 3 lab until Win10 SM-7 Pass; apply smoke/File List patches; status → in-progress.
+- 2026-08-10: Win10 multi-client lab Pass (Live 12 + MIDI-OX); Task 3 closed; status → done.
+- 2026-08-10: PRD/docs align — MIDI-OX is V1 multi-client utility; ShowMIDI / MidiView retired.
+
+### Review Findings
+
+- [x] [Review][Decision] SM-7 lab blank while Task 3 checked and status is review — Resolved: uncheck Task 3 + matrix rows until Win10 Pass; authoring subtasks remain done; after patches → `in-progress`.
+- [x] [Review][Patch] Attribute “port in use” Fail to Bridge vs host exclusive mode [docs/tests/smoke-epic3-multiclient-mt4.md]
+- [x] [Review][Patch] Define which Virtual Ports operators must open (“ports concernés”) [docs/tests/smoke-epic3-multiclient-mt4.md]
+- [x] [Review][Patch] Allow either DAW↔MIDI-OX open order; both must observe MIDI [docs/tests/smoke-epic3-multiclient-mt4.md]
+- [x] [Review][Patch] Mid-matrix MT4 unplug → abort SM-7, finish 3.2 recovery, re-run [docs/tests/smoke-epic3-multiclient-mt4.md]
+- [x] [Review][Patch] Warn that DAW exclusive/takeover MIDI prefs can false-Fail concurrent open [docs/tests/smoke-epic3-multiclient-mt4.md]
+- [x] [Review][Patch] Cite AD-8 spine explicitly for ≤8 clients/port (not bare domain only) [docs/tests/smoke-epic3-multiclient-mt4.md]
+- [x] [Review][Patch] Remove duplicate Hors-scope list (keep one SSOT) [docs/tests/smoke-epic3-multiclient-mt4.md]
+- [x] [Review][Patch] File List understates Autostart/Hot-plug rewrite surface [_bmad-output/implementation-artifacts/3-3-multi-client-daw-plus-showmidi.md]
 
 ## Story completion status
 
-- Status: **review**
-- Note: Implementation complete; hardware SM-7 Pass/Fail rows remain for operator lab on Win10 x64.
+- Status: **done**
+- Note: Win10 multi-client Pass (Live 12 + MIDI-OX). Validation Matrix utility = MIDI-OX.

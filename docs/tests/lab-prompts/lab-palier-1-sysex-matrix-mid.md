@@ -49,7 +49,7 @@ Répéter chaque scénario critique (≥5×, idéalement ≥10×) et au moins **
 - Dump request **All** / rafale banque (~100× 275 o)
 - Générateur SysEx très long / appli echo bidon
 - Matrix-Control UI comme outil principal du gate (le harness Python est le gate)
-- Windows MIDI Services, MidiView, AMT8 / Unitor8
+- Windows MIDI Services; MidiView/ShowMIDI (retired; use MIDI-OX); AMT8 / Unitor8
 - Changer le heartbeat Matrix-Control
 
 ## Setup lab attendu

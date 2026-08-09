@@ -35,7 +35,7 @@ context:
 
 **Never:**
 - Palier 3 mega-SysEx / DIN echo without Matrix.
-- Matrix-Control UI / heartbeat as gate or fix; AMT8 / Unitor8; Windows MIDI Services; MidiView.
+- Matrix-Control UI / heartbeat as gate or fix; AMT8 / Unitor8; Windows MIDI Services; MidiView/ShowMIDI (retired; use MIDI-OX).
 - Accusing Matrix, DIN cable, or MT4 hardware (Apple control already 100 % same path).
 - Artificial slowdown beyond stock ≥10 ms pacing; French in source.
 

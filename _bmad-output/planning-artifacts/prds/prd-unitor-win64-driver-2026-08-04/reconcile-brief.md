@@ -19,13 +19,13 @@ In-scope V1 items (MT4 2 IN / 4 OUT, SysEx, clock, auto-start, multi-client, mul
 ~4 h session stability, hot-plug without Windows reboot, multi-MT4 design with honest validation status, SysEx as V1 requirement (Matrix-Control), port topology (2+4 not channel flood), stable naming, multi-client, auto-start, and admin-at-install-only are all testable in PRD FRs, NFRs, and success metrics (SM-1–SM-8).
 
 ### Brief addendum → PRD addendum
-Hardware/cable mask table, Linux quirk reference, architecture orientation bullets, VirtualMIDI licensing snapshot, rejected alternatives table, community forum URLs, naming/trademark note, dev/validation environment table, latency planning context, and installer UX bar transferred with high fidelity. PRD addendum adds useful enrichment (VirtualMIDI URLs, loopMIDI/rtpMIDI eval note, ShowMIDI lock rationale, Windows MIDI Services landscape note, Validation Matrix lock record).
+Hardware/cable mask table, Linux quirk reference, architecture orientation bullets, VirtualMIDI licensing snapshot, rejected alternatives table, community forum URLs, naming/trademark note, dev/validation environment table, latency planning context, and installer UX bar transferred with high fidelity. PRD addendum adds useful enrichment (VirtualMIDI URLs, loopMIDI/rtpMIDI eval note, MIDI-OX lock rationale, Windows MIDI Services landscape note, Validation Matrix lock record).
 
 ### Problem → requirements traceability
 Core problem (USB enumerates, no usable MIDI ports; non-class-compliant Emagic cable mapping; orphaned hardware) and solution shape (WinUSB + original protocol reimplementation + VirtualMIDI virtual ports) are preserved in PRD §1 Vision and FR-1/FR-2. Differentiation as honesty for orphaned hardware — not invented feature moats — appears verbatim in PRD §1.
 
 ### Open questions — mostly carried
-Seven of eight brief open questions appear in PRD §12. Brief open question #3 (validation matrix hosts) was intentionally deferred to PRD and is now **resolved** in PRD §10 (Ableton Live 12, Reason Studios 12, Matrix-Control, ShowMIDI on Win10+11 x64).
+Seven of eight brief open questions appear in PRD §12. Brief open question #3 (validation matrix hosts) was intentionally deferred to PRD and is now **resolved** in PRD §10 (Ableton Live 12, Reason Studios 12, Matrix-Control, MIDI-OX on Win10+11 x64).
 
 ### Risks and external dependencies
 Brief risks table maps to PRD §9 with equivalent mitigations (VirtualMIDI clearance, timing harness, SysEx buffering, protocol reference strategy, SmartScreen, dual-machine validation, multi-MT4 naming, cousin-device scope control).
@@ -119,7 +119,7 @@ Each gap: **brief evidence → PRD status → severity → suggested action**.
 ### G-12 — Validation matrix expansion beyond brief minimum (informational, not a gap)
 
 - **Brief evidence:** *« at least one DAW + one SysEx path (Matrix-Control); exact hosts locked in PRD »* (`brief.md` L102).
-- **PRD status:** PRD §10 locks **two** DAWs (Ableton Live 12, Reason Studios 12) plus ShowMIDI utility — stricter than brief minimum. Documented in PRD addendum Validation Matrix lock.
+- **PRD status:** PRD §10 locks **two** DAWs (Ableton Live 12, Reason Studios 12) plus MIDI-OX utility — stricter than brief minimum. Documented in PRD addendum Validation Matrix lock.
 - **Severity:** **low** (expansion, not regression)
 - **Suggested PRD/addendum action:** None required; optionally note in addendum that dual-DAW matrix exceeds brief minimum deliberately for studio credibility.
 

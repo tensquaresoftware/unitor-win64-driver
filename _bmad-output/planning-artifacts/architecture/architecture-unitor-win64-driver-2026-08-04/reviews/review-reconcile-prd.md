@@ -97,9 +97,9 @@ The spine captures the structural substrate well (pipeline, DeviceProfile, Virtu
 
 ### G-5 — §10 Validation Matrix: locked hosts and pass rules not consolidated
 
-**PRD says:** §10 locks **Ableton Live 12**, **Reason Studios 12**, **Matrix-Control**, **ShowMIDI** on Win10 x64 (mandatory) and Win11 x64, with explicit pass rules (DAW notes/CC/clock+MTC, Matrix minimum vectors, ShowMIDI+DAW concurrent, ~4h stability sample, hot-plug drill).
+**PRD says:** §10 locks **Ableton Live 12**, **Reason Studios 12**, **Matrix-Control**, **MIDI-OX** on Win10 x64 (mandatory) and Win11 x64, with explicit pass rules (DAW notes/CC/clock+MTC, Matrix minimum vectors, MIDI-OX+DAW concurrent, ~4h stability sample, hot-plug drill).
 
-**Spine says:** Hosts appear ad hoc (AD-8: Ableton/Reason + ShowMIDI; diagram lists Matrix-Control). **No single acceptance anchor** in spine tying implementation milestones to §10 pass rules. Reason Studios 12 only implied; Matrix-Control validation lives only via AD-16 vector list without “Validation Matrix” label.
+**Spine says:** Hosts appear ad hoc (AD-8: Ableton/Reason + MIDI-OX; diagram lists Matrix-Control). **No single acceptance anchor** in spine tying implementation milestones to §10 pass rules. Reason Studios 12 only implied; Matrix-Control validation lives only via AD-16 vector list without “Validation Matrix” label.
 
 **Gap type:** Acceptance / traceability constraint  
 **Risk:** Epics and test design lack a spine-level pointer to §10 as the V1 definition of done for host proof.

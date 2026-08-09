@@ -46,7 +46,7 @@ Mark each validation line **Pass** or **Fail**. Leave blank when not yet run —
 Pipeline (unchanged):
 
 ```text
-DAW / ShowMIDI / Matrix-Control ↔ Virtual Ports ↔ VirtualMidiBackend
+DAW / MIDI-OX / Matrix-Control ↔ Virtual Ports ↔ VirtualMidiBackend
   ↔ MidiMessageFramer (device→host) / HostOutboundQueue (host→device)
   ↔ EmagicCableMapper ↔ WinUsbTransport ↔ MT4
 ```
@@ -98,7 +98,7 @@ Treat these as **observe during the sample**. Any hit under normal pacing is a *
 | ~4 h longevity design / soak sample (this checklist) | **2.5** (this doc) |
 | Auto-Start without daily Administrator | Epic **3.1** |
 | Hot-plug recovery without reboot | Epic **3.2** ([`docs/tests/smoke-epic3-hotplug-mt4.md`](../smoke-epic3-hotplug-mt4.md)) |
-| Multi-client DAW + ShowMIDI (SM-7) | Epic **3.3** ([`docs/tests/smoke-epic3-multiclient-mt4.md`](../smoke-epic3-multiclient-mt4.md)) |
+| Multi-client DAW + MIDI-OX (SM-7) | Epic **3.3** ([`docs/tests/smoke-epic3-multiclient-mt4.md`](../smoke-epic3-multiclient-mt4.md)) |
 | MIDI Path latency/jitter / Studio-Done numbers | Epic **5** / OQ-2 |
 | Linking Matrix-Control into the Bridge | Forbidden — CAP-8 |
 
@@ -108,7 +108,7 @@ Treat these as **observe during the sample**. Any hit under normal pacing is a *
 
 1. Epic 1 notes/CC smoke green on ≥1 IN and ≥1 OUT (`docs/tests/smoke-epic1-mt4.md`).
 2. Story **2.3** pipe + short burst green (synthetic minimum: `Bridge --test-mapper` exit 0; prefer hardware burst green).
-3. Prefer Story **2.4** hard gates green — or record honesty if Matrix-Control lab still open. Longevity may use **any** host that can send librarian-scale SysEx (ShowMIDI / SysEx tool / DAW / Matrix-Control); **record which host**.
+3. Prefer Story **2.4** hard gates green — or record honesty if Matrix-Control lab still open. Longevity may use **any** host that can send librarian-scale SysEx (MIDI-OX / SysEx tool / DAW / Matrix-Control); **record which host**.
 4. Stories **2.1** / **2.2**: synthetic gates green; include clock and/or MTC in the soak when those lab rows are green — do not block the **design** on blank DAW rows.
 5. **Windows 10 x64 is mandatory** to close SM-3 / NFR-R1. Win11 x64 is additional when available — a Win11-only lab **cannot** close SM-3.
 6. WinUSB-bound MT4 + teVirtualMIDI present (same lab path as Epic 1).
@@ -155,7 +155,7 @@ Bridge.exe --run-midi
 Interleave over ~4 hours (stock pacing, not abuse — soft floor **≥10 ms** between SysEx frames; never continuous flood):
 
 1. Ordinary notes/CC on ≥1 Virtual IN and ≥1 Virtual OUT — **at least once per hour** (spot-check).
-2. **SysEx activity** (required): Inquiry / patch-shaped (~275 B) / short Matrix-Control or ShowMIDI SysEx exchanges — **at least once per hour**, both directions when feasible.
+2. **SysEx activity** (required): Inquiry / patch-shaped (~275 B) / short Matrix-Control or MIDI-OX SysEx exchanges — **at least once per hour**, both directions when feasible.
 3. **Mid-soak health** (~every hour): confirm Virtual Ports still answer a short notes/CC exchange without restarting Bridge.
 4. Clock and/or MTC welcome when those lab rows are green (do not invent Fail if clock lab still blank — note Skip).
 5. At end: Virtual Ports still usable for a short notes/CC (and preferably one SysEx) exchange **without** having restarted Bridge.
@@ -188,7 +188,7 @@ Optional interim **confidence soak** (30–60 min) may be recorded below — it 
 | Start wall time | |
 | End wall time | |
 | Elapsed (must be ≥ 3 h 45 for ~4 h Pass) | |
-| Hosts used (DAW / ShowMIDI / Matrix-Control / …) | |
+| Hosts used (DAW / MIDI-OX / Matrix-Control / …) | |
 | Ports exercised (Port N / cable) | |
 | SysEx activity summary (cadence met?) | |
 | Resource spot-checks (start / mid / end) | |

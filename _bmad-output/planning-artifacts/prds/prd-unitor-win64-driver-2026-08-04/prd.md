@@ -64,7 +64,7 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 **UJ-2. Sam dumps SysEx through Matrix-Control.**
 - **Persona + context:** Sam (or Guillaume validating Matrix-Control) needs editor/librarian traffic, not only performance MIDI.
 - **Entry state:** Bridge running; MT4 connected; Matrix-Control installed.
-- **Path:** Selects MT4 ports in Matrix-Control → initiates dump/restore or editor session → observes complete SysEx exchange → may also have a DAW or ShowMIDI open (multi-client).
+- **Path:** Selects MT4 ports in Matrix-Control → initiates dump/restore or editor session → observes complete SysEx exchange → may also have a DAW or MIDI-OX open (multi-client).
 - **Climax:** Large/bursty SysEx completes without requiring a bridge restart for normal librarian use.
 - **Resolution:** Confidence that Windows SysEx workflows are first-class in V1.
 - **Edge case:** Mid-dump unplug → ports recover after replug + rescan/supervised restart; Windows reboot is a failure.
@@ -79,7 +79,7 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 
 **UJ-4. Riley hot-plugs mid-session.**
 - **Persona + context:** Riley unplugs the MT4 to move a rack, then replugs.
-- **Entry state:** Session in progress (DAW and/or ShowMIDI).
+- **Entry state:** Session in progress (DAW and/or MIDI-OX).
 - **Path:** Unplug → replug → bridge restores usable ports without Windows reboot → Riley rescans ports in the host or accepts a supervised bridge restart if required.
 - **Climax:** MIDI is usable again without rebooting Windows.
 - **Resolution:** Hot-plug honesty documented (rescan/restart OK; reboot = fail).
@@ -93,7 +93,7 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 - **DeviceProfile** — Declarative per-PID hardware profile (masks, interface number, capability flags). Architecture detail; V1 ships a validated MT4 profile and must not structurally block cousins.
 - **SysEx Session** — Editor/librarian traffic including large or bursty System Exclusive transfers (e.g. Matrix-Control).
 - **Matrix-Control** — Ten Square first-party SysEx validation target; **not** a runtime dependency of the Bridge.
-- **Validation Matrix** — Locked V1 host set: **Ableton Live 12**, **Reason Studios 12**, **Matrix-Control**, **ShowMIDI**, on **Windows 10 x64** (mandatory) and **Windows 11 x64**.
+- **Validation Matrix** — Locked V1 host set: **Ableton Live 12**, **Reason Studios 12**, **Matrix-Control**, **MIDI-OX**, on **Windows 10 x64** (mandatory) and **Windows 11 x64**.
 - **MIDI Path** — End-to-end path used for latency/jitter measurement through the Bridge and Virtual Ports — **not** ASIO audio buffer size.
 - **VirtualMIDI** — Tobias Erichsen’s proprietary virtual MIDI **SDK** and driver stack used as the V1 Virtual Port backend. The Bridge creates and destroys Virtual Ports **programmatically via the SDK**; end users need not manage Virtual Ports solely through the VirtualMIDI end-user UI. The VirtualMIDI **driver must be present** on the machine. Licensing, evaluation vs redistribution paths, and author clearance: `addendum.md` §VirtualMIDI licensing; release gate OQ-1.
 - **Windows MIDI Services** — Microsoft MIDI stack; allowed as a future **second backend on Windows 11 only**; **not** the V1 target (Win10 is mandatory).
@@ -146,7 +146,7 @@ The Bridge Auto-Starts with Windows and/or on MT4 USB arrival. Realizes UJ-1.
 Each connected MT4 exposes **2 input** and **4 output** Virtual Ports corresponding to physical I/O — not a flood of per-channel endpoints. Realizes UJ-1.
 
 **Consequences (testable):**
-- Ableton Live 12, Reason Studios 12, ShowMIDI, and Matrix-Control each see 2 IN + 4 OUT endpoints per MT4 instance.
+- Ableton Live 12, Reason Studios 12, MIDI-OX, and Matrix-Control each see 2 IN + 4 OUT endpoints per MT4 instance.
 
 #### FR-5: Stable Port Names
 
@@ -201,7 +201,7 @@ SysEx is a required V1 capability, sized for real editor/librarian use including
 A DAW and a MIDI utility can use Virtual Ports concurrently without exclusive-lock dead ends. Realizes UJ-2.
 
 **Consequences (testable):**
-- Ableton Live 12 (or Reason Studios 12) and ShowMIDI open the same relevant Virtual Ports concurrently and both observe MIDI activity per VirtualMIDI multi-client semantics.
+- Ableton Live 12 (or Reason Studios 12) and MIDI-OX open the same relevant Virtual Ports concurrently and both observe MIDI activity per VirtualMIDI multi-client semantics.
 - `[ASSUMPTION: VirtualMIDI multi-client semantics meet this requirement; Architecture confirms and documents any host-specific caveats.]`
 
 #### FR-10: Multi-MT4 instances
@@ -300,7 +300,7 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 - Hardware: MT4 (`086A:0003`), 2 IN / 4 OUT, multi-instance design for two units.
 - Stack orientation (product-level): WinUSB + **C++17** usermode Bridge + VirtualMIDI SDK Virtual Ports.
 - MIDI: channel messages + MIDI clock + **Start/Stop/Continue** + **MTC** + SysEx (required).
-- Auto-Start, Hot-Plug Recovery, multi-client (DAW + ShowMIDI).
+- Auto-Start, Hot-Plug Recovery, multi-client (DAW + MIDI-OX).
 - Public Installer UX bar + user/technical docs + honest licensing.
 - First-party SysEx validation via Matrix-Control.
 - Code quality gate when C++ exists: `conventions.md` + `scripts/quality/lint-touched.py`.
@@ -324,7 +324,7 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 
 **Secondary**
 
-- **SM-7 Multi-client:** Ableton Live 12 (or Reason Studios 12) + ShowMIDI concurrent use works per FR-9.
+- **SM-7 Multi-client:** Ableton Live 12 (or Reason Studios 12) + MIDI-OX concurrent use works per FR-9.
 - **SM-8 Multi-MT4 design:** Two-unit support exists in design; physical dual-unit proof when hardware is available; otherwise honest docs. Validates FR-10, FR-5.
 - **SM-9 Studio-Done Gate (timing):** Published MIDI Path measurement method exists; provisional targets confirmed or revised before calling timing “done.” Validates NFR-P1, NFR-P2.
 
@@ -387,7 +387,7 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 | DAW | **Ableton Live 12** | Win10 x64, Win11 x64 | Performance MIDI + clock |
 | DAW | **Reason Studios 12** | Win10 x64, Win11 x64 | Second DAW host |
 | SysEx editor | **Matrix-Control** | Win10 x64, Win11 x64 | First-party SysEx path; not a Bridge dependency |
-| MIDI utility | **ShowMIDI** | Win10 x64, Win11 x64 | Multi-client concurrent with a DAW |
+| MIDI utility | **MIDI-OX** | Win10 x64, Win11 x64 | Multi-client concurrent with a DAW |
 | Hardware | ≥1 **MT4** (`086A:0003`) | — | Second MT4 when available for FR-10 proof |
 | Timing harness | MIDI Path method (TBD in Architecture) | Win10 x64 (min) | Required for Studio-Done Gate |
 
@@ -401,7 +401,7 @@ Pass rules:
   5. **Live editor stream:** sustained short remote edits (**7 B** param / **9 B** matrix-mod) with normal Matrix-Control spacing; no Bridge restart.
   6. **Optional stress:** bank export/import path ≈ **100×** sequential 275 B patch frames (~28 KB inbound dump series) when hardware and time are available.
   7. **Mixed-wire tolerance:** non-patch SysEx during a dump must not permanently block a later valid patch frame.
-- ShowMIDI + one DAW: concurrent observation without exclusive-lock failure.
+- MIDI-OX + one DAW: concurrent observation without exclusive-lock failure.
 - Stability sample: ~4h including SysEx activity on at least Win10 x64.
 - Hot-plug: one documented recovery drill without Windows reboot.
 
@@ -435,7 +435,7 @@ Inherited from brief — **do not reopen** unless a blocking risk is documented:
 | OQ-4 | Original Emagic protocol documentation vs Linux reference + USB capture fallback | Architecture orientation | Architecture | Defer; not a PRD phase-blocker. |
 | OQ-5 | CI/CD detail (macOS edit / Windows validate); Windows build CI minimum | Architecture | Architecture | Defer detail; NFR-D3 already requires Windows build CI minimum. |
 | OQ-6 | Exact multi-MT4 Port Name disambiguation spelling | Architecture / UX | Architecture / UX | Product rule locked; spelling deferred. |
-| OQ-7 | Confirm VirtualMIDI multi-client meets FR-9 (DAW + ShowMIDI) | Architecture confirm | Architecture | Assumption retained until confirmed; document host caveats. |
+| OQ-7 | Confirm VirtualMIDI multi-client meets FR-9 (DAW + MIDI-OX) | Architecture confirm | Architecture | Assumption retained until confirmed; document host caveats. |
 | OQ-8 | Matrix-Control SysEx pass vectors | **Provisionally closed** from Matrix-Control source extract | Guillaume | Minimum vectors locked in §10 + addendum. Refine if Matrix-Control changes; bank stress remains optional. |
 
 ## 13. Assumptions Index
@@ -445,7 +445,7 @@ Inherited from brief — **do not reopen** unless a blocking risk is documented:
 - `[ASSUMPTION]` “macOS-class installer” means few steps, clear progress, obvious success, minimal jargon — tooling and a short acceptance checklist are Architecture/UX.
 - `[ASSUMPTION]` VirtualMIDI multi-client semantics can satisfy FR-9; Architecture confirms.
 - `[ASSUMPTION]` Validation matrix label **Reason Studios 12** refers to the Reason 12 DAW product line (exact SKU string confirmable in user-facing docs later if needed).
-- `[ASSUMPTION]` ShowMIDI remains available and suitable as the V1 multi-client utility; if unavailable, substitute is a PRD change.
+- `[ASSUMPTION]` MIDI-OX remains available and suitable as the V1 multi-client utility; if unavailable, substitute is a PRD change.
 - `[ASSUMPTION]` Matrix-Control SysEx pass vectors in §10 match current Matrix-Control Oberheim Matrix-1000 traffic; Guillaume may refine sizes/timeouts without reopening SysEx-as-required.
 
 ## 14. Traceability to Brief

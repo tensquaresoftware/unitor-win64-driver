@@ -114,7 +114,7 @@ Tu peux utiliser **deux câbles DIN** en même temps (un dans chaque sens) pour 
 - Sur le **Mac** : **MIDI Monitor** (excellent) sur le port MIDI de la Scarlett.
 - Sur le **PC** : **MIDI-OX** (Display / log fichier) et/ou Ableton Live 12 sur `MT4 Input N` / `MT4 Output N`.
   - À partir de la **partie 5** (SysEx) : **MIDI-OX** uniquement pour observer et sauver le flux.
-  - **MidiView** : **interdit** sur ce labo — BSOD `htmididriver64.sys` au SysEx ~275 B (2026-08-06). ShowMIDI : abandonné (pas de log fichier pratique).
+  - **MidiView** : **interdit** sur ce labo — BSOD `htmididriver64.sys` au SysEx ~275 B (2026-08-06). ShowMIDI : **retiré** de la Validation Matrix (faiblesses / pas de log fichier pratique) — utilitaire V1 = **MIDI-OX**.
 
 **Oxygen 61**
 
@@ -473,7 +473,7 @@ Tu t’étais arrêté au **Patch ~275 B** (§5.2). Voici comment reprendre **sa
 - Un peu old-school, mais fiable pour **voir** le flux et **sauver** un log texte.
 - Écoute `MT4 Input` / `MT4 Output` (IN pour Mac → PC).
 - Peut aussi **envoyer** un `.syx` si besoin (Display / SysEx / Send).
-- **MidiView** : interdit sur ce labo (BSOD). **ShowMIDI** : abandonné (pas de log fichier pratique).
+- **MidiView** : interdit sur ce labo (BSOD). **ShowMIDI** : **retiré** de la Validation Matrix — utilitaire V1 = **MIDI-OX**.
 
 ### 5.1 Tailles à couvrir
 

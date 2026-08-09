@@ -56,7 +56,7 @@ Design note already captured in the longevity guide (not an open deferral): afte
 
 ## Deferred from: code review of 1-6-notes-and-cc-round-trip-on-all-ports.md (2026-08-05)
 
-- Hardware AC1/AC2 round-trip proof (notes+CC on all 2 IN + 4 OUT via ShowMIDI/DAW) — deferred: infra OK for story close; Windows smoke remains a manual checklist.
+- Hardware AC1/AC2 round-trip proof (notes+CC on all 2 IN + 4 OUT via MIDI-OX/DAW) — deferred: infra OK for story close; Windows smoke remains a manual checklist.
 - CTRL_CLOSE_EVENT may terminate the process before `DeviceSession::Stop()` finishes closing Virtual Ports and WinUSB.
 - Device→host path can forward raw Emagic demux spans that are not complete MIDI messages (no message framer in 1.6) — **patched** 2026-08-05 (`MidiMessageFramer`).
 - `SendToHost` does not reject payloads above teVirtualMIDI default max Sysex length — **raised in story 2.3** (reject above 65535 with English diagnostic).
