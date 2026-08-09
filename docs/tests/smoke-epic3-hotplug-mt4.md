@@ -1,77 +1,79 @@
 ---
 organization: Ten Square Software
 project: unitor-win64-driver
-title: Smoke Epic 3.2 — Hot-plug recovery without Windows reboot (MT4)
+title: Smoke Epic 3.2 — Hot-plug sans reboot Windows (MT4)
 author: Guillaume DUPONT
 created: 2026-08-10
 updated: 2026-08-10
 ---
 
-# Smoke — Epic 3.2 Hot-plug recovery (MT4 under Windows)
+# Guide de smoke — Epic 3.2 Hot-plug (MT4 sous Windows)
 
-Operator-facing Pass/Fail guide for **Story 3.2**: after a live session with Virtual Ports, unplug then replug the MT4 and regain usable ports **without rebooting Windows**.
+Ce guide te sert pour **Story 3.2** : session live avec ports virtuels, tu débranches puis rebranches le MT4, et tu récupères des ports utilisables **sans redémarrer Windows**.
 
-**Honesty bar:** blank lab rows ≠ Pass. Mid-dump unplug during SysEx may need a host MIDI rescan or a supervised Bridge restart (PRD UJ-2 edge) — document what happened; do **not** claim Matrix-Control GUI UAT closed here. Requiring a Windows reboot to regain ports is a **Fail**.
+Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’eau**.
 
-## V1 hot-plug recovery contract
+**Barème d’honnêteté :** case vide ≠ Pass. Un débranche au milieu d’un SysEx peut demander un rescan MIDI dans l’hôte ou un redémarrage Bridge supervisé (bord UJ-2) — note ce qui s’est passé ; **ne** dis **pas** que le UAT GUI Matrix-Control est clos ici. Exiger un reboot Windows pour retrouver les ports = **Fail**.
 
-| Topic | Contract |
+## Contrat hot-plug V1 (ce que tu valides)
+
+| Sujet | Contrat |
 |---|---|
-| Product host | `Bridge.exe --auto-session` (user-session process only; **not** a Windows Service — AD-20) |
-| Detect loss | Pump failure / unexpected `!IsRunning()` while cancel is **not** requested |
-| Teardown | `DeviceSession::Stop()` destroys Virtual Ports via `MidiBackend` (AD-9); English console: `MT4 disconnected; waiting for replug...` |
-| Wait / rescan | After disconnect: poll until WinUSB GUID is **Absent** (clears stale Present), then until **Present** again — every **2 s**, progress every **30 s**, fail closed after **900 s** with English diagnostics — do not hang forever silently |
-| Recreate | **New** `DeviceSession::Start` under AD-6 identity (V1 single unit: `MT4 Port N`); App must **not** call `CreatePortSet` / `DestroyPortSet` |
-| AQ-2 (UX preference) | V1 default = **silent in-process recreate** with English console diagnostics; no tray/GUI acknowledge dialog required |
-| Host visibility | Ableton / Reason / ShowMIDI may need a MIDI device **rescan**; supervised Bridge process restart is an **allowed** escape (AD-10), not the only path |
-| Lab one-shot | `Bridge.exe --start-session` / `--run-midi` still **exit** on mid-session USB loss so existing lab spawners keep working |
-| Escape hatch | Documented supervised Bridge restart OK if in-process recreate is insufficient; reboot required = **V1 failure** |
-| Clean stop | Prefer **Ctrl+C** (not the console close button). Known deferred risk: `CTRL_CLOSE` may leave orphan ports (`deferred-work.md`) |
+| Hôte produit | `Bridge.exe --auto-session` (processus de session utilisateur seulement ; **pas** un service Windows — AD-20) |
+| Détection de la perte | Échec du pump / `!IsRunning()` inattendu alors que l’annulation **n’est pas** demandée |
+| Teardown | `DeviceSession::Stop()` détruit les ports via `MidiBackend` (AD-9) ; console anglaise : `MT4 disconnected; waiting for replug...` |
+| Attente / rescan | Après déconnexion : sondage jusqu’à GUID WinUSB **Absent** (efface un Present périmé), puis jusqu’à **Present** — toutes les **2 s**, progression toutes les **30 s**, échec fermé après **900 s** avec diagnostics anglais — pas de hang silencieux |
+| Recréation | **Nouvelle** `DeviceSession::Start` sous l’identité AD-6 (V1 une unité : noms `MT4 In N` / `MT4 Out N` ; le raccourci AD-5 « `MT4 Port N` » désigne la même identité câble). L’App **ne** doit **pas** appeler `CreatePortSet` / `DestroyPortSet` |
+| AQ-2 (préférence UX) | Défaut V1 = **recréation silencieuse dans le même process** + diagnostics console anglais ; pas de boîte tray/GUI à valider |
+| Visibilité côté hôte | Ableton / Reason / ShowMIDI peuvent demander un **rescan** MIDI ; un redémarrage Bridge supervisé est une **échappatoire autorisée** (AD-10), pas le seul chemin |
+| Labo one-shot | `Bridge.exe --start-session` / `--run-midi` **quittent** encore sur perte USB en milieu de session (scripts labo qui attendent la fin du process) |
+| Échappatoire | Redémarrage Bridge supervisé OK si la recréation in-process ne suffit pas ; reboot Windows requis = **échec V1** |
+| Arrêt propre | Préfère **Ctrl+C** (pas la croix). Risque reporté : `CTRL_CLOSE` peut laisser des ports orphelins (`deferred-work.md`) |
 
-### Explicit fences (later stories)
+### Hors scope (stories suivantes)
 
-| Concern | Story |
+| Sujet | Story |
 |---|---|
-| Multi-client DAW + ShowMIDI policy | **3.3** |
-| Dual-MT4 ordinal naming / persistence | **3.4** |
-| Polished `docs/user/` hot-plug chapter | **4.2** |
-| Public Installer | **4.1** |
-| MIDI Path latency harness | Epic **5** |
+| Multi-client DAW + ShowMIDI (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
+| Noms / persistance pour deux MT4 | **3.4** |
+| Chapitre hot-plug poli dans `docs/user/` | **4.2** |
+| Installateur public | **4.1** |
+| Mesures de latence MIDI | Epic **5** |
 
-### SSOT citations
+### Références (fichier source de vérité)
 
 - Epics Story 3.2
 - PRD FR-11 / NFR-R2 / SM-4 / UJ-4
 - Architecture AD-9, AD-10, AD-20
 - SPEC CAP-11
-- Deferred AQ-2 (UX preference only; lifecycle ownership stays AD-9)
+- AQ-2 reporté (préférence UX seulement ; le cycle de vie reste AD-9)
 
-## Prerequisites
+## Prérequis
 
-- Story **3.1** Auto-Start path works on this Windows session (`docs/tests/smoke-epic3-autostart-mt4.md`)
-- Epic 1–2 Bridge functionality already working (notes/CC + WinUSB bind)
-- VirtualMIDI installed
-- Built `Bridge.exe` under `builds/` (e.g. `builds/debug`)
-- A Validation Matrix host open during the drill: ShowMIDI and/or a DAW that lists the Virtual Ports
+- Story **3.1** Auto-Start OK sur cette session ([`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md))
+- Epic 1–2 déjà OK (notes/CC + bind WinUSB)
+- VirtualMIDI installé
+- `Bridge.exe` sous `builds/` (ex. `builds/debug`)
+- Un hôte de la matrice ouvert pendant le drill : ShowMIDI et/ou une DAW qui liste les ports virtuels
 
-## How to mark results
+## Comment noter
 
-- **Pass** / **Fail** / **N/A** (+ short reason)
-- Blank cell = not run (does **not** count as Pass)
-- Win10 x64 is **mandatory** for closing the lab claim; Win11 x64 when available
+- **✅** / **❌** / **N/A** (+ courte raison)
+- Case vide = non joué (**≠** Pass)
+- Win10 x64 **obligatoire** pour clore le claim ; Win11 x64 en plus quand dispo
 
-## Pass/Fail matrix
+## Matrice Pass / Fail
 
-| # | Check | Win10 x64 | Win11 x64 | Notes |
+| # | Vérification | Win10 x64 | Win11 x64 | Notes |
 |---|---|---|---|---|
-| 1 | Live `--auto-session` + ShowMIDI and/or Validation Matrix DAW open → Virtual Ports usable (`MT4 Port N`) | | | |
-| 2 | Unplug MT4 → ports tear down (no orphan names on happy path / Ctrl+C-class stop); Bridge **process stays alive** for `--auto-session` (console shows wait-for-replug). If you used supervised Bridge restart instead, record that path in Notes | | | |
-| 3 | Replug MT4 → usable Virtual Ports return **without Windows reboot** | | | |
-| 4 | Host MIDI rescan (or documented supervised Bridge restart) restores host visibility if needed | | | |
-| 5 | Recovery used a **new** session recreate under AD-5/AD-6 names (`MT4 Port N` for single unit) — console shows started banner again after replug | | | |
-| 6 | **Negative:** requiring Windows reboot to regain ports = **Fail** | | | |
+| 1 | `--auto-session` live + ShowMIDI et/ou DAW de la matrice → ports utilisables (`MT4 In N` / `MT4 Out N`) | | | |
+| 2 | Débrancher le MT4 → ports détruits (pas de noms orphelins sur le happy path / arrêt Ctrl+C) ; le **process** Bridge **reste vivant** en `--auto-session` (console d’attente replug). Si tu as utilisé un redémarrage Bridge supervisé, note-le | | | |
+| 3 | Rebrancher le MT4 → ports utilisables **sans reboot Windows** | | | |
+| 4 | Rescan MIDI hôte (ou redémarrage Bridge supervisé documenté) restaure la visibilité si besoin | | | |
+| 5 | Récupération = **nouvelle** session sous les noms AD-5/AD-6 — la console montre à nouveau la bannière de démarrage après replug | | | |
+| 6 | **Négatif :** exiger un reboot Windows pour retrouver les ports = **Fail** | | | |
 
-## Operator commands (reference)
+## Commandes (référence)
 
 ```text
 builds\debug\Bridge.exe --auto-session
@@ -81,23 +83,24 @@ builds\debug\Bridge.exe --test-mapper
 builds\debug\Bridge.exe --test-port-names
 ```
 
-**Product drill:** start with `--auto-session`, open ShowMIDI/DAW, unplug, wait for English wait banner, replug, confirm ports return, rescan host if needed.
+**Drill produit :** démarre avec `--auto-session`, ouvre ShowMIDI/DAW, débranche, attends la bannière d’attente (anglais), rebranche, confirme le retour des ports, rescane l’hôte si besoin.
 
-**Lab one-shot:** `--start-session` / `--run-midi` exit on unplug (scripts that expect process exit). Do not use those flags alone to claim FR-11 recovery.
+**Labo one-shot :** `--start-session` / `--run-midi` quittent au débranche (scripts qui attendent la fin du process). Ne les utilise **pas** seuls pour claimer la récupération FR-11.
 
-**Supervised restart escape (AD-10):** if in-process recreate fails to restore host visibility, stop with Ctrl+C, relaunch `Bridge.exe --auto-session`, then rescan the host. Still **no Windows reboot**.
+**Échappatoire redémarrage supervisé (AD-10) :** si la recréation in-process ne rend pas les ports visibles dans l’hôte, arrête avec Ctrl+C, relance `Bridge.exe --auto-session`, puis rescane. Toujours **sans reboot Windows**.
 
-## Out of scope for this smoke
+## Hors scope pour ce smoke
 
-- Multi-client exclusive-open policy → **3.3**
-- Dual-MT4 hot-plug naming stability → **3.4**
-- Public Installer / polished end-user docs → **4.x**
-- Claiming Matrix-Control GUI UAT closed
-- Epic 2 ~4 h longevity (supervised restart is OK for hot-plug, **not** an excuse for longevity Fail)
+- Politique multi-client / exclusive-open → **3.3** ([`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md))
+- Stabilité des noms hot-plug pour deux MT4 → **3.4**
+- Installateur public / doc utilisateur polie → **4.x**
+- UAT GUI Matrix-Control
+- Longévité Epic 2 ~4 h (un redémarrage supervisé OK pour hot-plug **n’excuse pas** un Fail longévité)
 
-## Related docs
+## Docs liées
 
-- Auto-Start (3.1): [`docs/tests/smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
-- Longevity ownership: [`docs/tests/checklists/smoke-epic2-longevity-mt4.md`](checklists/smoke-epic2-longevity-mt4.md)
-- Epic 2 transport smoke: [`docs/tests/smoke-epic2-mt4.md`](smoke-epic2-mt4.md)
-- WinUSB bind (one-time admin): [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md)
+- Auto-Start (3.1) : [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
+- Multi-client DAW + ShowMIDI (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
+- Ownership longévité : [`checklists/smoke-epic2-longevity-mt4.md`](checklists/smoke-epic2-longevity-mt4.md)
+- Smoke transport Epic 2 : [`smoke-epic2-mt4.md`](smoke-epic2-mt4.md)
+- Bind WinUSB (admin une fois) : [`../dev/winusb-bind.md`](../dev/winusb-bind.md)

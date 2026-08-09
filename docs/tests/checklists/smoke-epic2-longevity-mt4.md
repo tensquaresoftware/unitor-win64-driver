@@ -98,7 +98,7 @@ Treat these as **observe during the sample**. Any hit under normal pacing is a *
 | ~4 h longevity design / soak sample (this checklist) | **2.5** (this doc) |
 | Auto-Start without daily Administrator | Epic **3.1** |
 | Hot-plug recovery without reboot | Epic **3.2** ([`docs/tests/smoke-epic3-hotplug-mt4.md`](../smoke-epic3-hotplug-mt4.md)) |
-| Multi-client DAW + ShowMIDI policy | Epic **3.3** |
+| Multi-client DAW + ShowMIDI (SM-7) | Epic **3.3** ([`docs/tests/smoke-epic3-multiclient-mt4.md`](../smoke-epic3-multiclient-mt4.md)) |
 | MIDI Path latency/jitter / Studio-Done numbers | Epic **5** / OQ-2 |
 | Linking Matrix-Control into the Bridge | Forbidden — CAP-8 |
 

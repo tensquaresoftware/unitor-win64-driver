@@ -104,6 +104,7 @@ add_executable(BridgeTests
     tests/unit/TeVirtualMidiLimitsTests.cpp
     tests/unit/AutoStartContractTests.cpp
     tests/unit/HotPlugContractTests.cpp
+    tests/unit/MultiClientContractTests.cpp
     src/App/AutoStartRegistration.cpp
     src/App/AutoStartTaskScheduler.cpp
     src/App/AutoStartRunKey.cpp
