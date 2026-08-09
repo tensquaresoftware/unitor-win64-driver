@@ -1,5 +1,6 @@
 // Bridge process entry — user-session host (not a Windows Service).
 
+#include "App/AutoStartRegistration.h"
 #include "App/MapperSmoke.h"
 #include "App/MidiSessionCli.h"
 #include "Device/DeviceSessionManager.h"
@@ -228,6 +229,89 @@ int openMt4DeviceWithOptions(bool allowZadigFallback)
     std::cout << "WinUSB open succeeded\n";
     return 0;
 }
+
+int runAutoStartRegisterCommand()
+{
+    std::string message;
+    std::string error;
+    if (!registerAutoStart(message, error))
+    {
+        std::cerr << "Auto-Start register failed: "
+                  << (error.empty() ? "unknown error" : error) << '\n';
+        return 1;
+    }
+    std::cout << message << '\n';
+    return 0;
+}
+
+int runAutoStartUnregisterCommand()
+{
+    std::string message;
+    std::string error;
+    if (!unregisterAutoStart(message, error))
+    {
+        std::cerr << "Auto-Start unregister failed: "
+                  << (error.empty() ? "unknown error" : error) << '\n';
+        return 1;
+    }
+    std::cout << message << '\n';
+    return 0;
+}
+
+int runProbeUsbCommand()
+{
+    std::string probeError;
+    const int probeResult = runMt4UsbBulkProbe(probeError);
+    if (probeResult != 0)
+    {
+        std::cerr << "USB bulk probe failed: "
+                  << (probeError.empty() ? "unknown error" : probeError) << '\n';
+    }
+    return probeResult;
+}
+
+int dispatchSessionFlags(int argc, char* argv[])
+{
+    const bool allowZadigFallback = hasFlag(argc, argv, "--dev-zadig");
+    if (hasFlag(argc, argv, kAutoSessionFlag))
+    {
+        return runMt4AutoSession();
+    }
+    if (hasFlag(argc, argv, "--start-session") || hasFlag(argc, argv, "--run-midi"))
+    {
+        return runMt4MidiSession(allowZadigFallback);
+    }
+    if (hasFlag(argc, argv, "--open-device"))
+    {
+        return openMt4DeviceWithOptions(allowZadigFallback);
+    }
+    return 0;
+}
+
+int dispatchBridgeFlags(int argc, char* argv[])
+{
+    if (hasFlag(argc, argv, "--test-mapper"))
+    {
+        return runMapperTests();
+    }
+    if (hasFlag(argc, argv, "--test-port-names"))
+    {
+        return runPortNameTests();
+    }
+    if (hasFlag(argc, argv, "--probe-usb"))
+    {
+        return runProbeUsbCommand();
+    }
+    if (hasFlag(argc, argv, "--register-auto-start"))
+    {
+        return runAutoStartRegisterCommand();
+    }
+    if (hasFlag(argc, argv, "--unregister-auto-start"))
+    {
+        return runAutoStartUnregisterCommand();
+    }
+    return dispatchSessionFlags(argc, argv);
+}
 } // namespace
 
 int main(int argc, char* argv[])
@@ -237,41 +321,5 @@ int main(int argc, char* argv[])
     {
         return profileResult;
     }
-
-    if (hasFlag(argc, argv, "--test-mapper"))
-    {
-        return runMapperTests();
-    }
-
-    if (hasFlag(argc, argv, "--test-port-names"))
-    {
-        return runPortNameTests();
-    }
-
-    const bool allowZadigFallback = hasFlag(argc, argv, "--dev-zadig");
-
-    if (hasFlag(argc, argv, "--probe-usb"))
-    {
-        std::string probeError;
-        const int probeResult = runMt4UsbBulkProbe(probeError);
-        if (probeResult != 0)
-        {
-            std::cerr << "USB bulk probe failed: "
-                      << (probeError.empty() ? "unknown error" : probeError) << '\n';
-        }
-        return probeResult;
-    }
-
-    // --run-midi is an alias kept behind the same Start wiring as --start-session.
-    if (hasFlag(argc, argv, "--start-session") || hasFlag(argc, argv, "--run-midi"))
-    {
-        return runMt4MidiSession(allowZadigFallback);
-    }
-
-    if (hasFlag(argc, argv, "--open-device"))
-    {
-        return openMt4DeviceWithOptions(allowZadigFallback);
-    }
-
-    return 0;
+    return dispatchBridgeFlags(argc, argv);
 }

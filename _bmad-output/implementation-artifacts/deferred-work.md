@@ -211,6 +211,15 @@ Design note already captured in the longevity guide (not an open deferral): afte
   summary: OUT-hinted IN sticky (`hintInCableFromOut`) can mis-attribute unlabeled IN traffic if the host is sending on Out N while independent DIN traffic arrives on another In without an Emagic `F5` tag.
   evidence: Stress 2026-08-09 `midi-concurrent-in-stress.py` ~2.2 min / 220 rounds — Matrix dumps 220/220 on In1 and 0 on In2 (good); Out2 notes mostly on In2 (1759) but **1× note72 on In1** (`cross_note72_on_in1=1`) → overall_pass=false. Log `tests/lab-logs/midi-concurrent-in/concurrent-in-20260809T214726Z.log`. V1 must harden before public release.
 
+## Deferred from: quick-dev spec-epic-2-pc-only-closure.md (2026-08-10)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-epic-2-pc-only-closure.md`
+  summary: Author / run a dedicated real-DAW / Scarlett UAT for MIDI clock + transport (story 2.1) when home lab gear is available; Python DIN-loopback harness is the 2.1 closeout proof only.
+  evidence: 2026-08-10 decision — Scarlett unavailable; `midi-clock-loopback-lab.py` Pass on Out2→In2 (`20260809T221926Z`); mirrors 2.2 harness barème.
+- source_spec: `_bmad-output/implementation-artifacts/spec-epic-2-pc-only-closure.md`
+  summary: Fill Matrix-Control GUI hard-gate rows (smoke §6 / English Matrix-Control checklist) on Win10 when GUI time is available; script mid/bank day-gates close story 2.4 librarian shapes only.
+  evidence: 2026-08-10 mid `20260809T220849Z` + bank `20260809T221054Z` `overall_pass=true`; GUI rows left blank on purpose.
+
 ## Deferred from: quick-dev spec-windows-bridge-post-midburst-soak.md (2026-08-09)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-windows-bridge-post-midburst-soak.md`
@@ -219,3 +228,8 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-windows-bridge-post-midburst-soak.md`
   summary: Larger size-reject rewrite budget can stretch the 3500 ms expect window across several rewrite OUTs during a short storm (mutex / completion pressure).
   evidence: Code-review of post-soak constant bump; nested rewrite guard still drops shorts without consuming budget.
+
+## Deferred from: code review of 3-1-auto-start-without-daily-administrator.md (2026-08-10)
+
+- Offline unit tests only assert Auto-Start constants (`--auto-session`, task name, wait bounds), not register/unregister / fallback / dual-backend cleanup — Windows COM lab remains the practical gate.
+- Daily Auto-Start still launches a console Bridge; CTRL_CLOSE orphan Virtual Ports risk remains (already documented; smoke prefers Ctrl+C). Auto-Start increases daily exposure but does not invent a new lifecycle owner.

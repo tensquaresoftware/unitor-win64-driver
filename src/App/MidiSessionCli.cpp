@@ -1,7 +1,9 @@
-// Long-running MT4 DeviceSession CLI for notes/CC smoke (--start-session / --run-midi).
+// Long-running MT4 DeviceSession CLI (--start-session / --run-midi / --auto-session).
 
 #include "App/MidiSessionCli.h"
 
+#include "App/AutoStartRegistration.h"
+#include "App/Mt4WinUsbPresence.h"
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionManager.h"
 #include "Midi/VirtualMidiBackend.h"
@@ -41,7 +43,17 @@ BOOL WINAPI onConsoleCtrl(DWORD controlType)
 
 bool installCancelHandler()
 {
-    return SetConsoleCtrlHandler(onConsoleCtrl, TRUE) == TRUE;
+    static bool installed = false;
+    if (installed)
+    {
+        return true;
+    }
+    if (SetConsoleCtrlHandler(onConsoleCtrl, TRUE) != TRUE)
+    {
+        return false;
+    }
+    installed = true;
+    return true;
 }
 #else
 void onSignalCancel(int /*signal*/)
@@ -51,8 +63,14 @@ void onSignalCancel(int /*signal*/)
 
 bool installCancelHandler()
 {
+    static bool installed = false;
+    if (installed)
+    {
+        return true;
+    }
     std::signal(SIGINT, onSignalCancel);
     std::signal(SIGTERM, onSignalCancel);
+    installed = true;
     return true;
 }
 #endif
@@ -184,7 +202,108 @@ void printSessionStartedBanner()
                  " (expect them to stay close)\n";
 }
 
-int runMt4MidiSession(bool allowZadigFallback)
+namespace
+{
+void printAutoSessionWaitBanner(const std::string& presenceError)
+{
+    std::cout << "MT4 not present yet (" << presenceError << "); waiting up to "
+              << kAutoSessionWaitTimeoutSeconds
+              << "s (poll every " << (kAutoSessionPollIntervalMs / 1000)
+              << "s). Plug the MT4 or press Ctrl+C to abort.\n";
+}
+
+void printAutoSessionWaitProgress(
+    std::chrono::steady_clock::time_point deadline,
+    std::chrono::steady_clock::time_point now)
+{
+    const auto remaining =
+        std::chrono::duration_cast<std::chrono::seconds>(deadline - now).count();
+    std::cout << "Still waiting for MT4 (" << remaining << "s remaining)...\n";
+}
+
+bool pollUntilMt4Present(std::chrono::steady_clock::time_point deadline)
+{
+    std::string presenceDetail;
+    auto lastProgress = std::chrono::steady_clock::now();
+    while (!g_cancelRequested.load())
+    {
+        const Mt4WinUsbPresence presence = queryMt4WinUsbPresence(presenceDetail);
+        if (presence == Mt4WinUsbPresence::Present)
+        {
+            std::cout << "MT4 WinUSB interface appeared; starting session\n";
+            return true;
+        }
+        if (presence == Mt4WinUsbPresence::Error)
+        {
+            std::cerr << "Auto-session presence check failed: " << presenceDetail
+                      << '\n';
+            return false;
+        }
+        const auto now = std::chrono::steady_clock::now();
+        if (now >= deadline)
+        {
+            std::cerr << "Auto-session timed out after "
+                      << kAutoSessionWaitTimeoutSeconds
+                      << "s waiting for WinUSB GUID "
+                      << "{aa209017-cf8a-49ad-a0e7-701187ff7e05}. "
+                      << "Last check: " << presenceDetail << '\n';
+            return false;
+        }
+        if (now - lastProgress
+            >= std::chrono::seconds(kAutoSessionProgressIntervalSeconds))
+        {
+            printAutoSessionWaitProgress(deadline, now);
+            lastProgress = now;
+        }
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(kAutoSessionPollIntervalMs));
+    }
+    std::cerr << "Auto-session wait cancelled before MT4 appeared\n";
+    return false;
+}
+
+bool waitForMt4WinUsbOrTimeout()
+{
+    std::string presenceDetail;
+    const Mt4WinUsbPresence presence = queryMt4WinUsbPresence(presenceDetail);
+    if (presence == Mt4WinUsbPresence::Present)
+    {
+        std::cout << "MT4 WinUSB interface present; starting session\n";
+        return true;
+    }
+    if (presence == Mt4WinUsbPresence::Error)
+    {
+        std::cerr << "Auto-session presence check failed: " << presenceDetail << '\n';
+        return false;
+    }
+    printAutoSessionWaitBanner(presenceDetail);
+    const auto deadline = std::chrono::steady_clock::now()
+        + std::chrono::seconds(kAutoSessionWaitTimeoutSeconds);
+    return pollUntilMt4Present(deadline);
+}
+
+bool armMidiSessionCancel(bool preserveCancel)
+{
+    if (!installCancelHandler())
+    {
+        std::cerr << "Failed to install Ctrl+C handler for MIDI session\n";
+        return false;
+    }
+    if (preserveCancel)
+    {
+        if (g_cancelRequested.load())
+        {
+            std::cerr << "Auto-session cancelled before DeviceSession start\n";
+            return false;
+        }
+        return true;
+    }
+    g_cancelRequested.store(false);
+    return true;
+}
+} // namespace
+
+int runMt4MidiSession(bool allowZadigFallback, bool preserveCancel)
 {
     const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
     if (mt4 == nullptr)
@@ -203,23 +322,18 @@ int runMt4MidiSession(bool allowZadigFallback)
     }
 
     printExpectedPortDiagnostics(names);
-
-    if (!installCancelHandler())
+    if (!armMidiSessionCancel(preserveCancel))
     {
-        std::cerr << "Failed to install Ctrl+C handler for MIDI session\n";
         return 1;
     }
-    g_cancelRequested.store(false);
 
     VirtualMidiBackend midiBackend;
     DeviceSession session;
-
     DeviceSessionStartRequest request;
     request.profile = mt4;
     request.midiBackend = &midiBackend;
     request.portNames = &names;
     request.openOptions.allowZadigFallback = allowZadigFallback;
-
     if (!session.Start(request, error) || !session.IsRunning())
     {
         std::cerr << "DeviceSession start failed: "
@@ -229,4 +343,31 @@ int runMt4MidiSession(bool allowZadigFallback)
 
     printSessionStartedBanner();
     return waitForMidiSessionCancel(session);
+}
+
+int runMt4AutoSession()
+{
+    std::cout << "Auto-session host (user-session Bridge; not a Windows Service)\n";
+    std::cout << "Prefer clean exit with Ctrl+C so Virtual Ports tear down "
+                 "(closing the console window may leave orphan ports).\n";
+
+    if (!installCancelHandler())
+    {
+        std::cerr << "Failed to install Ctrl+C handler for auto-session\n";
+        return 1;
+    }
+    g_cancelRequested.store(false);
+
+    if (!waitForMt4WinUsbOrTimeout())
+    {
+        return 1;
+    }
+    if (g_cancelRequested.load())
+    {
+        std::cerr << "Auto-session cancelled after MT4 appeared\n";
+        return 1;
+    }
+
+    // Product Auto-Start: GUID path only (no --dev-zadig).
+    return runMt4MidiSession(false, true);
 }

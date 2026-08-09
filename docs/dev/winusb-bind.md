@@ -129,6 +129,14 @@ Zadig fallback refuses to open when **more than one** USB device matches the MT4
 
 Authenticode / catalog signing for public release is tracked later (Story 4.4). Unsigned INF is acceptable for contributor bind; document local test-signing or Device Manager browse-install as needed.
 
+## Daily use after bind (Auto-Start)
+
+Once WinUSB bind works and Epic 1–2 sessions are green, register user-session Auto-Start (no daily Administrator) with the Story 3.1 smoke guide:
+
+- [`docs/tests/smoke-epic3-autostart-mt4.md`](../tests/smoke-epic3-autostart-mt4.md)
+
+One-time INF bind / test-signing may still need Administrator. Daily `--register-auto-start` / logon launch / `--unregister-auto-start` must not.
+
 ## Out of scope here
 
-Polished Public Installer UX (progress UI, Auto-Start, VirtualMIDI MSI gate) is Story 4.1 — not this bind package.
+Polished Public Installer UX (progress UI, VirtualMIDI MSI gate, packaging Auto-Start into the installer) is Story 4.1 — not this bind package. Runtime Auto-Start register/unregister lives in Story 3.1 (see smoke guide above).

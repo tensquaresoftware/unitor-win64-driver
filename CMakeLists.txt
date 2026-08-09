@@ -25,6 +25,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(Bridge
     src/App/Main.cpp
+    src/App/AutoStartRegistration.cpp
+    src/App/AutoStartTaskScheduler.cpp
+    src/App/AutoStartRunKey.cpp
+    src/App/AutoStartWinUtil.cpp
+    src/App/Mt4WinUsbPresence.cpp
     src/App/MapperSmoke.cpp
     src/App/FramerSmoke.cpp
     src/App/FramerMtcSmoke.cpp
@@ -65,12 +70,15 @@ if(WIN32)
         src/Midi/VirtualMidiWinSupport.cpp
         src/Usb/WinUsbOpenDetail.cpp
         src/Usb/WinUsbOpenSupport.cpp
+        src/App/Bridge.manifest
     )
     target_link_libraries(Bridge
         PRIVATE
             setupapi
             winusb
             ole32
+            taskschd
+            comsuppw
     )
 endif()
 
@@ -92,6 +100,11 @@ add_executable(BridgeTests
     tests/unit/MidiMessageFramerSysexTests.cpp
     tests/unit/HostOutboundQueueTests.cpp
     tests/unit/TeVirtualMidiLimitsTests.cpp
+    tests/unit/AutoStartContractTests.cpp
+    src/App/AutoStartRegistration.cpp
+    src/App/AutoStartTaskScheduler.cpp
+    src/App/AutoStartRunKey.cpp
+    src/App/AutoStartWinUtil.cpp
     src/Device/HostOutboundQueue.cpp
     src/Device/DeviceSessionSupport.cpp
     src/Profile/DeviceProfile.cpp
@@ -112,6 +125,15 @@ target_link_libraries(BridgeTests
     PRIVATE
         Catch2::Catch2WithMain
 )
+
+if(WIN32)
+    target_link_libraries(BridgeTests
+        PRIVATE
+            ole32
+            taskschd
+            comsuppw
+    )
+endif()
 
 enable_testing()
 # TARGET_FILE resolves per-config output dirs (e.g. builds/ci/Release on VS).

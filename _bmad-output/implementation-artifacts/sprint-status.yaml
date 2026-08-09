@@ -1,5 +1,5 @@
 # generated: 2026-08-04T21:38:31Z
-# last_updated: 2026-08-05T21:30:00Z
+# last_updated: 2026-08-10T00:45:00Z
 # project: unitor-win64-driver
 # project_key: NOKEY
 # tracking_system: file-system
@@ -7,7 +7,7 @@
 #
 # SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
 # READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
-# NEXT: Win10 Matrix-Control lab for 2-4; Win10 ~4 h longevity sample still lab-pending for 2-5 (design/plan done); Win10 lab still pending for 2-1 clock / 2-2 MTC / 2-3 SysEx
+# NEXT: Epic 3 in-progress — 3-1 done (Auto-Start); next ready story when created (3-2+); Epic 2 still open (2-1 review, 2-4 in-progress; Win10 labs / Scarlett-DAW UAT / Matrix GUI / longevity as applicable)
 #
 # DEFERRED (do not block sprint):
 #   AQ-1…AQ-4 (architecture spine)
@@ -51,7 +51,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-09T21:35:00Z"
+last_updated: "2026-08-10T00:45:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -78,8 +78,8 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Daily Studio Resilience
-  epic-3: backlog
-  3-1-auto-start-without-daily-administrator: backlog
+  epic-3: in-progress
+  3-1-auto-start-without-daily-administrator: done
   3-2-hot-plug-recovery-without-windows-reboot: backlog
   3-3-multi-client-daw-plus-showmidi: backlog
   3-4-two-mt4-units-with-stable-distinguishable-names: backlog
