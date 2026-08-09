@@ -20,7 +20,7 @@ Operator-facing Pass/Fail guide for **Story 3.2**: after a live session with Vir
 | Product host | `Bridge.exe --auto-session` (user-session process only; **not** a Windows Service — AD-20) |
 | Detect loss | Pump failure / unexpected `!IsRunning()` while cancel is **not** requested |
 | Teardown | `DeviceSession::Stop()` destroys Virtual Ports via `MidiBackend` (AD-9); English console: `MT4 disconnected; waiting for replug...` |
-| Wait / rescan | Poll WinUSB DeviceInterfaceGUID `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` every **2 s**, progress every **30 s**, fail closed after **900 s** with English diagnostics — do not hang forever silently |
+| Wait / rescan | After disconnect: poll until WinUSB GUID is **Absent** (clears stale Present), then until **Present** again — every **2 s**, progress every **30 s**, fail closed after **900 s** with English diagnostics — do not hang forever silently |
 | Recreate | **New** `DeviceSession::Start` under AD-6 identity (V1 single unit: `MT4 Port N`); App must **not** call `CreatePortSet` / `DestroyPortSet` |
 | AQ-2 (UX preference) | V1 default = **silent in-process recreate** with English console diagnostics; no tray/GUI acknowledge dialog required |
 | Host visibility | Ableton / Reason / ShowMIDI may need a MIDI device **rescan**; supervised Bridge process restart is an **allowed** escape (AD-10), not the only path |

@@ -36,6 +36,7 @@ add_executable(Bridge
     src/App/FramerMtcSmoke.cpp
     src/App/FramerSysexSmoke.cpp
     src/App/MidiSessionCli.cpp
+    src/App/MidiSessionDiagnostics.cpp
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionDeviceHost.cpp
     src/Device/DeviceSessionHostOutbound.cpp

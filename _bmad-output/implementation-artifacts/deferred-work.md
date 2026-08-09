@@ -233,3 +233,9 @@ Design note already captured in the longevity guide (not an open deferral): afte
 
 - Offline unit tests only assert Auto-Start constants (`--auto-session`, task name, wait bounds), not register/unregister / fallback / dual-backend cleanup — Windows COM lab remains the practical gate.
 - Daily Auto-Start still launches a console Bridge; CTRL_CLOSE orphan Virtual Ports risk remains (already documented; smoke prefers Ctrl+C). Auto-Start increases daily exposure but does not invent a new lifecycle owner.
+
+## Deferred from: code review of 3-2-hot-plug-recovery-without-windows-reboot.md (2026-08-10)
+
+- Offline hot-plug coverage only asserts wait-constant aliases — thin offline pattern carried from 3.1; hardware SM-4 remains the gate (`tests/unit/HotPlugContractTests.cpp`).
+- Surprise-removal `DeviceSession::Stop` still runs best-effort finish-magic `WriteBulk` that can block on a dead device — pre-existing; story 3.2 documented order only (harden with hang evidence).
+- After SM-4 lab evidence: try to shorten mid-session re-attach latency after replug — V1 reuses Auto-Start cadence (2 s poll / 900 s fail-closed / Start retries); story 3.2 already allowed a shorter hot-plug-specific bound or faster detection (`CM_Register_Notification`) once real rack-move timings are measured; do not change fail-closed honesty.

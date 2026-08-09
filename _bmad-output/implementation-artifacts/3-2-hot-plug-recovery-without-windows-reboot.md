@@ -4,7 +4,7 @@ baseline_commit: e26be0e
 
 # Story 3.2: Hot-plug recovery without Windows reboot
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created -->
 
@@ -69,6 +69,16 @@ so that a rack move does not kill the whole PC session.
   - [x] `ctest` / `BridgeTests` Pass when C++ changed
   - [x] If C++ changed: `python scripts/quality/lint-touched.py` exits 0; compile under `builds/`; no French in sources; Protocol/Profile free of VirtualMIDI/WinUSB
   - [x] Confirm no second port authority, no Session-0 service, no tray GUI invent for AQ-2, no dual-MT4 work under this story ID
+
+### Review Findings
+
+- [x] [Review][Patch] After mid-session disconnect, recovery can treat a still-listed WinUSB GUID as Present, skip the replug wait, then exit on first Start failure (or tight-loop if Start briefly succeeds while the interface is dying) — wait Absent→Present (or equivalent settle) and retry Start until the documented timeout instead of `return 1` on first failure [`src/App/MidiSessionCli.cpp`:306-316] [`src/App/Mt4PresenceWait.cpp`:104-114]
+- [x] [Review][Patch] Ctrl+C during the replug wait returns exit code 1; live-session Ctrl+C returns 0 — treat cancel during recovery as clean exit 0 [`src/App/MidiSessionCli.cpp`:307-314]
+- [x] [Review][Patch] If `Start` returns true but `IsRunning()` is immediately false, `startMt4DeviceSession` returns false without `Stop()` — call `Stop()` on that path to avoid orphan Virtual Ports [`src/App/MidiSessionCli.cpp`:248-254]
+- [x] [Review][Patch] Hot-plug wait reuses first-availability console strings (`present; starting session` / `appeared; starting session`) even when the interface never left Present — use recovery-specific diagnostics via `contextLabel` [`src/App/Mt4PresenceWait.cpp`:48-51,110-113]
+- [x] [Review][Defer] Offline hot-plug coverage only asserts wait-constant aliases — deferred, pre-existing thin offline pattern (hardware SM-4 remains the gate) [`tests/unit/HotPlugContractTests.cpp`]
+- [x] [Review][Defer] Surprise-removal `Stop` still runs best-effort finish-magic `WriteBulk` that can block on a dead device — deferred, pre-existing; this story only documented order (harden with evidence) [`src/Device/DeviceSession.cpp`:75-84,413-458]
+- [x] [Review][Defer] Shorten mid-session re-attach latency after replug once SM-4 timings are known — deferred; V1 keeps Auto-Start cadence (2 s / 900 s); story already allowed a shorter hot-plug-specific bound or faster PnP detection later
 
 ## Dev Notes
 
@@ -268,6 +278,8 @@ Cursor Grok 4.5
 - `src/App/AutoStartRegistration.h`
 - `src/App/MidiSessionCli.cpp`
 - `src/App/MidiSessionCli.h`
+- `src/App/MidiSessionDiagnostics.cpp`
+- `src/App/MidiSessionDiagnostics.h`
 - `src/App/Mt4PresenceWait.cpp`
 - `src/App/Mt4PresenceWait.h`
 - `src/Device/DeviceSession.cpp`
@@ -276,8 +288,9 @@ Cursor Grok 4.5
 ### Change Log
 
 - 2026-08-10: Implemented Story 3.2 hot-plug recovery (in-process recreate on `--auto-session`), smoke guide, presence-wait helper, contract tests; status → review.
+- 2026-08-10: Code review patches — Absent→Present replug wait, Start retry, cancel exit 0, Stop on half-start, contextLabel diagnostics; status → done.
 
 ## Story completion status
 
-- Status: **review**
-- Note: Implementation complete; hardware SM-4 Pass/Fail rows remain for operator lab on Win10 x64.
+- Status: **done**
+- Note: Implementation + review patches complete; hardware SM-4 Pass/Fail rows remain for operator lab on Win10 x64.

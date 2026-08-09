@@ -2,7 +2,7 @@
 
 #include "App/MidiSessionCli.h"
 
-#include "App/AutoStartRegistration.h"
+#include "App/MidiSessionDiagnostics.h"
 #include "App/Mt4PresenceWait.h"
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionManager.h"
@@ -89,61 +89,6 @@ bool installCancelHandler()
     return true;
 }
 #endif
-
-void printExpectedPortDiagnostics(const PortNameSet& names)
-{
-    std::cout << "Expected Virtual Ports: " << names.inCount << " IN / " << names.outCount
-              << " OUT\n";
-    for (std::size_t index = 0; index < names.inCount; ++index)
-    {
-        std::cout << "  IN  " << names.inNames[index] << '\n';
-    }
-    for (std::size_t index = 0; index < names.outCount; ++index)
-    {
-        std::cout << "  OUT " << names.outNames[index] << '\n';
-    }
-}
-
-void printDeviceHostCounters(const DeviceHostCounterSnapshot& snapshot)
-{
-    std::cout << "device-host counters: bulk_in_bytes=" << snapshot.bulkBytes
-              << " demux_spans=" << snapshot.demuxSpans
-              << " send_ok_msgs=" << snapshot.sendOk
-              << " send_fail_msgs=" << snapshot.sendFail
-              << " host_out_ok=" << snapshot.hostOutOk
-              << " inquiry_out=" << snapshot.inquiryOut
-              << " identity_reply_in=" << snapshot.identityReplyIn << '\n'
-              << std::flush;
-}
-
-bool shouldPrintDeviceHostCounters(
-    const DeviceHostCounterSnapshot& previous,
-    const DeviceHostCounterSnapshot& current)
-{
-    if (current.sendFail != previous.sendFail)
-    {
-        return true;
-    }
-    if (current.inquiryOut != previous.inquiryOut
-        || current.identityReplyIn != previous.identityReplyIn
-        || current.hostOutOk != previous.hostOutOk)
-    {
-        return true;
-    }
-    if (previous.bulkBytes == 0 && current.bulkBytes > 0)
-    {
-        return true;
-    }
-    if (current.sendOk > previous.sendOk)
-    {
-        if (current.sendOk == 1)
-        {
-            return true;
-        }
-        return (current.sendOk / 25) > (previous.sendOk / 25);
-    }
-    return false;
-}
 
 bool pollMidiSessionOnce(
     DeviceSession& session,
@@ -251,69 +196,108 @@ bool startMt4DeviceSession(const Mt4SessionStartArgs& args, std::string& errorOu
         {
             errorOut = "unknown error";
         }
+        // Start may return true with IsRunning false — always tear down.
+        args.session->Stop();
         return false;
     }
     return true;
 }
 
-Mt4PresenceWaitConfig makeAutoSessionWaitConfig()
+int exitAfterHotPlugWaitFailed()
 {
-    Mt4PresenceWaitConfig config;
-    config.contextLabel = "Auto-session";
-    config.timeoutSeconds = kAutoSessionWaitTimeoutSeconds;
-    config.pollIntervalMs = kAutoSessionPollIntervalMs;
-    config.progressIntervalSeconds = kAutoSessionProgressIntervalSeconds;
-    return config;
+    if (g_cancelRequested.load())
+    {
+        std::cerr << "Hot-plug recovery cancelled while waiting for replug\n";
+        return 0;
+    }
+    return 1;
 }
 
-Mt4PresenceWaitConfig makeHotPlugReplugWaitConfig()
+// After Absent→Present, retry Start until timeout (PnP settle race).
+bool startMt4AfterReplugOrTimeout(
+    const Mt4SessionStartArgs& startArgs,
+    const Mt4PresenceWaitConfig& config)
 {
-    Mt4PresenceWaitConfig config;
-    config.contextLabel = "Hot-plug recovery";
-    config.timeoutSeconds = kHotPlugReplugWaitTimeoutSeconds;
-    config.pollIntervalMs = kHotPlugReplugPollIntervalMs;
-    config.progressIntervalSeconds = kHotPlugReplugProgressIntervalSeconds;
-    return config;
+    const auto deadline = std::chrono::steady_clock::now()
+        + std::chrono::seconds(config.timeoutSeconds);
+    while (!g_cancelRequested.load())
+    {
+        std::string error;
+        if (startMt4DeviceSession(startArgs, error))
+        {
+            return true;
+        }
+        std::cerr << "Hot-plug recovery: DeviceSession start failed (" << error
+                  << "); retrying...\n";
+        if (std::chrono::steady_clock::now() >= deadline)
+        {
+            std::cerr << "Hot-plug recovery: DeviceSession start retries exhausted\n";
+            return false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(config.pollIntervalMs));
+    }
+    std::cerr << "Hot-plug recovery cancelled before DeviceSession restart\n";
+    return false;
 }
 
-// Product host: Stop already destroyed ports; wait for GUID; Start again.
+int recoverAfterDisconnect(const Mt4SessionStartArgs& startArgs)
+{
+    std::cout << "MT4 disconnected; waiting for replug...\n";
+    const Mt4PresenceWaitConfig replugConfig = makeHotPlugReplugPresenceWaitConfig();
+    if (!waitForMt4WinUsbReplugOrTimeout(replugConfig, g_cancelRequested))
+    {
+        return exitAfterHotPlugWaitFailed();
+    }
+    if (g_cancelRequested.load())
+    {
+        std::cerr << "Hot-plug recovery cancelled before DeviceSession restart\n";
+        return 0;
+    }
+    std::cout << "MT4 replugged; starting new DeviceSession...\n";
+    if (!startMt4AfterReplugOrTimeout(startArgs, replugConfig))
+    {
+        return g_cancelRequested.load() ? 0 : 1;
+    }
+    return -1; // continue host loop
+}
+
+void printHotPlugSessionStarted(bool firstStart)
+{
+    if (!firstStart)
+    {
+        std::cout << "Hot-plug recovery: new DeviceSession started "
+                     "(AD-6 names unchanged for single unit)\n";
+    }
+    printSessionStartedBanner();
+}
+
+// Product host: Stop already destroyed ports; Absent→Present; Start with retry.
 int runAutoSessionHotPlugLoop(const Mt4SessionStartArgs& startArgs)
 {
     bool firstStart = true;
     while (!g_cancelRequested.load())
     {
-        std::string error;
-        if (!startMt4DeviceSession(startArgs, error))
+        if (firstStart)
         {
-            std::cerr << "DeviceSession start failed: " << error << '\n';
-            return 1;
+            std::string error;
+            if (!startMt4DeviceSession(startArgs, error))
+            {
+                std::cerr << "DeviceSession start failed: " << error << '\n';
+                return 1;
+            }
         }
-
-        if (!firstStart)
-        {
-            std::cout << "Hot-plug recovery: new DeviceSession started "
-                         "(AD-6 names unchanged for single unit)\n";
-        }
-        printSessionStartedBanner();
+        printHotPlugSessionStarted(firstStart);
         firstStart = false;
-
         if (waitForMidiSessionCancel(*startArgs.session)
             == MidiSessionWaitResult::Cancelled)
         {
             return 0;
         }
-
-        std::cout << "MT4 disconnected; waiting for replug...\n";
-        if (!waitForMt4WinUsbOrTimeout(makeHotPlugReplugWaitConfig(), g_cancelRequested))
+        const int recoverExit = recoverAfterDisconnect(startArgs);
+        if (recoverExit >= 0)
         {
-            return 1;
+            return recoverExit;
         }
-        if (g_cancelRequested.load())
-        {
-            std::cerr << "Hot-plug recovery cancelled before DeviceSession restart\n";
-            return 1;
-        }
-        std::cout << "MT4 replugged; starting new DeviceSession...\n";
     }
     return 0;
 }
@@ -388,7 +372,7 @@ int runMt4AutoSession()
     }
     g_cancelRequested.store(false);
 
-    if (!waitForMt4WinUsbOrTimeout(makeAutoSessionWaitConfig(), g_cancelRequested))
+    if (!waitForMt4WinUsbOrTimeout(makeAutoSessionPresenceWaitConfig(), g_cancelRequested))
     {
         return 1;
     }
