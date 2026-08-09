@@ -4,7 +4,7 @@ project: unitor-win64-driver
 title: Smoke Epic 2 — MT4 (MTC quarter-frame / full-frame)
 author: Guillaume DUPONT
 created: 2026-08-05
-updated: 2026-08-05
+updated: 2026-08-09
 ---
 
 # Smoke guide — Epic 2.2 (MT4 MTC quarter-frame and full-frame)
@@ -65,8 +65,8 @@ Bridge.exe --test-mapper
 
 Expected: exit 0, including framer MTC quarter-frame / full-frame vectors and mapper MTC encode/decode.
 
-Synthetic gate: Pass / Fail  
-Notes:
+Synthetic gate: Pass  
+Notes: `Bridge --test-mapper` / Catch2 MTC vectors (story implementation 2026-08-05)
 
 ## Hardware session start
 
@@ -79,8 +79,8 @@ Bridge.exe --start-session --dev-zadig
 
 Leave the session running. Do not restart the Bridge during the short smoke below.
 
-Session started, Virtual Ports visible: Pass / Fail  
-Notes (Port N):
+Session started, Virtual Ports visible: Pass  
+Notes (Port N): 2026-08-09 `mtc-loopback-lab.py --with-bridge` — Virtual Ports up; DIN red loopback Out2→In2
 
 ## Host→device path assumption (lab-gated)
 
@@ -96,14 +96,14 @@ If dense quarter-frame rate (~4× SMPTE frame rate) shows Bridge-induced dropout
 
 | Check | Win10 x64 | Win11 x64 (when available) | Notes (Port N / cable / direction) |
 |---|---|---|---|
-| ≥1 Virtual OUT selected in DAW | | | |
-| MTC quarter-frame (`0xF1`) observed on physical OUT path | | | |
-| At least one MTC full-frame cue observed | | | |
-| No Bridge-induced gaps under short sync smoke | | | |
-| Notes still flow on same OUT (regression spot-check) | | | |
+| ≥1 Virtual OUT selected in DAW | Pass (harness) | | Python `mido` on `MT4 Out 2` (DAW UAT deferred) |
+| MTC quarter-frame (`0xF1`) observed on physical OUT path | Pass | | DIN loopback Out2→In2; 72/72 QF |
+| At least one MTC full-frame cue observed | Pass | | `F0 7F 7F 01 01 20 15 30 10 F7` |
+| No Bridge-induced gaps under short sync smoke | Pass | | |
+| Notes still flow on same OUT (regression spot-check) | Pass | | sanity `note_on` before MTC |
 
-Host→device path Pass / Fail  
-Lab evidence (LED / slave / loopback / DAW observe):
+Host→device path Pass  
+Lab evidence (LED / slave / loopback / DAW observe): `tests/lab-logs/mtc-loopback/mtc-loopback-20260809T213749Z.log`
 
 ## Matrix B — Device → host (MT4 physical IN → DAW MIDI IN)
 
@@ -111,28 +111,28 @@ Lab evidence (LED / slave / loopback / DAW observe):
 
 | Check | Win10 x64 | Win11 x64 (when available) | Notes (Port N / cable / direction) |
 |---|---|---|---|
-| ≥1 Virtual IN armed / observed in DAW | | | |
-| MTC quarter-frame observed or DAW slaves to it | | | |
-| At least one MTC full-frame cue observed | | | |
-| No Bridge-induced gaps under short sync smoke | | | |
-| Notes still flow on same IN (regression spot-check) | | | |
+| ≥1 Virtual IN armed / observed in DAW | Pass (harness) | | Python on `MT4 In 2` |
+| MTC quarter-frame observed or DAW slaves to it | Pass | | same Out2→In2 loopback (after IN demux OUT-hint) |
+| At least one MTC full-frame cue observed | Pass | | |
+| No Bridge-induced gaps under short sync smoke | Pass | | |
+| Notes still flow on same IN (regression spot-check) | Pass | | |
 
-Device→host path Pass / Fail  
-DAW used (Ableton Live 12 / Reason Studios 12):
+Device→host path Pass  
+DAW used (Ableton Live 12 / Reason Studios 12): Python harness (Ableton/Scarlett UAT deferred to future dedicated guide)
 
 ## Short session stability
 
 | Check | Result | Notes |
 |---|---|---|
-| Short sync smoke without Bridge restart | Pass / Fail | |
-| No Bridge restart required to restore MTC | Pass / Fail | |
-| Console shows no WriteBulk / SendToHost failure storm | Pass / Fail | |
+| Short sync smoke without Bridge restart | Pass | single Bridge Start |
+| No Bridge restart required to restore MTC | Pass | |
+| Console shows no WriteBulk / SendToHost failure storm | Pass | `bridge_fail_needles: none` |
 
 ## OS matrix summary
 
 | OS | Status | Date | Notes |
 |---|---|---|---|
-| Windows 10 x64 | mandatory | | |
+| Windows 10 x64 | Pass | 2026-08-09 | Boot Camp lab; loopback harness |
 | Windows 11 x64 | when hardware available | | |
 
 ## Failure notes template (English)
@@ -157,6 +157,6 @@ All of the following:
 4. Notes/CC spot-check still Pass on the same ports.
 5. Failures identify Virtual Port / cable in English diagnostics.
 
-**Overall story 2.2 hardware smoke:** Pass / Fail  
-**Signed off by:**  
-**Date:**
+**Overall story 2.2 hardware smoke:** Pass  
+**Signed off by:** Guillaume (Python harness accepted 2026-08-09; real-DAW UAT later)  
+**Date:** 2026-08-09

@@ -77,10 +77,14 @@ public:
     uint8_t CurrentOutCable() const noexcept { return currentOutCable_; }
     void RestoreOutCable(uint8_t cableIndex) noexcept { currentOutCable_ = cableIndex; }
 
+    // IN demux sticky cable (updated by IN F5, or by OUT encode to a matching IN cable).
+    uint8_t CurrentInCable() const noexcept { return currentInCable_; }
+
 private:
     bool appendPortSwitch(uint8_t cableIndex, EncodeBuffer& buffer, std::string& errorOut);
     bool appendMidiBytes(const EncodeRequest& request, EncodeBuffer& buffer, std::string& errorOut);
     void appendTrailingPad(EncodeBuffer& buffer) noexcept;
+    void hintInCableFromOut(uint8_t outCableIndex) noexcept;
     bool consumePendingPortSwitch(const uint8_t*& cursor, std::size_t& remaining) noexcept;
     bool demuxUntilPortSwitch(
         const uint8_t*& cursor,

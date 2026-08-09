@@ -78,5 +78,7 @@ bool isMatrixDumpRequest(const uint8_t* midiBytes, std::size_t byteCount) noexce
 
 // Size-reject rewrite attempts after a short Matrix dump under expect.
 // Arm with this value: original request + up to this many re-requests.
-// Lab: dual N×32 URB loss can exhaust a single rewrite; two recover the day gate.
-inline constexpr unsigned kMatrixDumpSizeRejectRetries = 2;
+// Soak Palier A: three consecutive N×32 shorts exhausted budget 2 (cycles 208/209).
+// Budget 4 covers that triple-short storm plus one spare; ring deepen remains the
+// primary URB-loss lever (retries only recover residual shorts).
+inline constexpr unsigned kMatrixDumpSizeRejectRetries = 4;

@@ -201,3 +201,21 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-mid-burst-bank-timeout-matrix.md`
   summary: abandonIdlePartialSysexHoldUnlocked can feed non-reply hold sizes into rejectShortMatrixDumpAndRetry under expect.
   evidence: Pre-existing path; larger rewrite budget could burn dump re-requests on stuck non-dump holds.
+
+## Deferred from: story 2-2 MTC lab closeout (2026-08-09)
+
+- source_spec: `_bmad-output/implementation-artifacts/2-2-mtc-quarter-frame-and-full-frame.md`
+  summary: Author a dedicated real-DAW / Scarlett UAT guide covering MTC (and broader Bridge features) when home lab gear is available; Python DIN-loopback harness is the 2.2 closeout proof only.
+  evidence: 2026-08-09 decision — Scarlett unavailable on the road; `mtc-loopback-lab.py` Pass on Out2→In2 after demux fix.
+- source_spec: `_bmad-output/implementation-artifacts/2-2-mtc-quarter-frame-and-full-frame.md`
+  summary: OUT-hinted IN sticky (`hintInCableFromOut`) can mis-attribute unlabeled IN traffic if the host is sending on Out N while independent DIN traffic arrives on another In without an Emagic `F5` tag.
+  evidence: Stress 2026-08-09 `midi-concurrent-in-stress.py` ~2.2 min / 220 rounds — Matrix dumps 220/220 on In1 and 0 on In2 (good); Out2 notes mostly on In2 (1759) but **1× note72 on In1** (`cross_note72_on_in1=1`) → overall_pass=false. Log `tests/lab-logs/midi-concurrent-in/concurrent-in-20260809T214726Z.log`. V1 must harden before public release.
+
+## Deferred from: quick-dev spec-windows-bridge-post-midburst-soak.md (2026-08-09)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-windows-bridge-post-midburst-soak.md`
+  summary: Mid-SysEx bulk-IN URB loss root is still not eliminated; ring 48 + retries 4 recover soak triple-short storms without proving which lever alone closed the hole.
+  evidence: Palier A overnight-20260809T165115Z cycles 208 bank / 209 mid — TIMEOUT last=none after size-reject exhaust at budget 2; day-gate re-green after combo deepen.
+- source_spec: `_bmad-output/implementation-artifacts/spec-windows-bridge-post-midburst-soak.md`
+  summary: Larger size-reject rewrite budget can stretch the 3500 ms expect window across several rewrite OUTs during a short storm (mutex / completion pressure).
+  evidence: Code-review of post-soak constant bump; nested rewrite guard still drops shorts without consuming budget.

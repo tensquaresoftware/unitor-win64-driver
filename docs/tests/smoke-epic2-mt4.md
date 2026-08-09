@@ -71,7 +71,7 @@ Les checklists techniques anglaises par story (agents / matrice de validation) s
 | Partie 1 `--test-mapper` | |
 | Partie 2 session + ports | |
 | Partie 3 horloge / transport | |
-| Partie 4 MTC | |
+| Partie 4 MTC | ✅ harness 2026-08-09 (`mtc-loopback-lab.py` Out2→In2 + demux fix) |
 | Partie 5 SysEx pipe | ✅ (MIDI-OX ; BSOD MidiView archivé) |
 | Partie 6 Matrix-Control | |
 | Partie 7 longévité ~4 h | fait / reporté / N/A |
@@ -432,7 +432,10 @@ Même session Bridge ; pas de redémarrage pour « récupérer » le MTC ; conso
 
 ### 4.5 Remarques libres 📌
 
-Je te laisse inspecter les logs MIDI (`tests/lab-logs/smoke-epic2/mtc-4.2.txt` et `mtc-4.3.txt`).
+**Clôture 2026-08-09 (sans Scarlett) :** script `scripts/lab/mtc-loopback-lab.py --with-bridge`.
+Topo réelle : câble rouge **Out 2 → In 2**. Un premier essai « voyait » In 1 à cause d’un bug demux Emagic (écho sans `F5` collé sur câble 0) — corrigé via `hintInCableFromOut` dans `EmagicCableMapper`.
+Résultat sur In 2 : `qf=72/72` + `full_frame=1` — log `tests/lab-logs/mtc-loopback/mtc-loopback-20260809T213749Z.log`.
+UAT Ableton/Scarlett reporté à un futur guide UAT dédié.
 
 ---
 

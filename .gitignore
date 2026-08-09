@@ -52,6 +52,8 @@ tests/lab-logs/overnight-macos-smoke/
 tests/lab-logs/sysex-matrix-mid/
 tests/lab-logs/sysex-matrix-bank/
 tests/lab-logs/sysex-long-loopback/
+tests/lab-logs/mtc-loopback/
+tests/lab-logs/midi-concurrent-in/
 
 # Local review scratch (not product docs)
 _edge_diff.txt

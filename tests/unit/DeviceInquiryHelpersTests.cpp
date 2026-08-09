@@ -112,7 +112,8 @@ TEST_CASE("Matrix dump reply matcher accepts patch and master prefixes", "[inqui
     REQUIRE_FALSE(isMatrixDumpReply(nullptr, 5));
 }
 
-TEST_CASE("Matrix dump size-reject retry budget is at least two", "[inquiry][matrix-dump]")
+TEST_CASE("Matrix dump size-reject retry budget covers soak triple-short", "[inquiry][matrix-dump]")
 {
-    REQUIRE(kMatrixDumpSizeRejectRetries >= 2);
+    // Palier A: three shorts in one dump expect need >= 3 rewrites; ship 4 (+1 spare).
+    REQUIRE(kMatrixDumpSizeRejectRetries >= 4);
 }

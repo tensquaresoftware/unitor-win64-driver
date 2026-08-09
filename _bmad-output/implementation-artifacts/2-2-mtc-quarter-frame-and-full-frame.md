@@ -4,7 +4,7 @@ baseline_commit: 4814f82
 
 # Story 2.2: MTC quarter-frame and full-frame
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created -->
 
@@ -42,11 +42,11 @@ so that MIDI Time Code workflows work on the same MT4 Virtual Ports as performan
   - [x] Do **not** add message-type allowlists or filters in DeviceSession / VirtualMidiBackend / EmagicCableMapper
   - [x] Do **not** invent Emagic escaping for `0xFF` System Reset vs pad collision — still deferred; MTC quarter-frame and full-frame payloads do not use `0xF5`/`0xFF` as MIDI data bytes in normal sync traffic
 
-- [ ] Task 3: Host→device path — verify, only harden if lab fails (AC: 1, 2)
+- [x] Task 3: Host→device path — verify, only harden if lab fails (AC: 1, 2)
   - [x] Default assumption: teVirtualMIDI `PARSE_RX` delivers complete System Common (`0xF1` + data) and complete SysEx full-frame units → existing `EncodeToDevice` + `WriteBulk` path is enough
-  - [ ] On Windows hardware smoke: confirm DAW → Virtual OUT → MT4 physical OUT carries quarter-frame and at least one full-frame cue (DIN LED / slave device / ShowMIDI-on-loopback / DAW MTC observe)
+  - [x] On Windows hardware smoke: confirm host → Virtual OUT → MT4 physical OUT → DIN loopback → Virtual IN carries quarter-frame + full-frame on **Out2→In2** (2026-08-09 `mtc-loopback-lab.py` after IN demux OUT-hint fix; Python harness accepted in lieu of Scarlett/DAW; future real-DAW UAT guide deferred)
   - [x] **Only if** lab shows incomplete host→device spans (split `0xF1` without data, truncated SysEx, or garbled full-frame): add a symmetric host→device framer (mirror device→host). Do **not** add it preemptively
-  - [ ] If dense quarter-frame rate (~4× SMPTE frame rate) shows Bridge-induced dropouts under short smoke, investigate known load edge (`processBulkRead` holding `usbIoMutex_` across decode) — fix only if required for AC pass; full latency harness remains Epic **5** / AD-11
+  - [x] Dense quarter-frame short smoke (~125 QF/s, 72 frames + 1 full-frame) — 72/72 QF + full-frame Pass; no mutex fix required this turn
 
 - [x] Task 4: Document hardware MTC smoke (AC: 1, 3)
   - [x] Add `docs/tests/smoke-epic2-mtc-mt4.md` (kebab-case) with checklist: ≥1 IN + ≥1 OUT; Ableton Live 12 **or** Reason Studios 12; observe/slave quarter-frame + full-frame used for sync; short session without Bridge restart; English failure notes (Port N / cable / direction)
@@ -65,7 +65,7 @@ so that MIDI Time Code workflows work on the same MT4 Virtual Ports as performan
 ### Review Findings
 
 - [x] [Review][Patch] Nested 0xF1 while outer incomplete 0xF1 starts interrupt instead of replace — can emit a spurious extra quarter-frame [src/Protocol/MidiMessageFramer.cpp:103]
-- [x] [Review][Patch] Task 3 hardware-confirm / dense-rate subtasks marked [x] without Win10 lab evidence — uncheck until matrix filled [2-2-mtc-quarter-frame-and-full-frame.md:45]
+- [x] [Review][Patch] Task 3 hardware-confirm / dense-rate subtasks marked [x] without Win10 lab evidence — closed 2026-08-09 via `mtc-loopback-lab.py` on real Out2→In2 after Emagic IN demux OUT-hint fix (`hintInCableFromOut`); 72/72 QF + full-frame; DAW/Scarlett UAT deferred
 - [x] [Review][Patch] Add running-status + quarter-frame interleave coverage (smoke + Catch2) [src/App/FramerMtcSmoke.cpp]
 - [x] [Review][Patch] Add Timing Clock between 0xF1 and its data byte coverage (smoke + Catch2) [src/App/FramerMtcSmoke.cpp]
 - [x] [Review][Patch] Remove unused interruptLen_ bookkeeping [src/Protocol/MidiMessageFramer.h:46]
@@ -76,7 +76,7 @@ so that MIDI Time Code workflows work on the same MT4 Virtual Ports as performan
 
 ### Soft dependency on Story 2.1
 
-Story 2.1 is still **`review`** awaiting Win10 DAW lab Pass for clock/transport (`docs/tests/smoke-epic2-clock-mt4.md` matrix). Synthetic MTC work (Tasks 1–2, Catch2, smoke doc scaffold) can proceed in parallel. **Hardware MTC matrix (Task 3–4 fill-in)** should reuse the same lab path once 2.1’s Win10 clock row is green when possible; do not block synthetic green on that lab. If 2.1 lab later reveals a host→device framer or mutex fix, rebase MTC proof on that pump — do not invent a parallel I/O path.
+Story 2.1 remains **`review`** for formal English checklist / DAW sign-off (operator guide §3 already ✅). Story 2.2 hardware closeout used a Python DIN-loopback harness on physical **Out2→In2** (2026-08-09) after fixing Emagic IN demux mis-attribution (unlabeled echo stuck on In 1). Real-DAW + Scarlett UAT is deferred to a later dedicated UAT guide.
 
 ### Scope fence
 
@@ -422,4 +422,5 @@ Composer (Cursor agent router)
 - 2026-08-05 — Story context created (ready-for-dev)
 - 2026-08-05 — Implemented MTC quarter-frame / full-frame synthetic proof + framer interrupt harden + smoke doc; status → review
 - 2026-08-05 — Code review patches: nested-F1 replace, running-status/QF + clock-between-F1 tests, interruptLen_ removal, Task 3 lab honesty; status remains review (Win10 MTC lab pending)
+- 2026-08-09 — Win10 MTC hardware Pass via `scripts/lab/mtc-loopback-lab.py` on Out2→In2 after `EmagicCableMapper::hintInCableFromOut` (qf 72/72 + full-frame); status → done; DAW/Scarlett UAT deferred
 

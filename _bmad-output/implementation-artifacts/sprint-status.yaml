@@ -51,7 +51,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-05T21:30:00Z"
+last_updated: "2026-08-09T21:35:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -71,7 +71,7 @@ development_status:
   # Epic 2: Studio Transport and SysEx
   epic-2: in-progress
   2-1-midi-clock-and-transport-realtime: review
-  2-2-mtc-quarter-frame-and-full-frame: review
+  2-2-mtc-quarter-frame-and-full-frame: done
   2-3-transparent-sysex-transport-with-burst-buffering: done
   2-4-matrix-control-minimum-sysex-pass-vectors: in-progress
   2-5-session-longevity-design-for-4h-studio-use: done

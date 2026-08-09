@@ -108,6 +108,17 @@ void EmagicCableMapper::appendTrailingPad(EncodeBuffer& buffer) noexcept
     buffer.bytes[buffer.size++] = kEmagicEndOfValidData;
 }
 
+void EmagicCableMapper::hintInCableFromOut(uint8_t outCableIndex) noexcept
+{
+    // MT4 often omits IN `F5 xx` on DIN echo (Out2→In2 was demuxed to In 1).
+    // Align IN sticky with OUT when that index is also a product IN; real IN F5
+    // still overrides later.
+    if (IsProductInCable(outCableIndex))
+    {
+        currentInCable_ = outCableIndex;
+    }
+}
+
 bool EmagicCableMapper::EncodeToDevice(
     const EncodeRequest& request,
     EncodeBuffer& buffer,
@@ -148,6 +159,7 @@ bool EmagicCableMapper::EncodeToDevice(
     }
 
     appendTrailingPad(buffer);
+    hintInCableFromOut(request.cableIndex);
     errorOut.clear();
     return true;
 }
