@@ -4,7 +4,7 @@ project: unitor-win64-driver
 title: Smoke Epic 2 — MT4 (horloge, MTC, SysEx, Matrix-Control, longévité)
 author: Guillaume DUPONT
 created: 2026-08-05
-updated: 2026-08-06
+updated: 2026-08-10
 ---
 
 
@@ -71,10 +71,10 @@ Les checklists techniques anglaises par story (agents / matrice de validation) s
 | Bind | Cas A / Cas B + `--dev-zadig` : |
 | Partie 1 `--test-mapper` | |
 | Partie 2 session + ports | |
-| Partie 3 horloge / transport | |
+| Partie 3 horloge / transport | ✅ harness 2026-08-10 (`midi-clock-loopback-lab.py` Out2→In2 `20260809T221926Z`) ; Scarlett/DAW UAT reporté |
 | Partie 4 MTC | ✅ harness 2026-08-09 (`mtc-loopback-lab.py` Out2→In2 + demux fix) |
 | Partie 5 SysEx pipe | ✅ (MIDI-OX ; BSOD MidiView archivé) |
-| Partie 6 Matrix-Control | |
+| Partie 6 Matrix-Control | ✅ scripts mid/bank day-gate 2026-08-10 ; GUI Matrix-Control UAT reportée |
 | Partie 7 longévité ~4 h | fait / reporté / N/A |
 
 ---
@@ -373,7 +373,15 @@ Sans redémarrer le Bridge : enchaîne 3.1 et 3.2 (ou au moins un sens complet).
 
 ### 3.4 Remarques libres 📌
 
-Voir les logs MIDI (`tests/lab-logs/smoke-epic2/mtc-3.1.txt` et `mtc-3.2.txt`) pour la sync dans les deux sens.
+Voir les logs MIDI (`tests/lab-logs/smoke-epic2/mtc-3.1.txt` et `mtc-3.2.txt`) pour la sync Scarlett dans les deux sens.
+
+**Clôture story 2.1 (2026-08-10, PC seul)** — même barème que le MTC : harness Python DIN loopback Out2→In2, sans Scarlett / Ableton. Les ✅ Scarlett des §3.1–3.3 restent une session labo antérieure ; la preuve de clôture formelle de la story est ce harness (UAT Scarlett/DAW dédié toujours reporté).
+
+```text
+python scripts/lab/midi-clock-loopback-lab.py --with-bridge
+```
+
+Pass stamp : `tests/lab-logs/midi-clock-loopback/midi-clock-loopback-20260809T221926Z.log` — `overall_pass=true` (clock 108/108, Start/Continue/Stop avec stop≥2, pas de fail Bridge). UAT Scarlett/DAW réel reste reporté.
 
 ---
 
@@ -589,7 +597,12 @@ Pour chaque ligne : remplis **Résultat** dès que tu as fini le vecteur (✅ / 
 
 ### 6.5 Remarques libres 📌
 
+**Clôture story 2.4 (2026-08-10, PC seul)** — barème scripts labo (mêmes formes SysEx librarian que Matrix-Control), GUI reportée :
 
+- Mid day-gate : `sysex-matrix-mid-20260809T220849Z` — 5 Starts × 10 @ 100%, `overall_pass=true`
+- Bank day-gate : `sysex-matrix-bank-20260809T221054Z` — 20 Starts × 100 @ 100%, `overall_pass=true`
+
+Topo : Matrix-1000 sur DIN Out1↔In1 ; Bridge `builds\debug\Debug\Bridge.exe`. Les lignes GUI §6.2 restent à remplir lors d’un UAT Matrix-Control dédié (ne pas les marquer ✅ sans GUI).
 
 ---
 
