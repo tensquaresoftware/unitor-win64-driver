@@ -97,7 +97,7 @@ Treat these as **observe during the sample**. Any hit under normal pacing is a *
 | Matrix-Control locked minimum vectors | **2.4** (`smoke-epic2-matrix-control-mt4.md`) |
 | ~4 h longevity design / soak sample (this checklist) | **2.5** (this doc) |
 | Auto-Start without daily Administrator | Epic **3.1** |
-| Hot-plug recovery without reboot | Epic **3.2** |
+| Hot-plug recovery without reboot | Epic **3.2** ([`docs/tests/smoke-epic3-hotplug-mt4.md`](../smoke-epic3-hotplug-mt4.md)) |
 | Multi-client DAW + ShowMIDI policy | Epic **3.3** |
 | MIDI Path latency/jitter / Studio-Done numbers | Epic **5** / OQ-2 |
 | Linking Matrix-Control into the Bridge | Forbidden — CAP-8 |

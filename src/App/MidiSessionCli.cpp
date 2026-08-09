@@ -3,7 +3,7 @@
 #include "App/MidiSessionCli.h"
 
 #include "App/AutoStartRegistration.h"
-#include "App/Mt4WinUsbPresence.h"
+#include "App/Mt4PresenceWait.h"
 #include "Device/DeviceSession.h"
 #include "Device/DeviceSessionManager.h"
 #include "Midi/VirtualMidiBackend.h"
@@ -27,6 +27,21 @@
 namespace
 {
 std::atomic<bool> g_cancelRequested{false};
+
+enum class MidiSessionWaitResult
+{
+    Cancelled,
+    Disconnected
+};
+
+struct Mt4SessionStartArgs
+{
+    DeviceSession* session = nullptr;
+    VirtualMidiBackend* midiBackend = nullptr;
+    const DeviceProfile* profile = nullptr;
+    const PortNameSet* names = nullptr;
+    bool allowZadigFallback = false;
+};
 
 #ifdef _WIN32
 BOOL WINAPI onConsoleCtrl(DWORD controlType)
@@ -133,22 +148,19 @@ bool shouldPrintDeviceHostCounters(
 bool pollMidiSessionOnce(
     DeviceSession& session,
     DeviceHostCounterSnapshot& lastCounters,
-    std::chrono::steady_clock::time_point& lastHeartbeat,
-    int& exitCode)
+    std::chrono::steady_clock::time_point& lastHeartbeat)
 {
     std::string pumpError;
     if (session.TakePumpFailure(pumpError))
     {
         printDeviceHostCounters(session.CopyDeviceHostCounters());
         std::cerr << "MIDI I/O pump failed: " << pumpError << '\n';
-        exitCode = 1;
         return false;
     }
     if (!session.IsRunning())
     {
         printDeviceHostCounters(session.CopyDeviceHostCounters());
         std::cerr << "MIDI I/O session ended unexpectedly\n";
-        exitCode = 1;
         return false;
     }
 
@@ -169,18 +181,17 @@ bool pollMidiSessionOnce(
     return true;
 }
 
-int waitForMidiSessionCancel(DeviceSession& session)
+MidiSessionWaitResult waitForMidiSessionCancel(DeviceSession& session)
 {
     DeviceHostCounterSnapshot lastCounters = {};
     auto lastHeartbeat = std::chrono::steady_clock::now();
-    int exitCode = 0;
     while (!g_cancelRequested.load())
     {
-        if (!pollMidiSessionOnce(session, lastCounters, lastHeartbeat, exitCode))
+        if (!pollMidiSessionOnce(session, lastCounters, lastHeartbeat))
         {
             session.Stop();
             std::cout << "MIDI I/O stopped\n";
-            return exitCode;
+            return MidiSessionWaitResult::Disconnected;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
@@ -188,98 +199,7 @@ int waitForMidiSessionCancel(DeviceSession& session)
     printDeviceHostCounters(session.CopyDeviceHostCounters());
     session.Stop();
     std::cout << "MIDI I/O stopped\n";
-    return 0;
-}
-} // namespace
-
-void printSessionStartedBanner()
-{
-    std::cout << "DeviceSession started for MT4 with Virtual Ports\n";
-    std::cout << "MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)\n";
-    std::cout << "device-host counters will print in this window on USB IN activity"
-                 " (same thread as this message)\n";
-    std::cout << "Device Inquiry lab: watch inquiry_out vs identity_reply_in"
-                 " (expect them to stay close)\n";
-}
-
-namespace
-{
-void printAutoSessionWaitBanner(const std::string& presenceError)
-{
-    std::cout << "MT4 not present yet (" << presenceError << "); waiting up to "
-              << kAutoSessionWaitTimeoutSeconds
-              << "s (poll every " << (kAutoSessionPollIntervalMs / 1000)
-              << "s). Plug the MT4 or press Ctrl+C to abort.\n";
-}
-
-void printAutoSessionWaitProgress(
-    std::chrono::steady_clock::time_point deadline,
-    std::chrono::steady_clock::time_point now)
-{
-    const auto remaining =
-        std::chrono::duration_cast<std::chrono::seconds>(deadline - now).count();
-    std::cout << "Still waiting for MT4 (" << remaining << "s remaining)...\n";
-}
-
-bool pollUntilMt4Present(std::chrono::steady_clock::time_point deadline)
-{
-    std::string presenceDetail;
-    auto lastProgress = std::chrono::steady_clock::now();
-    while (!g_cancelRequested.load())
-    {
-        const Mt4WinUsbPresence presence = queryMt4WinUsbPresence(presenceDetail);
-        if (presence == Mt4WinUsbPresence::Present)
-        {
-            std::cout << "MT4 WinUSB interface appeared; starting session\n";
-            return true;
-        }
-        if (presence == Mt4WinUsbPresence::Error)
-        {
-            std::cerr << "Auto-session presence check failed: " << presenceDetail
-                      << '\n';
-            return false;
-        }
-        const auto now = std::chrono::steady_clock::now();
-        if (now >= deadline)
-        {
-            std::cerr << "Auto-session timed out after "
-                      << kAutoSessionWaitTimeoutSeconds
-                      << "s waiting for WinUSB GUID "
-                      << "{aa209017-cf8a-49ad-a0e7-701187ff7e05}. "
-                      << "Last check: " << presenceDetail << '\n';
-            return false;
-        }
-        if (now - lastProgress
-            >= std::chrono::seconds(kAutoSessionProgressIntervalSeconds))
-        {
-            printAutoSessionWaitProgress(deadline, now);
-            lastProgress = now;
-        }
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(kAutoSessionPollIntervalMs));
-    }
-    std::cerr << "Auto-session wait cancelled before MT4 appeared\n";
-    return false;
-}
-
-bool waitForMt4WinUsbOrTimeout()
-{
-    std::string presenceDetail;
-    const Mt4WinUsbPresence presence = queryMt4WinUsbPresence(presenceDetail);
-    if (presence == Mt4WinUsbPresence::Present)
-    {
-        std::cout << "MT4 WinUSB interface present; starting session\n";
-        return true;
-    }
-    if (presence == Mt4WinUsbPresence::Error)
-    {
-        std::cerr << "Auto-session presence check failed: " << presenceDetail << '\n';
-        return false;
-    }
-    printAutoSessionWaitBanner(presenceDetail);
-    const auto deadline = std::chrono::steady_clock::now()
-        + std::chrono::seconds(kAutoSessionWaitTimeoutSeconds);
-    return pollUntilMt4Present(deadline);
+    return MidiSessionWaitResult::Cancelled;
 }
 
 bool armMidiSessionCancel(bool preserveCancel)
@@ -301,27 +221,141 @@ bool armMidiSessionCancel(bool preserveCancel)
     g_cancelRequested.store(false);
     return true;
 }
+
+void printSessionStartedBanner()
+{
+    std::cout << "DeviceSession started for MT4 with Virtual Ports\n";
+    std::cout << "MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)\n";
+    std::cout << "device-host counters will print in this window on USB IN activity"
+                 " (same thread as this message)\n";
+    std::cout << "Device Inquiry lab: watch inquiry_out vs identity_reply_in"
+                 " (expect them to stay close)\n";
+}
+
+bool startMt4DeviceSession(const Mt4SessionStartArgs& args, std::string& errorOut)
+{
+    if (args.session == nullptr || args.midiBackend == nullptr || args.profile == nullptr
+        || args.names == nullptr)
+    {
+        errorOut = "DeviceSession start requires session, backend, profile, and names";
+        return false;
+    }
+    DeviceSessionStartRequest request;
+    request.profile = args.profile;
+    request.midiBackend = args.midiBackend;
+    request.portNames = args.names;
+    request.openOptions.allowZadigFallback = args.allowZadigFallback;
+    if (!args.session->Start(request, errorOut) || !args.session->IsRunning())
+    {
+        if (errorOut.empty())
+        {
+            errorOut = "unknown error";
+        }
+        return false;
+    }
+    return true;
+}
+
+Mt4PresenceWaitConfig makeAutoSessionWaitConfig()
+{
+    Mt4PresenceWaitConfig config;
+    config.contextLabel = "Auto-session";
+    config.timeoutSeconds = kAutoSessionWaitTimeoutSeconds;
+    config.pollIntervalMs = kAutoSessionPollIntervalMs;
+    config.progressIntervalSeconds = kAutoSessionProgressIntervalSeconds;
+    return config;
+}
+
+Mt4PresenceWaitConfig makeHotPlugReplugWaitConfig()
+{
+    Mt4PresenceWaitConfig config;
+    config.contextLabel = "Hot-plug recovery";
+    config.timeoutSeconds = kHotPlugReplugWaitTimeoutSeconds;
+    config.pollIntervalMs = kHotPlugReplugPollIntervalMs;
+    config.progressIntervalSeconds = kHotPlugReplugProgressIntervalSeconds;
+    return config;
+}
+
+// Product host: Stop already destroyed ports; wait for GUID; Start again.
+int runAutoSessionHotPlugLoop(const Mt4SessionStartArgs& startArgs)
+{
+    bool firstStart = true;
+    while (!g_cancelRequested.load())
+    {
+        std::string error;
+        if (!startMt4DeviceSession(startArgs, error))
+        {
+            std::cerr << "DeviceSession start failed: " << error << '\n';
+            return 1;
+        }
+
+        if (!firstStart)
+        {
+            std::cout << "Hot-plug recovery: new DeviceSession started "
+                         "(AD-6 names unchanged for single unit)\n";
+        }
+        printSessionStartedBanner();
+        firstStart = false;
+
+        if (waitForMidiSessionCancel(*startArgs.session)
+            == MidiSessionWaitResult::Cancelled)
+        {
+            return 0;
+        }
+
+        std::cout << "MT4 disconnected; waiting for replug...\n";
+        if (!waitForMt4WinUsbOrTimeout(makeHotPlugReplugWaitConfig(), g_cancelRequested))
+        {
+            return 1;
+        }
+        if (g_cancelRequested.load())
+        {
+            std::cerr << "Hot-plug recovery cancelled before DeviceSession restart\n";
+            return 1;
+        }
+        std::cout << "MT4 replugged; starting new DeviceSession...\n";
+    }
+    return 0;
+}
+
+bool prepareMt4PortNames(PortNameSet& namesOut, const DeviceProfile*& profileOut)
+{
+    profileOut = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
+    if (profileOut == nullptr)
+    {
+        std::cerr << "MT4 DeviceProfile not found\n";
+        return false;
+    }
+    DeviceSessionManager manager;
+    std::string error;
+    if (!manager.buildPortNameSet(*profileOut, namesOut, error))
+    {
+        std::cerr << "Port name build failed: " << error << '\n';
+        return false;
+    }
+    printExpectedPortDiagnostics(namesOut);
+    return true;
+}
+
+void printAutoSessionHostBanner()
+{
+    std::cout << "Auto-session host (user-session Bridge; not a Windows Service)\n";
+    std::cout << "Prefer clean exit with Ctrl+C so Virtual Ports tear down "
+                 "(closing the console window may leave orphan ports).\n";
+    std::cout << "Hot-plug: mid-session unplug tears down ports; Bridge waits for "
+                 "replug and starts a new DeviceSession (no Windows reboot). "
+                 "Hosts may need a MIDI rescan; supervised Bridge restart is allowed.\n";
+}
 } // namespace
 
 int runMt4MidiSession(bool allowZadigFallback, bool preserveCancel)
 {
-    const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
-    if (mt4 == nullptr)
-    {
-        std::cerr << "MT4 DeviceProfile not found\n";
-        return 1;
-    }
-
-    DeviceSessionManager manager;
     PortNameSet names;
-    std::string error;
-    if (!manager.buildPortNameSet(*mt4, names, error))
+    const DeviceProfile* mt4 = nullptr;
+    if (!prepareMt4PortNames(names, mt4))
     {
-        std::cerr << "Port name build failed: " << error << '\n';
         return 1;
     }
-
-    printExpectedPortDiagnostics(names);
     if (!armMidiSessionCancel(preserveCancel))
     {
         return 1;
@@ -329,28 +363,24 @@ int runMt4MidiSession(bool allowZadigFallback, bool preserveCancel)
 
     VirtualMidiBackend midiBackend;
     DeviceSession session;
-    DeviceSessionStartRequest request;
-    request.profile = mt4;
-    request.midiBackend = &midiBackend;
-    request.portNames = &names;
-    request.openOptions.allowZadigFallback = allowZadigFallback;
-    if (!session.Start(request, error) || !session.IsRunning())
+    std::string error;
+    const Mt4SessionStartArgs startArgs{
+        &session, &midiBackend, mt4, &names, allowZadigFallback};
+    if (!startMt4DeviceSession(startArgs, error))
     {
-        std::cerr << "DeviceSession start failed: "
-                  << (error.empty() ? "unknown error" : error) << '\n';
+        std::cerr << "DeviceSession start failed: " << error << '\n';
         return 1;
     }
 
     printSessionStartedBanner();
-    return waitForMidiSessionCancel(session);
+    // Lab one-shot: exit on USB loss so spawners that expect process exit keep working.
+    const MidiSessionWaitResult waitResult = waitForMidiSessionCancel(session);
+    return waitResult == MidiSessionWaitResult::Cancelled ? 0 : 1;
 }
 
 int runMt4AutoSession()
 {
-    std::cout << "Auto-session host (user-session Bridge; not a Windows Service)\n";
-    std::cout << "Prefer clean exit with Ctrl+C so Virtual Ports tear down "
-                 "(closing the console window may leave orphan ports).\n";
-
+    printAutoSessionHostBanner();
     if (!installCancelHandler())
     {
         std::cerr << "Failed to install Ctrl+C handler for auto-session\n";
@@ -358,7 +388,7 @@ int runMt4AutoSession()
     }
     g_cancelRequested.store(false);
 
-    if (!waitForMt4WinUsbOrTimeout())
+    if (!waitForMt4WinUsbOrTimeout(makeAutoSessionWaitConfig(), g_cancelRequested))
     {
         return 1;
     }
@@ -368,6 +398,15 @@ int runMt4AutoSession()
         return 1;
     }
 
-    // Product Auto-Start: GUID path only (no --dev-zadig).
-    return runMt4MidiSession(false, true);
+    PortNameSet names;
+    const DeviceProfile* mt4 = nullptr;
+    if (!prepareMt4PortNames(names, mt4) || !armMidiSessionCancel(true))
+    {
+        return 1;
+    }
+
+    VirtualMidiBackend midiBackend;
+    DeviceSession session;
+    const Mt4SessionStartArgs startArgs{&session, &midiBackend, mt4, &names, false};
+    return runAutoSessionHotPlugLoop(startArgs);
 }

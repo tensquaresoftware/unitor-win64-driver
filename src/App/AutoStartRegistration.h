@@ -16,6 +16,12 @@ inline constexpr int kAutoSessionWaitTimeoutSeconds = 900;
 inline constexpr int kAutoSessionPollIntervalMs = 2000;
 inline constexpr int kAutoSessionProgressIntervalSeconds = 30;
 
+// Mid-session hot-plug replug wait (Story 3.2) — same bound/cadence as first-availability.
+inline constexpr int kHotPlugReplugWaitTimeoutSeconds = kAutoSessionWaitTimeoutSeconds;
+inline constexpr int kHotPlugReplugPollIntervalMs = kAutoSessionPollIntervalMs;
+inline constexpr int kHotPlugReplugProgressIntervalSeconds =
+    kAutoSessionProgressIntervalSeconds;
+
 // Builds the argument string for the registered Exec action.
 std::string buildAutoStartActionArguments();
 

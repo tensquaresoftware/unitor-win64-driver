@@ -30,6 +30,7 @@ add_executable(Bridge
     src/App/AutoStartRunKey.cpp
     src/App/AutoStartWinUtil.cpp
     src/App/Mt4WinUsbPresence.cpp
+    src/App/Mt4PresenceWait.cpp
     src/App/MapperSmoke.cpp
     src/App/FramerSmoke.cpp
     src/App/FramerMtcSmoke.cpp
@@ -101,6 +102,7 @@ add_executable(BridgeTests
     tests/unit/HostOutboundQueueTests.cpp
     tests/unit/TeVirtualMidiLimitsTests.cpp
     tests/unit/AutoStartContractTests.cpp
+    tests/unit/HotPlugContractTests.cpp
     src/App/AutoStartRegistration.cpp
     src/App/AutoStartTaskScheduler.cpp
     src/App/AutoStartRunKey.cpp

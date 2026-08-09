@@ -412,7 +412,9 @@ bool DeviceSession::Start(const DeviceSessionStartRequest& request, std::string&
 
 void DeviceSession::Stop() noexcept
 {
-    // Join reader before Close so AbortBulkInAsyncRing can finish in-flight IN.
+    // Normative teardown (AD-9), including surprise USB removal: join pump → clear
+    // sink → DestroyPortSet → finish magic (best-effort) → Close. Hosts must not
+    // skip Stop; recovery is a later Start on the same or a new DeviceSession.
     stopPumpAndJoin();
     resetInFramers();
 
@@ -437,6 +439,7 @@ void DeviceSession::Stop() noexcept
     clearExpectInBurst();
 
     // DestroyPortSet outside usbIoMutex_: teVirtualMIDI may wait for OUT callbacks.
+    // Must run even after abrupt USB loss so ports are not orphaned on the happy path.
     destroyPortsBestEffort();
 
     {
@@ -445,6 +448,7 @@ void DeviceSession::Stop() noexcept
         {
             sendFinishMagicBestEffort();
         }
+        // CloseHandle / WinUsb_Free remain safe when the device was surprise-removed.
         transport_.Close();
         mapper_.reset();
         midiBackend_ = nullptr;

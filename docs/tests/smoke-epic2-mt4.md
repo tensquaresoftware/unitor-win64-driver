@@ -51,7 +51,8 @@ Les checklists techniques anglaises par story (agents / matrice de validation) s
 **Hors scope** (ne pas les exiger ce labo)
 
 - Latence / jitter « Studio-Done » → Epic 5.
-- Hot-plug, multi-client DAW → Epic 3 (stories 3.2+).
+- Hot-plug sans reboot → [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md) (story 3.2).
+- Multi-client DAW → Epic 3 (story 3.3+).
 - Auto-Start sans admin → [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md) (story 3.1).
 - Installateur public → Epic 4.
 - Relier Matrix-Control **dans** le Bridge (interdit) — Matrix-Control reste une appli externe.

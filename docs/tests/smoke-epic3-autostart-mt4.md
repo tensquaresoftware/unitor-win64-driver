@@ -11,7 +11,7 @@ updated: 2026-08-10
 
 Operator-facing Pass/Fail guide for **Story 3.1**: Bridge Auto-Start on a **user Windows session** so Virtual Ports appear after logon and/or first USB arrival without a manual Bridge launch and without daily Administrator elevation.
 
-**Honesty bar:** blank lab rows ≠ Pass. This guide closes the **Auto-Start runtime** portion of SM-5 / FR-3 / CAP-3. Full install+docs packaging remains Epic **4**. Mid-session unplug/replug recovery is Story **3.2** — out of scope here.
+**Honesty bar:** blank lab rows ≠ Pass. This guide closes the **Auto-Start runtime** portion of SM-5 / FR-3 / CAP-3. Full install+docs packaging remains Epic **4**. Mid-session unplug/replug recovery is Story **3.2** — see [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md).
 
 ## V1 Auto-Start contract
 
@@ -87,10 +87,11 @@ builds\debug\Bridge.exe --test-port-names
 ## Out of scope for this smoke
 
 - Claiming full SM-5 (installer + polished user docs) closed
-- Hot-plug recovery after ports were already live → **3.2**
+- Hot-plug recovery after ports were already live → **3.2** ([`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md))
 - Public Installer MSI wiring → **4.1**
 
 ## Related docs
 
+- Hot-plug recovery (3.2): [`docs/tests/smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
 - WinUSB bind (one-time admin): [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md)
 - Epic 2 transport smoke: [`docs/tests/smoke-epic2-mt4.md`](smoke-epic2-mt4.md)
