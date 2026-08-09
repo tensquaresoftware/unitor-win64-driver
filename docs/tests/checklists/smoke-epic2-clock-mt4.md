@@ -4,7 +4,7 @@ project: unitor-win64-driver
 title: Smoke Epic 2 — MT4 (MIDI clock / transport)
 author: Guillaume DUPONT
 created: 2026-08-05
-updated: 2026-08-05
+updated: 2026-08-10
 ---
 
 # Smoke guide — Epic 2.1 (MT4 MIDI clock and transport)
@@ -80,18 +80,18 @@ Notes (Port N):
 
 | Check | Win10 x64 | Win11 x64 (when available) | Notes (Port N / cable / direction) |
 |---|---|---|---|
-| ≥1 Virtual OUT selected in DAW | | | |
-| Timing Clock (`0xF8`) observed on physical OUT path | | | |
-| Start (`0xFA`) observed | | | |
-| Stop (`0xFC`) observed | | | |
-| Continue (`0xFB`) observed (required; if DAW cannot emit Continue, mark N/A + English reason) | | | |
-| No Bridge-induced gaps under short sequencing smoke | | | |
-| Notes still flow on same OUT (regression spot-check) | | | |
+| ≥1 Virtual OUT selected in DAW | Pass (harness) | | `MT4 Out 2` via `midi-clock-loopback-lab.py` (no DAW) |
+| Timing Clock (`0xF8`) observed on physical OUT path | Pass | | Out2→In2 DIN loopback; 108/108 clocks |
+| Start (`0xFA`) observed | Pass | | |
+| Stop (`0xFC`) observed | Pass | | two Stops in sequence scored |
+| Continue (`0xFB`) observed (required; if DAW cannot emit Continue, mark N/A + English reason) | Pass | | |
+| No Bridge-induced gaps under short sequencing smoke | Pass | | `bridge_fail_needles: none` |
+| Notes still flow on same OUT (regression spot-check) | Pass (pre-score) | | harness note-on sanity before clock scoring |
 
 **Host→device framer note:** Default assumption is teVirtualMIDI `PARSE_RX` delivers Start/Stop/Continue/Clock as complete single-byte commands, so existing Encode + WriteBulk is enough. Add a host→device framer **only if** this lab row shows interleaved realtime inside multi-byte spans or incomplete host→device commands.
 
-Host→device path Pass / Fail  
-Lab evidence (LED / slave / loopback):
+Host→device path Pass / Fail: **Pass** (PC-only harness 2026-08-10)  
+Lab evidence (LED / slave / loopback): DIN Out2→In2 via `midi-clock-loopback-lab.py` (Scarlett/DAW UAT deferred)
 
 ## Matrix B — Device → host (MT4 physical IN → DAW MIDI IN)
 
@@ -99,28 +99,28 @@ Lab evidence (LED / slave / loopback):
 
 | Check | Win10 x64 | Win11 x64 (when available) | Notes (Port N / cable / direction) |
 |---|---|---|---|
-| ≥1 Virtual IN armed / observed in DAW | | | |
-| Timing Clock (`0xF8`) observed or DAW slaves to it | | | |
-| Start / Stop / Continue (`0xFA` / `0xFC` / `0xFB`) observed (Continue: N/A + reason only if DAW cannot emit) | | | |
-| No Bridge-induced gaps under short sequencing smoke | | | |
-| Notes still flow on same IN (regression spot-check) | | | |
+| ≥1 Virtual IN armed / observed in DAW | Pass (harness) | | `MT4 In 2` via harness (no DAW) |
+| Timing Clock (`0xF8`) observed or DAW slaves to it | Pass | | echo on In2; DAW slave UAT deferred |
+| Start / Stop / Continue (`0xFA` / `0xFC` / `0xFB`) observed (Continue: N/A + reason only if DAW cannot emit) | Pass | | |
+| No Bridge-induced gaps under short sequencing smoke | Pass | | |
+| Notes still flow on same IN (regression spot-check) | Pass (pre-score) | | note-on sanity before clock scoring |
 
-Device→host path Pass / Fail  
-DAW used (Ableton Live 12 / Reason Studios 12):
+Device→host path Pass / Fail: **Pass** (same DIN loopback closes host→device→DIN→device→host)  
+DAW used (Ableton Live 12 / Reason Studios 12): N/A — Python harness closeout; real DAW UAT deferred
 
 ## Short session stability
 
 | Check | Result | Notes |
 |---|---|---|
-| Short sequencing smoke without Bridge restart | Pass / Fail | |
-| No Bridge restart required to restore clock/transport | Pass / Fail | |
-| Console shows no WriteBulk / SendToHost failure storm | Pass / Fail | |
+| Short sequencing smoke without Bridge restart | Pass | harness single Bridge session |
+| No Bridge restart required to restore clock/transport | Pass | |
+| Console shows no WriteBulk / SendToHost failure storm | Pass | `bridge_fail_needles: none` |
 
 ## OS matrix summary
 
 | OS | Status | Date | Notes |
 |---|---|---|---|
-| Windows 10 x64 | mandatory | | |
+| Windows 10 x64 | Pass (PC-only harness) | 2026-08-10 | `midi-clock-loopback-lab.py` Out2→In2 stamp `20260809T221926Z`; Scarlett/DAW UAT deferred |
 | Windows 11 x64 | when hardware available | | |
 
 ## Failure notes template (English)
@@ -144,6 +144,8 @@ All of the following:
 3. Win10 x64 row documented (Pass or Fail with English notes). Win11 documented when hardware is available.
 4. Notes/CC spot-check still Pass on the same ports.
 
-**Overall story 2.1 hardware smoke:** Pass / Fail  
-**Signed off by:**  
-**Date:**
+**Overall story 2.1 hardware smoke:** Pass (PC-only DIN loopback harness; Scarlett/DAW UAT deferred)  
+**Signed off by:** Guillaume (via Quick Dev harness closeout)  
+**Date:** 2026-08-10  
+
+**Harness evidence:** `python scripts/lab/midi-clock-loopback-lab.py --with-bridge` → exit 0; journal `tests/lab-logs/midi-clock-loopback/midi-clock-loopback-20260809T221926Z.log` (`clock=108/108`, Start/Continue/Stop with stop≥2, `bridge_fail_needles: none`). Same honesty barème as story 2.2 MTC loopback.

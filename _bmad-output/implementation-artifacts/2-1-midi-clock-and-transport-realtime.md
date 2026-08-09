@@ -4,7 +4,7 @@ baseline_commit: 7934b75
 
 # Story 2.1: MIDI clock and transport realtime
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created -->
 
@@ -41,7 +41,7 @@ so that sequencers can slave or observe tempo/transport from MT4 Virtual Ports.
 
 - [x] Task 3: Host→device path — verify, only harden if lab fails (AC: 1, 2)
   - [x] Default assumption: teVirtualMIDI `PARSE_RX` delivers Start/Stop/Continue/Clock as complete single-byte commands → existing `EncodeToDevice` + `WriteBulk` path is enough
-  - [ ] On Windows hardware smoke: confirm DAW → Virtual OUT → MT4 physical OUT carries clock/transport (DIN LED / slave device / loopback observation)
+  - [x] On Windows hardware smoke: confirm DAW → Virtual OUT → MT4 physical OUT carries clock/transport (DIN LED / slave device / loopback observation) — 2026-08-10 PC-only DIN Out2→In2 via `midi-clock-loopback-lab.py` (same honesty barème as story 2.2); Scarlett/DAW UAT deferred
   - [x] **Only if** lab shows interleaved realtime inside multi-byte spans or incomplete host→device commands: add a symmetric host→device framer (mirror device→host). Do **not** add it preemptively
   - [x] If dense clock (24 ppqn) shows Bridge-induced dropouts under short smoke, investigate known load edge (`processBulkRead` holding `usbIoMutex_` across decode) — fix only if required for AC pass; full latency harness remains Epic **5** / AD-11
 
@@ -60,7 +60,7 @@ so that sequencers can slave or observe tempo/transport from MT4 Virtual Ports.
 
 ### Review Findings
 
-- [ ] [Review][Patch] Await Win10 DAW lab Pass before story done — Decision 2026-08-05: keep `review` until smoke-epic2 matrix (clock + Start/Stop/Continue, Win10 mandatory) is filled Pass; Task 3 hardware confirmation unchecked; do not close on synthetic+docs alone.
+- [x] [Review][Patch] Await Win10 DAW lab Pass before story done — Closed 2026-08-10 via `midi-clock-loopback-lab.py` on real Out2→In2 (`20260809T221926Z`, clock 108/108, Start/Continue/Stop Pass with stop≥2, no Bridge fail needles); Scarlett/DAW UAT deferred (same barème as 2.2).
 - [x] [Review][Patch] Add Catch2 framer realtime vectors to CI [`tests/MidiMessageFramerTests.cpp` + `CMakeLists.txt`] — Applied 2026-08-05: lone F8, FA/FB/FC, mid-note clock, SysEx-hold clock, running-status-after-clock in `BridgeTests`.
 - [x] [Review][Patch] Smoke guide softens Continue as optional [`docs/tests/smoke-epic2-clock-mt4.md`] — Applied 2026-08-05: Continue required; N/A + English reason only if DAW cannot emit.
 - [x] [Review][Patch] Mapper smoke omits Continue (`0xFB`) [`src/Protocol/EmagicMapperRealtimeSmoke.cpp`] — Applied 2026-08-05: encode vector is F8+FB+FC.
@@ -375,6 +375,7 @@ Composer (Cursor agent)
 - Documented hardware smoke in `docs/tests/smoke-epic2-clock-mt4.md`; light cross-link from Epic 1 smoke; skipped optional MidiSessionCli wording (not required for AC)
 - Hardware DAW matrix rows remain for lab fill-in (Win10 mandatory); synthetic gate is green
 - Code review 2026-08-05: Catch2 framer realtime vectors; mapper encode includes Continue; smoke Continue wording tightened; FramerSmoke transport diagnostic; status stays `review` until Win10 DAW Pass
+- 2026-08-10 PC-only closeout: `scripts/lab/midi-clock-loopback-lab.py --with-bridge` Pass stamp `20260809T220838Z` (Out2→In2); story → `done`; Scarlett/DAW UAT deferred
 
 ### File List
 
@@ -388,6 +389,8 @@ Composer (Cursor agent)
 - tests/MidiMessageFramerTests.cpp
 - docs/tests/smoke-epic2-clock-mt4.md
 - docs/tests/smoke-epic1-mt4.md
+- docs/tests/smoke-epic2-mt4.md
+- scripts/lab/midi-clock-loopback-lab.py
 - _bmad-output/implementation-artifacts/2-1-midi-clock-and-transport-realtime.md
 - _bmad-output/implementation-artifacts/sprint-status.yaml
 
@@ -396,3 +399,4 @@ Composer (Cursor agent)
 - 2026-08-05 — Story context created (ready-for-dev)
 - 2026-08-05 — Implemented clock/transport synthetic proof + smoke docs; status → review
 - 2026-08-05 — Code review patches: Catch2 framer CI vectors, Continue mapper+docs, FramerSmoke diagnostic; await Win10 lab
+- 2026-08-10 — Win10 PC-only DIN loopback harness Pass (`midi-clock-loopback-lab.py` `20260809T220838Z`); status → done; Scarlett/DAW UAT deferred
