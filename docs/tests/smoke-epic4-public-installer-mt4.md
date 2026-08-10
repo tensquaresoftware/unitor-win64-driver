@@ -11,7 +11,7 @@ updated: 2026-08-10
 
 Operator guide for **Story 4.1**: a short community Public Installer that binds WinUSB, installs the Bridge, wires Auto-Start, and checks VirtualMIDI — so first MIDI the same evening does not feel like a developer toolchain.
 
-**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Do **not** claim full SM-5 closed without Story **4.2** user docs. Do **not** claim SM-6 Authenticode closed (Story **4.4**).
+**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Polished end-user docs now live under [`docs/user/README.md`](../user/README.md); SM-5 still needs that story’s user-docs smoke Pass — [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md). Do **not** claim SM-6 Authenticode closed (Story **4.4**).
 
 ## Product intent
 
@@ -47,7 +47,7 @@ Tobias VirtualMIDI **MSI embed/redistribution** is a **release gate** for a redi
 
 | Topic | Owner |
 |---|---|
-| Polished end-user docs (`docs/user/` first MIDI / SysEx / troubleshooting) | **4.2** |
+| Polished end-user docs (first MIDI / SysEx / troubleshooting) | **4.2** — [`docs/user/README.md`](../user/README.md); close via [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Three-way MIT vs VirtualMIDI vs Windows MIDI Services honesty polish | **4.3** |
 | Authenticode / public catalog signing / SmartScreen honesty | **4.4** |
 | Tobias MSI **embed** redistributable | **OQ-1** release gate only |
@@ -131,7 +131,7 @@ Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installe
 
 ## Out of scope for this smoke
 
-- Claiming SM-5 fully closed (needs **4.2** docs)
+- Claiming SM-5 fully closed (needs [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) Pass on top of this installer matrix)
 - Claiming SM-6 Authenticode closed (**4.4**)
 - Embedding Tobias VirtualMIDI MSI without OQ-1
 - Session-0 Windows Service
@@ -140,6 +140,8 @@ Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installe
 
 ## Related docs
 
+- End-user docs: [`docs/user/README.md`](../user/README.md)
+- User-docs smoke (Story 4.2): [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md)
 - WinUSB bind (contributor / Zadig fallback): [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md)
 - Auto-Start runtime smoke: [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
 - Installer sources: `installer/public-installer.iss`

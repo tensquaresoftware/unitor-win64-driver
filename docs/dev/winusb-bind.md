@@ -1,5 +1,7 @@
 # WinUSB bind path for Emagic MT4 (086A:0003)
 
+**Community readers:** use the Public Installer walkthrough in the user guide ([Installation](../user/unitor-mt4-bridge-user-guide.md#installation)). This page is the **contributor** bind reference.
+
 Primary community path: bind the MT4 composite MIDI interface to Microsoft **WinUSB** with the project DeviceInterfaceGUID using the in-repo INF. **Zadig is contributor fallback only** — not the primary install path.
 
 ## What you get
@@ -139,8 +141,9 @@ One-time INF bind / test-signing may still need Administrator. Daily `--register
 
 ## Public Installer (community path)
 
-Story **4.1** packages this INF into the community Public Installer (progress UI, VirtualMIDI presence gate, Auto-Start wiring). Operator smoke:
+Story **4.1** packages this INF into the community Public Installer (progress UI, VirtualMIDI presence gate, Auto-Start wiring). End-user prose: [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md) (Install section). Operator smokes:
 
 - [`docs/tests/smoke-epic4-public-installer-mt4.md`](../tests/smoke-epic4-public-installer-mt4.md)
+- [`docs/tests/smoke-epic4-user-docs-mt4.md`](../tests/smoke-epic4-user-docs-mt4.md)
 
 This document remains the contributor bind / Zadig fallback reference. Runtime Auto-Start register/unregister lives in Story 3.1 (see smoke guide above).

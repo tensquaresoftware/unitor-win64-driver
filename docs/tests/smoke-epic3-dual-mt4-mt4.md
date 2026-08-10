@@ -33,7 +33,7 @@ Il est calqué sur les guides Epic 3 : français, résultat **au fil de l’eau*
 
 | Sujet | Story |
 |---|---|
-| Chapitre multi-MT4 poli dans `docs/user/` | **4.2** |
+| Chapitre multi-MT4 poli dans `docs/user/` | **4.2** — [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#two-mt4-interfaces) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Installateur public | **4.1** |
 | Preuve multi-client (DAW + MIDI-OX) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
 | Boucle hot-plug (étendue ici à N unités, pas une 2ᵉ lifecycle) | **3.2** — [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md) |
@@ -111,6 +111,7 @@ builds\debug\Bridge.exe --test-mapper
 
 ## Docs liées
 
+- Manuel utilisateur multi-MT4 : [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#two-mt4-interfaces)
 - Auto-Start (3.1) : [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
 - Hot-plug (3.2) : [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
 - Multi-client (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)

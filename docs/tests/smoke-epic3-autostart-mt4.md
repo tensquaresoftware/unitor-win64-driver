@@ -40,7 +40,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 | Multi-client DAW + MIDI-OX (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
 | Noms stables pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
 | Packaging Auto-Start dans l’installeur public | **4.1** — [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md) |
-| Doc utilisateur polie | **4.2** |
+| Doc utilisateur polie | **4.2** — [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#auto-start) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Mesures de latence MIDI | Epic **5** |
 
 ### Références (fichier source de vérité)
@@ -88,14 +88,16 @@ builds\debug\Bridge.exe --test-port-names
 
 ## Hors scope pour ce smoke
 
-- Dire que SM-5 est entièrement clos (installeur + doc utilisateur polie)
+- Dire que SM-5 est entièrement clos (installeur + doc utilisateur polie — doc : [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md))
 - Récupération hot-plug après ports déjà live → **3.2** ([`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md))
 - Câblage de l’installeur public → **4.1** ([`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md))
 
 ## Docs liées
 
+- Manuel utilisateur : [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#auto-start)
 - Hot-plug (3.2) : [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
 - Multi-client DAW + MIDI-OX (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
 - Installateur public (4.1) : [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md)
+- Doc utilisateur (4.2) : [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md)
 - Bind WinUSB (admin une fois) : [`../dev/winusb-bind.md`](../dev/winusb-bind.md)
 - Smoke transport Epic 2 : [`smoke-epic2-mt4.md`](smoke-epic2-mt4.md)

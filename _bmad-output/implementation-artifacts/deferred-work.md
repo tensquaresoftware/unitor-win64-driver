@@ -1,5 +1,9 @@
 # Deferred work
 
+## Deferred from: code review of 4-2-end-user-documentation-for-first-midi-and-sysex.md (2026-08-10)
+
+- Bridge CMake `project(VERSION)` vs installer `MyAppVersion` dual sources — packaging concern already tracked under Story 4.1 wiring `MyAppVersion` from the build script; not a docs-story fix.
+
 ## Deferred from: code review of 4-1-public-installer-meeting-ad-12-ux-bar.md (2026-08-10)
 
 - Unsigned INF / missing `.cat` in Public Installer payload — clean-machine association may fail until Story **4.4** Authenticode/catalog; lab mitigation remains `installer/sign-lab-package.ps1` (story fence, not a silent skip).

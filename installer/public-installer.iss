@@ -17,6 +17,7 @@
 #define MyAppId "{{A7C3E91F-4B2D-4E8A-9F1C-6D5E8A3B2C10}}"
 #define InstallDirName "Ten Square Software\Unitor MT4 Bridge"
 #define MyAppPublisherURL "https://github.com/tensquaresoftware/unitor-win64-driver"
+#define MyAppSupportURL "https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md"
 
 [Setup]
 AppId={#MyAppId}
@@ -24,7 +25,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppPublisherURL}
-AppSupportURL={#MyAppPublisherURL}
+AppSupportURL={#MyAppSupportURL}
 DefaultDirName={autopf}\{#InstallDirName}
 DefaultGroupName={#MyAppPublisher}\{#MyAppName}
 DisableProgramGroupPage=yes
@@ -49,7 +50,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Messages]
 WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt associates your Emagic MT4 with WinUSB, installs the Bridge, and registers Auto-Start for your user session.%n%nYou need the VirtualMIDI driver already installed (for example via loopMIDI or rtpMIDI).
-FinishedLabel=Setup has finished installing [name] on your computer.%n%nAfter the next sign-in (or when you plug in the MT4), virtual MIDI ports should appear without launching the Bridge by hand.
+FinishedLabel=Setup has finished installing [name] on your computer.%n%nAfter the next sign-in (or when you plug in the MT4), virtual MIDI ports should appear without launching the Bridge by hand.%n%nGetting started: https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md
 ApplicationsFound=Setup detected that Unitor MT4 Bridge is still running.%n%nContinuing will close it and interrupt any active MIDI session.
 ApplicationsFound2=Setup detected that Unitor MT4 Bridge is still running.%n%nContinuing will close it and interrupt any active MIDI session.
 
@@ -279,7 +280,8 @@ begin
         'Unitor MT4 Bridge is installed under Program Files.' + #13#10#13#10 +
         'VirtualMIDI is present; WinUSB association and Auto-Start registration both reported success.' + #13#10 +
         'After sign-in (or when you plug in the MT4), virtual MIDI ports should appear without a manual Bridge launch.' + #13#10#13#10 +
-        'Daily use does not require Administrator.';
+        'Daily use does not require Administrator.' + #13#10#13#10 +
+        'Getting started: https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md';
       if GRebootRecommended then
         SuccessBody := SuccessBody + #13#10#13#10 +
           'Windows reported that a reboot is recommended to finish driver installation. Reboot before relying on WinUSB.';

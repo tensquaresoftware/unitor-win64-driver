@@ -4,9 +4,15 @@ Usermode Windows 64-bit bridge that makes Emagic Unitor-family USB MIDI interfac
 
 There is no official 64-bit driver. The last vendor package targeted Windows XP (32-bit). Under Windows 10/11 the device enumerates over USB, but the stock class driver does not understand Emagic’s proprietary cable mapping, so DAWs never see usable MIDI ports.
 
-This project aims to fix that **without writing a custom kernel driver**: WinUSB in user mode, an Emagic protocol layer, and virtual MIDI ports exposed to your DAW.
+This project fixes that **without writing a custom kernel driver**: WinUSB in user mode, an Emagic protocol layer, and virtual MIDI ports (VirtualMIDI) exposed to your DAW via **Unitor MT4 Bridge** (Ten Square Software).
 
-> **Status:** greenfield / early planning. No release binary yet. Architecture and MIDI backend choices are still being locked.
+> **Status:** V1 Bridge capabilities (ports, SysEx, Auto-Start, hot-plug, multi-client) are implemented for **MT4**. The Public Installer and end-user docs are in progress toward community readiness (Stories **4.1** / **4.2** — hardware smoke rows may still be blank). Start with [`docs/user/README.md`](docs/user/README.md). Authenticode / SmartScreen and full three-way license polish are still upcoming (Stories 4.3–4.4). Latency “studio-done” numbers are Epic 5.
+
+## Start here (community users)
+
+If you own an **MT4** and want first MIDI / first SysEx on Windows 10/11 x64:
+
+**→ [`docs/user/README.md`](docs/user/README.md)** — then the [English user guide](docs/user/unitor-mt4-bridge-user-guide.md) or the [manuel français](docs/user/unitor-mt4-bridge-manuel-utilisateur.md) (install, Auto-Start, first MIDI, first SysEx, troubleshooting).
 
 ## Why this exists
 
@@ -16,7 +22,7 @@ Many musicians still own Emagic **Unitor8**, **AMT8**, or **MT4** interfaces and
 - [Gearspace — Emagic AMT8 drivers](https://gearspace.com/board/music-computers/141084-emagic-amt-8-drivers-2.html)
 - [Cockos forum archive](https://forum.cockos.com/archive/index.php/t-191736.html)
 
-## Supported hardware (planned)
+## Supported hardware
 
 | Model | USB VID | USB PID | Physical I/O (MVP intent) | Status |
 | --- | --- | --- | --- | --- |
@@ -26,17 +32,15 @@ Many musicians still own Emagic **Unitor8**, **AMT8**, or **MT4** interfaces and
 
 USB composite identity for the MT4: `VID_086A&PID_0003`. Bus-powered (no external PSU).
 
-The Linux kernel treats all three models with the same quirk (`QUIRK_MIDI_EMAGIC`) and the same endpoint info structure — only the cable bitmasks differ (`sound/usb/quirks-table.h`). This project will model that as declarative **device profiles** keyed by PID, with a single shared cable-mapping implementation.
+The Linux kernel treats all three models with the same quirk (`QUIRK_MIDI_EMAGIC`) and the same endpoint info structure — only the cable bitmasks differ (`sound/usb/quirks-table.h`). This project models that as declarative **device profiles** keyed by PID, with a single shared cable-mapping implementation.
 
-## How it works (intended architecture)
+## How it works
 
-Not a kernel-mode PortCls / WDM MIDI driver. The planned pipeline:
+Not a kernel-mode PortCls / WDM MIDI driver. The pipeline:
 
-1. **USB transport** — bind the interface to Microsoft’s signed **WinUSB** (`winusb.sys`), via a minimal INF and/or [Zadig](https://zadig.akeo.ie/) during development.
-2. **Protocol** — a C++ usermode service/app talks to the device through `winusb.dll` (bulk/interrupt) and reimplements Emagic cable multiplex / demultiplex (informed by the public Linux implementation in `sound/usb/midi.c`, not by shipping GPL sources as-is).
-3. **DAW-facing MIDI** — expose virtual MIDI ports via either:
-   - [teVirtualMIDI / VirtualMIDI SDK](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html) (proprietary — redistribution terms must be cleared), or
-   - **Windows MIDI Services** (native on recent Windows 11 builds — preferred for a clean open-source redistribution story if OS requirements are acceptable).
+1. **USB transport** — bind the interface to Microsoft’s signed **WinUSB** (`winusb.sys`) via the Public Installer / project INF (Zadig is contributor fallback only).
+2. **Protocol** — a C++ usermode Bridge talks to the device through `winusb.dll` and reimplements Emagic cable multiplex / demultiplex (informed by the public Linux implementation in `sound/usb/midi.c`, not by shipping GPL sources as-is).
+3. **DAW-facing MIDI** — virtual MIDI ports via [teVirtualMIDI / VirtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html) (eval via loopMIDI / rtpMIDI). Windows MIDI Services remains a possible future Win11-only backend — not V1.
 
 Architectural inspiration for the WinUSB + virtual MIDI pattern: [Prodikeys64](https://github.com/CrazyRedMachine/Prodikeys64).
 
@@ -44,19 +48,19 @@ Architectural inspiration for the WinUSB + virtual MIDI pattern: [Prodikeys64](h
 
 A KMDF / PortCls stack needs the WDK, Microsoft attestation signing for Secure Boot machines, and specialized driver expertise. That is disproportionate for this problem and a major barrier to community installs. WinUSB keeps the signed kernel piece on Microsoft’s side.
 
-## Planned deliverables
+## Deliverables
 
-- INF associating Emagic VID/PID(s) with WinUSB (needed for simple end-user installs; Zadig may suffice for developers)
-- Usermode C++ service/application (the real product)
-- Optional installer packaging WinUSB binding + service + MIDI backend dependency
-- Optional Authenticode signing of the usermode binary (recommended for SmartScreen trust; not a kernel signature)
+- Public Installer (`UnitorMt4Bridge-Setup.exe`) — WinUSB association, Bridge, Auto-Start, VirtualMIDI presence gate
+- Usermode C++ Bridge (`Bridge.exe`)
+- End-user docs: [`docs/user/README.md`](docs/user/README.md)
+- Optional Authenticode signing of the usermode binary (Story 4.4 — recommended for SmartScreen trust; not a kernel signature)
 
 ## MVP scope (V1)
 
 **In**
 
 - MT4 only (`PID 0003`)
-- Basic MIDI I/O: 2 inputs / 4 outputs
+- Basic MIDI I/O: 2 inputs / 4 outputs as `MT4 In N` / `MT4 Out N`
 - Architecture ready for additional `DeviceProfile` entries (AMT8 / Unitor8 later)
 
 **Out (for V1)**
@@ -64,6 +68,8 @@ A KMDF / PortCls stack needs the WDK, Microsoft attestation signing for Secure B
 - Patch mode, LTC/VITC, Fast Mode / AMT features from the Unitor8/AMT8 manuals
 - Cascaded / stacked multi-interface setups (fragile even under Linux/ALSA)
 - Guaranteed AMT8 / Unitor8 support without real hardware validation
+
+Capabilities overview: [What works / what does not](docs/user/unitor-mt4-bridge-user-guide.md#what-works--what-does-not) in the user guide.
 
 User-facing Unitor8 / AMT8 manual (functional reference):  
 https://www.deepsonic.ch/deep/docs_manuals/emagic_unitor8_mkII_amt8_manual.pdf
@@ -91,9 +97,12 @@ If original Emagic protocol documents cannot be recovered from community archive
 ## Project layout (current)
 
 ```
-docs/dev/          Development briefs and process docs
+docs/user/         End-user manual (single guide — start here for community installs)
+docs/dev/          Contributor / process docs (WinUSB bind, quality)
+docs/tests/        Operator smoke guides
 scripts/quality/   Diff-scoped Clean Code quality gate
-scripts/dev/       Developer helpers (e.g. BMad Agents title resolver)
+scripts/dev/       Developer helpers
+installer/         Public Installer (Inno Setup) + INF
 src/               C++ sources (PascalCase filenames; kebab-case folders)
 _bmad/             BMad Method install (chat FR, generated docs EN)
 ```
@@ -107,7 +116,7 @@ Build trees are expected under `builds/`. Coding standards and the quality gate 
 | Design / editing | macOS (Cursor) |
 | Build, USB hardware tests, DAW checks | Windows 10/11 **64-bit** |
 
-Language target: **C++17** usermode. Exact stack (pure C++ vs shared tooling such as JUCE) will be decided in architecture.
+Language target: **C++17** usermode.
 
 ### Quality gate
 
@@ -135,16 +144,16 @@ This project’s **own** source is released under the **[MIT License](LICENSE)**
 **Third-party caveats (important):**
 
 - Linux kernel sources remain GPL — use them as reference, not as vendored code.
-- If VirtualMIDI SDK is selected, its **proprietary** terms apply separately and may restrict redistribution even though this repo is MIT.
+- VirtualMIDI (via loopMIDI / rtpMIDI for eval) has **proprietary** terms that apply separately and may restrict redistribution even though this repo is MIT. Full three-way honesty polish is Story **4.3**.
 - WinUSB / Windows MIDI Services remain under Microsoft’s licensing for the OS components you use.
 
 ## Contributing
 
-See [`contributing.md`](contributing.md). Issues and commit messages are in English. The product is still early — design discussions and hardware test reports (especially AMT8 / Unitor8) are particularly welcome once development starts.
+See [`contributing.md`](contributing.md). Issues and commit messages are in English. Hardware test reports (especially AMT8 / Unitor8) are welcome.
 
 ## Acknowledgments
 
 - Linux `snd-usb-audio` Emagic quirk authors and maintainers
 - Community threads that kept the problem visible for years
 - [Prodikeys64](https://github.com/CrazyRedMachine/Prodikeys64) for the practical WinUSB + virtual MIDI pattern on Windows 64-bit
-- Tobias Erichsen’s VirtualMIDI ecosystem (if/when used under its own license)
+- Tobias Erichsen’s VirtualMIDI ecosystem (used under its own license)
