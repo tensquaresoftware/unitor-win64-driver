@@ -43,8 +43,10 @@ This file defines my personal instructions for the AI coding agent. It guides co
 
 Do **not** force-translate hardware, protocol, or product terms in French chat:
 
-- **MT4**, **AMT8**, **Unitor8**, **WinUSB**, **VirtualMIDI**, **Windows MIDI Services**, **Zadig**, **DAW**, **MIDI**
+- **MT4**, **AMT8**, **Unitor8**, **WinUSB**, **virtualMIDI**, **Windows MIDI Services**, **Zadig**, **DAW**, **MIDI**
 - Project/repo name: **unitor-win64-driver**
+
+Vendor spelling (Tobias Erichsen): the product name is **virtualMIDI** (not `VirtualMIDI`). Keep technical identifiers unchanged: `teVirtualMIDI.dll`, C++ symbols such as `VirtualMidiBackend`.
 
 ---
 
@@ -180,7 +182,7 @@ If a §3 metric conflicts with timing safety or clarity of the critical path: **
 - **Language:** C++17 minimum (raise only if architecture explicitly requires it)
 - **Build system:** CMake (expected); build trees under `builds/` only (e.g. `builds/debug`, `builds/ci`). Use `CMakePresets.json` / `cmake --preset debug`. Cursor pins CMake Tools to that preset via `.vscode/settings.json`.
 - **Directory / file names:** **kebab-case** for project folders and non-C++ files (`scripts/quality/lint-touched.py`, `docs/dev/…`, `conventions.md`). Exception: C++ sources under `src/` use **PascalCase** filenames matching types (`DeviceProfile.h`, `EmagicMidiMapper.cpp`). Never a top-level `Documentation/`
-- **Stack (to be confirmed in architecture):** WinUSB usermode + protocol layer + virtual MIDI exposure (VirtualMIDI SDK and/or Windows MIDI Services). JUCE may appear later for shared tooling — do not assume it until decided.
+- **Stack (to be confirmed in architecture):** WinUSB usermode + protocol layer + virtual MIDI exposure (virtualMIDI SDK and/or Windows MIDI Services). JUCE may appear later for shared tooling — do not assume it until decided.
 
 ### 5.2 Project knowledge
 
@@ -308,7 +310,7 @@ Separate declaration and definition except templates, explicit `inline`, and tri
 Until BMad architecture locks the stack:
 
 - Prefer a **declarative `DeviceProfile` per USB PID** and a single Emagic cable-mapping implementation over per-model code forks (MT4 first; AMT8 / Unitor8 later as validation)
-- Keep **protocol logic** independent of WinUSB / virtual-MIDI backends so either VirtualMIDI SDK or Windows MIDI Services can be swapped behind an interface
+- Keep **protocol logic** independent of WinUSB / virtual-MIDI backends so either virtualMIDI SDK or Windows MIDI Services can be swapped behind an interface
 - Usermode WinUSB only for V1 — no custom kernel driver unless a later decision overturns this brief
 
 ---

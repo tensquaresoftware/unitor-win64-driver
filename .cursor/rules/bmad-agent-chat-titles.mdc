@@ -135,7 +135,7 @@ Infer the topic from the user intent / first message (and attached story or spec
    - **English stays only** for the fixed prefix: `BMad` + workflow label (`Quick Dev`, `Correct Course`, …).
    - **French for the topic** after the colon — never English Title Case for the subject.
 2. **Length:** 2–5 content words. Prefer concrete nouns already in the request.
-3. **Casing:** sentence-style French (not English Title Case for the whole topic). Keep hardware / protocol / product terms **untranslated** when they are real names (`MT4`, `AMT8`, `Unitor8`, `WinUSB`, `VirtualMIDI`, `MIDI`, `DAW`, IDs) mixed into an otherwise French phrase — never force-translate them.
+3. **Casing:** sentence-style French (not English Title Case for the whole topic). Keep hardware / protocol / product terms **untranslated** when they are real names (`MT4`, `AMT8`, `Unitor8`, `WinUSB`, `virtualMIDI`, `MIDI`, `DAW`, IDs) mixed into an otherwise French phrase — never force-translate them.
 4. **Strip stop words** when they only pad the phrase: `a`, `an`, `the`, `of`, `for`, `to`, `and`, `or`, `de`, `du`, `des`, `la`, `le`, `les`, `un`, `une`, `et`, `ou`, `à`, `au`, `aux`, `en`, `dans`, `pour`, `sur`, `avec`, `par` — keep distinctive nouns. Avoid long filler like `réduction de la…` / `amélioration de…`.
 5. **Good:** `Latence MIDI`, `Profil AMT8`, `WinUSB bulk`, `Ports virtuels`
 6. **Bad:** `MIDI Latency Fix` (English topic), `Réduction de la latence MIDI` (stop words + too long), `Improve the winusb transfer path` (English + verbose)

@@ -12,7 +12,7 @@ Source complète : `conventions.md` §1.
 - Appelle-moi **Guillaume**, réponds en **français courant**, tutoiement.
 - **Pas d'anglicismes** ni jargon management : éviter « fn », « trade-off », « ledger », « workflow », « pain point », « scope », « deliverable », etc.
 - Privilégier une terminologie française : « compromis », « fichier source de vérité », « découplage », « formule », « garde-fou à la compilation », « déroulement », « point de friction ».
-- **Exception — noms matériel / produit / protocole :** ne **pas** traduire de force **MT4**, **AMT8**, **Unitor8**, **WinUSB**, **VirtualMIDI**, **Windows MIDI Services**, **Zadig**, **MIDI**, **DAW**.
+- **Exception — noms matériel / produit / protocole :** ne **pas** traduire de force **MT4**, **AMT8**, **Unitor8**, **WinUSB**, **virtualMIDI**, **Windows MIDI Services**, **Zadig**, **MIDI**, **DAW**.
 - **Phrases complètes** — pas de prose télégraphique, pas d'abréviations dans le chat.
 - Identifiants projet **en anglais uniquement** : classes, fichiers, symboles, API, messages d'erreur.
 - Franc, factuel ; contredis-moi si la solution l'exige.

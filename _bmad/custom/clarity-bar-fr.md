@@ -61,7 +61,7 @@ Variante utile :
    **une ligne complémentaire en bas**, jamais empilés dans la phrase qui porte le sens.
 5. **Partir de l’intention d’usage**, pas des fichiers.
 6. **Noms matériel / protocole / produits : ne pas traduire de force.**  
-   Garder **MT4**, **AMT8**, **Unitor8**, **WinUSB**, **VirtualMIDI**, **Windows MIDI Services**, **Zadig**, **MIDI**, **DAW**.
+   Garder **MT4**, **AMT8**, **Unitor8**, **WinUSB**, **virtualMIDI**, **Windows MIDI Services**, **Zadig**, **MIDI**, **DAW**.
 
 ---
 
@@ -91,7 +91,7 @@ Il faut choisir comment exposer les ports MIDI aux logiciels de musique.
 **Ce qui est en jeu**  
 Soit on s’appuie sur un SDK propriétaire déjà éprouvé, soit sur l’API MIDI native de Windows 11 récent.
 
-1. **Utiliser VirtualMIDI** (SDK de Tobias Erichsen)  
+1. **Utiliser virtualMIDI** (SDK de Tobias Erichsen)  
 2. **Utiliser Windows MIDI Services** (natif, Windows 11 récent)  
 
 ### Recommandation BMad

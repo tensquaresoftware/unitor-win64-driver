@@ -21,7 +21,7 @@ Si un message nécessiterait encore « Reformule en langage naturel, sans jargon
 
 1. **Intention produit / usage d’abord** (ce que ça change pour l’utilisateur MIDI), pas les fichiers.
 2. **Français parlé**, phrases complètes — pas de télégraphique, pas de pile d’anglais technique d’ingénierie.
-3. **Noms matériel / protocole en anglais : les garder** (MT4, WinUSB, VirtualMIDI, …) — **ne jamais les traduire de force**.
+3. **Noms matériel / protocole en anglais : les garder** (MT4, WinUSB, virtualMIDI, …) — **ne jamais les traduire de force**.
 4. Terme technique d’ingénierie indispensable → **glose courte** à la première occurrence.
 5. Chemins / IDs / symboles → **ligne complémentaire en bas**, jamais dans la phrase porteuse de sens.
 6. **Question / décision** → question claire seule + options en verbes du quotidien + **Recommandation BMad**.
