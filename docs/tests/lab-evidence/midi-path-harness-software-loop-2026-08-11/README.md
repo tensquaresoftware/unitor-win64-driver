@@ -4,9 +4,10 @@
 **Stack :** Bridge **Release** + WinUSB + virtualMIDI + soft-echo lab gate  
 **Ports :** `MT4 Out 1` / `MT4 In 1` (unit K=1)  
 **Story :** 5.1 — harness scaffold (plumbing proof, **not** Studio-Done)  
-**Smoke guide :** [`docs/tests/smoke-epic5-midi-path-harness-mt4.md`](../../smoke-epic5-midi-path-harness-mt4.md)
+**Smoke guide :** [`docs/tests/smoke-epic5-midi-path-harness-mt4.md`](../../smoke-epic5-midi-path-harness-mt4.md)  
+**Published baseline (Story 5.2) :** [`docs/dev/measurements/baseline-latest.md`](../../../dev/measurements/baseline-latest.md) (method: [`method-midi-path.md`](../../../dev/measurements/method-midi-path.md))
 
-This capsule is the **durable memory** of the first agent-driven software-loop Pass after Story 5.1 implementation. It proves inject/observe QPC plumbing through Bridge Virtual Ports with soft-echo ON — **not** DIN/USB path latency and **not** NFR-P1/P2 anchors.
+This capsule is the **durable memory** of the first agent-driven software-loop Pass after Story 5.1 implementation. It proves inject/observe QPC plumbing through Bridge Virtual Ports with soft-echo ON — **not** DIN/USB path latency and **not** NFR-P1/P2 anchors. Story **5.2** publishes summarized tables from these numbers; this folder stays the raw evidence.
 
 ---
 
@@ -47,7 +48,7 @@ This capsule is the **durable memory** of the first agent-driven software-loop P
 ## Honesty fence
 
 - Soft-echo **skips USB/DIN** — these µs numbers are Virtual Port round-trip only.
-- Do **not** cite as Studio-Done / NFR-P1/P2 (Stories **5.2** / **5.3**).
+- Do **not** cite as Studio-Done / NFR-P1/P2 (Story **5.3** / OQ-2).
 - Do **not** treat ASIO buffer size as MIDI Path proof.
 - Auto-Start / daily studio path must keep soft-echo **OFF**.
 
@@ -55,5 +56,6 @@ This capsule is the **durable memory** of the first agent-driven software-loop P
 
 ## Related
 
-- Story: `_bmad-output/implementation-artifacts/5-1-in-repo-midi-path-harness-scaffold.md`
+- Story 5.1: `_bmad-output/implementation-artifacts/5-1-in-repo-midi-path-harness-scaffold.md`
+- Story 5.2 published tables: [`docs/dev/measurements/`](../../../dev/measurements/)
 - Architecture AD-11 / AD-13 / CAP-16 / NFR-P3

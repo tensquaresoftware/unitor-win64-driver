@@ -287,3 +287,8 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - Surprise-removal `DeviceSession::Stop` still best-effort finish-magic `WriteBulk` on a possibly dead bus after ports are destroyed — already deferred from 3-2; reconfirmed under multi-unit/multi-client teardown.
 - Topology-only identity (no serial) can allocate a new `K` when the unit moves USB hub/port — already deferred from 3-4 / AQ-1; not closed by this transversal review.
 - Dual physical MT4 hardware matrix remains lab-unproven (`docs/tests/smoke-epic3-dual-mt4-mt4.md`); offline registry/naming and one-session-per-unit code paths are not a substitute Pass.
+
+## Deferred from: code review of 5-2-publish-measurement-method-and-baseline-tables.md (2026-08-11)
+
+- Define refresh/archive protocol for `docs/dev/measurements/baseline-latest.md` when a newer run supersedes “latest” (overwrite vs dated history vs archive) — ops process not specified in Story 5.2.
+- Symmetric soft-echo-ON confirm flag for software-loop to mirror hardware `--confirm-soft-echo-off` — harness design from Story 5.1; out of 5.2 docs-only scope unless a later harness story reopens it.

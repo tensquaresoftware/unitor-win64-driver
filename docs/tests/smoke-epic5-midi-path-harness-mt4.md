@@ -12,7 +12,9 @@ lab_result: Win10 Pass (software-loop plumbing; harness 50 samples ~2 ms mean) �
 
 Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin MIDI** (pas la taille de buffer ASIO) **compile**, tourne en boucle logicielle Bridge, et reste honnête sur ce qu’il mesure.
 
-**Barème d’honnêteté :** case vide ≠ Pass. Les chiffres de cette story sont une **preuve de plomberie**, pas Studio-Done (méthode/tables → Story **5.2** ; ancres → Story **5.3**).
+**Barème d’honnêteté :** case vide ≠ Pass. Les chiffres de cette story sont une **preuve de plomberie**, pas Studio-Done.
+
+**Méthode publiée + tables de baseline (Story 5.2) :** [`docs/dev/measurements/`](../dev/measurements/) — index, [`method-midi-path.md`](../dev/measurements/method-midi-path.md), [`baseline-latest.md`](../dev/measurements/baseline-latest.md). Ancres timing → Story **5.3**.
 
 ## Ce que tu valides
 
@@ -30,7 +32,7 @@ Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin M
 
 | Sujet | Story |
 |---|---|
-| Méthode publiée + tables de baseline | **5.2** (`docs/dev/measurements/`) |
+| Méthode publiée + tables de baseline | **5.2** — publié sous [`docs/dev/measurements/`](../dev/measurements/) |
 | Décision Studio-Done / ancres NFR-P1/P2 | **5.3** / OQ-2 |
 | Backend Windows MIDI Services | Epic **6** |
 
@@ -69,5 +71,6 @@ Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin M
 ## Références
 
 - Story 5.1 / Epic 5 — CAP-16, NFR-P3, AD-11, AD-13, SM-9 (harness exists)
+- Story 5.2 — méthode + tables : [`docs/dev/measurements/`](../dev/measurements/)
 - Architecture AD-11 / AD-13
 - Correct Course 2026-08-10 (Epic 5 débloqué sur virtualMIDI + Win10)

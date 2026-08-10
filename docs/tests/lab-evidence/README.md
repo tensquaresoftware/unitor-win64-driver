@@ -9,6 +9,8 @@ Curated proof packs for lab failures and overnight runs that we want to remember
 |---|---|
 | [`overnight-matrix-windows-2026-08-07/`](overnight-matrix-windows-2026-08-07/) | Windows overnight Matrix mid+bank (~8 h): rare TIMEOUT « aucune trame », Bridge still up |
 | [`overnight-macos-sysex-2026-08-08/`](overnight-macos-sysex-2026-08-08/) | macOS overnight mid+bank+long (~8 h, Apple driver): **100 %** — hardware control vs Windows |
-| [`midi-path-harness-software-loop-2026-08-11/`](midi-path-harness-software-loop-2026-08-11/) | Story 5.1 software-loop Pass (~2 ms mean QPC WinMM); soft-echo plumbing — not Studio-Done |
+| [`midi-path-harness-software-loop-2026-08-11/`](midi-path-harness-software-loop-2026-08-11/) | Story 5.1 software-loop Pass (~2 ms mean QPC WinMM); soft-echo plumbing — not Studio-Done; seeds published baseline under [`docs/dev/measurements/`](../../dev/measurements/) |
+
+**Published method + latest tables (Story 5.2):** [`docs/dev/measurements/`](../../dev/measurements/) — capsules here remain **raw evidence**; the measurements folder is the human-facing latest summary (still **PROVISIONAL**, not Studio-Done).
 
 When adding a new capsule: keep it small (summary + ≤5 sample cycles), write a dated `README.md`, and leave bulk cycle trees out of git.
