@@ -149,8 +149,7 @@ flowchart TB
   - Measure the **MIDI Path** only (Virtual Port ↔ Bridge ↔ WinUSB ↔ device path as applicable) — never ASIO buffer size.
   - Harness lives in-repo under `tools/midi-path-harness/` (C++17), built to `builds/`.
   - Method: timestamped inject/observe using high-resolution clocks (`QueryPerformanceCounter` or equivalent); publish host OS, Bridge build, VirtualMIDI presence, and whether the path is software-loop (Virtual Port round-trip through Bridge) or hardware-loop (MT4 physical loopback when available).
-  - Results publish under `docs/dev/measurements/` (method + latest tables). Studio-Done Gate **2026-08-11** outcome **(a)** **confirmed** healthy bridge-added ≤ **4–5 ms** p99 and classical jitter ≤ **1–2 ms** p99 (`jitter_us_p99` = p99 of \|sample − median\|); do-not-ship-worse ~**8–10 ms** p99 remains. Decision: `docs/dev/measurements/studio-done-gate-decision.md`.
-  - `[ASSUMPTION: first harness iteration used a Bridge-mediated Virtual Port software loop; hardware loopback + classical jitter are now published on Win10 lab.]`
+  - Results publish under `docs/dev/measurements/` (method + latest tables). Studio-Done Gate **2026-08-11** outcome **(a)** **confirmed** healthy bridge-added ≤ **4–5 ms** p99 and classical jitter ≤ **1–2 ms** p99 (`jitter_us_p99` = p99 of \|sample − median\|); do-not-ship-worse ~**8–10 ms** p99 remains. Decision: `docs/dev/measurements/studio-done-gate-decision.md`. Win10 lab published **hardware-loop** + classical jitter (and earlier software-loop plumbing).
 
 ### AD-12 — Installer: WinUSB association + VirtualMIDI prerequisite + UX bar
 

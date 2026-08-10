@@ -140,7 +140,9 @@ add_executable(BridgeTests
     tests/unit/MultiClientContractTests.cpp
     tests/unit/UnitIdentityRegistryTests.cpp
     tests/unit/MidiPathStatsTests.cpp
+    tests/unit/SoftEchoGateTests.cpp
     tools/midi-path-harness/MidiPathStats.cpp
+    src/Midi/SoftEchoGate.cpp
     src/App/AutoStartRegistration.cpp
     src/App/AutoStartTaskScheduler.cpp
     src/App/AutoStartRunKey.cpp

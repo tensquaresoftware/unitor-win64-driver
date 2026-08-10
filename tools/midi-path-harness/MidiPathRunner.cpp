@@ -48,7 +48,7 @@ bool runOneSample(const SampleAttempt& attempt, MidiPathSample& sampleOut, std::
     attempt.io->armExpectedNote(note, velocity);
     if (!attempt.io->injectNoteOn(*attempt.clock, note, velocity))
     {
-        errorOut = "midiOutShortMsg failed on inject";
+        errorOut = "midiOutShortMsg failed on inject (or QPC stamp unavailable)";
         return false;
     }
     std::int64_t observeTicks = 0;
@@ -59,6 +59,8 @@ bool runOneSample(const SampleAttempt& attempt, MidiPathSample& sampleOut, std::
             "(software-loop needs Bridge --soft-echo; hardware-loop needs DIN)";
         return false;
     }
+    // Best-effort Note Off so DIN / tone generators do not hold notes across samples.
+    (void)attempt.io->sendNoteOff(note, velocity);
     const std::int64_t delta = observeTicks - attempt.io->lastInjectTicks();
     if (delta < 0)
     {

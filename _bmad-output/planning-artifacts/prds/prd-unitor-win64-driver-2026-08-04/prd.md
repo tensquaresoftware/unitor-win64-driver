@@ -395,7 +395,7 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 | SysEx editor | **Matrix-Control** | Win10 x64, Win11 x64 | First-party SysEx path; not a Bridge dependency |
 | MIDI utility | **MIDI-OX** | Win10 x64, Win11 x64 | Multi-client concurrent with a DAW |
 | Hardware | ≥1 **MT4** (`086A:0003`) | — | Second MT4 when available for FR-10 proof |
-| Timing harness | MIDI Path method (TBD in Architecture) | Win10 x64 (min) | Required for Studio-Done Gate |
+| Timing harness | MIDI Path method (Architecture **AD-11**; `docs/dev/measurements/`) | Win10 x64 (min) | Required for Studio-Done Gate — Gate **(a)** confirmed 2026-08-11 |
 
 Pass rules:
 - Each DAW row: open ports, notes/CC, clock + Start/Stop/Continue + MTC smoke on both OS targets.

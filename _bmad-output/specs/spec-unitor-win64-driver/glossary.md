@@ -19,5 +19,5 @@ Load-bearing terms for Spec consumers. Product names stay in English as used in 
 | **Auto-Start** | Bridge starts with Windows and/or on MT4 USB arrival. |
 | **Hot-Plug Recovery** | After unplug/replug, usable Virtual Ports return without Windows reboot; host rescan or supervised Bridge restart OK. |
 | **Public Installer** | End-user installer for community redistribution (subject to VirtualMIDI author clearance). |
-| **Studio-Done Gate** | Timing acceptance: published MIDI Path harness results confirm or revise thresholds. Gate **2026-08-11** outcome **(a)** confirmed healthy ≤4–5 ms p99 latency and ≤1–2 ms p99 classical jitter. |
+| **Studio-Done Gate** | Timing acceptance: published MIDI Path harness results confirm or revise thresholds. Gate **2026-08-11** outcome **(a)** confirmed healthy ≤4–5 ms p99 latency and ≤1–2 ms p99 classical jitter from **Win10 lab** hardware-loop evidence (single quiet-lab DIN path; see decision caveats). |
 | **Ten Square Software** | Public facade / organization for the OSS project. |

@@ -23,7 +23,7 @@ void printHelp()
         << "Jitter: p99 of |sample - median| (jitter_us_p99); not ASIO buffer size.\n"
         << "\n"
         << "Usage:\n"
-        << "  MidiPathHarness --path software-loop [options]\n"
+        << "  MidiPathHarness --path software-loop --confirm-soft-echo-on [options]\n"
         << "  MidiPathHarness --path hardware-loop --confirm-soft-echo-off [options]\n"
         << "\n"
         << "Options:\n"
@@ -34,17 +34,20 @@ void printHelp()
         << "  --samples <n>               Sample count (default: 100)\n"
         << "  --timeout-ms <n>            Per-sample wait (default: 2000; min 1)\n"
         << "  --json                      JSON summary on stdout\n"
+        << "  --confirm-soft-echo-on      Required for software-loop (operator asserts\n"
+        << "                              Bridge soft-echo is ON; prevents DIN fake Pass)\n"
         << "  --confirm-soft-echo-off     Required for hardware-loop (operator asserts\n"
         << "                              Bridge soft-echo is OFF; prevents fake Pass)\n"
         << "\n"
         << "Measurement plane (locked):\n"
         << "  Inject: QueryPerformanceCounter immediately before midiOutShortMsg\n"
-        << "  Observe: QueryPerformanceCounter in midiIn callback on matching Note On\n"
+        << "  Observe: QueryPerformanceCounter in midiIn CALLBACK_WINDOW handler\n"
         << "  Never uses ASIO buffer size as MIDI Path proof.\n"
         << "\n"
         << "software-loop: Bridge must run with --soft-echo (or UNITOR_MIDI_SOFT_ECHO=1).\n"
-        << "  Soft-echo copies host→OUT to matching IN without USB/DIN claim.\n"
-        << "  Bridge --no-soft-echo forces the gate OFF even if the env is set.\n"
+        << "  Requires --confirm-soft-echo-on. Soft-echo copies host→OUT to matching IN\n"
+        << "  without USB/DIN claim. Bridge --no-soft-echo forces the gate OFF.\n"
+        << "  Auto-Start (--auto-session) never enables soft-echo from env.\n"
         << "hardware-loop: DIN Out→In required; Bridge soft-echo must be OFF.\n"
         << "  Requires --confirm-soft-echo-off. Missing DIN must not be reported as Pass.\n"
         << "\n"
@@ -129,6 +132,21 @@ bool applyUnsignedFlag(ArgCursor& cursor, unsigned& target, const char* flag)
     return true;
 }
 
+bool applyConfirmFlag(const char* arg, MidiPathRunConfig& config)
+{
+    if (std::strcmp(arg, "--confirm-soft-echo-on") == 0)
+    {
+        config.confirmSoftEchoOn = true;
+        return true;
+    }
+    if (std::strcmp(arg, "--confirm-soft-echo-off") == 0)
+    {
+        config.confirmSoftEchoOff = true;
+        return true;
+    }
+    return false;
+}
+
 bool applyFlag(ArgCursor& cursor, MidiPathRunConfig& config, bool& pathSet)
 {
     const char* arg = cursor.argv[cursor.index];
@@ -137,9 +155,8 @@ bool applyFlag(ArgCursor& cursor, MidiPathRunConfig& config, bool& pathSet)
         config.jsonSummary = true;
         return true;
     }
-    if (std::strcmp(arg, "--confirm-soft-echo-off") == 0)
+    if (applyConfirmFlag(arg, config))
     {
-        config.confirmSoftEchoOff = true;
         return true;
     }
     if (std::strcmp(arg, "--path") == 0)
@@ -181,6 +198,13 @@ bool finishParse(const MidiPathRunConfig& config, bool showHelp, bool pathSet)
     if (config.timeoutMs == 0)
     {
         std::cerr << "--timeout-ms must be >= 1\n";
+        return false;
+    }
+    if (config.pathType == MidiPathType::SoftwareLoop && !config.confirmSoftEchoOn)
+    {
+        std::cerr
+            << "software-loop requires --confirm-soft-echo-on "
+               "(assert Bridge soft-echo is ON; prevents DIN fake Pass)\n";
         return false;
     }
     if (config.pathType == MidiPathType::HardwareLoop && !config.confirmSoftEchoOff)

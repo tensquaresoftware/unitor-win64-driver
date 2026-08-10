@@ -283,9 +283,11 @@ int runProbeUsbCommand()
 
 int dispatchSessionFlags(int argc, char* argv[])
 {
+    // Auto-Start must never pick up a leftover UNITOR_MIDI_SOFT_ECHO (studio fail-closed).
+    const bool autoSession = hasFlag(argc, argv, kAutoSessionFlag);
     configureSoftEchoGate(
-        hasFlag(argc, argv, "--soft-echo"),
-        hasFlag(argc, argv, "--no-soft-echo"));
+        !autoSession && hasFlag(argc, argv, "--soft-echo"),
+        autoSession || hasFlag(argc, argv, "--no-soft-echo"));
     const bool allowZadigFallback = hasFlag(argc, argv, "--dev-zadig");
     if (hasFlag(argc, argv, kAutoSessionFlag))
     {
@@ -334,6 +336,22 @@ int main(int argc, char* argv[])
     if (hasFlag(argc, argv, "--version"))
     {
         std::cout << kBridgeProductName << " " << kBridgeVersionString << '\n';
+        return 0;
+    }
+    if (hasFlag(argc, argv, "--help") || hasFlag(argc, argv, "-h"))
+    {
+        std::cout
+            << kBridgeProductName << " " << kBridgeVersionString << "\n"
+            << "Usage (selected flags):\n"
+            << "  --version\n"
+            << "  --help\n"
+            << "  --start-session | --run-midi | --auto-session\n"
+            << "  --dev-zadig\n"
+            << "  --soft-echo | --no-soft-echo   Lab software-loop only;\n"
+            << "      default OFF. Env UNITOR_MIDI_SOFT_ECHO=1|true|yes also enables\n"
+            << "      unless --no-soft-echo. --auto-session always forces OFF (ignores env).\n"
+            << "  --register-auto-start | --unregister-auto-start\n"
+            << "  --probe-usb | --test-mapper | --test-port-names\n";
         return 0;
     }
 

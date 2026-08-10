@@ -4,7 +4,8 @@
 
 #include <atomic>
 
-// Process-wide gate. Studio / Auto-Start paths must leave this false.
+// Process-wide gate. Studio / Auto-Start paths must leave this false
+// (--auto-session forces OFF and ignores UNITOR_MIDI_SOFT_ECHO).
 inline std::atomic<bool>& softEchoEnabledFlag() noexcept
 {
     static std::atomic<bool> enabled{false};

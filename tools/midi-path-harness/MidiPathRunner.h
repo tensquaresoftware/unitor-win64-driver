@@ -22,6 +22,8 @@ struct MidiPathRunConfig
     unsigned sampleCount = 100;
     unsigned timeoutMs = 2000;
     bool jsonSummary = false;
+    // Required for software-loop: operator asserts Bridge soft-echo is ON.
+    bool confirmSoftEchoOn = false;
     // Required for hardware-loop: operator asserts Bridge soft-echo is OFF.
     bool confirmSoftEchoOff = false;
 };

@@ -1,5 +1,5 @@
 # generated: 2026-08-04T21:38:31Z
-# last_updated: 2026-08-11T01:10:00Z
+# last_updated: 2026-08-11T01:30:00Z
 # project: unitor-win64-driver
 # project_key: NOKEY
 # tracking_system: file-system
@@ -8,8 +8,8 @@
 # SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
 # READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
 # COURSE CORRECTION: 2026-08-10 sprint-change-proposal-2026-08-10.md (approved)
-# NEXT: Epic 5 (MIDI Path) on interim VirtualMIDI + Win10 lab — NOT blocked by cert/Tobias/WMS
-# AFTER EPIC 5: Epic 6 WMS Win11 community backend (Guillaume acquires Win11 lab PC)
+# NEXT: Epic 6 WMS Win11 community backend (after Epic 5 done; needs Win11 lab PC)
+# AFTER EPIC 5 (done 2026-08-11): Epic 6 WMS — historical sequencing note
 # DEFERRED / CLOSED GATES:
 #   AQ-1…AQ-4 (architecture spine; AQ-3 lab-only pin)
 #   OQ-1 VirtualMIDI-linked community Releases — out of scope (lab virtualMIDI OK; community binaries after Epic 6 WMS)

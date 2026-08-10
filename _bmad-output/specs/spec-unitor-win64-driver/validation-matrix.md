@@ -11,7 +11,7 @@ Inherited from PRD §10. Host SKUs and OS targets are locked; bumping DAW majors
 | SysEx editor | **Matrix-Control** | Win10 x64, Win11 x64 | First-party SysEx path; not a Bridge dependency |
 | MIDI utility | **MIDI-OX** | Win10 x64, Win11 x64 | Multi-client concurrent with a DAW |
 | Hardware | ≥1 **MT4** (`086A:0003`) | — | Second MT4 when available for multi-instance proof |
-| Timing harness | MIDI Path method (Architecture AD-11) | Win10 x64 (min) | Required for Studio-Done Gate |
+| Timing harness | MIDI Path method (Architecture AD-11; `docs/dev/measurements/`) | Win10 x64 (min) | Required for Studio-Done Gate — **(a)** confirmed 2026-08-11 |
 
 ## Pass rules (non-SysEx)
 

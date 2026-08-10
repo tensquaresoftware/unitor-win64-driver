@@ -10,6 +10,7 @@ add_executable(MidiPathHarness
     MidiPathRunner.cpp
     MidiPathStats.cpp
     PortNameNormalize.cpp
+    PortResolve.cpp
 )
 
 target_compile_features(MidiPathHarness PRIVATE cxx_std_17)

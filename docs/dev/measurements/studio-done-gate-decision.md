@@ -60,12 +60,14 @@ Use published SSOT only — do not invent lab numbers here.
 
 Published Win10 **hardware-loop** MIDI Path evidence (DIN Out 2→In 2, soft-echo OFF, n=100) shows:
 
-- Bridge-relevant latency p99 ≈ **2.32 ms** — within healthy ≤4–5 ms
-- Classical jitter p99 ≈ **0.73 ms** (`jitter_us_p99`, abs-dev-from-median) — within healthy ≤1–2 ms
+- Bridge-relevant latency ≈ **2.32 ms** (harness field `latency_us_p99`; under current index **p99≡max** at n=100) — **clears / under** the healthy ceiling ≤4–5 ms
+- Classical jitter ≈ **0.73 ms** (`jitter_us_p99`, abs-dev-from-median; **p99≡max** at n=100) — **clears / under** the healthy ceiling ≤1–2 ms
 
 Software-loop remains plumbing-only and is **not** used alone to clear NFR-P1. ASIO was not cited. Usermode was not used as a jitter alibi (SM-C4). Therefore the provisional healthy anchors are **confirmed** as studio targets; do-not-ship-worse ~8–10 ms p99 remains the ceiling for shipping worse than healthy without a separate explicit product exception.
 
-**Lab caveats for this confirm (honesty):** evidence is a **single** quiet-lab Win10 DIN path (Out 2→In 2, n=100). It is **not** a multi-cable / multi-OS matrix and **not** a DAW-session guarantee. Published numbers are host-WinMM QPC MIDI Path measurements under the locked method — not a promise that every loaded studio session will stay inside the band.
+**Lab caveats for this confirm (honesty):** evidence is a **single** quiet-lab Win10 DIN path (Out 2→In 2, n=100; p99≡max under harness index). It is **not** a multi-cable / multi-OS matrix and **not** a DAW-session guarantee. Published numbers are host-WinMM QPC MIDI Path measurements under the locked method (observe includes CALLBACK_WINDOW message-pump delay) — not a promise that every loaded studio session will stay inside the band.
+
+**Local vs UTC:** confirm harness stamp **2026-08-10T22:55:20Z** = lab local **2026-08-11** evening (UTC+2). Folder date `…-2026-08-11` is the local lab day.
 
 **Measurement plane for NFR-P1:** Gate confirm uses published **hardware-loop** (Virtual Ports ↔ Bridge ↔ MT4 ↔ physical DIN). That plane includes device + cable delay. It is **not** a separated “usermode-only beyond host USB” delta.
 

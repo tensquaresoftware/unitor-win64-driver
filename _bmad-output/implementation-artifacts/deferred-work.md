@@ -295,7 +295,7 @@ Design note already captured in the longevity guide (not an open deferral): afte
 ## Remaining optional ops after Gate **(a)** (not blockers)
 
 - Baseline refresh/archive when a newer run supersedes “latest” in `docs/dev/measurements/baseline-latest.md`.
-- Soft-echo-ON confirm flag for software-loop (still open from 5.2 review).
+- ~~Soft-echo-ON confirm flag for software-loop (still open from 5.2 review).~~ **Done 2026-08-11** (Epic 5 transversal wave 1: `--confirm-soft-echo-on`).
 
 ## Deferred from: code review of 5-3-studio-done-gate-decision-record-for-timing-anchors.md (2026-08-11)
 
@@ -305,4 +305,15 @@ Design note already captured in the longevity guide (not an open deferral): afte
 ## Deferred from: code review of 5-2-publish-measurement-method-and-baseline-tables.md (2026-08-11)
 
 - Define refresh/archive protocol for `docs/dev/measurements/baseline-latest.md` when a newer run supersedes “latest” (overwrite vs dated history vs archive) — ops process not specified in Story 5.2.
-- Symmetric soft-echo-ON confirm flag for software-loop to mirror hardware `--confirm-soft-echo-off` — harness design from Story 5.1; out of 5.2 docs-only scope unless a later harness story reopens it.
+- ~~Symmetric soft-echo-ON confirm flag for software-loop to mirror hardware `--confirm-soft-echo-off`~~ — **Done 2026-08-11** (Epic 5 transversal wave 1: `--confirm-soft-echo-on`).
+
+## Deferred from: code review of revue-code-transverse-epic-5-midi-path.md (wave 1, 2026-08-11)
+
+- Document that observe QPC under `CALLBACK_WINDOW` includes message-pump / queue delay as part of the published method — ~~Wave 2 docs~~ — **Done 2026-08-11** in `docs/dev/measurements/method-midi-path.md`.
+- Late same note/vel arm-race across samples after a slow path — midiIn drain before arm mitigates; revisit only if lab shows false short latencies (`tools/midi-path-harness/WinMmMidiIo.cpp`).
+- JSON escape only handles `\` and `"` (control chars in device names) — MT4 WinMM names are practically clean; polish later if a consumer needs strict JSON (`tools/midi-path-harness/MidiPathRunner.cpp`).
+
+## Deferred from: code review of revue-code-transverse-epic-5-midi-path.md (wave 2, 2026-08-11)
+
+- Soft-echo OFF for Gate confirm remains human-attested bridge excerpts / CLI confirm — no harness JSON `soft_echo` field (carried from Story 5.3 defer).
+- NFR-P1 lead “beyond the host USB path” kept with measurement-plane footnote (Story 5.3 decision); not reopened in Wave 2.

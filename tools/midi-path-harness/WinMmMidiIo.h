@@ -22,9 +22,11 @@ public:
         std::string& errorOut);
     void closePorts() noexcept;
 
-    // Arm expected Note On; then inject with QPC stamp immediately before send.
+    // Arm expected Note On (channel 1 / status 0x90); then inject with QPC stamp.
     bool armExpectedNote(std::uint8_t note, std::uint8_t velocity) noexcept;
     bool injectNoteOn(const QpcClock& clock, std::uint8_t note, std::uint8_t velocity);
+    // Matching Note Off after a successful observe (avoids stuck notes on DIN).
+    bool sendNoteOff(std::uint8_t note, std::uint8_t velocity) noexcept;
     // Wait until matching observe or timeoutMs. Fills observeTicks on success.
     bool waitForObserve(std::int64_t& observeTicksOut, unsigned timeoutMs) noexcept;
     std::int64_t lastInjectTicks() const noexcept { return lastInjectTicks_; }

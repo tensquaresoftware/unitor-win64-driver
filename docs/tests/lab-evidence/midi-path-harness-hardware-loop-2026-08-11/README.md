@@ -18,19 +18,19 @@ Same-day history: first hardware-loop Pass without classical jitter fields (`har
 |---|---|
 | Verdict | **Pass** (hardware-loop + classical jitter; exit 0) |
 | Path | `path_type=hardware-loop` |
-| Samples | 100 |
+| Samples | 100 (**p99≡max** under harness index `n*99/100`) |
 | latency_us_min | 1443.9 (~1.44 ms) |
 | latency_us_mean | 1604.17 (~1.60 ms) |
 | latency_us_median | 1591.4 (~1.59 ms) |
-| latency_us_p99 | 2321.2 (~2.32 ms) |
+| latency_us_p99 | 2321.2 (~2.32 ms) — equals max at n=100 |
 | latency_us_max | 2321.2 (~2.32 ms) |
 | latency_spread_us | 877.3 (~0.88 ms) — **not** classical jitter |
 | jitter_us_mean | 88.647 (~0.089 ms) |
-| jitter_us_p99 | 729.8 (~0.73 ms) |
+| jitter_us_p99 | 729.8 (~0.73 ms) — equals max at n=100 |
 | jitter_us_max | 729.8 (~0.73 ms) |
 | jitter_def | `p99_abs_dev_from_median` |
-| Plane | `host-winmm-qpc` (`asio_buffer_proof=false`) |
-| Date / UTC | **2026-08-10T22:55:20Z** |
+| Plane | `host-winmm-qpc` (`asio_buffer_proof=false`; `studio_done=false`) |
+| Date / UTC | **2026-08-10T22:55:20Z** (= local **2026-08-11 ~00:55** UTC+2) |
 
 ---
 

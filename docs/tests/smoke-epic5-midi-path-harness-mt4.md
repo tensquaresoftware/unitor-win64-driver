@@ -25,7 +25,7 @@ Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin M
 | Artefact | `MidiPathHarness.exe` sous `builds/` (ex. `builds/debug` ou `builds/ci`) |
 | Horloge | Inject / observe avec `QueryPerformanceCounter` (pas `Sleep` comme timer) |
 | Plan de mesure | Client WinMM hôte contre les ports virtuels Bridge — pas les stamps internes MidiBackend / WinUSB |
-| Boucle logicielle | Bridge avec `--soft-echo` (ou `UNITOR_MIDI_SOFT_ECHO=1`), harness `--path software-loop` |
+| Boucle logicielle | Bridge avec `--soft-echo` (ou `UNITOR_MIDI_SOFT_ECHO=1`), harness `--path software-loop --confirm-soft-echo-on` |
 | Boucle DIN | Optionnelle : soft-echo **OFF**, câble DIN Out→In, `--path hardware-loop --confirm-soft-echo-off` |
 | ASIO | **Hors scope** — jamais une preuve du chemin MIDI |
 | Soft-echo studio | Gate **OFF** par défaut — `--no-soft-echo` force l’arrêt même si `UNITOR_MIDI_SOFT_ECHO` est collée |
@@ -59,8 +59,8 @@ Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin M
 |---|---|---|---|
 | 1 | Configure/build → `MidiPathHarness.exe` présent sous `builds/` | ✅ | Release `builds/ci` 2026-08-11 |
 | 2 | `MidiPathHarness --help` mentionne software-loop / hardware-loop, QPC, et dit clairement que ASIO n’est pas une preuve | ✅ | |
-| 3 | software-loop : Bridge soft-echo ON + harness `--path software-loop --out "MT4 Out 1" --in "MT4 In 1"` imprime `path_type=software-loop` et des latences µs | ✅ | 50 samples; mean ≈ 2.0 ms; capsule [`lab-evidence/midi-path-harness-software-loop-2026-08-11/`](lab-evidence/midi-path-harness-software-loop-2026-08-11/) |
-| 4 | hardware-loop (optionnel) : DIN présent, soft-echo OFF, `--path hardware-loop --confirm-soft-echo-off` complète ; sans DIN → échec honnête (pas Pass inventé) ; sans `--confirm-soft-echo-off` → refus CLI | ✅ | Out 2→In 2; 100 samples; latest with `jitter_us_p99` ≈ 0.73 ms / latency p99 ≈ 2.32 ms; capsule [`lab-evidence/midi-path-harness-hardware-loop-2026-08-11/`](lab-evidence/midi-path-harness-hardware-loop-2026-08-11/) — Gate **(a)** |
+| 3 | software-loop : Bridge soft-echo ON + harness `--path software-loop --confirm-soft-echo-on --out "MT4 Out 1" --in "MT4 In 1"` imprime `path_type=software-loop` et des latences µs ; sans `--confirm-soft-echo-on` → refus CLI | N/A | Capsule historique [`lab-evidence/midi-path-harness-software-loop-2026-08-11/`](lab-evidence/midi-path-harness-software-loop-2026-08-11/) **sans** `--confirm-soft-echo-on` (predates flag). Re-run + refresh capsule before ✅ |
+| 4 | hardware-loop (optionnel) : DIN présent, soft-echo OFF, `--path hardware-loop --confirm-soft-echo-off` complète ; sans DIN → échec honnête (pas Pass inventé) ; sans `--confirm-soft-echo-off` → refus CLI | ✅ | Out 2→In 2; 100 samples; `jitter_us_p99` ≈ 0.73 ms / latency ≈ 2.32 ms (**p99≡max** at n=100); capsule [`lab-evidence/midi-path-harness-hardware-loop-2026-08-11/`](lab-evidence/midi-path-harness-hardware-loop-2026-08-11/) — Gate **(a)** |
 | 5 | Aucune sortie / doc de ce smoke ne cite la taille de buffer ASIO comme preuve MIDI Path | ✅ | |
 | 6 | Soft-echo resté OFF hors lab (chemin studio / Auto-Start inchangé) | ✅ | Gate default OFF ; lab only `--soft-echo` ; `--no-soft-echo` coupe l’env collée |
 

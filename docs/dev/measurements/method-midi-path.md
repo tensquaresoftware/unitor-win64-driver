@@ -21,9 +21,9 @@ One series only — do **not** mix stamp sources:
 |---|---|
 | Host **WinMM** client against Bridge **Virtual Ports** | MidiBackend-internal timestamps |
 | Inject **QPC** (`QueryPerformanceCounter`) immediately before `midiOutShortMsg` | WinUSB URB completion stamps |
-| Observe QPC in the midiIn callback on the matching Note On | Sleep-as-timer, wall-clock-only intervals |
+| Observe QPC in the midiIn **CALLBACK_WINDOW** handler when the matching Note On is dispatched | Sleep-as-timer, wall-clock-only intervals |
 
-Plane label in harness output: `plane=host-winmm-qpc` (plain) / `"plane":"host-winmm-qpc"` (JSON). JSON also carries `asio_buffer_proof: false` and `studio_done: false` — markdown tables must mirror that honesty.
+Plane label in harness output: `plane=host-winmm-qpc` (plain) / `"plane":"host-winmm-qpc"` (JSON). JSON also carries `asio_buffer_proof: false` and `studio_done: false` — markdown tables must mirror that honesty. Run-level `studio_done=false` means **this harness run is not the Gate decision**; Gate **(a)** may still be confirmed in [`studio-done-gate-decision.md`](studio-done-gate-decision.md).
 
 Reference: [Acquiring high-resolution time stamps](https://learn.microsoft.com/en-us/windows/win32/sysinfo/acquiring-high-resolution-time-stamps).
 
@@ -33,8 +33,8 @@ Reference: [Acquiring high-resolution time stamps](https://learn.microsoft.com/e
 
 | Item | Contract |
 |---|---|
-| Bridge | Soft-echo **ON**: `Bridge.exe --start-session --soft-echo` or `UNITOR_MIDI_SOFT_ECHO=1` |
-| Harness | `--path software-loop` |
+| Bridge | Soft-echo **ON**: `Bridge.exe --start-session --soft-echo` or `UNITOR_MIDI_SOFT_ECHO=1` (not via `--auto-session`) |
+| Harness | `--path software-loop --confirm-soft-echo-on` (confirm flag required) |
 | What it measures | Virtual Port round-trip only (host WinMM → Bridge soft-echo → host WinMM) |
 | What it does **not** measure | USB / WinUSB / DIN / full MT4 cable path |
 
@@ -63,6 +63,7 @@ Typical binary: `builds/ci/tools/midi-path-harness/Release/MidiPathHarness.exe` 
 | `--samples` | Sample count (default **100**; early capsule used 50) |
 | `--timeout-ms` | Per-sample wait (default **2000**; min **1**) |
 | `--json` | Machine-readable summary |
+| `--confirm-soft-echo-on` | **Required** for software-loop |
 | `--confirm-soft-echo-off` | **Required** for hardware-loop |
 
 Preferred teardown for Bridge: **Ctrl+C** (`CTRL_CLOSE` can orphan Virtual Ports).
@@ -86,7 +87,7 @@ Preferred teardown for Bridge: **Ctrl+C** (`CTRL_CLOSE` can orphan Virtual Ports
 
 The harness emits classical `jitter_us_*` fields. See definition below.
 
-**p99 honesty:** the harness sorts samples ascending and takes index `n*99/100` (integer division). At small `n` (e.g. **50**), that index can land on the last sample, so published `latency_us_p99` / `jitter_us_p99` may **equal** the series max. Prefer the harness default `--samples 100` for stronger percentile evidence.
+**p99 honesty:** the harness sorts samples ascending and takes index `n*99/100` (integer division). Under that rule, **`n=100` still selects the last sample** (index 99), so published `latency_us_p99` / `jitter_us_p99` **equal the series max** — the same collapse as at n=50. Do **not** claim that n=100 strengthens percentile evidence. Prefer n≥100 for a denser series / quieter mean, but label Gate rows where p99≡max explicitly. Empty or zero-sample runs are **not publishable** as complete rows (refuse / leave blank — blank ≠ Pass).
 
 ## Classical jitter (harness)
 
@@ -123,8 +124,8 @@ Blank / not-run stubs may leave metric cells as `N/A` / `—`. **Complete** publ
 | Harness build / path | Binary path or version used for the numbers (when known) |
 | virtualMIDI presence | yes / no. **`no` is non-closing** for Epic 5 interim-backend measurement claims — do not treat as a closeable MIDI Path row. |
 | `path_type` | `software-loop` or `hardware-loop` |
-| Sample count | Integer from the run |
-| Date / UTC | Run timestamp in **UTC** (ISO-8601 / capsule `…Z` stamp preferred; local-only is not enough for a closeable row) |
+| Sample count | Integer from the run — **n≥1** required for a complete row; n=0 / empty series → refuse publish (blank ≠ Pass) |
+| Date / UTC | Run timestamp: prefer true UTC ISO-8601. If only local wall time is known, record **local + timezone offset** (do **not** invent a `…Z` stamp from local clock). |
 | Plane / honesty flags | `plane=host-winmm-qpc`, `asio_buffer_proof=false`, `studio_done=false` |
 | Raw evidence | Pointer under `docs/tests/lab-evidence/` when a capsule exists (prefer the exact summary log file) |
 
@@ -146,16 +147,18 @@ Studio-Done Gate **2026-08-11** outcome **(a)** — anchors confirmed from publi
 | Classical jitter | ≤ ~1–2 ms p99 (`jitter_us_p99`) | **Confirmed** |
 | Do-not-ship-worse | ~8–10 ms p99 | Ceiling unchanged — shipping above requires explicit product decision |
 
-**Measurement plane:** Gate confirm evidence is published **hardware-loop** (Virtual Ports ↔ Bridge ↔ MT4 ↔ physical DIN). That includes device + cable delay — **not** a separated usermode-only “beyond host USB” delta. **Lab caveats:** single quiet-lab Out2→In2 path (n=100); not a DAW-session guarantee.
+**Measurement plane:** Gate confirm evidence is published **hardware-loop** (Virtual Ports ↔ Bridge ↔ MT4 ↔ physical DIN). That includes device + cable delay — **not** a separated usermode-only “beyond host USB” delta. **Lab caveats:** single quiet-lab Out2→In2 path (n=100; under current index p99≡max — see honesty note); not a DAW-session guarantee.
 
 Excessive jitter is not a usermode alibi (SM-C4). Decision record: [`studio-done-gate-decision.md`](studio-done-gate-decision.md).
 
 ## Known confounders (document — do not “fix” here)
 
 - Soft-echo skips USB/DIN — software-loop is plumbing / Virtual Port RT only
+- Observe path uses WinMM **CALLBACK_WINDOW**: QPC is taken when the message is pumped, so published latency includes **message-queue / pump delay** (not only cable/driver wire time)
 - Under load, bulk IN / USB I/O contention may affect **hardware-loop** credibility — first baselines: quiet lab
 - CTRL_CLOSE can orphan Virtual Ports — prefer Ctrl+C teardown
 - Mixing path types in one unlabeled series invalidates the claim
+- Empty / zero-sample series must not be published as complete metrics
 
 ## Cross-links
 

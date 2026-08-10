@@ -29,7 +29,7 @@ Course correction detail: [`_bmad-output/planning-artifacts/sprint-change-propos
 | **Public Installer packaging** | Exists (`UnitorMt4Bridge-Setup.exe`) with fail-closed gates; **clean-PC WinUSB via Setup-alone still fails** without a trusted catalog — see [`docs/tests/smoke-epic4-public-installer-mt4.md`](docs/tests/smoke-epic4-public-installer-mt4.md) |
 | **Public GitHub Releases binary** | **Not** the community vehicle yet while the Bridge depends on virtualMIDI |
 | **Code signing** | **No certificate purchase** — unsigned builds + SmartScreen docs when binaries ship later |
-| **Next engineering** | **Epic 5** done (Studio-Done Gate **(a)** confirmed on lab evidence) — next: **Epic 6** WMS Win11 community backend |
+| **Next engineering** | **Epic 5** done (Studio-Done Gate **(a)** on Win10 DIN lab evidence — see [`docs/dev/measurements/studio-done-gate-decision.md`](docs/dev/measurements/studio-done-gate-decision.md); p99≡max at n=100 under harness index) — next: **Epic 6** WMS Win11 community backend |
 | **Then** | **Epic 6** — Windows MIDI Services backend, **Win11-only** community target, then honest public binaries |
 
 ## Start here

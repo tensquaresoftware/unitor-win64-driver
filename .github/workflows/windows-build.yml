@@ -105,4 +105,4 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: All CI legs passed
-        run: echo "quality-gate, build, Bridge.exe, MidiPathHarness.exe, and BridgeTests passed; merge gate green."
+        run: echo "quality-gate, build, Bridge.exe present, MidiPathHarness.exe artifact present, and BridgeTests passed; merge gate green."

@@ -168,12 +168,19 @@ Ceiling honesty: shipping above ~8–10 ms p99 requires an **explicit product de
 | `README.md` | Optional Status/roadmap honesty if it over-claims Epic 5 timing closeout |
 | `_bmad-output/implementation-artifacts/deferred-work.md` | Optional — only if post-gate follow-ups need tracking |
 
-### Current evidence snapshot (do not re-litigate 5.2)
+### Current evidence snapshot (superseding Gate **(a)** — 2026-08-11)
 
-- Software-loop (provisional plumbing): min 1283.3 µs; mean 1998.68 µs; p99 2110.8 µs; max 2110.8 µs; `latency_spread_us` 827.5 µs; samples 50; Win10; virtualMIDI yes; plane `host-winmm-qpc`; `studio_done=false`
-- Hardware-loop: **N/A / not run**
-- Capsule: `docs/tests/lab-evidence/midi-path-harness-software-loop-2026-08-11/`
+Morning draft below this heading recommended **(c)** before hardware-loop lab. **Superseded** same day by outcome **(a)**.
+
+- Software-loop (plumbing only): min 1283.3 µs; mean 1998.68 µs; p99 2110.8 µs; max 2110.8 µs; `latency_spread_us` 827.5 µs; samples 50; Win10; virtualMIDI yes; plane `host-winmm-qpc`; `studio_done=false` — capsule `midi-path-harness-software-loop-2026-08-11/`
+- Hardware-loop (Gate confirm): DIN Out2→In2; soft-echo OFF; n=100; latency ≈ 2.32 ms / classical `jitter_us_p99` ≈ 0.73 ms (**p99≡max** under harness index); capsule `midi-path-harness-hardware-loop-2026-08-11/`
+- Decision: `docs/dev/measurements/studio-done-gate-decision.md` outcome **(a)**
 - Method forbids scoring spread against jitter band
+
+### Historical morning snapshot (do not re-use as live evidence)
+
+- ~~Hardware-loop: N/A / not run~~ — filled same day
+- ~~Recommended default (c) defer~~ — superseded by **(a)**
 
 ### Previous story intelligence (5.2)
 

@@ -235,11 +235,12 @@ bool VirtualMidiBackend::trySoftEchoToMatchingIn(
         return false;
     }
     // Hot path: no error strings / logging — lab soft-echo only.
-    const BOOL ok = sendData_(
+    // Gate ON + matching IN ⇒ never fall through to USB (drop on send failure).
+    (void)sendData_(
         inHandle,
         const_cast<LPBYTE>(reinterpret_cast<const BYTE*>(midiBytes)),
         static_cast<DWORD>(byteCount));
-    return ok != FALSE;
+    return true;
 }
 
 void VirtualMidiBackend::forwardHostToDevice(

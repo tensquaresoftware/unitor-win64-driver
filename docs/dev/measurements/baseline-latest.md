@@ -18,9 +18,10 @@ Method: [`method-midi-path.md`](method-midi-path.md). Index: [`README.md`](READM
 - Metrics come from harness summary fields (`latency_us_*`, `jitter_us_*`, `path_type`, `plane`).
 - **Classical jitter:** `jitter_us_p99` = p99 of \|sample − median\| (`jitter_def=p99_abs_dev_from_median`).
 - **Labeled spread (not classical jitter):** `latency_spread_us = latency_us_p99 − latency_us_min` — do **not** score against ≤1–2 ms jitter band.
-- At small `n`, harness p99 index `n*99/100` can equal max — prefer `--samples 100`.
+- Harness p99 index `n*99/100`: at **n=50 and n=100**, published p99 **equals max** — do **not** read n=100 as a stronger percentile.
 - **ASIO / WASAPI buffer size is never cited as MIDI Path proof.**
 - `software-loop` = Virtual Port round-trip with Bridge soft-echo ON — **not** full MT4 / WinUSB / DIN path latency.
+- Run-level `studio_done=false` on every complete row (this run ≠ Gate decision). Gate claim lives only on the decision banner / decision doc.
 - Blank / `N/A` = not run (**≠** Pass).
 
 ## Latest rows
@@ -36,10 +37,10 @@ Method: [`method-midi-path.md`](method-midi-path.md). Index: [`README.md`](READM
 | Commit / evidence date | Lab run **2026-08-11**; capsule below |
 | virtualMIDI presence | yes |
 | `path_type` | `software-loop` |
-| Plane | `host-winmm-qpc` (`asio_buffer_proof=false`) |
+| Plane | `host-winmm-qpc` (`asio_buffer_proof=false`; `studio_done=false` — run ≠ Gate) |
 | Ports | `MT4 Out 1` / `MT4 In 1` |
-| Samples | 50 (p99 may equal max at this n — see method) |
-| Date / UTC | **2026-08-11T00:17:00Z** (from capsule log `harness-20260811T001700Z.log`) |
+| Samples | 50 (p99≡max under current index — see method) |
+| Date / time | **2026-08-11 ~00:17 local (UTC+2)** — capsule log name `harness-20260811T001700Z.log` uses a filename stamp; **not** proven true UTC (do not treat as `…Z` wall-clock) |
 | Raw evidence | [`harness-20260811T001700Z.log`](../../tests/lab-evidence/midi-path-harness-software-loop-2026-08-11/harness-20260811T001700Z.log) in [`midi-path-harness-software-loop-2026-08-11/`](../../tests/lab-evidence/midi-path-harness-software-loop-2026-08-11/) |
 
 | Metric | µs | ≈ ms |
@@ -50,7 +51,7 @@ Method: [`method-midi-path.md`](method-midi-path.md). Index: [`README.md`](READM
 | `latency_us_max` | 2110.8 | 2.11 |
 | `latency_spread_us` (= p99 − min) | **827.5** | **0.83** |
 
-**Operator recipe (capsule):** Bridge `--start-session --soft-echo`; harness `--path software-loop --out "MT4 Out 1" --in "MT4 In 1" --samples 50`.
+**Operator recipe (historical capsule — predates `--confirm-soft-echo-on`):** Bridge `--start-session --soft-echo`; harness `--path software-loop --out "MT4 Out 1" --in "MT4 In 1" --samples 50`. **Current harness contract:** also pass `--confirm-soft-echo-on` (re-run capsule before claiming smoke Pass for that flag).
 
 ### Hardware-loop (Gate confirm row)
 
@@ -60,13 +61,13 @@ Method: [`method-midi-path.md`](method-midi-path.md). Index: [`README.md`](READM
 | Host OS | Windows 10 x64 |
 | Bridge build | `0.1.0` Release — artifact `builds/ci` (`builds/ci/Release/Bridge.exe`) |
 | Harness build | `builds/ci/tools/midi-path-harness/Release/MidiPathHarness.exe` (with `MidiPathStats` / `jitter_us_*`) |
-| Commit / evidence date | Lab run **2026-08-11** (local); UTC stamp below |
+| Commit / evidence date | Lab run **2026-08-11 local (UTC+2)**; harness UTC stamp below |
 | virtualMIDI presence | yes |
 | `path_type` | `hardware-loop` |
-| Plane | `host-winmm-qpc` (`asio_buffer_proof=false`; Gate timing claim = **confirmed** — see decision) |
+| Plane | `host-winmm-qpc` (`asio_buffer_proof=false`; `studio_done=false` — run ≠ Gate; Gate claim = decision banner only) |
 | Ports | `MT4 Out 2` / `MT4 In 2` (DIN Out 2 → In 2) |
-| Samples | 100 |
-| Date / UTC | **2026-08-10T22:55:20Z** (from `harness-20260810T225520Z-with-jitter.log`) |
+| Samples | 100 (**p99≡max** under current index — see method) |
+| Date / UTC | **2026-08-10T22:55:20Z** (= local **2026-08-11 ~00:55** UTC+2) from `harness-20260810T225520Z-with-jitter.log` |
 | Raw evidence | [`harness-20260810T225520Z-with-jitter.log`](../../tests/lab-evidence/midi-path-harness-hardware-loop-2026-08-11/harness-20260810T225520Z-with-jitter.log) in [`midi-path-harness-hardware-loop-2026-08-11/`](../../tests/lab-evidence/midi-path-harness-hardware-loop-2026-08-11/) |
 
 | Metric | µs | ≈ ms |
@@ -91,8 +92,8 @@ Gate outcome **(a)** confirms these healthy studio targets (do-not-ship-worse ce
 
 | Band | Confirmed value | Latest hardware-loop evidence |
 |---|---|---|
-| Healthy bridge-added latency | ≤ **4–5 ms** p99 | ~**2.32 ms** p99 |
-| Classical jitter | ≤ **1–2 ms** p99 (`jitter_us_p99`) | ~**0.73 ms** p99 |
+| Healthy bridge-added latency | ≤ **4–5 ms** p99 | ~**2.32 ms** (field `latency_us_p99`; ≡ max at n=100) |
+| Classical jitter | ≤ **1–2 ms** p99 (`jitter_us_p99`) | ~**0.73 ms** (`jitter_us_p99`; ≡ max at n=100) |
 | Do-not-ship-worse | ~**8–10 ms** p99 | Still the ceiling for shipping worse than healthy without a separate product exception |
 
 Software-loop remains plumbing evidence only. Decision: [`studio-done-gate-decision.md`](studio-done-gate-decision.md).
