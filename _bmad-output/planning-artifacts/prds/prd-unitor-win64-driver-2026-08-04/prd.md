@@ -100,7 +100,7 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 - **Auto-Start** — Bridge starts with Windows and/or on MT4 USB arrival so the user need not launch it manually before every session.
 - **Hot-Plug Recovery** — After unplug/replug, usable Virtual Ports return without a Windows reboot; host rescan or supervised Bridge restart is acceptable.
 - **Public Installer** — End-user installer intended for community redistribution (subject to VirtualMIDI author clearance).
-- **Studio-Done Gate** — Acceptance milestone for timing: provisional latency/jitter targets may ship as planning anchors, but V1 is not “studio-done” until a published MIDI Path harness has measured results and thresholds are confirmed or explicitly revised.
+- **Studio-Done Gate** — Acceptance milestone for timing: published MIDI Path evidence confirms or revises latency/jitter anchors before calling timing “studio-done.” Gate **2026-08-11** outcome **(a)** confirmed healthy bands — `docs/dev/measurements/studio-done-gate-decision.md` (single quiet-lab Win10 hardware-loop path; not a DAW-session guarantee).
 
 ## 4. Features
 
@@ -310,7 +310,7 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 - First-party SysEx validation via Matrix-Control.
 - Code quality gate when C++ exists: `conventions.md` + `scripts/quality/lint-touched.py`.
 - Public facade: Ten Square Software.
-- Provisional timing targets + Studio-Done Gate (see §7 / §10).
+- Confirmed Studio-Done timing anchors + Gate decision (see §7 / §10 / `docs/dev/measurements/studio-done-gate-decision.md`).
 
 ### 6.2 Out of Scope for MVP
 
@@ -331,7 +331,7 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 
 - **SM-7 Multi-client:** Ableton Live 12 (or Reason Studios 12) + MIDI-OX concurrent use works per FR-9.
 - **SM-8 Multi-MT4 design:** Two-unit support exists in design; physical dual-unit proof when hardware is available; otherwise honest docs. Validates FR-10, FR-5.
-- **SM-9 Studio-Done Gate (timing):** Published MIDI Path measurement method exists; provisional targets confirmed or revised before calling timing “done.” Validates NFR-P1, NFR-P2.
+- **SM-9 Studio-Done Gate (timing):** Published MIDI Path measurement method exists; healthy targets **confirmed** by Gate **2026-08-11** outcome **(a)** (or revised in a later Gate pass) before calling timing “done.” Validates NFR-P1, NFR-P2.
 
 **Counter-metrics (do not optimize)**
 
@@ -342,11 +342,11 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 
 ## 8. Cross-Cutting NFRs
 
-### Performance (provisional → Studio-Done Gate)
+### Performance (Studio-Done Gate confirmed)
 
-- **NFR-P1 Latency (provisional):** Bridge-added end-to-end latency on the MIDI Path aims for a **healthy target of ≤ 4–5 ms at p99** beyond the host USB path. A provisional **do-not-ship-worse ceiling** is about **8–10 ms at p99**; shipping above that ceiling requires an explicit product decision. `[ASSUMPTION: planning anchors from Finalize; replace after harness measurement under Studio-Done Gate.]`
-- **NFR-P2 Jitter (provisional):** Jitter on the MIDI Path aims for **≤ 1–2 ms at p99**, suitable for studio clock/sequencing in the Validation Matrix DAWs. **Excessive jitter is not an alibi for the usermode path.** `[ASSUMPTION: planning anchors from Finalize; replace after harness measurement under Studio-Done Gate.]`
-- **NFR-P3 Measurement method:** Latency/jitter claims must use a reproducible **MIDI Path** method (loopback and/or host-observable MIDI timing), with published host/buffer settings — **not** ASIO buffer size. Harness design belongs in Architecture. V1 timing is not Studio-Done until measurement exists and thresholds are confirmed or explicitly revised in this PRD / release notes.
+- **NFR-P1 Latency (confirmed):** Bridge-added end-to-end latency on the MIDI Path targets **≤ 4–5 ms at p99** beyond the host USB path. A **do-not-ship-worse ceiling** remains about **8–10 ms at p99**; shipping above that ceiling requires an explicit product decision. **Confirmed** by Studio-Done Gate **2026-08-11** outcome **(a)** — `docs/dev/measurements/studio-done-gate-decision.md` (Win10 hardware-loop ~2.32 ms p99). **Measurement plane:** Gate evidence is published **hardware-loop** (Virtual Ports ↔ Bridge ↔ MT4 ↔ physical DIN), which includes device + cable delay — not a separated usermode-only delta. Lab caveat: single quiet-lab Out2→In2 path; not a DAW-session guarantee.
+- **NFR-P2 Jitter (confirmed):** Jitter on the MIDI Path targets **≤ 1–2 ms at p99** (`jitter_us_p99` = p99 of \|sample − median\|). **Excessive jitter is not an alibi for the usermode path.** **Confirmed** by Studio-Done Gate **2026-08-11** outcome **(a)** — same decision doc (hardware-loop ~0.73 ms p99 classical jitter). Do **not** clear this NFR with `latency_spread_us`.
+- **NFR-P3 Measurement method:** Latency/jitter claims must use a reproducible **MIDI Path** method (loopback and/or host-observable MIDI timing), with published host/buffer settings — **not** ASIO buffer size. Harness design belongs in Architecture. V1 timing anchors are Studio-Done when measurement exists and thresholds are confirmed or explicitly revised in this PRD / release notes (Gate **(a)** recorded 2026-08-11).
 
 ### Reliability
 
@@ -376,7 +376,7 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 | Risk / dependency | Impact | Mitigation |
 | --- | --- | --- |
 | VirtualMIDI redistribution / MSI / binaries | Would block public VirtualMIDI-linked Setup | **OQ-1 out of community scope** — community binaries after WMS (Epic 6); lab/eval VirtualMIDI only meanwhile |
-| Usermode latency/jitter | Studio credibility | Explicit provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms) + Studio-Done Gate + MIDI Path harness (**Epic 5**); jitter non-alibi |
+| Usermode latency/jitter | Studio credibility | Healthy anchors **confirmed** (≤4–5 ms / ≤1–2 ms p99; ceiling ~8–10 ms) via Studio-Done Gate **(a)** + MIDI Path harness (**Epic 5**); jitter non-alibi; lab caveats in decision doc |
 | Large/bursty SysEx | Matrix-Control / editors fail | Explicit SysEx acceptance tests; buffering |
 | Scarce Emagic protocol docs | Implementation risk | Linux reference (no copy) + USB captures if needed |
 | SmartScreen / unsigned builds | Users abandon download | Document “Run anyway”; no paid cert (OQ-3 no certificate purchase) |
@@ -437,7 +437,7 @@ Inherited from brief — **do not reopen** unless a blocking risk is documented.
 | ID | Topic | Class | Owner | Status / next action |
 | --- | --- | --- | --- | --- |
 | OQ-1 | VirtualMIDI redistribution / MSI / binary clearance (Tobias Erichsen) | **Out of community scope** (Correct Course 2026-08-10) | Guillaume | No community Releases of VirtualMIDI-linked binaries. virtualMIDI = interim lab/personal only. Community binaries after Windows MIDI Services (Epic 6). MSI embed out of scope under hobby posture. |
-| OQ-2 | Final latency/jitter thresholds after MIDI Path harness (replace provisional NFR-P1/P2) | Studio-Done Gate; harness → Architecture | Guillaume + Architecture | Keep provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms). Measure MIDI Path (**Epic 5 next**), then confirm or revise. Not blocked by OQ-1/OQ-3/WMS. |
+| OQ-2 | Final latency/jitter thresholds after MIDI Path harness (replace provisional NFR-P1/P2) | Studio-Done Gate; harness → Architecture | Guillaume + Architecture | **Confirmed / closed** (Gate pass **2026-08-11** outcome **(a)**). Healthy ≤4–5 ms p99 latency and ≤1–2 ms p99 classical jitter stand. Decision: `docs/dev/measurements/studio-done-gate-decision.md`. Evidence: Win10 hardware-loop Out 2→In 2 (~2.32 ms / ~0.73 ms p99). Do-not-ship-worse ~8–10 ms p99 remains. |
 | OQ-3 | Authenticode / production INF catalog certificate purchase | **Out of scope hobby / no certificate purchase** (Correct Course 2026-08-10) | Guillaume | No certificate purchase planned. Unsigned + SmartScreen docs when binaries ship. Clean-PC Setup-alone WinUSB without trusted catalog is **not** promised. |
 | OQ-4 | Original Emagic protocol documentation vs Linux reference + USB capture fallback | Architecture orientation | Architecture | Defer; not a PRD phase-blocker. |
 | OQ-5 | CI/CD detail (macOS edit / Windows validate); Windows build CI minimum | Architecture | Architecture | Defer detail; NFR-D3 already requires Windows build CI minimum. |
@@ -447,7 +447,7 @@ Inherited from brief — **do not reopen** unless a blocking risk is documented.
 
 ## 13. Assumptions Index
 
-- `[ASSUMPTION]` NFR-P1/P2 provisional timing anchors (healthy ≤4–5 ms p99 bridge-added latency; ≤1–2 ms p99 jitter; do-not-ship-worse ~8–10 ms p99) until harness locks numbers (Studio-Done Gate).
+- NFR-P1/P2 timing anchors **confirmed** by Studio-Done Gate **2026-08-11** outcome **(a)** (healthy ≤4–5 ms p99 bridge-added latency; ≤1–2 ms p99 classical `jitter_us_p99`; do-not-ship-worse ~8–10 ms p99) — `docs/dev/measurements/studio-done-gate-decision.md`.
 - `[ASSUMPTION]` IN vs OUT appear as separate selectable endpoints as Windows UI requires.
 - `[ASSUMPTION]` “macOS-class installer” means few steps, clear progress, obvious success, minimal jargon — tooling and a short acceptance checklist are Architecture/UX.
 - `[ASSUMPTION]` VirtualMIDI multi-client semantics can satisfy FR-9; Architecture confirms.

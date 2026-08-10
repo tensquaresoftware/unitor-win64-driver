@@ -9,7 +9,7 @@ updated: 2026-08-11
 
 # MIDI Path measurement method
 
-> **PROVISIONAL** — Method and published numbers are shared evidence for discussion. They are **not** Studio-Done. Story **5.3** / OQ-2 confirms or revises timing anchors. Do **not** mark NFR-P1 / NFR-P2 as proven from these docs alone.
+> **Studio-Done Gate — timing anchors confirmed** — Method remains the locked measurement contract. Gate **2026-08-11** outcome **(a)** — [`studio-done-gate-decision.md`](studio-done-gate-decision.md). Healthy ≤4–5 ms p99 latency and ≤1–2 ms p99 classical jitter stand from published hardware-loop evidence. Do **not** mark ASIO as proof.
 
 This document locks **how** we measure bridge-relevant MIDI Path latency for Epic 5. Latest numbers live in [`baseline-latest.md`](baseline-latest.md). Index: [`README.md`](README.md).
 
@@ -75,18 +75,32 @@ Preferred teardown for Bridge: **Ctrl+C** (`CTRL_CLOSE` can orphan Virtual Ports
 | `latency_us_mean` | Arithmetic mean (µs) |
 | `latency_us_p99` | 99th percentile (µs) — harness index `n*99/100` on the sorted series (see honesty note below) |
 | `latency_us_max` | Maximum sample (µs) |
+| `latency_us_median` | Median sample (µs) |
+| `latency_spread_us` | `latency_us_p99 − latency_us_min` (labeled spread — **not** classical jitter) |
+| `jitter_us_mean` / `jitter_us_p99` / `jitter_us_max` | Classical jitter: abs-dev-from-median series |
+| `jitter_def` | Must be `p99_abs_dev_from_median` for published classical jitter claims |
 | `path_type` | `software-loop` or `hardware-loop` |
 | `plane` | Must remain `host-winmm-qpc` |
 | `asio_buffer_proof` | Always `false` in published claims |
-| `studio_done` | Always `false` until Story 5.3 |
+| `studio_done` | Harness JSON stays `false` for a single run (run ≠ Gate decision). Gate timing claim lives in [`studio-done-gate-decision.md`](studio-done-gate-decision.md). Plain/help must not deny a published Gate **(a)** claim. |
 
-The harness does **not** emit `jitter_us_*` today. See labeled equivalent below.
+The harness emits classical `jitter_us_*` fields. See definition below.
 
-**p99 honesty:** the harness sorts samples ascending and takes index `n*99/100` (integer division). At small `n` (e.g. **50**), that index can land on the last sample, so published `latency_us_p99` may **equal** `latency_us_max`. Prefer the harness default `--samples 100` for stronger percentile evidence; treat n=50 p99 as provisional plumbing evidence only.
+**p99 honesty:** the harness sorts samples ascending and takes index `n*99/100` (integer division). At small `n` (e.g. **50**), that index can land on the last sample, so published `latency_us_p99` / `jitter_us_p99` may **equal** the series max. Prefer the harness default `--samples 100` for stronger percentile evidence.
 
-## Jitter — labeled equivalent (docs-only)
+## Classical jitter (harness)
 
-**Definition (published equivalent, not classical jitter):**
+**Definition (product-adopted for NFR-P2):**
+
+```text
+abs_dev_us     = |latency_us_sample − latency_us_median|
+jitter_us_p99  = p99 of abs_dev_us   (same n*99/100 index rule)
+jitter_def     = p99_abs_dev_from_median
+```
+
+Also published: `jitter_us_mean`, `jitter_us_max`.
+
+### Labeled spread (not classical jitter)
 
 ```text
 latency_spread_us = latency_us_p99 − latency_us_min
@@ -94,11 +108,9 @@ latency_spread_us = latency_us_p99 − latency_us_min
 
 | Honesty | Statement |
 |---|---|
-| What it is | A clearly labeled **spread** of the latency series from the same harness summary |
-| What it is **not** | Classical peak-to-peak jitter, MAD, or p99 of \|sample − median\| — until the harness computes a dedicated `jitter_us_*` field |
-| Must not | Score `latency_spread_us` against the provisional **Jitter ≤ ~1–2 ms p99** planning band — different semantics; that band stays unconfirmed until Story 5.3 / a real `jitter_us_*` field |
-
-If a future harness adds `jitter_us_p99`, republish tables with that field and keep this equivalent only as a historical footnote.
+| What spread is | A clearly labeled **spread** of the latency series |
+| What it is **not** | Classical jitter — do **not** score `latency_spread_us` against ≤1–2 ms p99 |
+| What clears NFR-P2 | `jitter_us_p99` (or a future equivalent with explicit product sign-off) |
 
 ## Required metadata columns (every published row)
 
@@ -124,17 +136,19 @@ Optional human-friendly ms beside µs is fine; keep harness field names as sourc
 
 MIDI Path proof is **only** the locked QPC WinMM ↔ Virtual Port series described above (NFR-P3 / SM-C2).
 
-## Provisional planning anchors (cite only as provisional)
+## Confirmed timing anchors (Studio-Done Gate)
 
-Until Story **5.3** / OQ-2:
+Studio-Done Gate **2026-08-11** outcome **(a)** — anchors confirmed from published hardware-loop + classical jitter:
 
-| Anchor | Provisional planning band | Status |
+| Anchor | Confirmed band | Status |
 |---|---|---|
-| Healthy bridge-added latency | ≤ ~4–5 ms p99 | **Provisional — not confirmed** |
-| Jitter | ≤ ~1–2 ms p99 | **Provisional — not confirmed** (and harness has no classical jitter yet). Do **not** clear this band with `latency_spread_us`. |
-| Do-not-ship-worse | ~8–10 ms p99 | **Provisional — not confirmed** |
+| Healthy bridge-added latency | ≤ ~4–5 ms p99 | **Confirmed** |
+| Classical jitter | ≤ ~1–2 ms p99 (`jitter_us_p99`) | **Confirmed** |
+| Do-not-ship-worse | ~8–10 ms p99 | Ceiling unchanged — shipping above requires explicit product decision |
 
-Do **not** mark these confirmed in this folder. Excessive jitter is not a usermode alibi (SM-C4) — document; do not excuse.
+**Measurement plane:** Gate confirm evidence is published **hardware-loop** (Virtual Ports ↔ Bridge ↔ MT4 ↔ physical DIN). That includes device + cable delay — **not** a separated usermode-only “beyond host USB” delta. **Lab caveats:** single quiet-lab Out2→In2 path (n=100); not a DAW-session guarantee.
+
+Excessive jitter is not a usermode alibi (SM-C4). Decision record: [`studio-done-gate-decision.md`](studio-done-gate-decision.md).
 
 ## Known confounders (document — do not “fix” here)
 
@@ -148,7 +162,9 @@ Do **not** mark these confirmed in this folder. Excessive jitter is not a usermo
 | Artifact | Path |
 |---|---|
 | Latest tables | [`baseline-latest.md`](baseline-latest.md) |
+| Studio-Done Gate decision | [`studio-done-gate-decision.md`](studio-done-gate-decision.md) |
 | Smoke guide | [`docs/tests/smoke-epic5-midi-path-harness-mt4.md`](../../tests/smoke-epic5-midi-path-harness-mt4.md) |
 | Seed capsule (software-loop) | [`docs/tests/lab-evidence/midi-path-harness-software-loop-2026-08-11/`](../../tests/lab-evidence/midi-path-harness-software-loop-2026-08-11/) |
+| Gate-confirm capsule (hardware-loop + classical jitter) | [`docs/tests/lab-evidence/midi-path-harness-hardware-loop-2026-08-11/`](../../tests/lab-evidence/midi-path-harness-hardware-loop-2026-08-11/) |
 | Lab evidence index | [`docs/tests/lab-evidence/README.md`](../../tests/lab-evidence/README.md) |
 | Harness sources | `tools/midi-path-harness/` |

@@ -1,8 +1,8 @@
 #include "MidiPathRunner.h"
 
-#include <algorithm>
+#include "MidiPathStats.h"
+
 #include <iostream>
-#include <numeric>
 
 namespace
 {
@@ -13,25 +13,22 @@ const char* pathTypeLabel(MidiPathType type) noexcept
 
 void summarizeSamples(MidiPathRunResult& result)
 {
-    if (result.samples.empty())
-    {
-        return;
-    }
     std::vector<double> values;
     values.reserve(result.samples.size());
     for (const MidiPathSample& sample : result.samples)
     {
         values.push_back(sample.latencyUs);
     }
-    std::sort(values.begin(), values.end());
-    result.minUs = values.front();
-    result.maxUs = values.back();
-    const double sum = std::accumulate(values.begin(), values.end(), 0.0);
-    result.meanUs = sum / static_cast<double>(values.size());
-    const std::size_t p99Index = (values.size() * 99) / 100;
-    const std::size_t clamped =
-        p99Index >= values.size() ? values.size() - 1 : p99Index;
-    result.p99Us = values[clamped];
+    const MidiPathLatencySummary summary = summarizeMidiPathLatenciesUs(values);
+    result.minUs = summary.minUs;
+    result.maxUs = summary.maxUs;
+    result.meanUs = summary.meanUs;
+    result.p99Us = summary.p99Us;
+    result.medianUs = summary.medianUs;
+    result.jitterUsMean = summary.jitterUsMean;
+    result.jitterUsP99 = summary.jitterUsP99;
+    result.jitterUsMax = summary.jitterUsMax;
+    result.latencySpreadUs = summary.latencySpreadUs;
 }
 
 struct SampleAttempt
@@ -126,9 +123,15 @@ void printPlainSummary(const MidiPathRunResult& result)
               << "samples=" << result.samples.size() << '\n'
               << "latency_us_min=" << result.minUs << '\n'
               << "latency_us_mean=" << result.meanUs << '\n'
+              << "latency_us_median=" << result.medianUs << '\n'
               << "latency_us_p99=" << result.p99Us << '\n'
               << "latency_us_max=" << result.maxUs << '\n'
-              << "plane=host-winmm-qpc (not ASIO; not Studio-Done)\n";
+              << "latency_spread_us=" << result.latencySpreadUs << '\n'
+              << "jitter_us_mean=" << result.jitterUsMean << '\n'
+              << "jitter_us_p99=" << result.jitterUsP99 << '\n'
+              << "jitter_us_max=" << result.jitterUsMax << '\n'
+              << "jitter_def=p99_abs_dev_from_median\n"
+              << "plane=host-winmm-qpc (not ASIO; run studio_done=false — see Gate decision doc)\n";
 }
 
 std::string jsonEscape(const std::string& text)
@@ -155,8 +158,14 @@ void printJsonSummary(const MidiPathRunResult& result)
               << "\"samples\":" << result.samples.size() << ","
               << "\"latency_us_min\":" << result.minUs << ","
               << "\"latency_us_mean\":" << result.meanUs << ","
+              << "\"latency_us_median\":" << result.medianUs << ","
               << "\"latency_us_p99\":" << result.p99Us << ","
               << "\"latency_us_max\":" << result.maxUs << ","
+              << "\"latency_spread_us\":" << result.latencySpreadUs << ","
+              << "\"jitter_us_mean\":" << result.jitterUsMean << ","
+              << "\"jitter_us_p99\":" << result.jitterUsP99 << ","
+              << "\"jitter_us_max\":" << result.jitterUsMax << ","
+              << "\"jitter_def\":\"p99_abs_dev_from_median\","
               << "\"plane\":\"host-winmm-qpc\","
               << "\"asio_buffer_proof\":false,"
               << "\"studio_done\":false"

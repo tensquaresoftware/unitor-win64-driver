@@ -36,11 +36,13 @@ Protocol family: **Oberheim Matrix** (`F0 10 06 …`). Matrix-Control does **not
 
 Primary validation target: **Matrix-1000**. Packed payloads: patch **134 B**, master **172 B** (nibble-encoded on the wire).
 
-## Provisional timing anchors (Studio-Done Gate)
+## Timing anchors (Studio-Done Gate)
+
+> **Status:** Gate **2026-08-11** outcome **(a) confirm** — healthy targets stand. Decision: [`docs/dev/measurements/studio-done-gate-decision.md`](../../../docs/dev/measurements/studio-done-gate-decision.md).
 
 | Metric | Healthy target | Do-not-ship-worse ceiling |
 | --- | --- | --- |
-| Bridge-added latency (MIDI Path, p99) | ≤ **4–5 ms** | ~**8–10 ms** (above requires explicit product decision) |
-| Jitter (MIDI Path, p99) | ≤ **1–2 ms** | Excessive jitter is not excused because path is usermode |
+| Bridge-added latency (MIDI Path, p99) | ≤ **4–5 ms** (**confirmed**) | ~**8–10 ms** (above requires explicit product decision) |
+| Classical jitter (MIDI Path, `jitter_us_p99`) | ≤ **1–2 ms** (**confirmed**) | Excessive jitter is not excused because path is usermode |
 
-Measure **MIDI Path** only — never ASIO buffer size. Harness: Architecture AD-11.
+Measure **MIDI Path** only — never ASIO buffer size. Harness: Architecture AD-11. Software-loop plumbing ≠ bridge-added WinUSB/MT4 proof alone; `latency_spread_us` ≠ classical jitter.

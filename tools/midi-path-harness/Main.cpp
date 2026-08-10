@@ -20,6 +20,7 @@ void printHelp()
 {
     std::cout
         << "MidiPathHarness — measure MIDI Path latency/jitter (QPC inject/observe)\n"
+        << "Jitter: p99 of |sample - median| (jitter_us_p99); not ASIO buffer size.\n"
         << "\n"
         << "Usage:\n"
         << "  MidiPathHarness --path software-loop [options]\n"
@@ -48,7 +49,8 @@ void printHelp()
         << "  Requires --confirm-soft-echo-off. Missing DIN must not be reported as Pass.\n"
         << "\n"
         << "Lab teardown: prefer Ctrl+C on Bridge (CTRL_CLOSE can orphan Virtual Ports).\n"
-        << "Numbers from this tool are plumbing proof — not Studio-Done (Epic 5.2/5.3).\n";
+        << "JSON studio_done=false: one harness run is not the Studio-Done Gate decision.\n"
+        << "Gate timing claim (if any): docs/dev/measurements/studio-done-gate-decision.md.\n";
 }
 
 bool parseUnsigned(const char* text, unsigned& outValue)

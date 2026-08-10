@@ -29,7 +29,7 @@ Course correction detail: [`_bmad-output/planning-artifacts/sprint-change-propos
 | **Public Installer packaging** | Exists (`UnitorMt4Bridge-Setup.exe`) with fail-closed gates; **clean-PC WinUSB via Setup-alone still fails** without a trusted catalog — see [`docs/tests/smoke-epic4-public-installer-mt4.md`](docs/tests/smoke-epic4-public-installer-mt4.md) |
 | **Public GitHub Releases binary** | **Not** the community vehicle yet while the Bridge depends on virtualMIDI |
 | **Code signing** | **No certificate purchase** — unsigned builds + SmartScreen docs when binaries ship later |
-| **Next engineering** | **Epic 5** — MIDI Path latency/jitter proof on the current lab stack |
+| **Next engineering** | **Epic 5** done (Studio-Done Gate **(a)** confirmed on lab evidence) — next: **Epic 6** WMS Win11 community backend |
 | **Then** | **Epic 6** — Windows MIDI Services backend, **Win11-only** community target, then honest public binaries |
 
 ## Start here
@@ -93,7 +93,7 @@ A KMDF / PortCls stack needs the WDK, Microsoft attestation signing for Secure B
 - MT4 only (`PID 0003`)
 - Basic MIDI I/O as stable `MT4` port names (see user guide)
 - Architecture ready for additional `DeviceProfile` entries (AMT8 / Unitor8 later)
-- Epic 5 MIDI Path measurements on the interim stack
+- Epic 5 MIDI Path measurements on the interim stack (method + tables; Studio-Done Gate **(a)** lab anchors confirmed)
 
 **Out / later**
 

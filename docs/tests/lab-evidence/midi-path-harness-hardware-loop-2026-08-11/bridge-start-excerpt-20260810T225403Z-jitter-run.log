@@ -1,0 +1,6 @@
+﻿Unitor MT4 Bridge 0.1.0
+CLI: --start-session --no-soft-echo (gate default OFF; no soft-echo ON banner)
+Harness build: builds/ci/tools/midi-path-harness/Release/MidiPathHarness.exe (jitter_us_* enabled)
+Unit K=1 ports include MT4 Out 2 / MT4 In 2
+DeviceSession started; MIDI I/O running
+Physical: DIN Out 2 -> In 2

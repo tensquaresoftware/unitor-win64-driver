@@ -1,0 +1,1 @@
+﻿{"path_type":"hardware-loop","out_port":"MT4 Out 2","in_port":"MT4 In 2","samples":100,"latency_us_min":1441.4,"latency_us_mean":1605.95,"latency_us_p99":1865.3,"latency_us_max":1865.3,"plane":"host-winmm-qpc","asio_buffer_proof":false,"studio_done":false}

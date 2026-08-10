@@ -5,16 +5,18 @@ title: Smoke Epic 5.1 — MIDI Path harness scaffold (MT4)
 author: Guillaume DUPONT
 created: 2026-08-10
 updated: 2026-08-11
-lab_result: Win10 Pass (software-loop plumbing; harness 50 samples ~2 ms mean) — not Studio-Done; hardware-loop not run
+lab_result: Win10 Pass — software-loop plumbing + hardware-loop DIN Out2→In2 with classical jitter (~2.32 ms / ~0.73 ms p99, 100 samples); Gate 5.3 superseded to (a) confirm
 ---
 
 # Guide de smoke — Epic 5.1 MIDI Path harness (échafaudage)
 
 Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin MIDI** (pas la taille de buffer ASIO) **compile**, tourne en boucle logicielle Bridge, et reste honnête sur ce qu’il mesure.
 
-**Barème d’honnêteté :** case vide ≠ Pass. Les chiffres de cette story sont une **preuve de plomberie**, pas Studio-Done.
+**Barème d’honnêteté :** case vide ≠ Pass. Ce guide **5.1** prouve surtout que le harness **compile et tourne**. Les chiffres software-loop restent de la **plomberie**. La décision Studio-Done Gate **(a)** (ancres confirmées) vit dans le [dossier de décision](../dev/measurements/studio-done-gate-decision.md) + capsule hardware-loop — ne pas confondre une exécution harness (`studio_done:false`) avec ce cachet Gate.
 
-**Méthode publiée + tables de baseline (Story 5.2) :** [`docs/dev/measurements/`](../dev/measurements/) — index, [`method-midi-path.md`](../dev/measurements/method-midi-path.md), [`baseline-latest.md`](../dev/measurements/baseline-latest.md). Ancres timing → Story **5.3**.
+**Méthode publiée + tables de baseline (Story 5.2) :** [`docs/dev/measurements/`](../dev/measurements/) — index, [`method-midi-path.md`](../dev/measurements/method-midi-path.md), [`baseline-latest.md`](../dev/measurements/baseline-latest.md).
+
+**Décision Studio-Done Gate (Story 5.3) :** [`studio-done-gate-decision.md`](../dev/measurements/studio-done-gate-decision.md) — outcome **(a) confirm** (2026-08-11, superseding same-day **(c)**) ; ancres saines confirmées.
 
 ## Ce que tu valides
 
@@ -33,7 +35,7 @@ Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin M
 | Sujet | Story |
 |---|---|
 | Méthode publiée + tables de baseline | **5.2** — publié sous [`docs/dev/measurements/`](../dev/measurements/) |
-| Décision Studio-Done / ancres NFR-P1/P2 | **5.3** / OQ-2 |
+| Décision Studio-Done / ancres NFR-P1/P2 | **5.3** — [`studio-done-gate-decision.md`](../dev/measurements/studio-done-gate-decision.md) (**(a) confirm**, 2026-08-11) |
 | Backend Windows MIDI Services | Epic **6** |
 
 ## Prérequis
@@ -58,7 +60,7 @@ Ce guide sert pour **Story 5.1** : prouver que l’outil de mesure du **chemin M
 | 1 | Configure/build → `MidiPathHarness.exe` présent sous `builds/` | ✅ | Release `builds/ci` 2026-08-11 |
 | 2 | `MidiPathHarness --help` mentionne software-loop / hardware-loop, QPC, et dit clairement que ASIO n’est pas une preuve | ✅ | |
 | 3 | software-loop : Bridge soft-echo ON + harness `--path software-loop --out "MT4 Out 1" --in "MT4 In 1"` imprime `path_type=software-loop` et des latences µs | ✅ | 50 samples; mean ≈ 2.0 ms; capsule [`lab-evidence/midi-path-harness-software-loop-2026-08-11/`](lab-evidence/midi-path-harness-software-loop-2026-08-11/) |
-| 4 | hardware-loop (optionnel) : DIN présent, soft-echo OFF, `--path hardware-loop --confirm-soft-echo-off` complète ; sans DIN → échec honnête (pas Pass inventé) ; sans `--confirm-soft-echo-off` → refus CLI | | Non joué (≠ Pass) |
+| 4 | hardware-loop (optionnel) : DIN présent, soft-echo OFF, `--path hardware-loop --confirm-soft-echo-off` complète ; sans DIN → échec honnête (pas Pass inventé) ; sans `--confirm-soft-echo-off` → refus CLI | ✅ | Out 2→In 2; 100 samples; latest with `jitter_us_p99` ≈ 0.73 ms / latency p99 ≈ 2.32 ms; capsule [`lab-evidence/midi-path-harness-hardware-loop-2026-08-11/`](lab-evidence/midi-path-harness-hardware-loop-2026-08-11/) — Gate **(a)** |
 | 5 | Aucune sortie / doc de ce smoke ne cite la taille de buffer ASIO comme preuve MIDI Path | ✅ | |
 | 6 | Soft-echo resté OFF hors lab (chemin studio / Auto-Start inchangé) | ✅ | Gate default OFF ; lab only `--soft-echo` ; `--no-soft-echo` coupe l’env collée |
 

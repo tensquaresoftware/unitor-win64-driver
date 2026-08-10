@@ -272,6 +272,7 @@ Avec Unitor MT4 Bridge et une MT4 sous Windows 10 / 11 64 bits :
 - Débrancher et rebrancher la MT4, puis récupérer les ports par rescan ou relance du Bridge (sans redémarrer Windows)
 - Ouvrir plusieurs logiciels sur les mêmes ports (dans la limite de virtualMIDI, environ huit par port)
 - Brancher une seconde MT4 lorsque vous en avez une (voir [Deux interfaces MT4](#deux-interfaces-mt4))
+- Consulter les ancres de timing studio publiées pour le chemin MIDI (latence saine ≤4–5 ms p99 et jitter classique ≤1–2 ms p99, Gate **(a)** du 2026-08-11 sur une boucle DIN Win10 Out2→In2 en lab calme — **cibles de lab, pas une garantie de session DAW** ; méthode sous [`docs/dev/measurements/`](../dev/measurements/))
 
 ## Ce que cette version ne fait pas
 
@@ -285,7 +286,6 @@ N’attendez **pas** ceci :
 - Support garanti AMT8 / Unitor8 sans matériel validé pour ces modèles
 - Windows MIDI Services comme backend **déjà** livré (prochain backend community, Win11 seulement)
 - Un pilote MIDI noyau custom
-- Chiffres de latence / jitter MIDI « studio-done » publiés (mesures épic 5)
 - Un SmartScreen silencieux sur un téléchargement non signé (voir [Windows SmartScreen](#windows-smartscreen-setup-non-signe-ou-non-reconnu))
 
 Voir aussi : [Licence et backends MIDI](../dev/license-and-backends.md) — MIT ≠ virtualMIDI (lab intérimaire) ≠ Windows MIDI Services (prochaine community). Politique de signature : [Authenticode and SmartScreen](../dev/authenticode-and-smartscreen.md) (pas d’achat de certificat dans ce projet hobby).

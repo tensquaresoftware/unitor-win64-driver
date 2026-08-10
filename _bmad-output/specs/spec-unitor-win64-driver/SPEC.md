@@ -85,7 +85,7 @@ sources:
 
 - **CAP-16**
   - **intent:** Timing claims are measurable on the MIDI Path so Studio-Done Gate can confirm or revise provisional anchors.
-  - **success:** In-repo MIDI Path harness exists (`tools/midi-path-harness/` per AD-11); results publish under `docs/dev/measurements/`; ASIO buffer size is never used as MIDI proof; provisional anchors remain until confirmed (healthy ≤4–5 ms p99 bridge-added; jitter ≤1–2 ms p99; do-not-ship-worse ~8–10 ms p99).
+  - **success:** In-repo MIDI Path harness exists (`tools/midi-path-harness/` per AD-11); results publish under `docs/dev/measurements/`; ASIO buffer size is never used as MIDI proof; Studio-Done Gate **2026-08-11** outcome **(a)** confirmed healthy ≤4–5 ms p99 bridge-added and ≤1–2 ms p99 classical jitter (`jitter_us_p99`); do-not-ship-worse ~8–10 ms p99 remains — `docs/dev/measurements/studio-done-gate-decision.md`.
 
 - **CAP-17**
   - **intent:** Bridge sustains normal studio/editor sessions including SysEx without mandatory restart.
@@ -118,7 +118,7 @@ sources:
 - MIDI 2.0 as a product claim for this hardware era.
 - Treating Matrix-Control as a Bridge runtime dependency.
 - Replacing or rewriting the Architecture Spine from Spec without Correct Course.
-- Inventing final latency/jitter thresholds before harness measurement (Studio-Done Gate).
+- Inventing final latency/jitter thresholds without published MIDI Path harness evidence (Studio-Done Gate — now recorded as **(a)** confirm 2026-08-11).
 - Blocking the roadmap on third-party virtualMIDI clearance for community Releases (OQ-1 out of community scope).
 - Paid Authenticode / production catalog as a hobby requirement (OQ-3 no certificate purchase).
 - polished commercial Setup-alone clean-PC WinUSB success without guided association.
@@ -129,7 +129,7 @@ On Win10 x64 and Win11 x64, a user installs once, plugs an MT4, and finds stable
 
 ## Assumptions
 
-- Provisional latency/jitter anchors (≤4–5 ms p99 bridge-added; ≤1–2 ms p99 jitter; do-not-ship-worse ~8–10 ms p99) until Studio-Done Gate.
+- Timing anchors **confirmed** by Studio-Done Gate **2026-08-11** outcome **(a)** (healthy ≤4–5 ms p99 bridge-added; ≤1–2 ms p99 classical `jitter_us_p99`; do-not-ship-worse ~8–10 ms p99) — `docs/dev/measurements/studio-done-gate-decision.md`.
 - IN and OUT appear as separate selectable endpoints as Windows UI requires; same `MT4 … Port N` label on both sides for cable `N`.
 - “macOS-class installer” means the AD-12 short checklist (few steps, progress, success, VirtualMIDI explicit, WinUSB bind, Auto-Start, one-time admin, minimal jargon).
 - VirtualMIDI multi-client meets CAP-9 (author docs: up to 8 clients/port); host quirks documented when observed.
@@ -147,5 +147,5 @@ On Win10 x64 and Win11 x64, a user installs once, plugs an MT4, and finds stable
 - **AQ-3:** Pin exact VirtualMIDI SDK version for **lab-only** use if needed (community redistrib out of scope — OQ-1).
 - **AQ-4:** Win11 / WMS-primary notes under Epic 6 (expand beyond VirtualMIDI coexistence).
 - **OQ-1:** VirtualMIDI-linked community Releases — **out of community scope** (Correct Course 2026-08-10); community binaries after Epic 6 WMS.
-- **Studio-Done Gate (not Spec invent):** Final latency/jitter thresholds after MIDI Path harness (OQ-2) — **Epic 5 next**.
+- **Studio-Done Gate (not Spec invent):** Final latency/jitter thresholds after MIDI Path harness (OQ-2) — Gate pass **2026-08-11** outcome **(a) confirm**; decision `docs/dev/measurements/studio-done-gate-decision.md`.
 - **OQ-3:** Authenticode / catalog certificate purchase — **no certificate purchase / out of scope hobby** (Correct Course 2026-08-10).

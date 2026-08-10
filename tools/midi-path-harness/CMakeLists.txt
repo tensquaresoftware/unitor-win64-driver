@@ -8,6 +8,7 @@ add_executable(MidiPathHarness
     QpcClock.cpp
     WinMmMidiIo.cpp
     MidiPathRunner.cpp
+    MidiPathStats.cpp
     PortNameNormalize.cpp
 )
 

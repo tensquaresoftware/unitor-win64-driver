@@ -288,6 +288,20 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - Topology-only identity (no serial) can allocate a new `K` when the unit moves USB hub/port — already deferred from 3-4 / AQ-1; not closed by this transversal review.
 - Dual physical MT4 hardware matrix remains lab-unproven (`docs/tests/smoke-epic3-dual-mt4-mt4.md`); offline registry/naming and one-session-per-unit code paths are not a substitute Pass.
 
+## Deferred from: story 5-3-studio-done-gate-decision-record-for-timing-anchors.md (2026-08-11)
+
+- Studio-Done Gate closed same-day as **(a) confirm** after Win10 hardware-loop + classical `jitter_us_p99` (`docs/dev/measurements/studio-done-gate-decision.md`). OQ-2 confirmed/closed. Prior morning **(c) defer** was superseded (not left open).
+
+## Remaining optional ops after Gate **(a)** (not blockers)
+
+- Baseline refresh/archive when a newer run supersedes “latest” in `docs/dev/measurements/baseline-latest.md`.
+- Soft-echo-ON confirm flag for software-loop (still open from 5.2 review).
+
+## Deferred from: code review of 5-3-studio-done-gate-decision-record-for-timing-anchors.md (2026-08-11)
+
+- p99 index rule (`n*99/100`) makes `latency_us_p99` / `jitter_us_p99` equal series maxima at preferred n=100 — pre-existing published method contract from Story 5.2; Gate **(a)** numbers inherit it.
+- Soft-echo-OFF for Gate confirm attested by human bridge excerpts / CLI `--confirm-soft-echo-off`, not a harness JSON `soft_echo` field — pre-existing attestation pattern; optional harness field left for a later ops/harness pass.
+
 ## Deferred from: code review of 5-2-publish-measurement-method-and-baseline-tables.md (2026-08-11)
 
 - Define refresh/archive protocol for `docs/dev/measurements/baseline-latest.md` when a newer run supersedes “latest” (overwrite vs dated history vs archive) — ops process not specified in Story 5.2.

@@ -139,6 +139,8 @@ add_executable(BridgeTests
     tests/unit/HotPlugContractTests.cpp
     tests/unit/MultiClientContractTests.cpp
     tests/unit/UnitIdentityRegistryTests.cpp
+    tests/unit/MidiPathStatsTests.cpp
+    tools/midi-path-harness/MidiPathStats.cpp
     src/App/AutoStartRegistration.cpp
     src/App/AutoStartTaskScheduler.cpp
     src/App/AutoStartRunKey.cpp
@@ -160,6 +162,7 @@ add_executable(BridgeTests
 target_include_directories(BridgeTests
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tools/midi-path-harness"
 )
 
 target_link_libraries(BridgeTests

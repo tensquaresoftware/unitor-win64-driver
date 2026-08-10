@@ -149,8 +149,8 @@ flowchart TB
   - Measure the **MIDI Path** only (Virtual Port ↔ Bridge ↔ WinUSB ↔ device path as applicable) — never ASIO buffer size.
   - Harness lives in-repo under `tools/midi-path-harness/` (C++17), built to `builds/`.
   - Method: timestamped inject/observe using high-resolution clocks (`QueryPerformanceCounter` or equivalent); publish host OS, Bridge build, VirtualMIDI presence, and whether the path is software-loop (Virtual Port round-trip through Bridge) or hardware-loop (MT4 physical loopback when available).
-  - Results publish under `docs/dev/measurements/` (method + latest tables). Provisional anchors remain until Studio-Done Gate revises them: healthy bridge-added ≤ **4–5 ms** p99; jitter ≤ **1–2 ms** p99; do-not-ship-worse ~**8–10 ms** p99.
-  - `[ASSUMPTION: first harness iteration uses a Bridge-mediated Virtual Port software loop; hardware loopback is added when a physical loop cable/setup is available.]`
+  - Results publish under `docs/dev/measurements/` (method + latest tables). Studio-Done Gate **2026-08-11** outcome **(a)** **confirmed** healthy bridge-added ≤ **4–5 ms** p99 and classical jitter ≤ **1–2 ms** p99 (`jitter_us_p99` = p99 of \|sample − median\|); do-not-ship-worse ~**8–10 ms** p99 remains. Decision: `docs/dev/measurements/studio-done-gate-decision.md`.
+  - `[ASSUMPTION: first harness iteration used a Bridge-mediated Virtual Port software loop; hardware loopback + classical jitter are now published on Win10 lab.]`
 
 ### AD-12 — Installer: WinUSB association + VirtualMIDI prerequisite + UX bar
 
@@ -318,7 +318,7 @@ flowchart TB
 | --- | --- |
 | VirtualMIDI MSI / binary redistribution terms | **Out of community scope** (Correct Course 2026-08-10) — community binaries via Epic 6 WMS |
 | Authenticode / production catalog certificate purchase | **No certificate purchase / out of scope hobby** (Correct Course 2026-08-10) — SmartScreen docs + guided WinUSB |
-| Final latency/jitter thresholds | After harness measurements (Studio-Done Gate / **Epic 5**); provisional anchors remain in PRD |
+| Final latency/jitter thresholds | **Confirmed** Studio-Done Gate **2026-08-11** outcome **(a)** — healthy ≤4–5 ms / ≤1–2 ms p99 classical jitter; ceiling ~8–10 ms; decision `docs/dev/measurements/studio-done-gate-decision.md` |
 | SysEx vector refinement | PRD minimum locked; Guillaume if Matrix-Control changes |
 | Cousin DeviceProfiles product ship (AMT8 / Unitor8) | Hardware-gated; structure ready via AD-3 |
 | Windows MIDI Services community backend | **Epic 6** after Epic 5 + Win11 lab — not vague post-V1 |
