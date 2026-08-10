@@ -53,6 +53,9 @@ private:
     bool ensureApiLoaded(std::string& errorOut);
     bool createDirectionalPort(const PortCreateRequest& request, std::string& errorOut);
     bool createDirectionalPortSet(const PortNameSet& names, std::string& errorOut);
+    bool createDirectionalPortSetWithAliasBackoff(
+        const PortNameSet& names,
+        std::string& errorOut);
     bool rejectSharedDirectionalHandles(
         std::size_t inCount,
         std::size_t outCount,

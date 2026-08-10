@@ -245,3 +245,10 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - Offline hot-plug coverage still only asserts wait-constant aliases while the multi-unit product loop no longer calls that wait helper — thin offline pattern; hardware SM-4 / dual-MT4 smoke remain the gate (`tests/unit/HotPlugContractTests.cpp`).
 - Topology identity keys use the full USB instance ID and change when a serial-less MT4 moves hub/port — known fallback limit; AQ-1 stays lab notes (`src/Usb/WinUsbEnumerate.cpp`).
 - Two Bridge processes can race the same `%LOCALAPPDATA%` identity registry file — V1 assumes a single Bridge host (`src/Device/UnitIdentityRegistry.cpp`).
+
+## Deferred from: code review of revue-code-transverse-epic-3-daily-studio.md (2026-08-10)
+
+- CTRL_CLOSE / window-close may kill before `Stop`/`DestroyPortSet`; Auto-Start daily path widens orphan VirtualMIDI exposure — already deferred from 3-1; reconfirmed as Epic 3 joint (prefer Ctrl+C; no new lifecycle owner this pass).
+- Surprise-removal `DeviceSession::Stop` still best-effort finish-magic `WriteBulk` on a possibly dead bus after ports are destroyed — already deferred from 3-2; reconfirmed under multi-unit/multi-client teardown.
+- Topology-only identity (no serial) can allocate a new `K` when the unit moves USB hub/port — already deferred from 3-4 / AQ-1; not closed by this transversal review.
+- Dual physical MT4 hardware matrix remains lab-unproven (`docs/tests/smoke-epic3-dual-mt4-mt4.md`); offline registry/naming and one-session-per-unit code paths are not a substitute Pass.

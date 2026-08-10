@@ -107,8 +107,28 @@ struct ResolveNameArgs
     LiveUnitSession* unitOut = nullptr;
 };
 
-bool resolveAndNameUnit(const ResolveNameArgs& args, std::string& errorOut)
+void rollbackFreshIdentityAssign(
+    UnitIdentityRegistry& registry,
+    const Mt4WinUsbInterfaceInfo& iface,
+    bool newlyAssigned)
 {
+    if (!newlyAssigned)
+    {
+        return;
+    }
+    registry.unbindKey(iface.identityKind, iface.identityKey);
+    if (!iface.topologyKey.empty() && iface.topologyKey != iface.identityKey)
+    {
+        registry.unbindKey(UnitIdentityKind::Topology, iface.topologyKey);
+    }
+}
+
+bool resolveAndNameUnit(
+    const ResolveNameArgs& args,
+    std::string& errorOut,
+    bool& newlyAssignedOut)
+{
+    newlyAssignedOut = false;
     if (args.iface == nullptr || args.profile == nullptr || args.registry == nullptr
         || args.unitOut == nullptr)
     {
@@ -120,7 +140,7 @@ bool resolveAndNameUnit(const ResolveNameArgs& args, std::string& errorOut)
     resolve.key = &args.iface->identityKey;
     resolve.topologyKey = &args.iface->topologyKey;
     unsigned k = 0;
-    if (!args.registry->resolveOrAssign(resolve, k, errorOut))
+    if (!args.registry->resolveOrAssign(resolve, k, errorOut, &newlyAssignedOut))
     {
         return false;
     }
@@ -143,8 +163,9 @@ bool startResolvedUnit(
     const char* failPrefix)
 {
     std::string error;
+    bool newlyAssigned = false;
     ResolveNameArgs resolve{&iface, ctx.profile, ctx.registry, &unitOut};
-    if (!resolveAndNameUnit(resolve, error))
+    if (!resolveAndNameUnit(resolve, error, newlyAssigned))
     {
         std::cerr << "Unit identity resolve failed: " << error << '\n';
         return false;
@@ -153,6 +174,7 @@ bool startResolvedUnit(
     {
         std::cerr << failPrefix << " (K=" << unitOut.unitOrdinalK << "): " << error
                   << '\n';
+        rollbackFreshIdentityAssign(*ctx.registry, iface, newlyAssigned);
         return false;
     }
     return true;
@@ -187,16 +209,17 @@ bool quarantineCorruptRegistry(const std::string& path, const std::string& loadE
     if (MoveFileExA(path.c_str(), quarantinePath.c_str(), MOVEFILE_REPLACE_EXISTING) == 0)
     {
         std::cerr << loadError << '\n';
-        std::cerr << "Unit identity registry quarantine failed; starting with empty map\n";
-        return true;
+        std::cerr << "Unit identity registry quarantine failed; refusing to start "
+                     "(will not assign new K names from an empty map)\n";
+        return false;
     }
 #else
     (void)path;
 #endif
     std::cerr << loadError << '\n';
     std::cerr << "Unit identity registry unreadable; quarantined to \"" << quarantinePath
-              << "\" and starting with an empty map (K may be reassigned)\n";
-    return true;
+              << "\". Refusing to start until the registry is repaired or removed.\n";
+    return false;
 }
 } // namespace mt4_multi
 
@@ -212,11 +235,31 @@ bool loadOrCreateUnitRegistry(UnitIdentityRegistry& registry, std::string& pathO
     std::string loadError;
     if (!registry.loadFromFile(pathOut, loadError))
     {
-        mt4_multi::quarantineCorruptRegistry(pathOut, loadError);
+        (void)mt4_multi::quarantineCorruptRegistry(pathOut, loadError);
         registry.clear();
-        return true;
+        return false;
     }
     return true;
+}
+
+std::size_t startPresentUnitsSoft(
+    MultiUnitHostContext& ctx,
+    const std::vector<Mt4WinUsbInterfaceInfo>& interfaces,
+    std::vector<LiveUnitSession>& liveOut)
+{
+    std::size_t failedCount = 0;
+    for (const Mt4WinUsbInterfaceInfo& iface : interfaces)
+    {
+        LiveUnitSession unit;
+        if (!mt4_multi::startResolvedUnit(ctx, iface, unit, "DeviceSession start failed"))
+        {
+            ++failedCount;
+            continue;
+        }
+        mt4_multi::printUnitDiagnostics(unit);
+        liveOut.push_back(std::move(unit));
+    }
+    return failedCount;
 }
 
 bool startAllPresentUnits(MultiUnitHostContext& ctx, std::vector<LiveUnitSession>& liveOut)
@@ -238,21 +281,22 @@ bool startAllPresentUnits(MultiUnitHostContext& ctx, std::vector<LiveUnitSession
         std::cerr << dupError << '\n';
         return false;
     }
-    for (const Mt4WinUsbInterfaceInfo& iface : interfaces)
+    const std::size_t failedCount = startPresentUnitsSoft(ctx, interfaces, liveOut);
+    if (liveOut.empty())
     {
-        LiveUnitSession unit;
-        if (!mt4_multi::startResolvedUnit(ctx, iface, unit, "DeviceSession start failed"))
-        {
-            stopAllLiveUnits(liveOut);
-            return false;
-        }
-        mt4_multi::printUnitDiagnostics(unit);
-        liveOut.push_back(std::move(unit));
+        std::cerr << "No MT4 unit sessions started\n";
+        return false;
     }
     if (!mt4_multi::persistRegistry(*ctx.registry, *ctx.registryPath))
     {
         stopAllLiveUnits(liveOut);
         return false;
+    }
+    if (failedCount > 0)
+    {
+        std::cerr << "Started " << liveOut.size()
+                  << " MT4 unit(s); " << failedCount
+                  << " failed Start and were skipped (peers keep running)\n";
     }
     return true;
 }

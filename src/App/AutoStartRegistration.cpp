@@ -105,6 +105,27 @@ bool utf8ToWide(const std::string& utf8, std::wstring& wideOut, std::string& err
     return true;
 }
 
+bool clearRunKeyOrRollbackTask(std::string& errorOut)
+{
+    std::string runMessage;
+    std::string runError;
+    if (unregisterAutoStartRunKey(runMessage, runError))
+    {
+        return true;
+    }
+    // Roll back the new task; otherwise logon can launch Task + Run.
+    std::string rollbackMessage;
+    std::string rollbackError;
+    (void)unregisterAutoStartTaskScheduler(rollbackMessage, rollbackError);
+    errorOut = "Task Scheduler registered but clearing HKCU Run failed (" + runError
+        + ")";
+    if (!rollbackError.empty())
+    {
+        errorOut += "; task rollback: " + rollbackError;
+    }
+    return false;
+}
+
 bool tryTaskSchedulerThenRunKey(
     const std::wstring& exeWide,
     std::string& messageOut,
@@ -113,16 +134,7 @@ bool tryTaskSchedulerThenRunKey(
     std::string schedulerError;
     if (registerAutoStartTaskScheduler(exeWide, messageOut, schedulerError))
     {
-        // Clear any prior Run fallback so logon cannot start two Bridges.
-        std::string runMessage;
-        std::string runError;
-        if (!unregisterAutoStartRunKey(runMessage, runError))
-        {
-            errorOut = "Task Scheduler registered but clearing HKCU Run failed ("
-                + runError + ")";
-            return false;
-        }
-        return true;
+        return clearRunKeyOrRollbackTask(errorOut);
     }
 
     const std::string argsUtf8 = buildAutoStartActionArguments();

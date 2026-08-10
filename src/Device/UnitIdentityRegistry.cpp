@@ -87,6 +87,15 @@ bool UnitIdentityRegistry::tryLookup(
     return true;
 }
 
+void UnitIdentityRegistry::unbindKey(UnitIdentityKind kind, const std::string& key) noexcept
+{
+    if (key.empty())
+    {
+        return;
+    }
+    identityToK_.erase(makeMapKey(kind, key));
+}
+
 void UnitIdentityRegistry::clear() noexcept
 {
     identityToK_.clear();
@@ -107,6 +116,17 @@ bool lookupExistingOrdinal(
     return topologyKey != nullptr
         && registry.tryLookup(UnitIdentityKind::Topology, *topologyKey, unitOrdinalKOut);
 }
+
+const std::string* optionalTopologyKey(const UnitIdentityResolveRequest& request)
+{
+    if (request.topologyKey == nullptr || request.topologyKey->empty()
+        || *request.topologyKey == *request.key)
+    {
+        return nullptr;
+    }
+    return request.topologyKey;
+}
+
 } // namespace
 
 void UnitIdentityRegistry::bindKey(
@@ -117,43 +137,81 @@ void UnitIdentityRegistry::bindKey(
     identityToK_[makeMapKey(kind, key)] = unitOrdinalK;
 }
 
+void UnitIdentityRegistry::bindPrimaryAndTopology(
+    UnitIdentityKind kind,
+    const std::string& key,
+    const std::string* topologyKey,
+    unsigned unitOrdinalK)
+{
+    bindKey(kind, key, unitOrdinalK);
+    if (topologyKey != nullptr)
+    {
+        bindKey(UnitIdentityKind::Topology, *topologyKey, unitOrdinalK);
+    }
+}
+
+bool UnitIdentityRegistry::hasSerialCollisionOnK(
+    const std::string& serialKey,
+    unsigned ordinal,
+    std::string& errorOut) const
+{
+    for (const auto& entry : identityToK_)
+    {
+        UnitIdentityKind kind = UnitIdentityKind::Topology;
+        std::string key;
+        if (!parseMapKey(entry.first, kind, key) || kind != UnitIdentityKind::Serial)
+        {
+            continue;
+        }
+        if (entry.second == ordinal && key != serialKey)
+        {
+            errorOut =
+                "UnitIdentityRegistry: serial identity collides with another "
+                "serial on the same K";
+            return true;
+        }
+    }
+    return false;
+}
+
 bool UnitIdentityRegistry::resolveOrAssign(
     const UnitIdentityResolveRequest& request,
     unsigned& unitOrdinalKOut,
-    std::string& errorOut)
+    std::string& errorOut,
+    bool* newlyAssignedOut)
 {
+    if (newlyAssignedOut != nullptr)
+    {
+        *newlyAssignedOut = false;
+    }
     if (request.key == nullptr || request.key->empty())
     {
         errorOut = "UnitIdentityRegistry: identity key is empty";
         return false;
     }
-    const std::string* topologyKey = nullptr;
-    if (request.topologyKey != nullptr && !request.topologyKey->empty()
-        && *request.topologyKey != *request.key)
-    {
-        topologyKey = request.topologyKey;
-    }
+    const std::string* topologyKey = optionalTopologyKey(request);
 
     unsigned existing = 0;
     if (lookupExistingOrdinal(*this, request, topologyKey, existing))
     {
-        bindKey(request.kind, *request.key, existing);
-        if (topologyKey != nullptr)
+        if (request.kind == UnitIdentityKind::Serial
+            && hasSerialCollisionOnK(*request.key, existing, errorOut))
         {
-            bindKey(UnitIdentityKind::Topology, *topologyKey, existing);
+            return false;
         }
+        bindPrimaryAndTopology(request.kind, *request.key, topologyKey, existing);
         unitOrdinalKOut = existing;
         errorOut.clear();
         return true;
     }
 
     const unsigned assigned = nextFreeOrdinal();
-    bindKey(request.kind, *request.key, assigned);
-    if (topologyKey != nullptr)
-    {
-        bindKey(UnitIdentityKind::Topology, *topologyKey, assigned);
-    }
+    bindPrimaryAndTopology(request.kind, *request.key, topologyKey, assigned);
     unitOrdinalKOut = assigned;
+    if (newlyAssignedOut != nullptr)
+    {
+        *newlyAssignedOut = true;
+    }
     errorOut.clear();
     return true;
 }
@@ -163,6 +221,7 @@ bool UnitIdentityRegistry::replaceAll(
     std::string& errorOut)
 {
     std::unordered_map<std::string, unsigned> next;
+    std::unordered_map<unsigned, std::string> serialKeyByK;
     for (const UnitIdentityBinding& binding : bindings)
     {
         if (binding.key.empty() || binding.unitOrdinalK < 1)
@@ -180,6 +239,17 @@ bool UnitIdentityRegistry::replaceAll(
                 return false;
             }
             continue;
+        }
+        if (binding.kind == UnitIdentityKind::Serial)
+        {
+            const auto serialInserted =
+                serialKeyByK.emplace(binding.unitOrdinalK, binding.key);
+            if (!serialInserted.second && serialInserted.first->second != binding.key)
+            {
+                errorOut =
+                    "UnitIdentityRegistry: two serial identities share the same K";
+                return false;
+            }
         }
     }
     identityToK_ = std::move(next);

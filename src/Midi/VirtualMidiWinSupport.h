@@ -18,6 +18,9 @@ bool utf8ToWideVirtualMidiName(
 
 bool validateVirtualMidiPortNameSet(const PortNameSet& names, std::string& errorOut);
 
+// True when create failed because a display-name alias is still held.
+bool isVirtualMidiAliasBusyError(DWORD lastError, const std::string& errorOut);
+
 // teVirtualMIDI face flags: Bridge→apps (IN) vs apps→Bridge (OUT).
 inline constexpr DWORD kVirtualMidiInPortFlags =
     kTeVmFlagsParseTx | kTeVmFlagsInstantiateTx;

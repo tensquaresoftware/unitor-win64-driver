@@ -38,10 +38,12 @@ public:
     // Resolve or allocate K. Known keys keep K; new keys get next free K.
     // Does not renumber existing bindings when peers disappear.
     // Multiple identity keys may share one K (serial + topology for the same unit).
+    // newlyAssignedOut is set when this call allocated a fresh K (not a lookup/migrate).
     bool resolveOrAssign(
         const UnitIdentityResolveRequest& request,
         unsigned& unitOrdinalKOut,
-        std::string& errorOut);
+        std::string& errorOut,
+        bool* newlyAssignedOut = nullptr);
 
     // Lookup without allocating. Returns false when the identity is unknown.
     bool tryLookup(
@@ -49,10 +51,14 @@ public:
         const std::string& key,
         unsigned& unitOrdinalKOut) const;
 
+    // Remove one map entry (used to roll back a failed Start after a fresh assign).
+    void unbindKey(UnitIdentityKind kind, const std::string& key) noexcept;
+
     void clear() noexcept;
 
     // Replace in-memory map (tests / load). Keys must be non-empty; K must be >= 1.
-    // Duplicate map keys fail; the same K on distinct keys is allowed (serial+topology).
+    // Duplicate map keys fail. Distinct serial primaries must not share one K;
+    // serial+topology aliases for the same unit may share K.
     bool replaceAll(
         const std::vector<UnitIdentityBinding>& bindings,
         std::string& errorOut);
@@ -74,6 +80,15 @@ private:
         std::string& keyOut);
     unsigned nextFreeOrdinal() const;
     void bindKey(UnitIdentityKind kind, const std::string& key, unsigned unitOrdinalK);
+    void bindPrimaryAndTopology(
+        UnitIdentityKind kind,
+        const std::string& key,
+        const std::string* topologyKey,
+        unsigned unitOrdinalK);
+    bool hasSerialCollisionOnK(
+        const std::string& serialKey,
+        unsigned ordinal,
+        std::string& errorOut) const;
 
     std::unordered_map<std::string, unsigned> identityToK_;
 };

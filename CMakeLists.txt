@@ -38,6 +38,7 @@ add_executable(Bridge
     src/App/MidiSessionCli.cpp
     src/App/MidiSessionMultiHost.cpp
     src/App/MidiSessionMultiHostHotPlug.cpp
+    src/App/MidiSessionMultiHostMatch.cpp
     src/App/MidiSessionDiagnostics.cpp
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionDeviceHost.cpp
@@ -51,6 +52,7 @@ add_executable(Bridge
     src/Device/DeviceSessionSupport.cpp
     src/Device/HostOutboundQueue.cpp
     src/Midi/VirtualMidiBackend.cpp
+    src/Midi/VirtualMidiBackendPorts.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp

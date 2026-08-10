@@ -21,9 +21,9 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 |---|---|
 | Hôte produit | `Bridge.exe --auto-session` (processus de session utilisateur seulement ; **pas** un service Windows — AD-20) |
 | Détection de la perte | Échec du pump / `!IsRunning()` inattendu alors que l’annulation **n’est pas** demandée |
-| Teardown | `DeviceSession::Stop()` détruit les ports via `MidiBackend` (AD-9) ; console anglaise : `MT4 disconnected; waiting for replug...` |
-| Attente / rescan | Après déconnexion : sondage jusqu’à GUID WinUSB **Absent** (efface un Present périmé), puis jusqu’à **Present** — toutes les **2 s**, progression toutes les **30 s**, échec fermé après **900 s** avec diagnostics anglais — pas de hang silencieux |
-| Recréation | **Nouvelle** `DeviceSession::Start` sous l’identité AD-6 (V1 une unité : noms `MT4 In N` / `MT4 Out N` ; le raccourci AD-5 « `MT4 Port N` » désigne la même identité câble). L’App **ne** doit **pas** appeler `CreatePortSet` / `DestroyPortSet` |
+| Teardown | `DeviceSession::Stop()` détruit les ports via `MidiBackend` (AD-9). Console anglaise multi-unité : `MT4 unit K=… disconnected; tearing down that unit only` ; quand **plus aucune** unité live : `MT4 disconnected; waiting for replug...` |
+| Attente / rescan | Après perte de **toutes** les unités live : sondage GUID WinUSB **Absent** (efface un Present périmé) puis **Present** — toutes les **2 s**, progression toutes les **30 s**, échec fermé après **900 s** (`Hot-plug recovery` / fail closed). Une unité encore présente garde ses ports ; la unité manquante attend un Absent d’identité avant retry Start |
+| Recréation | **Nouvelle** `DeviceSession::Start` sous l’identité AD-6 ; console : `Hot-plug recovery: new DeviceSession started for K=…`. V1 une unité : noms `MT4 In N` / `MT4 Out N`. L’App **ne** doit **pas** appeler `CreatePortSet` / `DestroyPortSet` directement |
 | AQ-2 (préférence UX) | Défaut V1 = **recréation silencieuse dans le même process** + diagnostics console anglais ; pas de boîte tray/GUI à valider |
 | Visibilité côté hôte | Ableton / Reason / MIDI-OX peuvent demander un **rescan** MIDI ; un redémarrage Bridge supervisé est une **échappatoire autorisée** (AD-10), pas le seul chemin |
 | Labo one-shot | `Bridge.exe --start-session` / `--run-midi` **quittent** encore sur perte USB en milieu de session (scripts labo qui attendent la fin du process) |

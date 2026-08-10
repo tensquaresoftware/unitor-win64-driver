@@ -118,6 +118,34 @@ TEST_CASE("UnitIdentityRegistry migrates topology binding to serial without new 
     REQUIRE(lookup == 1);
 }
 
+TEST_CASE("UnitIdentityRegistry rejects two serial identities on the same K",
+          "[device][registry]")
+{
+    std::vector<UnitIdentityBinding> bindings;
+    bindings.push_back({UnitIdentityKind::Serial, "SERIAL-A", 1});
+    bindings.push_back({UnitIdentityKind::Serial, "SERIAL-B", 1});
+    UnitIdentityRegistry registry;
+    std::string error;
+    REQUIRE_FALSE(registry.replaceAll(bindings, error));
+    REQUIRE(error.find("two serial") != std::string::npos);
+}
+
+TEST_CASE("UnitIdentityRegistry allows serial plus topology alias on the same K",
+          "[device][registry]")
+{
+    std::vector<UnitIdentityBinding> bindings;
+    bindings.push_back({UnitIdentityKind::Serial, "SERIAL-A", 1});
+    bindings.push_back({UnitIdentityKind::Topology, "USB\\VID_0A4A\\INST", 1});
+    UnitIdentityRegistry registry;
+    std::string error;
+    REQUIRE(registry.replaceAll(bindings, error));
+    unsigned k = 0;
+    REQUIRE(registry.tryLookup(UnitIdentityKind::Serial, "SERIAL-A", k));
+    REQUIRE(k == 1);
+    REQUIRE(registry.tryLookup(UnitIdentityKind::Topology, "USB\\VID_0A4A\\INST", k));
+    REQUIRE(k == 1);
+}
+
 TEST_CASE("UnitIdentityRegistry rejects partial ordinal tails on load", "[device][registry]")
 {
     char tempPath[L_tmpnam] = {};

@@ -81,6 +81,12 @@ bool rejectNonUniquePortNames(const PortNameSet& names, std::string& errorOut)
 }
 } // namespace
 
+bool isVirtualMidiAliasBusyError(DWORD lastError, const std::string& errorOut)
+{
+    return lastError == ERROR_ALIAS_EXISTS
+        || errorOut.find("already exists") != std::string::npos;
+}
+
 std::string formatVirtualMidiLastError(const char* action)
 {
     const DWORD code = GetLastError();

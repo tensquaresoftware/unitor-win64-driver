@@ -149,15 +149,55 @@ bool replaceFileAtomically(
     DeleteFileA(tempPath.c_str());
     return false;
 }
-#endif
-} // namespace
 
-bool UnitIdentityRegistry::loadFromFile(const std::string& path, std::string& errorOut)
+// Exclusive lock file so two Bridge processes cannot tear the K map.
+class ScopedRegistryFileLock
+{
+public:
+    bool acquire(const std::string& registryPath, std::string& errorOut)
+    {
+        const std::string lockPath = registryPath + ".lock";
+        handle_ = CreateFileA(
+            lockPath.c_str(),
+            GENERIC_READ | GENERIC_WRITE,
+            0,
+            nullptr,
+            CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr);
+        if (handle_ == INVALID_HANDLE_VALUE)
+        {
+            errorOut = "UnitIdentityRegistry: failed to acquire persistence lock";
+            return false;
+        }
+        errorOut.clear();
+        return true;
+    }
+
+    ~ScopedRegistryFileLock()
+    {
+        if (handle_ != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(handle_);
+            handle_ = INVALID_HANDLE_VALUE;
+        }
+    }
+
+    ScopedRegistryFileLock() = default;
+    ScopedRegistryFileLock(const ScopedRegistryFileLock&) = delete;
+    ScopedRegistryFileLock& operator=(const ScopedRegistryFileLock&) = delete;
+
+private:
+    HANDLE handle_ = INVALID_HANDLE_VALUE;
+};
+#endif
+
+bool loadRegistryBody(const std::string& path, UnitIdentityRegistry& registry, std::string& errorOut)
 {
     std::ifstream input(path);
     if (!input)
     {
-        identityToK_.clear();
+        registry.clear();
         errorOut.clear();
         return true;
     }
@@ -165,7 +205,7 @@ bool UnitIdentityRegistry::loadFromFile(const std::string& path, std::string& er
     std::string line;
     if (!std::getline(input, line))
     {
-        identityToK_.clear();
+        registry.clear();
         errorOut.clear();
         return true;
     }
@@ -191,11 +231,31 @@ bool UnitIdentityRegistry::loadFromFile(const std::string& path, std::string& er
         }
         bindings.push_back(std::move(binding));
     }
-    return replaceAll(bindings, errorOut);
+    return registry.replaceAll(bindings, errorOut);
+}
+} // namespace
+
+bool UnitIdentityRegistry::loadFromFile(const std::string& path, std::string& errorOut)
+{
+#ifdef _WIN32
+    ScopedRegistryFileLock lock;
+    if (!lock.acquire(path, errorOut))
+    {
+        return false;
+    }
+#endif
+    return loadRegistryBody(path, *this, errorOut);
 }
 
 bool UnitIdentityRegistry::saveToFile(const std::string& path, std::string& errorOut) const
 {
+#ifdef _WIN32
+    ScopedRegistryFileLock lock;
+    if (!lock.acquire(path, errorOut))
+    {
+        return false;
+    }
+#endif
     const std::vector<UnitIdentityBinding> bindings = snapshot();
 #ifdef _WIN32
     const std::string tempPath = path + ".tmp";
