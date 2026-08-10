@@ -8,7 +8,7 @@ Branche typique : `main` (dernier commit utile côté Bridge : `7d34b63` ou plus
 
 ## Contexte de la Story
 
-On cherche les failles **entre** les stories d’Epic 1 — le tuyau WinUSB → session → VirtualMIDI — qui pourraient encore faire perdre une réponse MIDI/SysEx rare, alors que chaque story prise seule semblait OK.
+On cherche les failles **entre** les stories d’Epic 1 — le tuyau WinUSB → session → virtualMIDI — qui pourraient encore faire perdre une réponse MIDI/SysEx rare, alors que chaque story prise seule semblait OK.
 
 ---
 
@@ -16,7 +16,7 @@ On cherche les failles **entre** les stories d’Epic 1 — le tuyau WinUSB → 
 
 - Agent BMad développeur / reviewer sur **unitor-win64-driver**.
 - Réponds en **français clair**, intention produit d’abord (ce que ça change pour l’utilisateur MIDI).
-- Garde les noms matériel/protocole en anglais : **MT4**, **WinUSB**, **VirtualMIDI**, **MIDI**, **SysEx**, **Matrix**.
+- Garde les noms matériel/protocole en anglais : **MT4**, **WinUSB**, **virtualMIDI**, **MIDI**, **SysEx**, **Matrix**.
 - Pas de jargon BMad brut non glosé (`AC#…`, `oneshot`, etc.).
 - Chemins / symboles C++ : en bas ou en liste, pas dans la phrase porteuse de sens.
 - **Pas de commit** sauf demande explicite de Guillaume.
@@ -34,7 +34,7 @@ Overnight Windows Matrix (~8 h, 2026-08-07/08) :
 - Échec typique : **une seule** réponse dump manquante (`TIMEOUT` « aucune trame »), souvent **99/100** en banque — **pas** un crash Bridge, **pas** (surtout) une troncature au milieu.
 - Journal : `tests/lab-logs/overnight-matrix/overnight-20260807T222620Z.log`
 
-Hypothèse de travail : les revues **story par story** ont manqué des joints transverses (verrous, files, threads WinUSB, livraison VirtualMIDI).
+Hypothèse de travail : les revues **story par story** ont manqué des joints transverses (verrous, files, threads WinUSB, livraison virtualMIDI).
 
 Priorité produit (accord Guillaume) : **stabiliser les SysEx Matrix « courts » avant le palier 3 SysEx longs**.
 
@@ -54,7 +54,7 @@ Stories (fichier sprint / epics) :
 2. DeviceProfile déclaratif MT4  
 3. Ouverture transport WinUSB  
 4. DeviceSession + demux câbles Emagic  
-5. Backend VirtualMIDI + noms de ports  
+5. Backend virtualMIDI + noms de ports  
 6. Notes/CC sur tous les ports  
 
 SSOT epics : `_bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md`  
@@ -70,7 +70,7 @@ Fais une **revue de code transversale** d’Epic 1 : cherche les faiblesses **au
 
 1. **WinUSB bulk IN asynchrone** : anneau, thread de completion, file de livraison vers le reader — une URB / un paquet peut-il disparaître ou être livré hors ordre sous charge ?
 2. **DeviceSession** : qui tient le verrou USB pendant Write vs Read ; le demux Emagic (câble courant, marqueur de port) ; ce qui se passe si l’entrée USB n’est pas vidée assez vite pendant une sortie longue ou répétée.
-3. **VirtualMIDI / SendToHost** : peut-on appeler depuis un mauvais thread ? file / drop silencieux côté host ?
+3. **virtualMIDI / SendToHost** : peut-on appeler depuis un mauvais thread ? file / drop silencieux côté host ?
 4. **Noms / mapping ports** : In1 ↔ câble 0, etc. — confusion possible (rappel : écho DIN Out2 sans marqueur de port tombe encore sur In1 — hors Matrix overnight, mais lié au demux Epic 1).
 5. **Arrêt / Start de session** : résidus qui font rater le *premier* échange après un Start frais.
 
@@ -103,7 +103,7 @@ Fais une **revue de code transversale** d’Epic 1 : cherche les faiblesses **au
 /bmad-code-review
 
 Revue de code TRANSPARENTALE Epic 1 (MT4 MIDI de base), pas une story isolée.
-Focus : joints WinUSB async IN ↔ DeviceSession ↔ VirtualMIDI qui peuvent perdre une trame rare (timeout « aucune réponse » overnight Matrix).
+Focus : joints WinUSB async IN ↔ DeviceSession ↔ virtualMIDI qui peuvent perdre une trame rare (timeout « aucune réponse » overnight Matrix).
 Lis le prompt complet collé depuis le Bureau : revue-code-transverse-epic-1-mt4-midi.md
 Ne commit pas. Français clair.
 ```

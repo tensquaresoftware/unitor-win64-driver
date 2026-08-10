@@ -14,9 +14,9 @@ On vient de corriger des courses Bridge sur les dumps SysEx Matrix courts (rafal
 
 ## Qui tu es / comment parler
 
-- Agent BMad sur **unitor-win64-driver** (Windows 10/11, Bridge WinUSB + VirtualMIDI).
+- Agent BMad sur **unitor-win64-driver** (Windows 10/11, Bridge WinUSB + virtualMIDI).
 - Français clair, intention produit d’abord.
-- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **VirtualMIDI**, **SysEx**, **Bridge**.
+- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **virtualMIDI**, **SysEx**, **Bridge**.
 - Pas de commit sans demande explicite.
 - Rebuild debug si besoin, puis labs — pas de redesign, pas de palier 3 comme objectif de cette passe.
 
@@ -37,7 +37,7 @@ Correctifs Epic 2 lot A déjà sur `main` :
 
 | Commit | Rôle |
 |---|---|
-| `835c992` | Fix Matrix short-dump races (expect avant flush, retry sans jeter le différé, abandon→retry, 2ᵉ short sans tuer la pompe, plus de drain Write/SendToHost depuis le callback VirtualMIDI, expiry expect, plafond différé, repair F0 = `10 06`) |
+| `835c992` | Fix Matrix short-dump races (expect avant flush, retry sans jeter le différé, abandon→retry, 2ᵉ short sans tuer la pompe, plus de drain Write/SendToHost depuis le callback virtualMIDI, expiry expect, plafond différé, repair F0 = `10 06`) |
 | `5d77070` | Findings revue + deferred-work |
 
 Références :
@@ -93,7 +93,7 @@ Répéter Lab A avec `--fresh-starts 50`, ou enchaîner mid+bank en boucle ~30�
 
 1. Verdict : **vert / orange / rouge** pour Lab A et Lab B.
 2. Tableau court : Starts, ok rate, nb TIMEOUT, nb `last=none`, pompe Bridge morte oui/non.
-3. Si Fail : 1–3 hypothèses liées aux correctifs (expect/flush, abandon, VirtualMIDI) + extrait log (`SEND` / `TIMEOUT` + counters Bridge).
+3. Si Fail : 1–3 hypothèses liées aux correctifs (expect/flush, abandon, virtualMIDI) + extrait log (`SEND` / `TIMEOUT` + counters Bridge).
 4. Recommandation : overnight Windows, overnight Mac contrôle, ou nouvelle revue/code.
 5. Chemins exacts des logs produits.
 

@@ -8,7 +8,7 @@ Démarre un **projet greenfield** avec la méthode BMad pour `unitor-win64-drive
 
 Parcours souhaité (adapte si `bmad-help` propose mieux, mais ne saute pas l’essentiel) :
 
-1. **Analyst / Brainstorming** — consolider ce brief en Project Brief formel ; lister les inconnues restantes (doc protocole Emagic, captures USB, licence VirtualMIDI pour redistribution).
+1. **Analyst / Brainstorming** — consolider ce brief en Project Brief formel ; lister les inconnues restantes (doc protocole Emagic, captures USB, licence virtualMIDI pour redistribution).
 2. **PM** — MVP réaliste et backlog post-MVP (AMT8 / Unitor8 / Unitor8 mk2, éventuelle v2 Win11 / second backend).
 3. **Architecte** — trancher la stack C++ usermode, le plan de réimplémentation protocole (référence Linux, pas copie GPL), le backend MIDI virtuel pour **Windows 10**, le découpage `DeviceProfile`.
 4. **Découpage** en epics/stories avec revues `bmad-code-review` dans le workflow habituel.
@@ -19,7 +19,7 @@ Contraintes non négociables déjà tranchées par le porteur de projet (Guillau
 | --- | --- |
 | Plateforme cible MVP | **Windows 10 et 11, 64 bits** — Win10 est obligatoire |
 | Type de solution | **Usermode** (WinUSB + appli/service C++) — **pas** de pilote kernel custom en V1 |
-| Backend MIDI virtuel MVP | **VirtualMIDI SDK** (Tobias Erichsen) — Windows MIDI Services = piste **v2 / second backend** (Win11 only, pas dispo sur Win10) |
+| Backend MIDI virtuel MVP | **virtualMIDI SDK** (Tobias Erichsen) — Windows MIDI Services = piste **v2 / second backend** (Win11 only, pas dispo sur Win10) |
 | Licence du code du projet | **MIT** (réimplémentation originale ; ne pas vendorer de sources GPL Linux) |
 | Périmètre matériel V1 | **MT4 uniquement** (`VID 086A` / `PID 0003`), architecture multi-device dès le départ |
 | Qualité | Appliquer `conventions.md` + porte `scripts/quality/lint-touched.py` dès qu’il y a du C++ |
@@ -70,7 +70,7 @@ Lire en priorité dans le dépôt :
 2. **Protocole déjà rétro-ingénieré côté Linux (GPL).** Références à *lire*, pas à copier dans le dépôt :
    - https://github.com/torvalds/linux/blob/master/sound/usb/quirks-table.h
    - https://github.com/torvalds/linux/blob/master/sound/usb/midi.c (terme `emagic`)
-3. **Patron architectural proche :** [Prodikeys64](https://github.com/CrazyRedMachine/Prodikeys64) — WinUSB (Zadig) + VirtualMIDI, sans driver kernel.
+3. **Patron architectural proche :** [Prodikeys64](https://github.com/CrazyRedMachine/Prodikeys64) — WinUSB (Zadig) + virtualMIDI, sans driver kernel.
 4. **Demandes utilisateurs / pistes :**  
    - https://www.modwiggler.com/forum/viewtopic.php?t=142226  
    - https://gearspace.com/board/music-computers/141084-emagic-amt-8-drivers-2.html  
@@ -87,7 +87,7 @@ Lire en priorité dans le dépôt :
 1. **Transport USB** — lier le device à **WinUSB** (`winusb.sys`, signé Microsoft) via INF minimal et/ou [Zadig](https://zadig.akeo.ie/) en dev.  
    Docs : [Intro WinUSB](https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/introduction-to-winusb-for-developers), [considerations](https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/winusb-considerations), [installation](https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/winusb-installation).
 2. **Protocole** — service/appli **C++17** usermode via `winusb.dll` ; **réimplémentation originale** du multiplexage câbles Emagic ; table **`DeviceProfile`** par PID.
-3. **Exposition DAW** — ports MIDI virtuels via **VirtualMIDI SDK** (Tobias Erichsen) pour couvrir **Windows 10**.  
+3. **Exposition DAW** — ports MIDI virtuels via **virtualMIDI SDK** (Tobias Erichsen) pour couvrir **Windows 10**.  
    - Clarifier tôt les conditions de **redistribution** (runtime / SDK propriétaire ≠ MIT du repo).  
    - **Windows MIDI Services** : non dispo sur Win10 (confirmé Microsoft : Win11 only) → backlog v2 ou second backend derrière la même abstraction.
 
@@ -106,7 +106,7 @@ WDK + attestation signing Secure Boot + expertise noyau = disproportionné et fr
 
 - INF WinUSB pour le/les VID/PID
 - Binaire usermode (cœur du produit)
-- Installeur éventuel (WinUSB + service + dépendance VirtualMIDI, en respectant sa licence)
+- Installeur éventuel (WinUSB + service + dépendance virtualMIDI, en respectant sa licence)
 - Authenticode recommandé pour SmartScreen (pas une signature kernel)
 
 ---
@@ -137,7 +137,7 @@ WDK + attestation signing Secure Boot + expertise noyau = disproportionné et fr
 
 - Timing / gigue MIDI en usermode
 - Doc protocole Emagic introuvable → s’appuyer sur `midi.c` + captures USB (Wireshark / USBPcap) si besoin
-- Licence / redistribution **VirtualMIDI** vs MIT du projet
+- Licence / redistribution **virtualMIDI** vs MIT du projet
 - Signature Authenticode du binaire usermode
 - Compétence : le porteur n’est **pas** expert drivers ; rester sur le chemin usermode et expliquer les choix en français clair
 - Dev principal sur **macOS** (Cursor) ; build/tests USB/DAW sur **PC Windows 10 64 bits** — anticiper CI/CD et stratégie de test
@@ -158,8 +158,8 @@ WDK + attestation signing Secure Boot + expertise noyau = disproportionné et fr
 Artifacts BMad en **anglais**, décisions et questions en **français clair** dans le chat (barème de clarté du dépôt) :
 
 1. Project Brief consolidé  
-2. MVP / non-goals / risques / dépendances externes (matériel AMT8, licence VirtualMIDI)  
-3. Architecture tranchée (WinUSB + VirtualMIDI V1, abstraction backend, `DeviceProfile`, plan protocole sans GPL vendored)  
+2. MVP / non-goals / risques / dépendances externes (matériel AMT8, licence virtualMIDI)  
+3. Architecture tranchée (WinUSB + virtualMIDI V1, abstraction backend, `DeviceProfile`, plan protocole sans GPL vendored)  
 4. Epics / stories prêtes pour implémentation itérative  
 
 Commence par confirmer la compréhension du problème en une phrase produit, puis propose la prochaine commande BMad adaptée (brief / brainstorming / PRD / etc.) avec **Recommandation BMad**.

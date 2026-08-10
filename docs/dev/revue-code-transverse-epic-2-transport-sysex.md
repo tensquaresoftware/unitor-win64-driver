@@ -16,7 +16,7 @@ On cherche pourquoi, sous stress Matrix de plusieurs heures, **une réponse SysE
 
 - Agent BMad développeur / reviewer sur **unitor-win64-driver**.
 - Français clair, intention produit d’abord.
-- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **VirtualMIDI**, **SysEx**, **MIDI clock**, **MTC**.
+- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **virtualMIDI**, **SysEx**, **MIDI clock**, **MTC**.
 - Pas de jargon BMad non glosé ; chemins/symboles en complément.
 - **Pas de commit** sans demande explicite.
 - Règles : clarity-bar, `conventions.md` §3, lint sur diff C++ touché.
@@ -74,7 +74,7 @@ Revue **transversale** centrée SysEx Matrix + buffering + ce qui peut faire **p
    - armement « on attend une réponse » ;
    - rejet taille / retry éventuel ;
    - cas où le lab voit timeout alors que le Bridge loggue peu ou pas d’échec pompe.
-2. **Rafale banque** (100 dumps, intervalle court) : file outbound, pacing, interaction avec hold SysEx IN, risque qu’une réponse soit écrasée, finalisée trop tôt, ou jamais livrée à VirtualMIDI.
+2. **Rafale banque** (100 dumps, intervalle court) : file outbound, pacing, interaction avec hold SysEx IN, risque qu’une réponse soit écrasée, finalisée trop tôt, ou jamais livrée à virtualMIDI.
 3. **Realtime (clock / MTC)** pendant SysEx : un message temps réel ou un status parasite peut-il **casser** un SysEx en cours (framer) et produire « aucune trame » ou une trame invalide ignorée ?
 4. **Longévité session** (story 2.5) : compteurs, fuites, états qui se dégradent après des centaines de Starts (le overnight relance Bridge à chaque cycle mid/bank — regarder aussi le coût Start/Stop).
 5. **Joint avec Epic 1** : s’appuyer sur les findings Epic 1 (verrou USB, anneau IN, demux) — ne pas les redécouvrir en silo ; dire ce qui est **spécifique Epic 2**.

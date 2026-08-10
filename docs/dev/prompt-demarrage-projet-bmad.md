@@ -22,7 +22,7 @@ Ce projet a une vraie utilité communautaire : de nombreux utilisateurs de la fa
    - `sound/usb/quirks-table.h` — déclare le VID/PID et la structure `snd_usb_midi_endpoint_info` (mapping des câbles IN/OUT) pour Unitor8, AMT8 et MT4.
    - `sound/usb/midi.c` — implémentation du traitement des messages Emagic (recherchable via le terme `emagic` dans le fichier).
    - Dépôt à consulter : https://github.com/torvalds/linux/blob/master/sound/usb/midi.c et https://github.com/torvalds/linux/blob/master/sound/usb/quirks-table.h
-3. **Un projet de référence quasi identique existe déjà** pour un autre périphérique legacy non class-compliant (clavier Creative Prodikeys, protocole HID propriétaire) : il combine **WinUSB (installé via Zadig)** + **VirtualMIDI SDK de Tobias Erichsen** pour réimplémenter un pilote MIDI 64 bits sans écrire de driver kernel. C'est une excellente base d'inspiration architecturale :
+3. **Un projet de référence quasi identique existe déjà** pour un autre périphérique legacy non class-compliant (clavier Creative Prodikeys, protocole HID propriétaire) : il combine **WinUSB (installé via Zadig)** + **virtualMIDI SDK de Tobias Erichsen** pour réimplémenter un pilote MIDI 64 bits sans écrire de driver kernel. C'est une excellente base d'inspiration architecturale :
    - https://github.com/CrazyRedMachine/Prodikeys64
 4. **Des utilisateurs ont déjà exprimé le besoin et partagé des pistes** sur les forums suivants (à consulter pour glaner d'éventuelles copies de la doc protocole traduite, ou du code partiel déjà tenté) :
    - https://www.modwiggler.com/forum/viewtopic.php?t=142226 (fil le plus riche : mention explicite que la doc protocole Emagic a circulé)
@@ -43,7 +43,7 @@ Pipeline proposé :
    - Choix du bon modèle de driver USB : https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/winusb-considerations
    - Installation WinUSB pour développeurs : https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/winusb-installation
 2. **Couche protocole** : une application/service en mode utilisateur (C++, idéalement compatible avec mon stack JUCE existant) dialogue avec le périphérique via l'API `winusb.dll` (transferts bulk/interrupt), en réimplémentant la logique de mapping des câbles trouvée dans `midi.c`/`quirks-table.h` du noyau Linux.
-3. **Couche exposition MIDI vers les DAW** : les ports MIDI virtuels sont créés soit via le **VirtualMIDI SDK** de Tobias Erichsen (https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html — attention, licence propriétaire, à vérifier pour un usage/redistribution en open source), soit via la nouvelle **API Windows MIDI Services** (MIDI 2.0, native depuis Windows 11 24H2, gratuite et maintenue par Microsoft) si la cible Windows le permet — à trancher lors du sprint d'architecture.
+3. **Couche exposition MIDI vers les DAW** : les ports MIDI virtuels sont créés soit via le **virtualMIDI SDK** de Tobias Erichsen (https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html — attention, licence propriétaire, à vérifier pour un usage/redistribution en open source), soit via la nouvelle **API Windows MIDI Services** (MIDI 2.0, native depuis Windows 11 24H2, gratuite et maintenue par Microsoft) si la cible Windows le permet — à trancher lors du sprint d'architecture.
 
 ## Fichiers attendus dans le livrable final
 
@@ -56,7 +56,7 @@ Pipeline proposé :
 - **Timing/latence MIDI** : le MIDI est très sensible à la gigue. Une implémentation usermode (vs kernel) introduit un peu plus de latence — à mesurer, probablement négligeable pour un usage studio normal mais à valider.
 - **Documentation du protocole incomplète** : si aucune copie de la doc originale Emagic n'est retrouvée sur les forums, il faudra s'appuyer uniquement sur la lecture du code Linux (`midi.c`) et potentiellement sur une capture USB (Wireshark + USBPcap) en dernier recours pour valider empiriquement le comportement.
 - **Cas multi-interfaces empilées** (plusieurs Unitor8/AMT8/MT4 en cascade) : mentionné comme fragile même sous Linux/ALSA — à traiter comme fonctionnalité avancée, pas comme MVP.
-- **Licence du VirtualMIDI SDK** : à clarifier avant toute redistribution publique du projet (propriétaire, conditions de Tobias Erichsen) — alternative gratuite : Windows MIDI Services si la contrainte de version Windows est acceptable.
+- **Licence du virtualMIDI SDK** : à clarifier avant toute redistribution publique du projet (propriétaire, conditions de Tobias Erichsen) — alternative gratuite : Windows MIDI Services si la contrainte de version Windows est acceptable.
 - **Signature de code** (même en usermode, pas de signature kernel requise, mais un Authenticode classique reste recommandé pour la confiance utilisateur/SmartScreen).
 
 ## Ce que j'attends de BMad pour ce projet
@@ -65,7 +65,7 @@ Merci de démarrer un **projet greenfield** avec la méthode BMad en tenant comp
 
 1. Phase Analyst/Brainstorming : consolider ce brief en *Project Brief* formel, identifier les inconnues restantes (notamment la disponibilité réelle de la documentation protocole).
 2. Phase PM : définir un MVP scope réaliste (ex. : MVP = MT4 seul, 2 IN / 4 OUT, sans mode Patch ni LTC/VITC, sans cascade multi-interfaces).
-3. Phase Architecte : trancher précisément l'architecture (WinUSB + VirtualMIDI SDK vs WinUSB + Windows MIDI Services), définir la stack (C++ pur / JUCE / autre), et le plan de rétro-ingénierie du protocole à partir de `midi.c`.
+3. Phase Architecte : trancher précisément l'architecture (WinUSB + virtualMIDI SDK vs WinUSB + Windows MIDI Services), définir la stack (C++ pur / JUCE / autre), et le plan de rétro-ingénierie du protocole à partir de `midi.c`.
 4. Découpage en stories avec revues de code (`/bmad-bmm-code-review`) comme d'habitude dans mon workflow.
 
 Mon environnement : MacBook Pro M5 (macOS Tahoe) comme machine principale de développement avec Cursor, mais le build/test final devra se faire sur PC Windows 10 64 bits (cible réelle du pilote) — à anticiper dans la stratégie CI/CD et de test.

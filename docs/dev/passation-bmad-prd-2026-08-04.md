@@ -24,7 +24,7 @@ Sur le Mac : `git pull` avant de continuer.
 - `_bmad-output/planning-artifacts/briefs/brief-unitor-win64-driver-2026-08-04/brief.md`
 - `addendum.md` + `.memlog.md` associés
 
-Décisions produit **verrouillées** (ne pas rouvrir) : Win10/11 x64, usermode WinUSB + C++, VirtualMIDI V1, MIT, MT4 validé (`086A:0003`), SysEx + clock obligatoires, multi-DeviceProfile / multi-MT4, façade Ten Square Software, Authenticode fortement recommandé mais pas hard gate, etc.
+Décisions produit **verrouillées** (ne pas rouvrir) : Win10/11 x64, usermode WinUSB + C++, virtualMIDI V1, MIT, MT4 validé (`086A:0003`), SysEx + clock obligatoires, multi-DeviceProfile / multi-MT4, façade Ten Square Software, Authenticode fortement recommandé mais pas hard gate, etc.
 
 ### PRD — **draft rédigé, pas finalisé** (`status: draft`)
 
@@ -43,14 +43,14 @@ Contenu déjà dans le draft :
   - **Win10 x64 obligatoire** + **Win11 x64**
 - Timing : ancres provisoires + **Studio-Done Gate** (mesurer le chemin MIDI avant de dire « done studio »)
 - Risques, open questions, traçabilité vers le brief
-- Addendum : tables câbles, licences VirtualMIDI, alternatives rejetées
+- Addendum : tables câbles, licences virtualMIDI, alternatives rejetées
 
 Mode de travail utilisé : **Fast path**, enjeux **lancement OSS public**.
 
 ### Workflow machine (rappel)
 
 - **Mac** : édition Cursor, docs, code C++, process BMad
-- **PC Windows** : builds, WinUSB, VirtualMIDI, MT4, DAW, SysEx, mesures timing
+- **PC Windows** : builds, WinUSB, virtualMIDI, MT4, DAW, SysEx, mesures timing
 
 ## Ce qu’il faut terminer avant l’étape BMad suivante
 
@@ -79,16 +79,16 @@ Prompt de reprise possible sur le Mac :
 
 | # | Sujet | Action avant Architecture |
 | --- | --- | --- |
-| 1 | Conditions VirtualMIDI (éval vs redistribution / MSI) + contact Tobias | **Gate release installer public** — peut rester open dans le PRD final, mais noter le owner / prochaine action |
+| 1 | Conditions virtualMIDI (éval vs redistribution / MSI) + contact Tobias | **Gate release installer public** — peut rester open dans le PRD final, mais noter le owner / prochaine action |
 | 2 | Seuils latence/gigue définitifs + harness MIDI Path | **OK de rester provisoire** avec Studio-Done Gate (déjà dans le draft) — Architecture doit préciser le harness |
 | 3 | Authenticode (certificat perso vs org, timing, coût) | Reporter avec owner ; pas hard gate V1 |
 | 4 | Doc protocole Emagic vs fallback Linux + captures USB | Reporter ; Orientation Architecture |
 | 5 | CI/CD Mac edit / Win10 validate | Au minimum : build Windows en CI ; détail Architecture |
 | 6 | Orthographe exacte des noms si 2× MT4 | **Architecture / UX** — règle produit déjà posée |
-| 7 | Multi-client VirtualMIDI + MIDI-OX / DAW | **Architecture** à confirmer |
+| 7 | Multi-client virtualMIDI + MIDI-OX / DAW | **Architecture** à confirmer |
 | 8 | Vecteurs SysEx Matrix-Control « pass » | À préciser (Guillaume) quand possible ; sinon open avec owner |
 
-Rien de tout ça ne doit **rouvrir** : usermode, VirtualMIDI V1, MIT, MT4-only validé, SysEx V1, Win10 obligatoire.
+Rien de tout ça ne doit **rouvrir** : usermode, virtualMIDI V1, MIT, MT4-only validé, SysEx V1, Win10 obligatoire.
 
 ### 3. Petites vérifications produit optionnelles au Finalize
 

@@ -1,6 +1,6 @@
 # Windows CI toolchain
 
-Pinned merge gate for the Bridge usermode host (WinUSB + VirtualMIDI). Windows x64 only — no macOS/Linux CI runners.
+Pinned merge gate for the Bridge usermode host (WinUSB + virtualMIDI). Windows x64 only — no macOS/Linux CI runners.
 
 ## Workflow
 
@@ -44,7 +44,7 @@ Configure fetches Catch2 (pinned commit `f7cfc885…` / tag `v3.8.0` via FetchCo
 
 - Touched-diff C++ quality lint (`quality-gate`)
 - Windows x64 Release build of `Bridge.exe`
-- Lean unit tests (`BridgeTests`): synthetic checks of MT4 `DeviceProfile` + `EmagicCableMapper` (+ shared mapper smoke vectors) — **no** live MT4 hardware, WinUSB, VirtualMIDI, or DAW
+- Lean unit tests (`BridgeTests`): synthetic checks of MT4 `DeviceProfile` + `EmagicCableMapper` (+ shared mapper smoke vectors) — **no** live MT4 hardware, WinUSB, virtualMIDI, or DAW
 
 ## Local checks
 
@@ -85,7 +85,7 @@ The `build` job prints CMake and Visual Studio versions on every green run (`Rec
 Keep these on a Windows 10/11 x64 machine with hardware / DAW as needed:
 
 - WinUSB bind (Zadig) and live MT4 open
-- VirtualMIDI port visibility and DAW round-trip
+- virtualMIDI port visibility and DAW round-trip
 - SysEx, clock, and long soak sessions
 - Epic 1 hardware smoke checklist: `docs/tests/smoke-epic1-mt4.md`
 - Story **2.5** ~4 h longevity sample (SM-3 / NFR-R1): `docs/tests/checklists/smoke-epic2-longevity-mt4.md` — **lab-only evidence**, not a CI job

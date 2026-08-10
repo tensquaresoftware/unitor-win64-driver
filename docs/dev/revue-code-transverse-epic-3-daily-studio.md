@@ -16,7 +16,7 @@ On cherche les failles **entre** les quatre stories d’Epic 3 — démarrage au
 
 - Agent BMad développeur / reviewer sur **unitor-win64-driver**.
 - Français clair, intention produit d’abord (ce que ça change pour l’utilisateur MIDI / studio).
-- Noms gardés : **MT4**, **WinUSB**, **VirtualMIDI**, **MIDI**, **MIDI-OX**, **DAW**, **SysEx**, **Bridge**.
+- Noms gardés : **MT4**, **WinUSB**, **virtualMIDI**, **MIDI**, **MIDI-OX**, **DAW**, **SysEx**, **Bridge**.
 - Pas de jargon BMad non glosé ; chemins/symboles en complément.
 - **Pas de commit** sans demande explicite.
 - Règles : clarity-bar, `conventions.md` §3, lint sur diff C++ touché.
@@ -32,7 +32,7 @@ Preuves / honnêteté lab à respecter :
 - Auto-Start, hot-plug, multi-client (Live 12 + MIDI-OX) : guides smoke Epic 3 — barème case vide ≠ Pass.
 - Dual-MT4 : preuve **offline / registre + noms** OK ; **dual physique non prouvé** (un seul MT4 en lab) — le front matter du smoke dual le dit. Ne pas inventer un Pass matériel.
 - Risques déjà notés en différé (ne pas les redécouvrir en silence, les re-prioriser si le joint Epic 3 les aggrave) :
-  - `CTRL_CLOSE` / kill brutal → ports VirtualMIDI orphelins (Auto-Start augmente l’exposition quotidienne).
+  - `CTRL_CLOSE` / kill brutal → ports virtualMIDI orphelins (Auto-Start augmente l’exposition quotidienne).
   - Surprise-removal : `Stop` peut encore tenter un WriteBulk « finish magic » sur un bus mort.
   - Couverture offline hot-plug encore mince ; le multi-unit host a changé la boucle produit.
   - `--dev-zadig` reste single-unit lab (pas le chemin dual produit).
@@ -74,12 +74,12 @@ Smokes :
 
 ## Mission (revue transverse Epic 3)
 
-Revue **transversale** centrée sur les **joints** entre Auto-Start, hot-plug multi-unité, multi-clients VirtualMIDI, et registre d’identité / noms. Cherche ce qui peut laisser des ports orphelins, croiser deux boîtes, bloquer un second host, ou faire échouer un replug alors que chaque story seule était verte.
+Revue **transversale** centrée sur les **joints** entre Auto-Start, hot-plug multi-unité, multi-clients virtualMIDI, et registre d’identité / noms. Cherche ce qui peut laisser des ports orphelins, croiser deux boîtes, bloquer un second host, ou faire échouer un replug alors que chaque story seule était verte.
 
 ### Focus (dans l’ordre)
 
 1. **Hôte produit multi-unité (`--auto-session`)**  
-   - Une boîte = une `DeviceSession` + un backend VirtualMIDI + un jeu de noms `K` — pas de handle WinUSB partagé, pas un seul backend pour deux boîtes.  
+   - Une boîte = une `DeviceSession` + un backend virtualMIDI + un jeu de noms `K` — pas de handle WinUSB partagé, pas un seul backend pour deux boîtes.  
    - Arrivée / départ d’**une** unité : Stop/Destroy **seulement** cette unité ; les autres gardent ports et `K`.  
    - Courses entre énumération WinUSB, ouverture par chemin d’instance, et boucle hot-plug.
 
@@ -96,7 +96,7 @@ Revue **transversale** centrée sur les **joints** entre Auto-Start, hot-plug mu
    - MidiBackend reçoit des noms **déjà prêts** — ne doit pas re-dériver `K` depuis USB.
 
 4. **Multi-clients × lifecycle**  
-   - Le Bridge n’ajoute **pas** de politique exclusive-open par-dessus VirtualMIDI.  
+   - Le Bridge n’ajoute **pas** de politique exclusive-open par-dessus virtualMIDI.  
    - Hosts déjà ouverts (DAW + MIDI-OX) pendant un unplug/replug : recreate silencieux vs besoin de rescan ; pas de seconde autorité de ports.  
    - Plafond documenté ≤8 clients/port — pas de gate inventé côté Bridge.
 
@@ -179,14 +179,14 @@ Bonne revue.
 - [x] [Review][Patch] Verrou inter-processus sur le fichier registre `K` [`src/Device/UnitIdentityRegistryIo.cpp`]
 - [x] [Review][Patch] Échec `persistRegistry` après hot-plug Start : retry ou Stop de la nouvelle unité [`src/App/MidiSessionMultiHostHotPlug.cpp`]
 - [x] [Review][Patch] Start soft échoué : ne pas laisser un `K` nouvellement bound orphelin [`src/App/MidiSessionMultiHost.cpp`]
-- [x] [Review][Patch] Recreate VirtualMIDI : backoff si alias encore tenu par DAW/MIDI-OX [`src/Midi/VirtualMidiBackend.cpp`]
+- [x] [Review][Patch] Recreate virtualMIDI : backoff si alias encore tenu par DAW/MIDI-OX [`src/Midi/VirtualMidiBackend.cpp`]
 - [x] [Review][Patch] Aligner le smoke hot-plug sur les messages multi-unité réels [`docs/tests/smoke-epic3-hotplug-mt4.md`]
 - [x] [Review][Patch] Cold start : si une unité échoue, garder les unités déjà démarrées (A1) [`src/App/MidiSessionMultiHost.cpp`]
 - [x] [Review][Patch] Registre K illisible : fail closed, ne pas démarrer avec carte vide (B2) [`src/App/MidiSessionMultiHost.cpp`]
 
 #### Defer
 
-- [x] [Review][Defer] CTRL_CLOSE / kill → ports VirtualMIDI orphelins ; Auto-Start augmente l’exposition [`src/App/MidiSessionCli.cpp:28`] — deferred, pre-existing
+- [x] [Review][Defer] CTRL_CLOSE / kill → ports virtualMIDI orphelins ; Auto-Start augmente l’exposition [`src/App/MidiSessionCli.cpp:28`] — deferred, pre-existing
 - [x] [Review][Defer] Surprise-removal `Stop` encore WriteBulk finish-magic sur bus mort [`src/Device/DeviceSession.cpp:443`] — deferred, pre-existing
 - [x] [Review][Defer] Identité topology-only : nouveau `K` si déplacement hub/port sans serial [`src/Usb/WinUsbEnumerate.cpp`] — deferred, known fallback
 - [x] [Review][Defer] Dual physique MT4 non prouvé en lab (registre/noms offline OK) — deferred, lab honesty gate

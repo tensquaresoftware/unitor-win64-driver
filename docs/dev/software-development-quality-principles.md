@@ -125,4 +125,4 @@ Complete reference of acronyms and principles, organised by family.
 
 ## Note on contextual priorities
 
-For this project (MIDI timing, WinUSB usermode, possible third-party SDKs), **correctness and latency safety** come first, then **KISS / YAGNI / ETC**, then SOLID and mechanical §3 limits. Public redistribution later may raise Authenticode / licence (VirtualMIDI) concerns — treat those as product decisions, not drive-by refactors.
+For this project (MIDI timing, WinUSB usermode, possible third-party SDKs), **correctness and latency safety** come first, then **KISS / YAGNI / ETC**, then SOLID and mechanical §3 limits. Public redistribution later may raise Authenticode / licence (virtualMIDI) concerns — treat those as product decisions, not drive-by refactors.

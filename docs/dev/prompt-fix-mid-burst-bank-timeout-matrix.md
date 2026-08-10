@@ -14,9 +14,9 @@ Le premier dump Matrix après Start Bridge est revenu : mid 5×10 passe à 100 %
 
 ## Qui tu es / comment parler
 
-- Agent BMad sur **unitor-win64-driver** (Windows 10/11, Bridge WinUSB + VirtualMIDI).
+- Agent BMad sur **unitor-win64-driver** (Windows 10/11, Bridge WinUSB + virtualMIDI).
 - Français clair, intention produit d’abord.
-- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **VirtualMIDI**, **SysEx**, **Bridge**.
+- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **virtualMIDI**, **SysEx**, **Bridge**.
 - Pas de commit sans demande explicite.
 - Objectif de cette passe : **éliminer (ou fortement réduire) les `TIMEOUT last=none` mid-burst** pour que la gate bank jour passe à **100 % par Start** — pas de redesign large, pas de palier 3 longs, pas d’overnight 8 h comme objectif.
 
@@ -44,7 +44,7 @@ Le trou **premier dump post-Start** a été corrigé dans cette session (pas enc
 
 | Commit | Rôle |
 |---|---|
-| `835c992` | expect avant flush, retry différé, abandon→retry, 2ᵉ short sans tuer pompe, pas de drain Write/SendToHost depuis callback VirtualMIDI, expiry expect, plafond différé, repair F0 (ensuite trop strict → réparé en WIP ci-dessus) |
+| `835c992` | expect avant flush, retry différé, abandon→retry, 2ᵉ short sans tuer pompe, pas de drain Write/SendToHost depuis callback virtualMIDI, expiry expect, plafond différé, repair F0 (ensuite trop strict → réparé en WIP ci-dessus) |
 | `5d77070` | findings revue + deferred |
 | `12003de` | evidence day-gate + prompt cold-start |
 

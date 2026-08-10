@@ -14,9 +14,9 @@ Après les correctifs short-dump (`835c992`), la gate jour bank+mid reste rouge 
 
 ## Qui tu es / comment parler
 
-- Agent BMad sur **unitor-win64-driver** (Windows 10/11, Bridge WinUSB + VirtualMIDI).
+- Agent BMad sur **unitor-win64-driver** (Windows 10/11, Bridge WinUSB + virtualMIDI).
 - Français clair, intention produit d’abord.
-- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **VirtualMIDI**, **SysEx**, **Bridge**.
+- Noms gardés : **MT4**, **Matrix**, **Matrix-Control**, **WinUSB**, **virtualMIDI**, **SysEx**, **Bridge**.
 - Pas de commit sans demande explicite.
 - Objectif de cette passe : **éliminer (ou fortement réduire) le trou du premier dump post-Start**, puis rejouer la gate jour — pas de redesign large, pas de palier 3 longs, pas d’overnight 8 h comme objectif.
 
@@ -48,7 +48,7 @@ Appliquer aussi : barème de clarté BMad, `conventions.md` §3, `scripts/qualit
 
 | Commit | Rôle |
 |---|---|
-| `835c992` | expect avant flush, retry différé, abandon→retry, 2ᵉ short sans tuer pompe, pas de drain Write/SendToHost depuis callback VirtualMIDI, expiry expect, plafond différé, repair F0=`10 06` |
+| `835c992` | expect avant flush, retry différé, abandon→retry, 2ᵉ short sans tuer pompe, pas de drain Write/SendToHost depuis callback virtualMIDI, expiry expect, plafond différé, repair F0=`10 06` |
 | `5d77070` | findings revue + deferred |
 
 **Interdit :** masquer le symptôme en faisant jeter le 1er dump par le script lab (sauf décision produit explicite de Guillaume). Le fix vise le Bridge / démarrage de session.
