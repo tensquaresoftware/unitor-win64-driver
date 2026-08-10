@@ -235,6 +235,8 @@ N’attendez **pas** ceci dans cette version :
 - Zadig comme chemin d’installation communautaire recommandé (secours contributeur seulement)
 - Chiffres de latence / jitter MIDI « studio-done » publiés (mesurés plus tard)
 
+Voir aussi (contributeurs / évaluateurs ; page technique en anglais) : [Licence et backends MIDI](../dev/license-and-backends.md) — MIT (ce dépôt) ≠ virtualMIDI (propriétaire) ≠ Windows MIDI Services (pas la V1).
+
 # Deux interfaces MT4
 
 | Interface | Noms des ports |

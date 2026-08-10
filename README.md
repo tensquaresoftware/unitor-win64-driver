@@ -4,9 +4,9 @@ Usermode Windows 64-bit bridge that makes Emagic Unitor-family USB MIDI interfac
 
 There is no official 64-bit driver. The last vendor package targeted Windows XP (32-bit). Under Windows 10/11 the device enumerates over USB, but the stock class driver does not understand Emagic’s proprietary cable mapping, so DAWs never see usable MIDI ports.
 
-This project fixes that **without writing a custom kernel driver**: WinUSB in user mode, an Emagic protocol layer, and virtual MIDI ports (VirtualMIDI) exposed to your DAW via **Unitor MT4 Bridge** (Ten Square Software).
+This project fixes that **without writing a custom kernel driver**: WinUSB in user mode, an Emagic protocol layer, and virtual MIDI ports (virtualMIDI) exposed to your DAW via **Unitor MT4 Bridge** (Ten Square Software).
 
-> **Status:** V1 Bridge capabilities (ports, SysEx, Auto-Start, hot-plug, multi-client) are implemented for **MT4**. The Public Installer and end-user docs are in progress toward community readiness (Stories **4.1** / **4.2** — hardware smoke rows may still be blank). Start with [`docs/user/README.md`](docs/user/README.md). Authenticode / SmartScreen and full three-way license polish are still upcoming (Stories 4.3–4.4). Latency “studio-done” numbers are Epic 5.
+> **Status:** V1 Bridge capabilities (ports, SysEx, Auto-Start, hot-plug, multi-client) are implemented for **MT4**. End-user docs ship under [`docs/user/README.md`](docs/user/README.md). Public Installer work continues (Story **4.1** — hardware smoke rows may still be blank). License / backend honesty for community readers is documented (Story **4.3** — see [License](#license)). Authenticode / SmartScreen honesty remains Story **4.4**. Latency “studio-done” numbers are Epic 5.
 
 ## Start here (community users)
 
@@ -40,7 +40,7 @@ Not a kernel-mode PortCls / WDM MIDI driver. The pipeline:
 
 1. **USB transport** — bind the interface to Microsoft’s signed **WinUSB** (`winusb.sys`) via the Public Installer / project INF (Zadig is contributor fallback only).
 2. **Protocol** — a C++ usermode Bridge talks to the device through `winusb.dll` and reimplements Emagic cable multiplex / demultiplex (informed by the public Linux implementation in `sound/usb/midi.c`, not by shipping GPL sources as-is).
-3. **DAW-facing MIDI** — virtual MIDI ports via [teVirtualMIDI / VirtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html) (eval via loopMIDI / rtpMIDI). Windows MIDI Services remains a possible future Win11-only backend — not V1.
+3. **DAW-facing MIDI** — virtual MIDI ports via [teVirtualMIDI / virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html) (eval via loopMIDI / rtpMIDI). Windows MIDI Services remains a possible future Win11-only backend — not V1.
 
 Architectural inspiration for the WinUSB + virtual MIDI pattern: [Prodikeys64](https://github.com/CrazyRedMachine/Prodikeys64).
 
@@ -50,7 +50,7 @@ A KMDF / PortCls stack needs the WDK, Microsoft attestation signing for Secure B
 
 ## Deliverables
 
-- Public Installer (`UnitorMt4Bridge-Setup.exe`) — WinUSB association, Bridge, Auto-Start, VirtualMIDI presence gate
+- Public Installer (`UnitorMt4Bridge-Setup.exe`) — WinUSB association, Bridge, Auto-Start, virtualMIDI presence gate
 - Usermode C++ Bridge (`Bridge.exe`)
 - End-user docs: [`docs/user/README.md`](docs/user/README.md)
 - Optional Authenticode signing of the usermode binary (Story 4.4 — recommended for SmartScreen trust; not a kernel signature)
@@ -98,7 +98,7 @@ If original Emagic protocol documents cannot be recovered from community archive
 
 ```
 docs/user/         End-user manual (single guide — start here for community installs)
-docs/dev/          Contributor / process docs (WinUSB bind, quality)
+docs/dev/          Contributor / process docs (WinUSB bind, license honesty, dual-machine loop)
 docs/tests/        Operator smoke guides
 scripts/quality/   Diff-scoped Clean Code quality gate
 scripts/dev/       Developer helpers
@@ -114,9 +114,11 @@ Build trees are expected under `builds/`. Coding standards and the quality gate 
 | Role | Machine |
 | --- | --- |
 | Design / editing | macOS (Cursor) |
-| Build, USB hardware tests, DAW checks | Windows 10/11 **64-bit** |
+| Build, USB hardware tests, DAW checks | Windows 10/11 **64-bit** (Win10 mandatory in the matrix) |
 
 Language target: **C++17** usermode.
+
+How contributors split macOS edit vs Windows validate (artifacts under `builds/`, CI vs lab Pass): [`docs/dev/contributor-dual-machine-loop.md`](docs/dev/contributor-dual-machine-loop.md).
 
 ### Quality gate
 
@@ -137,23 +139,30 @@ Emagic, Unitor, AMT, MT4, and related names remain trademarks of their respectiv
 
 ## License
 
-This project’s **own** source is released under the **[MIT License](LICENSE)**.
+Three separate claims — do not collapse them:
 
-**Recommendation rationale (short):** MIT keeps redistribution and contribution friction low for a community hardware-support tool. Prefer an **original** protocol implementation informed by public Linux sources — do **not** copy GPL Linux kernel files into this tree, or the project would need GPL instead.
+| Claim | Meaning |
+| --- | --- |
+| **MIT (this repo)** | Bridge sources, installer scripts, and project docs under [`LICENSE`](LICENSE) — copyright Guillaume DUPONT / **Ten Square Software** |
+| **virtualMIDI (proprietary)** | Tobias Erichsen’s driver / SDK — **not** covered by this MIT license. Eval = pre-installed [loopMIDI / rtpMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html) (or any install that provides `teVirtualMIDI.dll`). Software that links the SDK (including distributing Bridge / Setup binaries built against it) must **not** be redistributed without prior clearance. Separately, the Public Installer does **not** embed a virtualMIDI MSI / merge module until that clearance (**OQ-1** = open redistributable-embed question) |
+| **Windows MIDI Services (future)** | Optional later Win11-only backend behind the same `MidiBackend` abstraction (pluggable MIDI backend interface) — **not** V1. V1 ships virtualMIDI only |
 
-**Third-party caveats (important):**
+**Also:**
 
-- Linux kernel sources remain GPL — use them as reference, not as vendored code.
-- VirtualMIDI (via loopMIDI / rtpMIDI for eval) has **proprietary** terms that apply separately and may restrict redistribution even though this repo is MIT. Full three-way honesty polish is Story **4.3**.
-- WinUSB / Windows MIDI Services remain under Microsoft’s licensing for the OS components you use.
+- Linux `sound/usb/midi.c` and `quirks-table.h` (`QUIRK_MIDI_EMAGIC`) are **reference only**. **No GPL Linux sources are vendored** in this tree. Prefer an **original** protocol implementation informed by those public sources — do **not** copy GPL Linux kernel files into this tree, or the project would need GPL instead.
+- [aaron1a12/virtual-midi](https://github.com/aaron1a12/virtual-midi) is an **integration existence proof** only (GPL + vendored SDK) — **not** a fork base for this project.
+- WinUSB and Windows MIDI Services remain under Microsoft’s licensing for the OS components you use.
+
+Deep page (OQ-1 detail, Catch2 note, facade): [`docs/dev/license-and-backends.md`](docs/dev/license-and-backends.md). Operator smoke: [`docs/tests/smoke-epic4-license-honesty-mt4.md`](docs/tests/smoke-epic4-license-honesty-mt4.md).
 
 ## Contributing
 
-See [`contributing.md`](contributing.md). Issues and commit messages are in English. Hardware test reports (especially AMT8 / Unitor8) are welcome.
+See [`contributing.md`](contributing.md) and the [dual-machine loop](docs/dev/contributor-dual-machine-loop.md). Issues and commit messages are in English. Hardware test reports (especially AMT8 / Unitor8) are welcome.
 
 ## Acknowledgments
 
 - Linux `snd-usb-audio` Emagic quirk authors and maintainers
 - Community threads that kept the problem visible for years
 - [Prodikeys64](https://github.com/CrazyRedMachine/Prodikeys64) for the practical WinUSB + virtual MIDI pattern on Windows 64-bit
-- Tobias Erichsen’s VirtualMIDI ecosystem (used under its own license)
+- Tobias Erichsen’s virtualMIDI ecosystem (used under its own license)
+- [aaron1a12/virtual-midi](https://github.com/aaron1a12/virtual-midi) as integration existence proof only — not a fork base
