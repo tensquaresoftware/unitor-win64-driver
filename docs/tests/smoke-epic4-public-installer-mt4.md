@@ -13,6 +13,19 @@ Operator guide for **Story 4.1**: a short community Public Installer that binds 
 
 **Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Polished end-user docs now live under [`docs/user/README.md`](../user/README.md); SM-5 still needs that story’s user-docs smoke Pass — [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md). Authenticode / SmartScreen honesty ships under Story **4.4** — [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) (do **not** claim full SM-6 while OQ-1 or blank 4.1 hardware rows remain).
 
+## Lab session — 2026-08-10 (clean Win10 x64)
+
+| Field | Value |
+|---|---|
+| Machine | Clean Win10 x64 (restore point taken before smoke) |
+| Artifact | `builds/installer/UnitorMt4Bridge-Setup.exe` (Release Bridge; AppVersion 0.1.0; Explorer File version was `0.0.0.0` on the build under test — fixed in packaging after the session) |
+| Operator | Guillaume |
+| Sequence | virtualMIDI-absent block → loopMIDI install → Setup with MT4 → WinUSB fail → reboot + retry (same Fail) → lab stopped; restore point recommended |
+| WinUSB | `pnputil` exit `-536870353` (`0xE000022F` — third-party INF lacks digital signature information) |
+| UX note | Finished-page / error text truncated mid-sentence (contributor-long prose); shortened post-session in `installer/public-installer.iss` — **not** re-validated on hardware in this session |
+
+French walkthrough used: [`guide-operateur-smoke-4-1-pc-propre-win10.md`](guide-operateur-smoke-4-1-pc-propre-win10.md).
+
 ## Product intent
 
 The community path should feel closer to a polished macOS installer than a developer kit. **Zadig is not** the primary user path (contributor fallback only — see [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md)).
@@ -80,15 +93,17 @@ Tobias virtualMIDI **MSI embed/redistribution** is a **release gate** for a redi
 
 | # | Verification | Win10 x64 | Win11 x64 | Notes |
 |---|---|---|---|---|
-| 1 | Few steps / minimal jargon walkthrough (AD-12-1, 8) | | | |
-| 2 | Visible progress during install (AD-12-2) | | | |
-| 3 | Clear success screen **only** when all gates passed (AD-12-3) | | | |
-| 4 | virtualMIDI missing → block + English fix path; not success (AD-12-4 / AC2) | | | Deliberate remove/disable `teVirtualMIDI.dll` / driver |
-| 5 | After install with virtualMIDI present: Device Manager shows WinUSB on MT4 / GUID path opens (AD-12-5) | | | Physical MT4 required |
-| 6 | Auto-Start registered; logon or plug-after-login yields ports without manual launch (AD-12-6) | | | Reuse Epic 3 Auto-Start expectations — [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md) |
-| 7 | One UAC/admin at install; daily Bridge / register path does not prompt (AD-12-7) | | | |
-| 8 | Uninstall unregisters Auto-Start; logon no longer starts Bridge | | | |
-| 9 | Regression: lab `Bridge --start-session` / `--test-mapper` / `--test-port-names` still work from install dir or `builds/` as documented | | | |
+| 1 | Few steps / minimal jargon walkthrough (AD-12-1, 8) | Pass | | Few-step wizard OK until bind. Error-path UX weak (truncated finished text) — packaging shortened after session, not re-smoked |
+| 2 | Visible progress during install (AD-12-2) | Pass | | Progress / status visible through copy and WinUSB attempt |
+| 3 | Clear success screen **only** when all gates passed (AD-12-3) | Pass | | No false success: « Installation incomplete » + rollback after WinUSB fail |
+| 4 | virtualMIDI missing → block + English fix path; not success (AD-12-4 / AC2) | Pass | | Blocked before install with English loopMIDI/rtpMIDI fix path |
+| 5 | After install with virtualMIDI present: Device Manager shows WinUSB on MT4 / GUID path opens (AD-12-5) | Fail | | Clean PC rejected unsigned INF (`0xE000022F`). Known fence → Authenticode/catalog (4.4) / lab `sign-lab-package.ps1`. Not a Zadig Pass |
+| 6 | Auto-Start registered; logon or plug-after-login yields ports without manual launch (AD-12-6) | N/A | | Install rolled back before Auto-Start; not reached |
+| 7 | One UAC/admin at install; daily Bridge / register path does not prompt (AD-12-7) | Pass | | Single UAC for Setup observed. Daily path N/A (no successful install left) |
+| 8 | Uninstall unregisters Auto-Start; logon no longer starts Bridge | N/A | | Nothing left installed after rollback / incomplete |
+| 9 | Regression: lab `Bridge --start-session` / `--test-mapper` / `--test-port-names` still work from install dir or `builds/` as documented | N/A | | Install dir not retained after failed community Setup; offline `builds/release` not re-run in this session |
+
+**Session verdict:** community Setup on clean Win10 **fail-closes correctly** when WinUSB catalog trust is missing; full AD-12 success path (rows 5–6, 8–9) remains **blocked** until a trusted INF catalog / public signing path exists. Do **not** claim SM-5 install closed.
 
 ## Build / run (reference)
 
@@ -97,8 +112,9 @@ Tobias virtualMIDI **MSI embed/redistribution** is a **release gate** for a redi
 .\scripts\packaging\build-public-installer.ps1
 # Optional:
 #   -BridgeDir builds\release\Release
-#   -AppVersion 0.1.0
+#   -AppVersion 0.2.0   # override only; default resolves from CMake project(VERSION) / bridge-version.txt
 # Auto-detect prefers Release over Debug; invalid -BridgeDir fails closed (no silent fallback).
+# AppVersion defaults from the same SSOT as Bridge --version (not a hard-coded second number).
 
 # Offline contract check (no Inno / no hardware):
 python scripts\packaging\verify-installer-contract.py
@@ -140,6 +156,7 @@ Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installe
 
 ## Related docs
 
+- French step-by-step operator walkthrough (clean Win10 PC): [`guide-operateur-smoke-4-1-pc-propre-win10.md`](guide-operateur-smoke-4-1-pc-propre-win10.md)
 - End-user docs: [`docs/user/README.md`](../user/README.md)
 - User-docs smoke (Story 4.2): [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md)
 - License / backend honesty smoke (Story 4.3): [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md)

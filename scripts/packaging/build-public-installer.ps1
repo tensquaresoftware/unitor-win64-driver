@@ -1,16 +1,21 @@
 # Assemble the Public Installer EXE from a builds/ Bridge artifact (Story 4.1).
 # Requires Inno Setup 6 (ISCC.exe). Output under builds/installer/.
 #
+# Version SSOT: CMake project(VERSION) → BridgeVersion*.in / bridge-version.txt /
+# Bridge --version. This script defaults MyAppVersion from that same source
+# (bridge-version.txt beside the build tree, else parse CMakeLists.txt).
+# Pass -AppVersion only to override deliberately.
+#
 # Usage:
 #   .\scripts\packaging\build-public-installer.ps1
 #   .\scripts\packaging\build-public-installer.ps1 -BridgeDir builds\release\Release
-#   .\scripts\packaging\build-public-installer.ps1 -AppVersion 0.1.0
+#   .\scripts\packaging\build-public-installer.ps1 -AppVersion 0.2.0
 
 [CmdletBinding()]
 param(
     [string]$BridgeDir = "",
     [string]$IsccPath = "",
-    [string]$AppVersion = "0.1.0"
+    [string]$AppVersion = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -54,13 +59,105 @@ function Resolve-BridgeDir
     return $null
 }
 
+function Get-VersionFromBridgeTree
+{
+    param([string]$StartDir)
+
+    $dir = $StartDir
+    for ($i = 0; $i -lt 5; $i++)
+    {
+        $candidate = Join-Path $dir "bridge-version.txt"
+        if (Test-Path -LiteralPath $candidate)
+        {
+            $raw = (Get-Content -LiteralPath $candidate -Raw).Trim()
+            if ($raw -match '^\d+\.\d+\.\d+')
+            {
+                return $Matches[0]
+            }
+        }
+        $parent = Split-Path -Parent $dir
+        if (-not $parent -or $parent -eq $dir)
+        {
+            break
+        }
+        $dir = $parent
+    }
+    return $null
+}
+
+function Get-VersionFromCMakeLists
+{
+    param([string]$RepoRoot)
+
+    $cmake = Join-Path $RepoRoot "CMakeLists.txt"
+    if (-not (Test-Path -LiteralPath $cmake))
+    {
+        return $null
+    }
+    $text = Get-Content -LiteralPath $cmake -Raw
+    # SSOT: project(unitor-win64-driver VERSION x.y.z ...)
+    if ($text -match 'project\s*\(\s*unitor-win64-driver\s+VERSION\s+(\d+\.\d+\.\d+)')
+    {
+        return $Matches[1]
+    }
+    return $null
+}
+
+function Get-FourPartVersion
+{
+    param([string]$Version)
+
+    $parts = @($Version.Split('.'))
+    while ($parts.Count -lt 4)
+    {
+        $parts += "0"
+    }
+    return ($parts[0..3] -join ".")
+}
+
 $resolvedBridgeDir = Resolve-BridgeDir -Preferred $BridgeDir
 if (-not $resolvedBridgeDir)
 {
     throw "Bridge.exe not found under builds/. Build Bridge first, or pass -BridgeDir."
 }
 
+if (-not $AppVersion)
+{
+    $AppVersion = Get-VersionFromBridgeTree -StartDir $resolvedBridgeDir
+    if (-not $AppVersion)
+    {
+        $AppVersion = Get-VersionFromCMakeLists -RepoRoot $repoRoot
+    }
+    if (-not $AppVersion)
+    {
+        throw "Could not resolve AppVersion from bridge-version.txt or CMakeLists.txt project(VERSION). Pass -AppVersion to override."
+    }
+}
+
+if ($AppVersion -notmatch '^\d+\.\d+\.\d+')
+{
+    throw "AppVersion '$AppVersion' must look like major.minor.patch (e.g. 0.1.0)."
+}
+
+$AppVersionInfo = Get-FourPartVersion -Version $AppVersion
+
 $bridgeExe = Join-Path $resolvedBridgeDir "Bridge.exe"
+
+# Cross-check packaged Bridge --version against resolved AppVersion (same CMake SSOT).
+$bridgeVersionOut = & $bridgeExe --version 2>&1 | Out-String
+if ($LASTEXITCODE -ne 0)
+{
+    throw "Bridge.exe --version failed (exit $LASTEXITCODE). Refusing to package."
+}
+if ($bridgeVersionOut -notmatch [regex]::Escape($AppVersion))
+{
+    throw @"
+Bridge.exe --version does not contain AppVersion '$AppVersion'.
+Output: $($bridgeVersionOut.Trim())
+Refusing to package a mismatched Setup.
+"@
+}
+
 $inf = Join-Path $repoRoot "installer\mt4-winusb.inf"
 if (-not (Test-Path -LiteralPath $inf))
 {
@@ -145,11 +242,16 @@ if ($wantPublicSign)
 }
 
 Write-Host "Compiling Public Installer"
-Write-Host "  BridgeSource: $resolvedBridgeDir"
-Write-Host "  AppVersion:   $AppVersion"
-Write-Host "  ISCC:         $IsccPath"
+Write-Host "  BridgeSource:   $resolvedBridgeDir"
+Write-Host "  AppVersion:     $AppVersion (CMake SSOT unless -AppVersion override)"
+Write-Host "  VersionInfo:    $AppVersionInfo"
+Write-Host "  ISCC:           $IsccPath"
 
-& $IsccPath "/DBridgeSource=$resolvedBridgeDir" "/DMyAppVersion=$AppVersion" $iss
+& $IsccPath `
+    "/DBridgeSource=$resolvedBridgeDir" `
+    "/DMyAppVersion=$AppVersion" `
+    "/DMyAppVersionInfo=$AppVersionInfo" `
+    $iss
 if ($LASTEXITCODE -ne 0)
 {
     throw "ISCC exited $LASTEXITCODE"

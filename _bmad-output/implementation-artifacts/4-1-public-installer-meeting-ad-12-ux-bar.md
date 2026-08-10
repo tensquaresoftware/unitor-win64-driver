@@ -4,7 +4,7 @@ baseline_commit: ea3e21d
 
 # Story 4.1: Public Installer meeting AD-12 UX bar
 
-Status: in-progress
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created -->
 
@@ -102,7 +102,7 @@ so that I can reach first MIDI the same evening without a developer toolchain fe
 ### Review Findings
 
 - [x] [Review][Patch] On WinUSB/Auto-Start gate failure, abort setup so files/ARP are not left as a successful install [`installer/public-installer.iss:CurStepChanged`] — decided: Abort/rollback (not incomplete-but-installed)
-- [x] [Review][Defer] Blank Win10 smoke matrix vs Task 7 fill — deferred, lab evidence still required before story `done`; not a code patch in this review
+- [x] [Review][Defer] Blank Win10 smoke matrix vs Task 7 fill — **lab filled 2026-08-10** (see `docs/tests/smoke-epic4-public-installer-mt4.md`); row 5 Fail unsigned INF; rows 6/8/9 N/A after rollback
 - [x] [Review][Patch] Warn before CloseApplications kills a live Bridge on upgrade/reinstall [`installer/public-installer.iss`] — decided: explicit warning, then close if user continues
 
 - [x] [Review][Patch] Align finished-page gate with smoke three-gate rule (re-check VirtualMIDI) [`installer/public-installer.iss:AllInstallGatesPassed`]
@@ -118,9 +118,10 @@ so that I can reach first MIDI the same evening without a developer toolchain fe
 - [x] [Review][Patch] Probe Sysnative for VirtualMIDI under WOW64 PowerShell [`installer/check-virtualmidi.ps1`]
 - [x] [Review][Patch] Fail closed when helper `Start-Process` returns a null ExitCode [`installer/register-autostart-user.ps1` / `installer/unregister-autostart-user.ps1`]
 
-- [x] [Review][Defer] Unsigned INF / missing `.cat` on clean machines [`installer/mt4-winusb.inf` / `installer/public-installer.iss`] — deferred, pre-existing fence to Story 4.4 (documented lab `sign-lab-package.ps1`)
+- [x] [Review][Defer] Unsigned INF / missing `.cat` on clean machines [`installer/mt4-winusb.inf` / `installer/public-installer.iss`] — deferred, pre-existing fence to Story 4.4 (documented lab `sign-lab-package.ps1`); **confirmed Fail** on clean Win10 2026-08-10 (`0xE000022F`) in `smoke-epic4-public-installer-mt4.md`
 - [x] [Review][Defer] No timeout if pnputil/Bridge hang under Inno `Exec` [`installer/public-installer.iss:BindMt4WinUsb`] — deferred, pre-existing Inno limitation
-- [ ] [Review][Patch] Own Bridge single-version CMake path already on disk (`BridgeVersion*.in`, generated VERSIONINFO/manifest, `--version` / startup banner) and finish installer `MyAppVersion` wiring from the same source — transferred from Story 4.2 code review (do not revert)
+- [x] [Review][Patch] Own Bridge single-version CMake path (`BridgeVersion*.in`, VERSIONINFO/manifest, `--version` / banner) and wire installer `MyAppVersion` / `MyAppVersionInfo` from the same SSOT (`bridge-version.txt` + CMakeLists `project(VERSION)`) — transferred from Story 4.2; done 2026-08-10
+- [x] [Review][Patch] Setup Explorer File version was `0.0.0.0`; set `VersionInfoVersion` / company / product; shorten truncated finished-page failure copy [`installer/public-installer.iss`]
 
 ### Soft dependencies
 
@@ -257,12 +258,15 @@ Composer (Cursor agent router)
 - Success screen text is gated on VirtualMIDI **and** WinUSB **and** Auto-Start; VirtualMIDI absence also blocks before install starts with English loopMIDI/rtpMIDI fix path.
 - Gate failure after file copy calls `Abort` (rollback) instead of leaving an incomplete-but-installed product.
 - Upgrade warns when Bridge is running before CloseApplications can interrupt a MIDI session.
-- Operator hardware Pass/Fail matrix intentionally **blank** (honesty: blank ≠ Pass) — lab Pass still needed before story `done`. Offline: contract script OK; ISCC compile OK after code-review patches.
-- No Session-0 service, no Zadig-primary UX, no `docs/user/` polish claimed, no Authenticode claim (4.4).
+- Win10 clean-lab smoke filled 2026-08-10: Pass on wizard/progress/no-false-success/virtualMIDI-gate/UAC; **Fail** row 5 unsigned INF (`0xE000022F`); rows 6/8/9 N/A after rollback. Do **not** claim SM-5 install closed. Catalog trust remains Story 4.4 / OQ-3.
+- Single version SSOT: CMake `project(VERSION)` → `BridgeVersion*.in` / `bridge-version.txt` / packaging `MyAppVersion` + four-part `MyAppVersionInfo` (Explorer File version).
+- Finished-page failure copy shortened (no truncated contributor prose); detail stays in Setup log.
+- No Session-0 service, no Zadig-primary UX, no `docs/user/` polish claimed under this story ID beyond packaging honesty.
 
 ### File List
 
-- `docs/tests/smoke-epic4-public-installer-mt4.md` (new)
+- `docs/tests/smoke-epic4-public-installer-mt4.md` (new + lab matrix 2026-08-10)
+- `docs/tests/guide-operateur-smoke-4-1-pc-propre-win10.md` (operator FR walkthrough + session result)
 - `docs/dev/winusb-bind.md` (cross-link)
 - `docs/tests/smoke-epic3-autostart-mt4.md` (cross-link)
 - `installer/public-installer.iss` (new)
@@ -271,6 +275,8 @@ Composer (Cursor agent router)
 - `installer/unregister-autostart-user.ps1` (new)
 - `scripts/packaging/build-public-installer.ps1` (new)
 - `scripts/packaging/verify-installer-contract.py` (new)
+- `CMakeLists.txt` (`bridge-version.txt` emit)
+- `src/App/BridgeVersion.h.in` / `BridgeVersion.rc.in` / `Bridge.manifest.in` (owned under 4.1)
 - `_bmad-output/implementation-artifacts/4-1-public-installer-meeting-ad-12-ux-bar.md`
 - `_bmad-output/implementation-artifacts/sprint-status.yaml`
 
@@ -278,3 +284,4 @@ Composer (Cursor agent router)
 
 - 2026-08-10: Implemented Story 4.1 Public Installer (Inno Setup 6) meeting AD-12 UX bar; status → review.
 - 2026-08-10: Code review patches applied (abort on gate fail, three-gate success, pnputil 3010, packaging defaults, helpers); status → in-progress pending Win10 smoke matrix.
+- 2026-08-10: Clean Win10 lab filled; version SSOT wiring + Setup VERSIONINFO + shorter fail UX; status → **done** (WinUSB catalog Fail fenced to 4.4).

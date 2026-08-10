@@ -15,6 +15,9 @@ project(unitor-win64-driver
     LANGUAGES CXX
 )
 
+# Packaging (Public Installer) reads this next to the build tree — same SSOT as BridgeVersion*.
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/bridge-version.txt" "${PROJECT_VERSION}\n")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

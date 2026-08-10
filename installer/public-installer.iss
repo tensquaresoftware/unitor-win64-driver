@@ -11,6 +11,11 @@
   #define MyAppVersion "0.1.0"
 #endif
 
+; Four-part PE VERSIONINFO (Explorer File version). Defaults from MyAppVersion + ".0".
+#ifndef MyAppVersionInfo
+  #define MyAppVersionInfo MyAppVersion ".0"
+#endif
+
 #define MyAppName "Unitor MT4 Bridge"
 #define MyAppPublisher "Ten Square Software"
 #define MyAppExeName "Bridge.exe"
@@ -26,6 +31,11 @@ AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppPublisherURL}
 AppSupportURL={#MyAppSupportURL}
+; Explorer "File version" / Properties — AppVersion alone does not fill PE VERSIONINFO.
+VersionInfoVersion={#MyAppVersionInfo}
+VersionInfoProductVersion={#MyAppVersion}
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoProductName={#MyAppName}
 DefaultDirName={autopf}\{#InstallDirName}
 DefaultGroupName={#MyAppPublisher}\{#MyAppName}
 DisableProgramGroupPage=yes
@@ -93,8 +103,10 @@ const
 var
   GWinUsbOk: Boolean;
   GAutoStartOk: Boolean;
+  GHadAutoStartBefore: Boolean;
   GRebootRecommended: Boolean;
   GGatesFailedMessage: string;
+  GDriverStoreMayRemain: Boolean;
 
 function VirtualMidiPresent: Boolean;
 begin
@@ -126,8 +138,10 @@ begin
   Result := True;
   GWinUsbOk := False;
   GAutoStartOk := False;
+  GHadAutoStartBefore := False;
   GRebootRecommended := False;
   GGatesFailedMessage := '';
+  GDriverStoreMayRemain := False;
 
   if not VirtualMidiPresent then
   begin
@@ -181,8 +195,9 @@ begin
 
   if not Exec(NativePnPUtilPath, Cmd, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
   begin
+    Log('WinUSB association failed: could not start pnputil.');
     GGatesFailedMessage :=
-      'WinUSB association failed: could not start pnputil.';
+      'Could not associate the MT4 with WinUSB (driver tool failed to start).';
     Result := False;
     Exit;
   end;
@@ -190,11 +205,15 @@ begin
   { 0 = success; 3010 = reboot required after driver package install. }
   if (ResultCode <> 0) and (ResultCode <> ERROR_SUCCESS_REBOOT_REQUIRED) then
   begin
+    { Keep UI short — FinishedLabel truncates long contributor prose. Detail stays in Setup log. }
+    Log(
+      'WinUSB association failed (pnputil exit ' + IntToStr(ResultCode) + '). ' +
+      'Clean machines often reject an unsigned INF / missing catalog. ' +
+      'Lab: installer/sign-lab-package.ps1. Public policy: docs/dev/authenticode-and-smartscreen.md.');
     GGatesFailedMessage :=
-      'WinUSB association failed (pnputil exit ' + IntToStr(ResultCode) + ').' + #13#10 +
-      'On clean machines an unsigned INF may be rejected. Lab mitigation: installer/sign-lab-package.ps1. ' +
-      'Public Authenticode/catalog policy: docs/dev/authenticode-and-smartscreen.md. ' +
-      'Do not use Zadig as the primary community path.';
+      'Could not associate the MT4 with WinUSB.' + #13#10 +
+      'Windows may reject an unsigned driver package on a clean PC.' + #13#10 +
+      'Program files were not left as a successful install. See the user guide (WinUSB / trust notes), then retry.';
     Result := False;
     Exit;
   end;
@@ -229,9 +248,12 @@ begin
 
   if ResultCode <> 0 then
   begin
+    Log(
+      'Auto-Start registration failed (Bridge exit ' + IntToStr(ResultCode) + '). ' +
+      'Expected Task Scheduler or HKCU Run with --auto-session.');
     GGatesFailedMessage :=
-      'Auto-Start registration failed (Bridge exit ' + IntToStr(ResultCode) + ').' + #13#10 +
-      'Expected: Task Scheduler task or HKCU Run pointing at the installed Bridge with --auto-session.';
+      'Could not register Auto-Start (Bridge reported an error).' + #13#10 +
+      'Program files were not left as a successful install. Retry Setup, or see the user guide Auto-Start section.';
     Result := False;
     Exit;
   end;
@@ -239,30 +261,105 @@ begin
   Result := True;
 end;
 
+function AutoStartTaskPresent: Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result :=
+    Exec(
+      ExpandConstant('{cmd}'),
+      '/C schtasks /Query /TN "UnitorMt4BridgeAutoStart" >NUL 2>&1',
+      '',
+      SW_HIDE,
+      ewWaitUntilTerminated,
+      ResultCode) and (ResultCode = 0);
+end;
+
+function UnregisterAutoStartBestEffort: Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result := False;
+  if not FileExists(ExpandConstant('{app}\{#MyAppExeName}')) then
+    Exit;
+  Log('Best-effort Auto-Start unregister before Abort…');
+  if ExecAsOriginalUser(
+      ExpandConstant('{app}\{#MyAppExeName}'),
+      '--unregister-auto-start',
+      ExpandConstant('{app}'),
+      SW_HIDE,
+      ewWaitUntilTerminated,
+      ResultCode) then
+    Result := (ResultCode = 0)
+  else
+    Result := False;
+  Log('Unregister Auto-Start best-effort exit=' + IntToStr(ResultCode));
+end;
+
+function RegisterAutoStartBestEffort: Boolean;
+var
+  ResultCode: Integer;
+begin
+  Result := False;
+  if not FileExists(ExpandConstant('{app}\{#MyAppExeName}')) then
+    Exit;
+  Log('Best-effort Auto-Start re-register (upgrade restore)…');
+  if ExecAsOriginalUser(
+      ExpandConstant('{app}\{#MyAppExeName}'),
+      '--register-auto-start',
+      ExpandConstant('{app}'),
+      SW_HIDE,
+      ewWaitUntilTerminated,
+      ResultCode) then
+    Result := (ResultCode = 0)
+  else
+    Result := False;
+  Log('Re-register Auto-Start best-effort exit=' + IntToStr(ResultCode));
+end;
+
+procedure AbortFailedGates;
+begin
+  { If we registered Auto-Start this run, clear it before Inno rolls back files. }
+  if GAutoStartOk then
+  begin
+    UnregisterAutoStartBestEffort;
+    GAutoStartOk := False;
+  end
+  else if GHadAutoStartBefore then
+  begin
+    { Upgrade path: a failed register may have cleared a working entry — try restore. }
+    RegisterAutoStartBestEffort;
+  end;
+
+  if GWinUsbOk then
+    GDriverStoreMayRemain := True;
+
+  MsgBox(GGatesFailedMessage, mbError, MB_OK);
+  Abort;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
   begin
+    GHadAutoStartBefore := AutoStartTaskPresent;
     GWinUsbOk := BindMt4WinUsb;
     if not GWinUsbOk then
     begin
-      MsgBox(GGatesFailedMessage, mbError, MB_OK);
       { Abort rolls back copied files / ARP so a failed gate is not left as installed. }
-      Abort;
+      AbortFailedGates;
     end;
 
     GAutoStartOk := RegisterAutoStartAsUser;
     if not GAutoStartOk then
     begin
-      MsgBox(GGatesFailedMessage, mbError, MB_OK);
-      Abort;
+      AbortFailedGates;
     end;
 
     if not VirtualMidiPresent then
     begin
       GGatesFailedMessage := VirtualMidiFixPath;
-      MsgBox(GGatesFailedMessage, mbError, MB_OK);
-      Abort;
+      AbortFailedGates;
     end;
   end;
 end;
@@ -289,12 +386,22 @@ begin
     end
     else
     begin
+      { Keep under FinishedLabel capacity — MsgBox already showed the failure detail. }
       WizardForm.FinishedHeadingLabel.Caption := 'Installation incomplete';
+      if GGatesFailedMessage <> '' then
+        WizardForm.FinishedLabel.Caption :=
+          GGatesFailedMessage + #13#10#13#10 +
+          'Bridge program files were not left as a successful install.'
+      else
+        WizardForm.FinishedLabel.Caption :=
+          'Setup could not finish. Bridge program files were not left as a successful install.';
+      if GDriverStoreMayRemain then
+        WizardForm.FinishedLabel.Caption :=
+          WizardForm.FinishedLabel.Caption + #13#10 +
+          'A WinUSB driver package may still remain in Windows Driver Store.';
       WizardForm.FinishedLabel.Caption :=
-        'Setup could not complete all install gates.' + #13#10#13#10 +
-        GGatesFailedMessage + #13#10#13#10 +
-        'This is not a successful community install. Fix the issue above, then retry.' + #13#10 +
-        'An empty MIDI port list is not success.';
+        WizardForm.FinishedLabel.Caption + #13#10 +
+        'Fix the issue, then run Setup again.';
     end;
   end;
 end;
@@ -325,7 +432,9 @@ begin
           MsgBox(
             'Auto-Start unregister reported failure (exit ' + IntToStr(ExitCode) + ').' + #13#10 +
             'Bridge files were removed, but Task Scheduler / HKCU Run may still launch a missing binary.' + #13#10 +
-            'Remove any leftover Unitor MT4 Bridge Auto-Start entry manually if it remains.',
+            'Remove any leftover Unitor MT4 Bridge Auto-Start entry manually if it remains.' + #13#10 +
+            'Other Windows user accounts on this PC are not cleared by this uninstall — unregister while signed in as each user.' + #13#10 +
+            'The MT4 WinUSB association may remain in Driver Store (normal).',
             mbError,
             MB_OK);
       end;
@@ -334,7 +443,9 @@ begin
     begin
       MsgBox(
         'Could not verify Auto-Start unregister (exit marker missing).' + #13#10 +
-        'If Bridge still starts at logon, remove the Unitor MT4 Bridge Auto-Start entry manually.',
+        'If Bridge still starts at logon, remove the Unitor MT4 Bridge Auto-Start entry manually.' + #13#10 +
+        'Other Windows accounts are not cleared by this uninstall.' + #13#10 +
+        'The MT4 WinUSB association may remain in Driver Store (normal).',
         mbInformation,
         MB_OK);
     end;

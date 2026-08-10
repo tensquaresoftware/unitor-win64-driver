@@ -14,13 +14,13 @@
 
 ## Deferred from: code review of 4-2-end-user-documentation-for-first-midi-and-sysex.md (2026-08-10)
 
-- Bridge CMake `project(VERSION)` vs installer `MyAppVersion` dual sources — packaging concern already tracked under Story 4.1 wiring `MyAppVersion` from the build script; not a docs-story fix.
+- ~~Bridge CMake `project(VERSION)` vs installer `MyAppVersion` dual sources~~ — **resolved 2026-08-10 under Story 4.1**: packaging resolves `MyAppVersion` / `MyAppVersionInfo` from `bridge-version.txt` (CMake) or `CMakeLists.txt` `project(VERSION)`; same SSOT as `Bridge --version`.
 
 ## Deferred from: code review of 4-1-public-installer-meeting-ad-12-ux-bar.md (2026-08-10)
 
-- Unsigned INF / missing production `.cat` in Public Installer payload — **policy documented** under Story **4.4** ([`docs/dev/authenticode-and-smartscreen.md`](../../docs/dev/authenticode-and-smartscreen.md)): Public Installer ships INF without a production catalog today; clean-machine association may fail until a real public `.cat` is produced under the chosen certificate. Lab mitigation remains `installer/sign-lab-package.ps1` (not public Authenticode). Remaining work: produce/package a production catalog when OQ-3 cert path exists — not a silent docs skip.
+- Unsigned INF / missing production `.cat` in Public Installer payload — **policy documented** under Story **4.4** ([`docs/dev/authenticode-and-smartscreen.md`](../../docs/dev/authenticode-and-smartscreen.md)): Public Installer ships INF without a production catalog today; clean-machine association may fail until a real public `.cat` is produced under the chosen certificate. Lab mitigation remains `installer/sign-lab-package.ps1` (not public Authenticode). Remaining work: produce/package a production catalog when OQ-3 cert path exists — not a silent docs skip. **Lab confirmed 2026-08-10:** clean Win10 Fail `0xE000022F` (see `smoke-epic4-public-installer-mt4.md`).
 - No timeout if `pnputil` or Bridge hangs under Inno `Exec` / `ExecAsOriginalUser` — installer wizard can block indefinitely; Inno limitation deferred unless a reusable timeout wrapper is added later.
-- Blank Win10 Public Installer smoke matrix — honesty blank kept for code-review pass; lab Pass still required before story `done`.
+- ~~Blank Win10 Public Installer smoke matrix~~ — **filled 2026-08-10** (`smoke-epic4-public-installer-mt4.md`); row 5 Fail (unsigned INF); rows 6/8/9 N/A after rollback.
 
 ## Deferred from: story 2-5 session longevity design (2026-08-05)
 
