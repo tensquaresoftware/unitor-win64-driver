@@ -1,0 +1,20 @@
+# MidiPathHarness software-loop — 2026-08-11 ~00:17 local (Win10 lab)
+
+Command:
+  MidiPathHarness.exe --path software-loop --out "MT4 Out 1" --in "MT4 In 1" --samples 50
+
+Exit code: 0
+
+path_type=software-loop
+out_port=MT4 Out 1
+in_port=MT4 In 1
+samples=50
+latency_us_min=1283.3
+latency_us_mean=1998.68
+latency_us_p99=2110.8
+latency_us_max=2110.8
+plane=host-winmm-qpc (not ASIO; not Studio-Done)
+
+Notes:
+- Bridge Release with --start-session --soft-echo
+- Plumbing proof only — not DIN/USB path; not Studio-Done anchors

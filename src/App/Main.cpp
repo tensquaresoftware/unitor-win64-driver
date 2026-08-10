@@ -6,6 +6,7 @@
 #include "App/MidiSessionCli.h"
 #include "Device/DeviceSessionManager.h"
 #include "Midi/MidiBackend.h"
+#include "Midi/SoftEchoGate.h"
 #include "Profile/DeviceProfile.h"
 #include "Usb/WinUsbBulkProbe.h"
 #include "Usb/WinUsbTransport.h"
@@ -282,6 +283,9 @@ int runProbeUsbCommand()
 
 int dispatchSessionFlags(int argc, char* argv[])
 {
+    configureSoftEchoGate(
+        hasFlag(argc, argv, "--soft-echo"),
+        hasFlag(argc, argv, "--no-soft-echo"));
     const bool allowZadigFallback = hasFlag(argc, argv, "--dev-zadig");
     if (hasFlag(argc, argv, kAutoSessionFlag))
     {

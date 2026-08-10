@@ -1,5 +1,7 @@
 #include "Midi/VirtualMidiBackend.h"
 
+#include "Midi/SoftEchoGate.h"
+
 #include <atomic>
 #include <cstdint>
 #include <iostream>
@@ -213,11 +215,43 @@ void VirtualMidiBackend::closeAllPorts() noexcept
     outPortCount_ = 0;
 }
 
+bool VirtualMidiBackend::trySoftEchoToMatchingIn(
+    std::size_t outPortIndex,
+    const uint8_t* midiBytes,
+    std::size_t byteCount) noexcept
+{
+    if (!isSoftEchoEnabled() || !portsCreated_ || sendData_ == nullptr)
+    {
+        return false;
+    }
+    // No matching IN (or empty payload): do not claim handled — leave USB path.
+    if (midiBytes == nullptr || byteCount == 0 || outPortIndex >= inPortCount_)
+    {
+        return false;
+    }
+    const TeVmMidiPortHandle inHandle = inPorts_[outPortIndex];
+    if (inHandle == nullptr)
+    {
+        return false;
+    }
+    // Hot path: no error strings / logging — lab soft-echo only.
+    const BOOL ok = sendData_(
+        inHandle,
+        const_cast<LPBYTE>(reinterpret_cast<const BYTE*>(midiBytes)),
+        static_cast<DWORD>(byteCount));
+    return ok != FALSE;
+}
+
 void VirtualMidiBackend::forwardHostToDevice(
     std::size_t outPortIndex,
     const uint8_t* midiBytes,
     std::size_t byteCount) noexcept
 {
+    if (trySoftEchoToMatchingIn(outPortIndex, midiBytes, byteCount))
+    {
+        return;
+    }
+
     HostToDeviceSink sink = nullptr;
     void* context = nullptr;
     {

@@ -83,6 +83,14 @@ jobs:
           if (-not $exe) { throw "Bridge.exe not found under builds/ci" }
           Write-Host "Built: $($exe.FullName)"
 
+      - name: Confirm MidiPathHarness artifact
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path builds/ci -Recurse -Filter MidiPathHarness.exe -ErrorAction Stop |
+            Select-Object -First 1
+          if (-not $exe) { throw "MidiPathHarness.exe not found under builds/ci" }
+          Write-Host "Built: $($exe.FullName)"
+
       - name: Run BridgeTests
         run: ctest --test-dir builds/ci -C Release --output-on-failure
 
@@ -97,4 +105,4 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: All CI legs passed
-        run: echo "quality-gate, build, and BridgeTests passed; merge gate green."
+        run: echo "quality-gate, build, Bridge.exe, MidiPathHarness.exe, and BridgeTests passed; merge gate green."

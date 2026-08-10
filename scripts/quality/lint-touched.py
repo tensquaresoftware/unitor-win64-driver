@@ -55,7 +55,7 @@ MAX_NESTING = 4
 MAX_CPP_USEFUL_LINES = 400
 
 CPP_SUFFIXES = {".h", ".hpp", ".hh", ".cpp", ".cc", ".cxx"}
-SCOPE_PREFIXES = ("src/", "tests/", "apps/", "lib/")
+SCOPE_PREFIXES = ("src/", "tests/", "apps/", "lib/", "tools/")
 SKIP_PATH_PARTS = (
     "third_party",
     "third-party",

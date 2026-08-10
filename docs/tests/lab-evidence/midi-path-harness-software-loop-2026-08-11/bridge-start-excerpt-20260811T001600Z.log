@@ -1,0 +1,21 @@
+# Bridge --start-session --soft-echo excerpt — 2026-08-11 ~00:16 local
+
+Unitor MT4 Bridge 0.1.0
+Emagic init/computer-mode: drained 1024 bulk IN byte(s); post-kick drain=256; read capacity=32; channel CC kick sent (manual Computer Mode)
+Bulk IN async ring armed (48 slots) before host MIDI sink
+Host MIDI sink live (bulk IN ring already active; librarian OUT gated)
+Post-start pipe prime queued (quiet CC on Out1)
+Post-start IN calm ready (pending=48/48 queued=0)
+Unit K=1 identity=topology key="USB\VID_086A&PID_0003\5&330350CB&0&5"
+Expected Virtual Ports: 2 IN / 4 OUT
+  IN  MT4 In 1
+  IN  MT4 In 2
+  OUT MT4 Out 1
+  OUT MT4 Out 2
+  OUT MT4 Out 3
+  OUT MT4 Out 4
+DeviceSession started for 1 MT4 unit(s) with Virtual Ports
+MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)
+
+# stderr
+Bridge soft-echo ON (lab software-loop only; not USB/DIN path)

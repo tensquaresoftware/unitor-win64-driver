@@ -66,6 +66,11 @@ private:
         std::size_t outPortIndex,
         const uint8_t* midiBytes,
         std::size_t byteCount) noexcept;
+    // Lab soft-echo: host→OUT copied to matching IN; skips USB sink.
+    bool trySoftEchoToMatchingIn(
+        std::size_t outPortIndex,
+        const uint8_t* midiBytes,
+        std::size_t byteCount) noexcept;
 
     static void CALLBACK outMidiDataCallback(
         TeVmMidiPortHandle midiPort,

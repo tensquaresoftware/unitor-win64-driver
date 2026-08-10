@@ -75,6 +75,7 @@ add_executable(Bridge
     src/Device/HostOutboundQueue.cpp
     src/Midi/VirtualMidiBackend.cpp
     src/Midi/VirtualMidiBackendPorts.cpp
+    src/Midi/SoftEchoGate.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp
@@ -178,3 +179,8 @@ endif()
 enable_testing()
 # TARGET_FILE resolves per-config output dirs (e.g. builds/ci/Release on VS).
 add_test(NAME BridgeTests COMMAND $<TARGET_FILE:BridgeTests>)
+
+# AD-11 MIDI Path harness (Windows WinMM + QPC). Separate from BridgeTests.
+if(WIN32)
+    add_subdirectory(tools/midi-path-harness)
+endif()
