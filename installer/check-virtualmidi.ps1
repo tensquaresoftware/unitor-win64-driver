@@ -1,4 +1,4 @@
-# VirtualMIDI presence probe for Public Installer / operator smoke (Story 4.1).
+# virtualMIDI presence probe for Public Installer / operator smoke (Story 4.1).
 # Aligns with Bridge fail-closed intent: teVirtualMIDI.dll via System32
 # (VirtualMidiBackend LoadLibraryEx + LOAD_LIBRARY_SEARCH_SYSTEM32).
 #
@@ -34,14 +34,14 @@ function Resolve-System32DllPath
 $dll = Resolve-System32DllPath -FileName "teVirtualMIDI.dll"
 if (Test-Path -LiteralPath $dll)
 {
-    Write-Host "VirtualMIDI present: $dll"
+    Write-Host "virtualMIDI present: $dll"
     exit 0
 }
 
 Write-Host @"
-VirtualMIDI driver/DLL missing (teVirtualMIDI.dll not found in System32).
-Install loopMIDI or rtpMIDI so the VirtualMIDI driver is present, then retry.
+virtualMIDI driver/DLL missing (teVirtualMIDI.dll not found in System32).
+Install loopMIDI or rtpMIDI so the virtualMIDI driver is present, then retry.
 An empty MIDI port list is not a successful install.
-Licensed VirtualMIDI MSI embedding is a future release gate (OQ-1) and is not shipped in the Public Installer yet.
+Licensed virtualMIDI MSI embedding is a future release gate (OQ-1) and is not shipped in the Public Installer yet.
 "@
 exit 1

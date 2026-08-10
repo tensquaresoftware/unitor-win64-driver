@@ -49,7 +49,7 @@ RestartApplications=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Messages]
-WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt associates your Emagic MT4 with WinUSB, installs the Bridge, and registers Auto-Start for your user session.%n%nYou need the VirtualMIDI driver already installed (for example via loopMIDI or rtpMIDI).
+WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt associates your Emagic MT4 with WinUSB, installs the Bridge, and registers Auto-Start for your user session.%n%nYou need the virtualMIDI driver already installed (for example via loopMIDI or rtpMIDI).
 FinishedLabel=Setup has finished installing [name] on your computer.%n%nAfter the next sign-in (or when you plug in the MT4), virtual MIDI ports should appear without launching the Bridge by hand.%n%nGetting started: https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md
 ApplicationsFound=Setup detected that Unitor MT4 Bridge is still running.%n%nContinuing will close it and interrupt any active MIDI session.
 ApplicationsFound2=Setup detected that Unitor MT4 Bridge is still running.%n%nContinuing will close it and interrupt any active MIDI session.
@@ -81,10 +81,10 @@ const
   VirtualMidiDll = 'teVirtualMIDI.dll';
   ERROR_SUCCESS_REBOOT_REQUIRED = 3010;
   VirtualMidiFixPath =
-    'VirtualMIDI driver/DLL is missing.'#13#10#13#10 +
-    'Install loopMIDI or rtpMIDI so the VirtualMIDI driver is present, then run this installer again.'#13#10#13#10 +
+    'virtualMIDI driver/DLL is missing.'#13#10#13#10 +
+    'Install loopMIDI or rtpMIDI so the virtualMIDI driver is present, then run this installer again.'#13#10#13#10 +
     'An empty MIDI port list is not a successful install.'#13#10#13#10 +
-    'Licensed VirtualMIDI MSI embedding is a future release gate (OQ-1) and is not shipped in this setup.';
+    'Licensed virtualMIDI MSI embedding is a future release gate (OQ-1) and is not shipped in this setup.';
   BridgeRunningWarning =
     'Unitor MT4 Bridge is currently running.'#13#10#13#10 +
     'Continuing will close it and interrupt any active MIDI session.'#13#10#13#10 +
@@ -103,7 +103,7 @@ end;
 
 function AllInstallGatesPassed: Boolean;
 begin
-  { Smoke / AD-12 success = VirtualMIDI present AND WinUSB AND Auto-Start. }
+  { Smoke / AD-12 success = virtualMIDI present AND WinUSB AND Auto-Start. }
   Result := VirtualMidiPresent and GWinUsbOk and GAutoStartOk;
 end;
 
@@ -278,7 +278,7 @@ begin
       WizardForm.FinishedHeadingLabel.Caption := 'Installation successful';
       SuccessBody :=
         'Unitor MT4 Bridge is installed under Program Files.' + #13#10#13#10 +
-        'VirtualMIDI is present; WinUSB association and Auto-Start registration both reported success.' + #13#10 +
+        'virtualMIDI is present; WinUSB association and Auto-Start registration both reported success.' + #13#10 +
         'After sign-in (or when you plug in the MT4), virtual MIDI ports should appear without a manual Bridge launch.' + #13#10#13#10 +
         'Daily use does not require Administrator.' + #13#10#13#10 +
         'Getting started: https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md';
