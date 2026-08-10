@@ -106,6 +106,50 @@ def main() -> None:
         fail("build-public-installer.ps1 must prefer Release layouts before Debug")
     if "/DMyAppVersion=" not in build_text:
         fail("build-public-installer.ps1 must pass /DMyAppVersion to ISCC")
+    if "/DMyAppVersionInfo=" not in build_text:
+        fail("build-public-installer.ps1 must pass /DMyAppVersionInfo (four-part) to ISCC")
+    if "bridge-version.txt" not in build_text:
+        fail("build-public-installer.ps1 must resolve version from bridge-version.txt (CMake SSOT)")
+    if "Get-VersionFromCMakeLists" not in build_text:
+        fail("build-public-installer.ps1 must fall back to CMakeLists.txt project(VERSION)")
+    if "Bridge.exe --version" not in build_text and "--version" not in build_text:
+        fail("build-public-installer.ps1 must cross-check Bridge --version against AppVersion")
+    if "Refusing to package a mismatched Setup" not in build_text:
+        fail("build-public-installer.ps1 must refuse mismatched Bridge/Setup versions")
+    # Default -AppVersion must not hard-code a second SSOT (empty = resolve from CMake).
+    if re.search(r'\[string\]\$AppVersion\s*=\s*"0\.1\.0"', build_text):
+        fail("build-public-installer.ps1 must not default -AppVersion to a hard-coded 0.1.0")
+
+    if "AbortFailedGates" not in iss_text:
+        fail("public-installer.iss must centralize gate-failure Abort cleanup (AbortFailedGates)")
+    if "UnregisterAutoStartBestEffort" not in iss_text:
+        fail("public-installer.iss must best-effort unregister Auto-Start before Abort")
+    if "GDriverStoreMayRemain" not in iss_text:
+        fail("public-installer.iss must be honest about Driver Store residue after Abort")
+    if "Nothing was left installed" in iss_text:
+        fail("public-installer.iss must not claim absolute 'Nothing was left installed'")
+    if "Other Windows user accounts" not in iss_text and "Other Windows accounts" not in iss_text:
+        fail("public-installer.iss uninstall copy must mention other Windows accounts")
+
+    cmake_text = (REPO / "CMakeLists.txt").read_text(encoding="utf-8")
+    if "bridge-version.txt" not in cmake_text:
+        fail("CMakeLists.txt must emit bridge-version.txt for packaging SSOT")
+    if not re.search(
+        r"project\s*\(\s*unitor-win64-driver\s+VERSION\s+\d+\.\d+\.\d+",
+        cmake_text,
+    ):
+        fail("CMakeLists.txt must declare project(unitor-win64-driver VERSION x.y.z)")
+
+    if "MyAppVersionInfo" not in iss_text:
+        fail("public-installer.iss must define/use MyAppVersionInfo for PE File version")
+    if "VersionInfoVersion={#MyAppVersionInfo}" not in iss_text:
+        fail("public-installer.iss VersionInfoVersion must use MyAppVersionInfo")
+
+    must_contain(
+        REPO / "src" / "App" / "BridgeVersion.h.in",
+        "kBridgeVersionString",
+        "Bridge --version SSOT template",
+    )
 
     smoke_text = smoke.read_text(encoding="utf-8")
     for item in (
@@ -149,7 +193,7 @@ def main() -> None:
 
     # Story 4.4 — SmartScreen / unsigned honesty on shipped surfaces (no cert required).
     user_en = REPO / "docs" / "user" / "unitor-mt4-bridge-user-guide.md"
-    user_fr = REPO / "docs" / "user" / "unitor-mt4-bridge-manuel-utilisateur.md"
+    user_fr = REPO / "docs" / "user" / "unitor-mt4-bridge-guide-utilisateur.md"
     auth_policy = REPO / "docs" / "dev" / "authenticode-and-smartscreen.md"
     auth_smoke = REPO / "docs" / "tests" / "smoke-epic4-authenticode-smartscreen-mt4.md"
     sign_public = REPO / "scripts" / "packaging" / "sign-public-artifacts.ps1"
@@ -160,9 +204,13 @@ def main() -> None:
     must_contain(user_en, "SmartScreen", "EN SmartScreen honesty")
     must_contain(user_en, "Run anyway", "EN SmartScreen mitigation")
     must_contain(user_en, "Digital Signatures", "EN signed-check tip")
+    must_contain(user_en, "trusted catalog", "EN WinUSB catalog honesty")
+    must_contain(user_en, "does **not** pause", "EN plug-before-Setup (no invented wizard ask)")
     must_contain(user_fr, "SmartScreen", "FR SmartScreen honesty")
     must_contain(user_fr, "Exécuter quand même", "FR SmartScreen mitigation")
     must_contain(user_fr, "Débloquer", "FR SmartScreen Unblock")
+    must_contain(user_fr, "catalogue", "FR WinUSB catalog honesty")
+    must_contain(user_fr, "ne s’arrête pas", "FR plug-before-Setup (no invented wizard ask)")
     must_contain(user_fr, "Signatures numériques", "FR signed-check tip")
     must_contain(auth_policy, "strongly recommended", "Authenticode strongly recommended")
     must_contain(auth_policy, "Not a hard V1 gate", "Authenticode not hard gate")

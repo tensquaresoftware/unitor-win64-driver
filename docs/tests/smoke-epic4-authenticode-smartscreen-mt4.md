@@ -54,7 +54,7 @@ A musician downloading Setup from the official project channel is not silently a
 | # | Verification | Win10 x64 | Win11 x64 | Notes |
 |---|---|---|---|---|
 | 1 | User docs (EN) explain SmartScreen behavior + mitigation if public Setup is unsigned / unrecognized (AD-19) | N/A | N/A | Docs-only any-checkout 2026-08-10: [`unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md) Installation + Troubleshooting SmartScreen — **Pass** |
-| 2 | FR user peer covers the same SmartScreen facts (not a stale EN-only island) | N/A | N/A | Docs-only any-checkout 2026-08-10: [`unitor-mt4-bridge-manuel-utilisateur.md`](../user/unitor-mt4-bridge-manuel-utilisateur.md) — **Pass** |
+| 2 | FR user peer covers the same SmartScreen facts (not a stale EN-only island) | N/A | N/A | Docs-only any-checkout 2026-08-10: [`unitor-mt4-bridge-guide-utilisateur.md`](../user/unitor-mt4-bridge-guide-utilisateur.md) — **Pass** |
 | 3 | Public/contributor surface states Authenticode **strongly recommended** but **not** a hard V1 gate (FR-15 / NFR-S1) | N/A | N/A | Docs-only any-checkout 2026-08-10: README Status + [`authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md) — **Pass** |
 | 4 | When signing is documented as available: Ten Square Software / chosen certificate path is written down (without closing OQ-3) | N/A | N/A | Docs-only any-checkout 2026-08-10: authenticode-and-smartscreen.md “When a certificate exists” — **Pass** |
 | 5 | OQ-3 remains explicitly deferred to Guillaume before first tagged public community release | N/A | N/A | Docs-only any-checkout 2026-08-10: authenticode-and-smartscreen.md + smoke fences — **Pass** |

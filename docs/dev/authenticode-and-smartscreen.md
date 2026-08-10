@@ -96,7 +96,7 @@ See also: [`windows-ci-toolchain.md`](windows-ci-toolchain.md) “omitted on pur
 
 ## Related
 
-- User SmartScreen section: [English user guide](../user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [manuel français](../user/unitor-mt4-bridge-manuel-utilisateur.md#windows-smartscreen-setup-non-signe-ou-non-reconnu)
+- User SmartScreen section: [English user guide](../user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [guide français](../user/unitor-mt4-bridge-guide-utilisateur.md#windows-smartscreen-setup-non-signe-ou-non-reconnu)
 - WinUSB bind (contributor): [`winusb-bind.md`](winusb-bind.md)
 - License / backends fence: [`license-and-backends.md`](license-and-backends.md)
 - Operator smoke: [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`](../tests/smoke-epic4-authenticode-smartscreen-mt4.md)

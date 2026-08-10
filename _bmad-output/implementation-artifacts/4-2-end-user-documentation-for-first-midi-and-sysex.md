@@ -261,7 +261,7 @@ Composer (Cursor agent)
 
 - `docs/user/README.md` (new — landing)
 - `docs/user/unitor-mt4-bridge-user-guide.md` (new — English single-file manual)
-- `docs/user/unitor-mt4-bridge-manuel-utilisateur.md` (new — French single-file manual peer)
+- `docs/user/unitor-mt4-bridge-guide-utilisateur.md` (new — French single-file guide peer)
 - `docs/tests/smoke-epic4-user-docs-mt4.md` (new)
 - `docs/tests/smoke-epic4-public-installer-mt4.md` (modified)
 - `docs/tests/smoke-epic3-autostart-mt4.md` (modified)
@@ -297,7 +297,7 @@ Composer (Cursor agent)
 - [x] [Review][Patch] First SysEx / Computer Mode: state clearly that SysEx alone does not wake Computer Mode [`docs/user/unitor-mt4-bridge-user-guide.md`]
 - [x] [Review][Patch] Soften README status so community install does not read as fully lab-closed while 4.1/4.2 hardware rows pending [`README.md`]
 - [x] [Review][Patch] Remove BMad marketing footer from end-user manuals [`docs/user/unitor-mt4-bridge-user-guide.md`]
-- [x] [Review][Patch] Fix French typo `rescannnez` → `rescanner` [`docs/user/unitor-mt4-bridge-manuel-utilisateur.md`]
+- [x] [Review][Patch] Fix French typo `rescannnez` → `rescanner` [`docs/user/unitor-mt4-bridge-guide-utilisateur.md`]
 - [x] [Review][Patch] Correct Completion Notes (C++ present vs “no C++”; lint honesty) [`_bmad-output/implementation-artifacts/4-2-end-user-documentation-for-first-midi-and-sysex.md`]
 - [x] [Review][Patch] Point multiclient smoke fence at a real user-guide fragment once anchors exist [`docs/tests/smoke-epic3-multiclient-mt4.md`]
 - [x] [Review][Defer] Bridge CMake `project(VERSION)` vs installer `MyAppVersion` dual sources [`CMakeLists.txt` / `installer/public-installer.iss`] — deferred, pre-existing packaging concern (Story 4.1 already tracks wiring `MyAppVersion` from build)

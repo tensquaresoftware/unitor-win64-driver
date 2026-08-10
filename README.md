@@ -6,13 +6,13 @@ There is no official 64-bit driver. The last vendor package targeted Windows XP 
 
 This project fixes that **without writing a custom kernel driver**: WinUSB in user mode, an Emagic protocol layer, and virtual MIDI ports (virtualMIDI) exposed to your DAW via **Unitor MT4 Bridge** (Ten Square Software).
 
-> **Status:** V1 Bridge capabilities (ports, SysEx, Auto-Start, hot-plug, multi-client) are implemented for **MT4**. End-user docs ship under [`docs/user/README.md`](docs/user/README.md). Public Installer work continues (Story **4.1** — hardware smoke rows may still be blank). License / backend honesty for community readers is documented (Story **4.3** — see [License](#license)). Authenticode is **strongly recommended** but **not** a hard V1 gate; SmartScreen honesty for unsigned / low-reputation Setup ships in the [user guide](docs/user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) and [`docs/dev/authenticode-and-smartscreen.md`](docs/dev/authenticode-and-smartscreen.md). Latency “studio-done” numbers are Epic 5.
+> **Status:** V1 Bridge capabilities (ports, SysEx, Auto-Start, hot-plug, multi-client) are implemented for **MT4**. End-user docs ship under [`docs/user/README.md`](docs/user/README.md). Public Installer packaging + fail-closed gates ship (Story **4.1**); clean-PC WinUSB association still **fails** without a trusted INF catalog (lab Fail `0xE000022F` — see [`docs/tests/smoke-epic4-public-installer-mt4.md`](docs/tests/smoke-epic4-public-installer-mt4.md)). License / backend honesty is documented (Story **4.3** — see [License](#license)). Authenticode is **strongly recommended** but **not** a hard V1 gate; SmartScreen honesty for unsigned / low-reputation Setup ships in the [user guide](docs/user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) and [`docs/dev/authenticode-and-smartscreen.md`](docs/dev/authenticode-and-smartscreen.md). Production catalog / certificate choice remains **OQ-3**. Latency “studio-done” numbers are Epic 5.
 
 ## Start here (community users)
 
 If you own an **MT4** and want first MIDI / first SysEx on Windows 10/11 x64:
 
-**→ [`docs/user/README.md`](docs/user/README.md)** — then the [English user guide](docs/user/unitor-mt4-bridge-user-guide.md) or the [manuel français](docs/user/unitor-mt4-bridge-manuel-utilisateur.md) (install, Auto-Start, first MIDI, first SysEx, troubleshooting).
+**→ [`docs/user/README.md`](docs/user/README.md)** — then the [English user guide](docs/user/unitor-mt4-bridge-user-guide.md) or the [guide français](docs/user/unitor-mt4-bridge-guide-utilisateur.md) (install, Auto-Start, first MIDI, first SysEx, troubleshooting).
 
 ## Why this exists
 

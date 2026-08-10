@@ -94,7 +94,7 @@ builds\debug\Bridge.exe --test-port-names
 
 ## Docs liées
 
-- Manuel utilisateur : [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#auto-start)
+- Guide utilisateur : [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#auto-start)
 - Hot-plug (3.2) : [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
 - Multi-client DAW + MIDI-OX (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
 - Installateur public (4.1) : [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md)

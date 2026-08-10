@@ -46,7 +46,7 @@ so that trust issues do not silently kill adoption.
   - [x] Cross-link: replace “→ 4.4” / “Authenticode / SmartScreen remains Story 4.4” placeholders in README, `docs/dev/license-and-backends.md`, `docs/dev/winusb-bind.md`, and Epic 4 smokes with pointers to the finished surfaces
 
 - [x] Task 2: Ship end-user SmartScreen honesty (AC: 2–3)
-  - [x] Language: musician-facing prose in **English** user guide + keep **French** peer in sync (`docs/user/unitor-mt4-bridge-user-guide.md` ↔ `docs/user/unitor-mt4-bridge-manuel-utilisateur.md`) for shared product facts (SmartScreen steps, unsigned honesty, Ten Square facade)
+  - [x] Language: musician-facing prose in **English** user guide + keep **French** peer in sync (`docs/user/unitor-mt4-bridge-user-guide.md` ↔ `docs/user/unitor-mt4-bridge-guide-utilisateur.md`) for shared product facts (SmartScreen steps, unsigned honesty, Ten Square facade)
   - [x] Add a short Installation subsection and/or Troubleshooting entry covering Microsoft Defender SmartScreen when the public Setup is **unsigned** or **not yet reputation-trusted**:
     1. Expected UI: “Windows protected your PC” / unrecognized app (wording may vary by Windows version)
     2. Mitigation on consumer PCs where policy allows: **More info** → **Run anyway** (only after the user confirms they downloaded from the project’s official channel)
@@ -205,7 +205,7 @@ Recent commits (`5e294ba` / `12eff9a` Story 4.3, `fc29bfb` Story 4.2, `538ceea` 
 
 ```text
 docs/user/unitor-mt4-bridge-user-guide.md              # UPDATE — SmartScreen install/troubleshoot
-docs/user/unitor-mt4-bridge-manuel-utilisateur.md      # UPDATE — FR peer sync
+docs/user/unitor-mt4-bridge-guide-utilisateur.md      # UPDATE — FR peer sync
 docs/user/README.md                                    # OPTIONAL pointer
 docs/dev/authenticode-and-smartscreen.md               # NEW (recommended) — lab vs public policy
 docs/dev/winusb-bind.md                                # UPDATE — replace Signing stub
@@ -277,7 +277,7 @@ Composer (Cursor agent router)
 - `docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md` (new)
 - `scripts/packaging/sign-public-artifacts.ps1` (new)
 - `docs/user/unitor-mt4-bridge-user-guide.md`
-- `docs/user/unitor-mt4-bridge-manuel-utilisateur.md`
+- `docs/user/unitor-mt4-bridge-guide-utilisateur.md`
 - `docs/user/README.md`
 - `docs/dev/winusb-bind.md`
 - `docs/dev/license-and-backends.md`
@@ -305,7 +305,7 @@ Composer (Cursor agent router)
 - [x] [Review][Patch] Discover SignTool under x64 or arm64 Kit layouts; prefer a current kit [`scripts/packaging/sign-public-artifacts.ps1`:42]
 - [x] [Review][Patch] After SignTool, verify the signature matches the intended Subject [`scripts/packaging/sign-public-artifacts.ps1`:66]
 - [x] [Review][Patch] Assert FR SmartScreen mitigation strings in the installer contract [`scripts/packaging/verify-installer-contract.py`:160]
-- [x] [Review][Patch] Stabilize FR SmartScreen heading anchors (ASCII-safe fragment) [`docs/user/unitor-mt4-bridge-manuel-utilisateur.md`:81]
+- [x] [Review][Patch] Stabilize FR SmartScreen heading anchors (ASCII-safe fragment) [`docs/user/unitor-mt4-bridge-guide-utilisateur.md`:81]
 - [x] [Review][Patch] Tell users how to check Digital Signatures / publisher on Setup [`docs/user/unitor-mt4-bridge-user-guide.md`:81]
 - [x] [Review][Defer] Production INF `.cat` still not produced/packaged [`docs/dev/authenticode-and-smartscreen.md`] — deferred, pre-existing (waits on OQ-3 cert path; policy already honest)
 - [x] [Review][Defer] SignTool `/d` `/du` (and dual-sign) metadata not in helper [`scripts/packaging/sign-public-artifacts.ps1`:66] — deferred, pre-existing

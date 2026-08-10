@@ -7,7 +7,7 @@ Community end-user docs for **Unitor MT4 Bridge** (Ten Square Software) and the 
 | Language | Guide |
 |---|---|
 | English | [Unitor MT4 Bridge — User guide](unitor-mt4-bridge-user-guide.md) |
-| Français | [Unitor MT4 Bridge — Manuel utilisateur](unitor-mt4-bridge-manuel-utilisateur.md) |
+| Français | [Unitor MT4 Bridge — Guide utilisateur](unitor-mt4-bridge-guide-utilisateur.md) |
 
 ## Suggested reading order
 

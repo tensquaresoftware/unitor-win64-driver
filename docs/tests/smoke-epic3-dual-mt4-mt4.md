@@ -111,7 +111,7 @@ builds\debug\Bridge.exe --test-mapper
 
 ## Docs liées
 
-- Manuel utilisateur multi-MT4 : [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#two-mt4-interfaces)
+- Guide utilisateur multi-MT4 : [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#two-mt4-interfaces)
 - Auto-Start (3.1) : [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
 - Hot-plug (3.2) : [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
 - Multi-client (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)

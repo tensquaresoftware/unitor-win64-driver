@@ -11,9 +11,9 @@ product_version: "0.1.0"
 
 This guide explains how to install and use **Unitor MT4 Bridge** with an **Emagic MT4** MIDI interface on Windows 10 or 11 (64-bit).
 
-Follow the sections in order. You should be able to send and receive MIDI the same day, then complete a first SysEx exchange with an editor or librarian.
+Follow the sections in order. When Setup completes successfully, you should be able to send and receive MIDI the same day, then complete a first SysEx exchange with an editor or librarian. On a clean PC, Windows may still reject the USB driver package until a trusted catalog is available — see [Installation](#installation) and [USB association (WinUSB) failed](#usb-association-winusb-failed).
 
-French version: [`unitor-mt4-bridge-manuel-utilisateur.md`](unitor-mt4-bridge-manuel-utilisateur.md).
+French version: [`unitor-mt4-bridge-guide-utilisateur.md`](unitor-mt4-bridge-guide-utilisateur.md).
 
 ## Contents
 
@@ -59,14 +59,14 @@ These programs are not included with the Bridge; install them if you need them:
 
 # Installation
 
-1. Download and run `UnitorMt4Bridge-Setup.exe`.
-2. Accept the suggested folder, usually:
+1. Plug in the **MT4** (power + USB) **before** or while running Setup — the wizard does **not** pause to ask you to plug it in.
+2. Download and run `UnitorMt4Bridge-Setup.exe`.
+3. Accept the suggested folder, usually:
 
    `C:\Program Files\Ten Square Software\Unitor MT4 Bridge\`
 
-3. Plug in the MT4 when the wizard asks (USB association).
 4. Allow the Administrator prompt **once** (Program Files and USB association).
-5. Wait for the screen that confirms a successful install.
+5. Wait for the screen that confirms a successful install — or an **incomplete** screen if a gate failed (that is not a successful community install).
 
 Setup succeeds when:
 
@@ -76,7 +76,9 @@ Setup succeeds when:
 
 If something is missing (for example virtualMIDI), the wizard shows a help message: fix that point, then run the installer again.
 
-**WinUSB** is Microsoft’s standard USB component. The installer associates it with the MT4 so the Bridge can talk to the interface. You do not need further USB setup for normal use.
+**WinUSB** is Microsoft’s standard USB component. The installer associates it with the MT4 so the Bridge can talk to the interface. After a **successful** association, you do not need Zadig or further USB tooling for normal use.
+
+**Honesty (community builds today):** on a clean Windows PC, Setup may still fail WinUSB association when the driver package has no trusted catalog / signature yet. That is a known Windows trust limit — not a missing “plug in the MT4” step. See [USB association (WinUSB) failed](#usb-association-winusb-failed) and the SmartScreen section below. Contributor lab signing is **not** the same as public community trust.
 
 ## Windows SmartScreen (unsigned or unrecognized Setup)
 
@@ -119,7 +121,9 @@ You can also start **Unitor MT4 Bridge** from the Start menu: that launches the 
 
 ## Turn off Auto-Start
 
-In the Start menu, choose **Unregister Auto-Start** if you no longer want the Bridge to launch at sign-in. Uninstalling the software also removes Auto-Start.
+In the Start menu, choose **Unregister Auto-Start** if you no longer want the Bridge to launch at sign-in. Uninstalling the software also removes Auto-Start **for the Windows user who runs the uninstall**. Other Windows accounts on the same PC may still have their own Auto-Start entry — open **Unregister Auto-Start** (or run `Bridge.exe --unregister-auto-start`) while signed in as that user.
+
+Uninstall removes the Bridge program files. The WinUSB association for the MT4 **may remain** in Windows Driver Store until an administrator removes that driver package — that is normal and does not by itself keep Auto-Start alive.
 
 # First MIDI test
 
@@ -192,7 +196,18 @@ Install **loopMIDI** or **rtpMIDI**, confirm `teVirtualMIDI.dll` in `C:\Windows\
 
 ## USB association (WinUSB) failed
 
-Run the installer again with the MT4 plugged in. In Device Manager, the MT4 MIDI interface should show as associated with WinUSB.
+Setup reports that it could not associate the MT4 with WinUSB, and the install is rolled back (program files / Add-Remove entry are not left as a successful install).
+
+Common cause on a **clean** PC: Windows rejects an **unsigned** driver package / missing trusted catalog. Replugging the MT4 and clicking Setup again will usually hit the **same** failure until a trusted catalog is available for community builds.
+
+What to do:
+
+1. Confirm the MT4 is plugged in and powered.
+2. Confirm you ran the project’s own Setup (see SmartScreen honesty above) — not a random mirror.
+3. Read the Setup message: if it mentions an unsigned driver package, this is the catalog / signature gate (not “forgot to plug the MT4”).
+4. Do **not** use Zadig as the primary community fix. Contributor lab mitigations are separate from public trust.
+
+When association **does** succeed, Device Manager should show the MT4 MIDI interface under WinUSB.
 
 ## No ports visible
 
@@ -242,8 +257,8 @@ To quit the Bridge cleanly when it is open in a console window, use **Ctrl+C**.
 
 With Unitor MT4 Bridge and an MT4 on Windows 10 / 11 64-bit you can:
 
-- Install with the provided setup wizard (WinUSB association — not a custom kernel driver)
-- Use **2 inputs** and **4 outputs** as virtual ports (`MT4 In` / `MT4 Out`)
+- Run the provided setup wizard (Microsoft WinUSB association — not a custom kernel driver), **when Windows accepts the driver package**
+- Use **2 inputs** and **4 outputs** as virtual ports (`MT4 In` / `MT4 Out`) after a successful install
 - Pass notes, CC, clock / transport, MTC, and SysEx (editor / librarian scale)
 - Use Auto-Start without daily Administrator (user-session Bridge, not a Windows Service)
 - Unplug and replug the MT4, then recover ports with rescan or Bridge relaunch (without Windows reboot)
@@ -254,6 +269,7 @@ With Unitor MT4 Bridge and an MT4 on Windows 10 / 11 64-bit you can:
 
 Do **not** expect the following in this version:
 
+- A guaranteed WinUSB association on every clean PC while community Setup still ships without a trusted INF catalog (Windows may reject the package — see [USB association (WinUSB) failed](#usb-association-winusb-failed))
 - Patch mode, LTC/VITC, Fast Mode / AMT features from Unitor-family manuals
 - Cascaded / stacked Emagic multi-interface topologies
 - Guaranteed AMT8 / Unitor8 support without validated hardware for those models

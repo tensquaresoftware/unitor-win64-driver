@@ -1,7 +1,7 @@
 ---
 organization: Ten Square Software
 project: unitor-win64-driver
-title: Unitor MT4 Bridge — Manuel utilisateur
+title: Unitor MT4 Bridge — Guide utilisateur
 author: Guillaume DUPONT
 created: 2026-08-10
 updated: 2026-08-10
@@ -9,9 +9,9 @@ version: "1.0"
 product_version: "0.1.0"
 ---
 
-Ce manuel explique comment installer et utiliser **Unitor MT4 Bridge** avec une interface MIDI **Emagic MT4** sous Windows 10 ou 11 (64 bits).
+Ce guide explique comment installer et utiliser **Unitor MT4 Bridge** avec une interface MIDI **Emagic MT4** sous Windows 10 ou 11 (64 bits).
 
-Suivez les sections dans l’ordre. Vous pourrez envoyer et recevoir du MIDI le jour même, puis faire un premier échange SysEx avec un éditeur ou un librarian.
+Suivez les sections dans l’ordre. Quand Setup se termine avec succès, vous pourrez envoyer et recevoir du MIDI le jour même, puis faire un premier échange SysEx avec un éditeur ou un librarian. Sur un PC propre, Windows peut encore refuser le paquet pilote USB tant qu’un catalogue de confiance n’est pas disponible — voir [Installation](#installation) et [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec).
 
 Version anglaise : [`unitor-mt4-bridge-user-guide.md`](unitor-mt4-bridge-user-guide.md).
 
@@ -59,14 +59,14 @@ Ces programmes ne sont pas fournis avec le Bridge ; installez-les si vous en ave
 
 # Installation
 
-1. Téléchargez et lancez `UnitorMt4Bridge-Setup.exe`.
-2. Acceptez le dossier proposé, en général :
+1. Branchez la **MT4** (alimentation + USB) **avant** ou pendant Setup — l’assistant **ne s’arrête pas** pour vous demander de la brancher.
+2. Téléchargez et lancez `UnitorMt4Bridge-Setup.exe`.
+3. Acceptez le dossier proposé, en général :
 
    `C:\Program Files\Ten Square Software\Unitor MT4 Bridge\`
 
-3. Branchez la MT4 lorsque l’assistant le demande (association USB).
 4. Autorisez l’élévation Administrateur **une seule fois** (Program Files et association USB).
-5. Attendez l’écran indiquant que l’installation a réussi.
+5. Attendez l’écran indiquant que l’installation a réussi — ou un écran **incomplet** si une porte a échoué (ce n’est pas une install communautaire réussie).
 
 L’installation réussit lorsque :
 
@@ -76,7 +76,9 @@ L’installation réussit lorsque :
 
 Si quelque chose manque (par exemple virtualMIDI), l’assistant affiche un message d’aide : corrigez le point indiqué, puis relancez l’installeur.
 
-**WinUSB** est le composant USB standard de Microsoft. L’installeur l’associe à la MT4 pour que le Bridge puisse communiquer avec elle. Vous n’avez rien à configurer de plus pour un usage normal.
+**WinUSB** est le composant USB standard de Microsoft. L’installeur l’associe à la MT4 pour que le Bridge puisse communiquer avec elle. Après une association **réussie**, vous n’avez pas besoin de Zadig ni d’autre outillage USB pour un usage normal.
+
+**Honnêteté (builds communautaires aujourd’hui) :** sur un PC Windows propre, Setup peut encore échouer à l’association WinUSB si le paquet pilote n’a pas encore de catalogue / signature de confiance. C’est une limite de confiance Windows — pas une étape « branchez la MT4 » manquée. Voir [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec) et la section SmartScreen ci-dessous. La signature lab contributeur **n’est pas** la confiance communautaire publique.
 
 ## Windows SmartScreen (Setup non signe ou non reconnu)
 
@@ -119,7 +121,9 @@ Vous pouvez aussi lancer **Unitor MT4 Bridge** depuis le menu Démarrer : cela d
 
 ## Arrêter le démarrage automatique
 
-Dans le menu Démarrer, choisissez **Unregister Auto-Start** si vous ne voulez plus que le Bridge se lance à la connexion. La désinstallation du logiciel retire aussi ce démarrage automatique.
+Dans le menu Démarrer, choisissez **Unregister Auto-Start** si vous ne voulez plus que le Bridge se lance à la connexion. La désinstallation retire aussi ce démarrage automatique **pour l’utilisateur Windows qui lance la désinstallation**. Les autres comptes Windows sur le même PC peuvent garder leur propre entrée — ouvrez **Unregister Auto-Start** (ou lancez `Bridge.exe --unregister-auto-start`) en étant connecté avec ce compte.
+
+La désinstallation retire les fichiers du Bridge. L’association WinUSB de la MT4 **peut rester** dans le magasin de pilotes Windows jusqu’à ce qu’un administrateur retire ce paquet — c’est normal et ne maintient pas à lui seul le démarrage automatique.
 
 # Premier test MIDI
 
@@ -192,7 +196,18 @@ Installez **loopMIDI** ou **rtpMIDI**, vérifiez `teVirtualMIDI.dll` dans `C:\Wi
 
 ## Association USB (WinUSB) en échec
 
-Relancez l’installeur avec la MT4 branchée. Dans le Gestionnaire de périphériques, l’interface MIDI de la MT4 doit apparaître associée à WinUSB.
+Setup indique qu’il n’a pas pu associer la MT4 à WinUSB, et l’installation est annulée (fichiers programme / entrée Ajout-Suppression non laissés comme une install réussie).
+
+Cause fréquente sur un PC **propre** : Windows refuse un paquet pilote **non signé** / sans catalogue de confiance. Rebrancher la MT4 et relancer Setup aboutit en général au **même** échec tant qu’un catalogue de confiance n’est pas disponible pour les builds communautaires.
+
+Que faire :
+
+1. Vérifiez que la MT4 est branchée et alimentée.
+2. Vérifiez que vous avez lancé le Setup du projet (voir l’honnêteté SmartScreen ci-dessus) — pas un miroir au hasard.
+3. Lisez le message Setup : s’il parle d’un paquet pilote non signé, c’est le frein catalogue / signature (pas « j’ai oublié de brancher la MT4 »).
+4. N’utilisez **pas** Zadig comme correctif communautaire principal. Les mitigations lab contributeur sont distinctes de la confiance publique.
+
+Quand l’association **réussit**, le Gestionnaire de périphériques doit montrer l’interface MIDI de la MT4 sous WinUSB.
 
 ## Aucun port visible
 
@@ -242,8 +257,8 @@ Pour quitter le Bridge proprement lorsqu’il est ouvert dans une fenêtre conso
 
 Avec Unitor MT4 Bridge et une MT4 sous Windows 10 / 11 64 bits :
 
-- Installer via l’assistant fourni (association WinUSB — pas de pilote noyau custom)
-- Utiliser **2 entrées** et **4 sorties** virtuelles (`MT4 In` / `MT4 Out`)
+- Lancer l’assistant fourni (association Microsoft WinUSB — pas de pilote noyau custom), **lorsque Windows accepte le paquet pilote**
+- Utiliser **2 entrées** et **4 sorties** virtuelles (`MT4 In` / `MT4 Out`) après une install réussie
 - Faire circuler notes, CC, horloge / transport, MTC et SysEx (échelle éditeur / librarian)
 - Profiter du démarrage automatique sans Administrateur au quotidien (Bridge en session utilisateur, pas un service Windows)
 - Débrancher et rebrancher la MT4, puis récupérer les ports par rescan ou relance du Bridge (sans redémarrer Windows)
@@ -254,6 +269,7 @@ Avec Unitor MT4 Bridge et une MT4 sous Windows 10 / 11 64 bits :
 
 N’attendez **pas** ceci dans cette version :
 
+- Une association WinUSB garantie sur tout PC propre tant que le Setup communautaire n’embarque pas encore un catalogue INF de confiance (Windows peut refuser le paquet — voir [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec))
 - Patch mode, LTC/VITC, Fast Mode / fonctions AMT des manuels Unitor
 - Topologies Emagic en cascade / empilées
 - Support garanti AMT8 / Unitor8 sans matériel validé pour ces modèles
@@ -276,4 +292,4 @@ Chaque interface a son propre jeu de ports. Débrancher l’une ne change pas le
 
 Si vous n’avez qu’une MT4, ignorez les noms avec `#2` jusqu’à en avoir besoin.
 
-**Honnêteté de validation :** l’usage quotidien et le nommage pour **une** MT4 physique sont le chemin prouvé documenté ici. Le nommage dual-MT4 est implémenté ; traitez une seconde unité comme supportée côté logiciel, mais ne supposez pas une preuve lab dual fermée à partir de ce manuel seul.
+**Honnêteté de validation :** l’usage quotidien et le nommage pour **une** MT4 physique sont le chemin prouvé documenté ici. Le nommage dual-MT4 est implémenté ; traitez une seconde unité comme supportée côté logiciel, mais ne supposez pas une preuve lab dual fermée à partir de ce guide seul.

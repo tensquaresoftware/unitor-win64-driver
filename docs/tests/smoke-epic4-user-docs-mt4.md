@@ -70,7 +70,7 @@ Verifier instructions come from [`docs/user/unitor-mt4-bridge-user-guide.md`](..
 
 ## Shipped user guide
 
-Landing: [`docs/user/README.md`](../user/README.md). English manual: [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md). French peer: [`docs/user/unitor-mt4-bridge-manuel-utilisateur.md`](../user/unitor-mt4-bridge-manuel-utilisateur.md).
+Landing: [`docs/user/README.md`](../user/README.md). English guide: [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md). French peer: [`docs/user/unitor-mt4-bridge-guide-utilisateur.md`](../user/unitor-mt4-bridge-guide-utilisateur.md).
 
 ## Out of scope for this smoke
 
@@ -89,4 +89,4 @@ Landing: [`docs/user/README.md`](../user/README.md). English manual: [`docs/user
 - Authenticode / SmartScreen smoke: [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md)
 - User docs landing: [`docs/user/README.md`](../user/README.md)
 - User manual (EN): [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md)
-- Manuel utilisateur (FR): [`docs/user/unitor-mt4-bridge-manuel-utilisateur.md`](../user/unitor-mt4-bridge-manuel-utilisateur.md)
+- Guide utilisateur (FR): [`docs/user/unitor-mt4-bridge-guide-utilisateur.md`](../user/unitor-mt4-bridge-guide-utilisateur.md)

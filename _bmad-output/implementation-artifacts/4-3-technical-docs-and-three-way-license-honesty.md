@@ -254,7 +254,7 @@ Composer (Cursor agent router)
 - `docs/tests/smoke-epic4-public-installer-mt4.md`
 - `docs/tests/smoke-epic4-user-docs-mt4.md`
 - `docs/user/unitor-mt4-bridge-user-guide.md`
-- `docs/user/unitor-mt4-bridge-manuel-utilisateur.md`
+- `docs/user/unitor-mt4-bridge-guide-utilisateur.md`
 - `_bmad-output/implementation-artifacts/4-3-technical-docs-and-three-way-license-honesty.md`
 - `_bmad-output/implementation-artifacts/sprint-status.yaml`
 
@@ -265,7 +265,7 @@ Composer (Cursor agent router)
 
 ### Review Findings
 
-- [x] [Review][Patch] Mark user-manual see-also to license page as English/technical [docs/user/unitor-mt4-bridge-user-guide.md:238] [docs/user/unitor-mt4-bridge-manuel-utilisateur.md:238] — decision: keep deep link; add clear English/technical marker (Guillaume chose option 1)
+- [x] [Review][Patch] Mark user-manual see-also to license page as English/technical [docs/user/unitor-mt4-bridge-user-guide.md:238] [docs/user/unitor-mt4-bridge-guide-utilisateur.md:238] — decision: keep deep link; add clear English/technical marker (Guillaume chose option 1)
 - [x] [Review][Patch] Restore GPL-copy consequence on README License [README.md:License] — prior text warned copying Linux `midi.c` / quirks would force GPL; current text only says “not vendored.”
 - [x] [Review][Patch] Restore Microsoft licensing note for Windows MIDI Services [README.md:License] — WinUSB note kept; WMS dropped from the prior “WinUSB / Windows MIDI Services” Microsoft caveat.
 - [x] [Review][Patch] Align Win11-only vs Win11-oriented wording [docs/dev/license-and-backends.md:20-36]
