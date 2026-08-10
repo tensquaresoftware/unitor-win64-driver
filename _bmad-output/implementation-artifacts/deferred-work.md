@@ -1,5 +1,11 @@
 # Deferred work
 
+## Deferred from: code review of 4-1-public-installer-meeting-ad-12-ux-bar.md (2026-08-10)
+
+- Unsigned INF / missing `.cat` in Public Installer payload — clean-machine association may fail until Story **4.4** Authenticode/catalog; lab mitigation remains `installer/sign-lab-package.ps1` (story fence, not a silent skip).
+- No timeout if `pnputil` or Bridge hangs under Inno `Exec` / `ExecAsOriginalUser` — installer wizard can block indefinitely; Inno limitation deferred unless a reusable timeout wrapper is added later.
+- Blank Win10 Public Installer smoke matrix — honesty blank kept for code-review pass; lab Pass still required before story `done`.
+
 ## Deferred from: story 2-5 session longevity design (2026-08-05)
 
 Open soak risks for SM-3 / NFR-R1 (`docs/tests/checklists/smoke-epic2-longevity-mt4.md`). None measured Fail this turn (Win10 ~4 h sample still blank). Do **not** treat them as “usermode destiny” if the sample hits them.

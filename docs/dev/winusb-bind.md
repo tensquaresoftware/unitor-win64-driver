@@ -137,6 +137,10 @@ Once WinUSB bind works and Epic 1–2 sessions are green, register user-session 
 
 One-time INF bind / test-signing may still need Administrator. Daily `--register-auto-start` / logon launch / `--unregister-auto-start` must not.
 
-## Out of scope here
+## Public Installer (community path)
 
-Polished Public Installer UX (progress UI, VirtualMIDI MSI gate, packaging Auto-Start into the installer) is Story 4.1 — not this bind package. Runtime Auto-Start register/unregister lives in Story 3.1 (see smoke guide above).
+Story **4.1** packages this INF into the community Public Installer (progress UI, VirtualMIDI presence gate, Auto-Start wiring). Operator smoke:
+
+- [`docs/tests/smoke-epic4-public-installer-mt4.md`](../tests/smoke-epic4-public-installer-mt4.md)
+
+This document remains the contributor bind / Zadig fallback reference. Runtime Auto-Start register/unregister lives in Story 3.1 (see smoke guide above).

@@ -39,7 +39,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 | Débranche / rebranche en session | **3.2** |
 | Multi-client DAW + MIDI-OX (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
 | Noms stables pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
-| Packaging Auto-Start dans l’installeur public | **4.1** |
+| Packaging Auto-Start dans l’installeur public | **4.1** — [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md) |
 | Doc utilisateur polie | **4.2** |
 | Mesures de latence MIDI | Epic **5** |
 
@@ -90,11 +90,12 @@ builds\debug\Bridge.exe --test-port-names
 
 - Dire que SM-5 est entièrement clos (installeur + doc utilisateur polie)
 - Récupération hot-plug après ports déjà live → **3.2** ([`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md))
-- Câblage MSI de l’installeur public → **4.1**
+- Câblage de l’installeur public → **4.1** ([`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md))
 
 ## Docs liées
 
 - Hot-plug (3.2) : [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
 - Multi-client DAW + MIDI-OX (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
+- Installateur public (4.1) : [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md)
 - Bind WinUSB (admin une fois) : [`../dev/winusb-bind.md`](../dev/winusb-bind.md)
 - Smoke transport Epic 2 : [`smoke-epic2-mt4.md`](smoke-epic2-mt4.md)
