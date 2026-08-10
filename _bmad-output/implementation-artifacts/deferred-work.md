@@ -1,5 +1,11 @@
 # Deferred work
 
+## Deferred from: code review of 4-3-technical-docs-and-three-way-license-honesty.md (2026-08-10)
+
+- loopMIDI/rtpMIDI product names hyperlink to the virtualMIDI SDK page (not end-user download pages) — pre-existing README pattern; not introduced by 4.3.
+- “Public Installer” product naming while OQ-1 redistributable MSI clearance remains open — pre-existing Epic 4 naming; reconcile under 4.1 / OQ-1, not a 4.3 docs patch alone.
+- Vendor virtualMIDI marketing OS claims (often Win7–Win10) vs project Validation Matrix (Win10+Win11 mandatory Win10) — optional honesty note; story Dev Notes already warn authors; not an AC miss.
+
 ## Deferred from: code review of 4-2-end-user-documentation-for-first-midi-and-sysex.md (2026-08-10)
 
 - Bridge CMake `project(VERSION)` vs installer `MyAppVersion` dual sources — packaging concern already tracked under Story 4.1 wiring `MyAppVersion` from the build script; not a docs-story fix.
