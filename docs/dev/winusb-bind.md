@@ -1,8 +1,10 @@
 # WinUSB bind path for Emagic MT4 (086A:0003)
 
-**Community readers:** use the Public Installer walkthrough in the user guide ([Installation](../user/unitor-mt4-bridge-user-guide.md#installation)). This page is the **contributor** bind reference.
+**Community readers:** start with the user guide ([Installation](../user/unitor-mt4-bridge-user-guide.md#installation) and [USB association failed](../user/unitor-mt4-bridge-user-guide.md#usb-association-winusb-failed)). This page is the **contributor / detailed bind** reference.
 
-Primary community path: bind the MT4 composite MIDI interface to Microsoft **WinUSB** with the project DeviceInterfaceGUID using the in-repo INF. **Zadig is contributor fallback only** — not the primary install path.
+**Hobby posture (2026-08-10):** no paid INF catalog. On a clean PC, Setup-alone association often fails (`0xE000022F`). The supported **hobby install** USB path is **guided WinUSB** — typically **Zadig** for musicians, or the INF / Device Manager steps below for contributors.
+
+Primary packaging still ships the project INF + DeviceInterfaceGUID `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` for machines that can accept it (lab signed catalog, or rare environments that allow unsigned OEM INF).
 
 ## What you get
 
@@ -114,16 +116,16 @@ Bridge.exe --start-session --dev-zadig
 
 Default builds still prefer the project GUID and fail closed without `--dev-zadig` when the GUID is missing.
 
-## Zadig — contributor fallback only
+## Zadig — supported guided path without a paid catalog
 
-Use Zadig **only** when you cannot stage the INF (personal lab, unsigned package blocked, quick bring-up). It is **not** the primary community path.
+On clean PCs without a trusted production `.cat`, **Zadig** is the practical **hobby install** association path (same honesty as the user guide). Prefer it when Setup’s `pnputil` step fails with an unsigned-INF error.
 
 If you use Zadig:
 
 1. Bind WinUSB to composite interface **MI_02** (not a random sibling interface).
 2. Prefer installing so a DeviceInterfaceGUID is present (Zadig usually writes one).
 3. Open with `Bridge.exe --open-device --dev-zadig` (or `--start-session --dev-zadig`) so the Bridge may fall back when `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` is missing.
-4. Revert to the INF package before validating community install docs or Story 4.1 installer UX.
+4. For INF-based lab validation with a self-signed catalog, use [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1) — **not** community trust.
 
 Zadig fallback refuses to open when **more than one** USB device matches the MT4 hardware ID (same fail-closed rule as the GUID path).
 
@@ -134,11 +136,9 @@ Two separate trust domains — do not conflate them:
 1. **Authenticode** on `Bridge.exe` / `UnitorMt4Bridge-Setup.exe` (SmartScreen / publisher trust)
 2. **WinUSB INF catalog** (`.cat`) for clean-machine Driver Store association (`CatalogFile=mt4-winusb.cat`)
 
-**Lab only:** [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1) builds a self-signed catalog and stages LocalMachine Root / TrustedPublisher. That is **not** public Authenticode and must not be described as community trust.
+**Lab only:** [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1) builds a self-signed catalog and stages LocalMachine Root / TrustedPublisher. That is **not** public Authenticode.
 
-**Public policy:** Authenticode is **strongly recommended** but **not** a hard V1 gate. Unsigned INF is still acceptable for contributor bind (Device Manager browse-install / test-signing as needed). Full lab-vs-public runbook, optional SignTool helper, and OQ-3 deferral: [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md). Musician-facing SmartScreen steps: [user guide](../user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup).
-
-Zadig remains contributor fallback only (see above) — never the primary community path.
+**Public / hobby policy:** no code-signing certificate in this project line. Unsigned Setup + SmartScreen docs; clean-PC WinUSB via **guided** association (Zadig / INF browse). Full runbook: [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md). Musician-facing steps: [user guide](../user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup).
 
 ## Daily use after bind (Auto-Start)
 
@@ -146,13 +146,13 @@ Once WinUSB bind works and Epic 1–2 sessions are green, register user-session 
 
 - [`docs/tests/smoke-epic3-autostart-mt4.md`](../tests/smoke-epic3-autostart-mt4.md)
 
-One-time INF bind / test-signing may still need Administrator. Daily `--register-auto-start` / logon launch / `--unregister-auto-start` must not.
+One-time INF bind / Zadig / test-signing may still need Administrator. Daily `--register-auto-start` / logon launch / `--unregister-auto-start` must not.
 
-## Public Installer (community path)
+## Public Installer (packaging path)
 
-Story **4.1** packages this INF into the community Public Installer (progress UI, virtualMIDI presence gate, Auto-Start wiring). End-user prose: [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md) (Install section). Operator smokes:
+Story **4.1** packages the INF into the Public Installer (progress UI, virtualMIDI presence gate, Auto-Start wiring). On clean PCs without a trusted catalog, expect WinUSB association to **fail** inside Setup — then use guided WinUSB. End-user prose: [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md). Operator smokes:
 
 - [`docs/tests/smoke-epic4-public-installer-mt4.md`](../tests/smoke-epic4-public-installer-mt4.md)
 - [`docs/tests/smoke-epic4-user-docs-mt4.md`](../tests/smoke-epic4-user-docs-mt4.md)
 
-This document remains the contributor bind / Zadig fallback reference. Runtime Auto-Start register/unregister lives in Story 3.1 (see smoke guide above).
+This document remains the detailed bind reference (INF + Zadig). Runtime Auto-Start register/unregister lives in Story 3.1 (see smoke guide above).

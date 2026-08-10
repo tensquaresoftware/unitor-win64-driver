@@ -5,13 +5,15 @@ title: Unitor MT4 Bridge — Guide utilisateur
 author: Guillaume DUPONT
 created: 2026-08-10
 updated: 2026-08-10
-version: "1.0"
+version: "1.1"
 product_version: "0.1.0"
 ---
 
 Ce guide explique comment installer et utiliser **Unitor MT4 Bridge** avec une interface MIDI **Emagic MT4** sous Windows 10 ou 11 (64 bits).
 
-Suivez les sections dans l’ordre. Quand Setup se termine avec succès, vous pourrez envoyer et recevoir du MIDI le jour même, puis faire un premier échange SysEx avec un éditeur ou un librarian. Sur un PC propre, Windows peut encore refuser le paquet pilote USB tant qu’un catalogue de confiance n’est pas disponible — voir [Installation](#installation) et [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec).
+C’est un projet **hobby / open source** (façade Ten Square Software) : sources gratuites sur GitHub, **pas** de certificat de signature dans cette ligne de release, et **pas** de promesse que Setup seul réussit toujours sur un PC neuf.
+
+Suivez les sections dans l’ordre. Après Bridge + virtualMIDI + **association WinUSB** réussis, vous pourrez envoyer et recevoir du MIDI le jour même, puis faire un premier échange SysEx. Sur un PC **propre**, Setup **échoue** souvent à l’association WinUSB sans catalogue de confiance — utilisez alors les étapes **WinUSB guidé** (par exemple **Zadig**) sous [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec).
 
 Version anglaise : [`unitor-mt4-bridge-user-guide.md`](unitor-mt4-bridge-user-guide.md).
 
@@ -37,11 +39,11 @@ Avant l’installation, préparez :
 |---|---|
 | Ordinateur | **Windows 10** ou **Windows 11**, **64 bits** |
 | Matériel | Une interface MIDI **Emagic MT4** |
-| virtualMIDI | Le pilote **[virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html)** (Tobias Erichsen), déjà installé |
+| virtualMIDI (intérimaire) | Le pilote **[virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html)** (Tobias Erichsen), déjà installé — chemin **lab / Bridge actuel** |
 
-## Installer virtualMIDI
+## Installer virtualMIDI (chemin lab intérimaire)
 
-Unitor MT4 Bridge s’appuie sur **virtualMIDI** pour créer les ports MIDI virtuels visibles dans votre DAW. Installez-le avant le Bridge, par exemple avec :
+Aujourd’hui, le Bridge s’appuie sur **virtualMIDI** pour créer les ports MIDI virtuels visibles dans votre DAW. Un backend **Windows MIDI Services** sous **Windows 11** est prévu pour les binaires communautaires prêts à l’emploi (sans redistribuer le SDK propriétaire virtualMIDI). En attendant, installez virtualMIDI avant le Bridge, par exemple avec :
 
 - **[loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html)** (choix le plus courant), ou
 - **[rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html)**
@@ -76,9 +78,13 @@ L’installation réussit lorsque :
 
 Si quelque chose manque (par exemple virtualMIDI), l’assistant affiche un message d’aide : corrigez le point indiqué, puis relancez l’installeur.
 
-**WinUSB** est le composant USB standard de Microsoft. L’installeur l’associe à la MT4 pour que le Bridge puisse communiquer avec elle. Après une association **réussie**, vous n’avez pas besoin de Zadig ni d’autre outillage USB pour un usage normal.
+**WinUSB** est le composant USB standard de Microsoft (déjà dans Windows). Ce qui échoue souvent sur un PC propre, c’est *associer cette MT4 Emagic* à WinUSB lorsque l’INF du projet n’a pas de catalogue de confiance — ce projet hobby **ne fournit pas** de certificat de signature.
 
-**Honnêteté (builds communautaires aujourd’hui) :** sur un PC Windows propre, Setup peut encore échouer à l’association WinUSB si le paquet pilote n’a pas encore de catalogue / signature de confiance. C’est une limite de confiance Windows — pas une étape « branchez la MT4 » manquée. Voir [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec) et la section SmartScreen ci-dessous. La signature lab contributeur **n’est pas** la confiance communautaire publique.
+**Honnêteté install hobby :**
+
+- Si l’étape WinUSB de Setup **réussit**, c’est bon pour l’USB — pas d’autre outillage au quotidien.
+- Si l’étape WinUSB de Setup **échoue** (fréquent sur PC propre), c’est attendu sans catalogue payant. Suivez [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec) — l’association **guidée avec Zadig** (ou le chemin INF contributeur) est le correctif supporté, pas « attendre un certificat ».
+- Les scripts de signature lab **ne sont pas** la confiance communautaire.
 
 ## Windows SmartScreen (Setup non signe ou non reconnu)
 
@@ -86,7 +92,7 @@ Windows peut afficher **Microsoft Defender SmartScreen** — souvent « Windows 
 
 **Ne continuez que si vous avez téléchargé le Setup depuis la page de téléchargement / Releases de ce projet** (pas un miroir tiers au hasard). Tant qu’une URL figée n’est pas publiée avec la première release publique taguée, utilisez la page Releases ou de téléchargement de ce dépôt.
 
-Pour vérifier si **ce** fichier Setup est signé : clic droit → **Propriétés** → **Signatures numériques**. Si cet onglet est absent, le fichier est en général **non signé**. Pour une build publique signée, l’éditeur attendu est **Ten Square Software**.
+Pour vérifier si **ce** fichier Setup est signé : clic droit → **Propriétés** → **Signatures numériques**. Si cet onglet est absent, le fichier est en général **non signé**. Ce projet **ne fournit pas** de certificat Authenticode ; attendez-vous à des builds communautaires non signées lorsque des binaires seront publiés.
 
 Lorsque la stratégie de votre PC le permet :
 
@@ -97,9 +103,9 @@ Autre solution si le fichier vient du web : clic droit sur le Setup → **Propri
 
 **Honnêteté :**
 
-- Sur un PC **entreprise / géré**, la stratégie peut bloquer entièrement **Exécuter quand même** — contactez l’administrateur du PC, ou utilisez une machine personnelle pour évaluer. Ne comptez pas sur le contournement dans tous les cas.
-- Même une signature Authenticode **valide** (éditeur **Ten Square Software**) peut encore avertir jusqu’à ce que la réputation SmartScreen s’accumule. Signé ne veut **pas** dire « jamais SmartScreen ».
-- La signature Authenticode est **fortement recommandée** pour les builds publiques. La V1 peut être livrée non signée si le certificat n’est pas encore prêt — **uniquement** avec ce guide. Ne **désactivez pas** SmartScreen globalement, ne mettez pas en liste blanche des dossiers entiers, et n’exécutez pas de copies non signées depuis des miroirs non fiables.
+- Sur un PC **entreprise / géré**, la stratégie peut bloquer entièrement **Exécuter quand même** — contactez l’administrateur du PC, ou utilisez une machine personnelle. Ne comptez pas sur le contournement dans tous les cas.
+- Ne **désactivez pas** SmartScreen globalement, ne mettez pas en liste blanche des dossiers entiers, et n’exécutez pas de copies depuis des miroirs non fiables.
+- SmartScreen est en général plus simple à passer que le frein catalogue WinUSB — voir [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec).
 
 Politique de signature pour contributeurs / release (page technique en anglais) : [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md).
 
@@ -196,16 +202,18 @@ Installez **loopMIDI** ou **rtpMIDI**, vérifiez `teVirtualMIDI.dll` dans `C:\Wi
 
 ## Association USB (WinUSB) en échec
 
-Setup indique qu’il n’a pas pu associer la MT4 à WinUSB, et l’installation est annulée (fichiers programme / entrée Ajout-Suppression non laissés comme une install réussie).
+Setup indique qu’il n’a pas pu associer la MT4 à WinUSB, et l’installation est souvent annulée (fichiers programme / entrée Ajout-Suppression non laissés comme une install réussie).
 
-Cause fréquente sur un PC **propre** : Windows refuse un paquet pilote **non signé** / sans catalogue de confiance. Rebrancher la MT4 et relancer Setup aboutit en général au **même** échec tant qu’un catalogue de confiance n’est pas disponible pour les builds communautaires.
+Cause fréquente sur un PC **propre** : Windows refuse un paquet pilote **non signé** / sans catalogue de confiance (erreur lab souvent `0xE000022F`). Rebrancher la MT4 et relancer Setup aboutit en général au **même** échec — ce projet **ne fournit pas** de certificat de production pour « corriger » cela.
 
-Que faire :
+### Correctif supporté sans certificat payant — WinUSB guidé (Zadig)
 
 1. Vérifiez que la MT4 est branchée et alimentée.
 2. Vérifiez que vous avez lancé le Setup du projet (voir l’honnêteté SmartScreen ci-dessus) — pas un miroir au hasard.
-3. Lisez le message Setup : s’il parle d’un paquet pilote non signé, c’est le frein catalogue / signature (pas « j’ai oublié de brancher la MT4 »).
-4. N’utilisez **pas** Zadig comme correctif communautaire principal. Les mitigations lab contributeur sont distinctes de la confiance publique.
+3. Lisez le message Setup : s’il parle d’un paquet pilote non signé, c’est le frein catalogue (pas « j’ai oublié de brancher la MT4 »).
+4. Utilisez **[Zadig](https://zadig.akeo.ie/)** (ou une autre association guidée documentée) pour associer **WinUSB** à l’interface MIDI composite MT4 **MI_02** (`USB\VID_086A&PID_0003&MI_02`) — pas une interface USB voisine au hasard.
+5. Installez / replacez le Bridge (relancez Setup s’il a annulé, ou utilisez un build contributeur), assurez-vous que virtualMIDI est présent, puis lancez **Unitor MT4 Bridge**.
+6. Contributeurs qui préfèrent l’INF du dépôt : voir [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md).
 
 Quand l’association **réussit**, le Gestionnaire de périphériques doit montrer l’interface MIDI de la MT4 sous WinUSB.
 
@@ -265,21 +273,22 @@ Avec Unitor MT4 Bridge et une MT4 sous Windows 10 / 11 64 bits :
 - Ouvrir plusieurs logiciels sur les mêmes ports (dans la limite de virtualMIDI, environ huit par port)
 - Brancher une seconde MT4 lorsque vous en avez une (voir [Deux interfaces MT4](#deux-interfaces-mt4))
 
-## Ce que cette version ne fait pas (V1)
+## Ce que cette version ne fait pas
 
-N’attendez **pas** ceci dans cette version :
+N’attendez **pas** ceci :
 
-- Une association WinUSB garantie sur tout PC propre tant que le Setup communautaire n’embarque pas encore un catalogue INF de confiance (Windows peut refuser le paquet — voir [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec))
+- Une association WinUSB réussie via Setup seul sur tout PC propre **sans** étape guidée (ce projet hobby **ne fournit pas** de certificat — voir [Association USB (WinUSB) en échec](#association-usb-winusb-en-échec))
+- Une expérience d’installeur commercial « un clic sur PC neuf » comme objectif du projet
+- Des Releases GitHub publiques de binaires Bridge/Setup liés au SDK propriétaire virtualMIDI (hors scope community — binaires communautaires prévus après **Windows MIDI Services** sous Win11)
 - Patch mode, LTC/VITC, Fast Mode / fonctions AMT des manuels Unitor
 - Topologies Emagic en cascade / empilées
 - Support garanti AMT8 / Unitor8 sans matériel validé pour ces modèles
-- Windows MIDI Services comme backend MIDI V1 (option possible plus tard, Win11 seulement)
+- Windows MIDI Services comme backend **déjà** livré (prochain backend community, Win11 seulement)
 - Un pilote MIDI noyau custom
-- Zadig comme chemin d’installation communautaire recommandé (secours contributeur seulement)
-- Chiffres de latence / jitter MIDI « studio-done » publiés (mesurés plus tard)
-- Un SmartScreen silencieux uniquement parce qu’une build est signée (la réputation s’accumule encore ; voir [Windows SmartScreen](#windows-smartscreen-setup-non-signe-ou-non-reconnu))
+- Chiffres de latence / jitter MIDI « studio-done » publiés (mesures épic 5)
+- Un SmartScreen silencieux sur un téléchargement non signé (voir [Windows SmartScreen](#windows-smartscreen-setup-non-signe-ou-non-reconnu))
 
-Voir aussi (contributeurs / évaluateurs ; page technique en anglais) : [Licence et backends MIDI](../dev/license-and-backends.md) — MIT (ce dépôt) ≠ virtualMIDI (propriétaire) ≠ Windows MIDI Services (pas la V1). Politique de signature : [Authenticode and SmartScreen](../dev/authenticode-and-smartscreen.md).
+Voir aussi : [Licence et backends MIDI](../dev/license-and-backends.md) — MIT ≠ virtualMIDI (lab intérimaire) ≠ Windows MIDI Services (prochaine community). Politique de signature : [Authenticode and SmartScreen](../dev/authenticode-and-smartscreen.md) (pas d’achat de certificat dans ce projet hobby).
 
 # Deux interfaces MT4
 

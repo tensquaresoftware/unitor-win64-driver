@@ -1,5 +1,11 @@
 # Pilote Windows 64 bits pour l'interface MIDI USB Emagic MT4
 
+> **État projet (Correct Course 2026-08-10) — lire avant d’utiliser ce brief historique**
+>
+> Posture **hobby / open source** : pas de certificat Authenticode dans cette ligne de projet ; pas de Releases community liées au SDK virtualMIDI (hors scope — binaires publics prévus via **Windows MIDI Services / Win11**, épic 6) ; **épic 5** (latence) d’abord sur stack lab virtualMIDI + Win10. Install hobby = SmartScreen documenté + **WinUSB guidé** (Zadig), pas « Setup seul = succès magique sur PC neuf ». SSOT : root `README.md` + `_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-10.md`.
+>
+> Le texte ci-dessous reste le brief de **démarrage** d’origine (contexte matériel / Linux / Prodikeys). Ne pas le traiter comme la promesse produit actuelle.
+
 ## Contexte et objectif
 
 Je démarre un projet **greenfield** sous Cursor avec la méthode **BMad**. L'objectif est de développer un pilote/pont logiciel permettant à l'interface MIDI USB **Emagic MT4** (sortie en 2001, rachetée par Apple en 2002 avec Emagic) de fonctionner sur **Windows 10/11 64 bits**, alors qu'aucun pilote officiel 64 bits n'a jamais été publié par le fabricant (le dernier pilote officiel date de Windows XP 32 bits).

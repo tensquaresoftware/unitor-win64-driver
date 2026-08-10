@@ -18,9 +18,11 @@ Le tableau officiel à remplir reste : [`smoke-epic4-public-installer-mt4.md`](s
 
 ---
 
+**Course correction (2026-08-10):** hobby / pas de certificat dans cette ligne — la ligne 5 **Fail** Setup-seul sur PC propre est le **contrat attendu**, pas un trou à combler plus tard. Zadig = chemin musicien hobby install **après** ce Fail (voir guides user) ; ne l’utilise **pas** pour transformer la ligne 5 en Pass Setup-seul.
+
 ## Ce que tu valides (en une phrase)
 
-Un musicien sur PC propre peut installer le Bridge via notre installateur, associer le MT4 à WinUSB, avoir le démarrage auto, et voir un succès **seulement** quand tout est vraiment OK — sans Zadig comme chemin principal.
+Sur PC propre, le Setup **échoue honnêtement** à l’association WinUSB sans catalogue de confiance ; virtualMIDI manquant bloque ; pas de faux succès. Le chemin musicien complet sans cert = guided WinUSB (Zadig) documenté dans les guides user — **hors** Pass de la ligne 5 Setup-seul.
 
 ---
 
@@ -205,12 +207,13 @@ C:\Program Files\Ten Square Software\Unitor MT4 Bridge\Bridge.exe
 
 ### Si l’association WinUSB échoue (INF non signé)
 
-Sur un PC vraiment propre, Windows peut **refuser** un INF sans catalogue / signature publique. C’est un frein lab connu (mitigation : script lab, pas Authenticode public).
+Sur un PC vraiment propre, Windows **refuse** un INF sans catalogue / signature publique. Sous posture hobby (**pas d’achat de certificat**), c’est **attendu**.
 
-- Si Setup affiche un échec d’association et **pas** de succès : note **Fail** honnête sur la ligne **5** (et probablement **3**), avec la raison « INF unsigned / catalog ».
-- Mitigation lab (seulement si tu as le dépôt + Windows SDK sur une machine admin, souvent **pas** le PC communauté) : `installer\sign-lab-package.ps1` — ce n’est **pas** la signature publique. Documente ce que tu as fait.
+- Si Setup affiche un échec d’association et **pas** de succès : note **Fail** honnête sur la ligne **5** (et probablement **3**), avec la raison « INF unsigned / catalog » / `0xE000022F`.
+- Mitigation lab (dépôt + Windows SDK, souvent **pas** le PC communauté) : `installer\sign-lab-package.ps1` — **pas** la confiance publique.
+- Chemin musicien documenté ensuite : **Zadig / WinUSB guidé** dans les guides user — **ne change pas** le score de la ligne 5 (reste Fail Setup-seul).
 
-Ne contourne **pas** avec Zadig pour « sauver » un Pass de la ligne 5 : ce ne serait plus le parcours installateur.
+Ne transforme **pas** un Fail ligne 5 en Pass en utilisant Zadig pendant ce smoke installateur.
 
 ---
 
@@ -328,4 +331,4 @@ Matrice officielle remplie dans [`smoke-epic4-public-installer-mt4.md`](smoke-ep
 | 8 | N/A | Rien laissé d’installé |
 | 9 | N/A | Dossier install non conservé |
 
-**Verdict :** le Setup communautaire **refuse correctement** de mentir quand WinUSB n’est pas associé ; le parcours succès complet attend un catalogue / signature de confiance (hors mitigation lab).
+**Verdict :** le Setup communautaire **refuse correctement** de mentir quand WinUSB n’est pas associé. Sous Correct Course 2026-08-10 (**no certificate purchase**), ce Fail ligne 5 est le **contrat hobby** ; le musicien enchaîne avec WinUSB guidé (guides user), pas avec l’attente d’un certificat.

@@ -5,13 +5,15 @@ title: Unitor MT4 Bridge — User guide
 author: Guillaume DUPONT
 created: 2026-08-10
 updated: 2026-08-10
-version: "1.0"
+version: "1.1"
 product_version: "0.1.0"
 ---
 
 This guide explains how to install and use **Unitor MT4 Bridge** with an **Emagic MT4** MIDI interface on Windows 10 or 11 (64-bit).
 
-Follow the sections in order. When Setup completes successfully, you should be able to send and receive MIDI the same day, then complete a first SysEx exchange with an editor or librarian. On a clean PC, Windows may still reject the USB driver package until a trusted catalog is available — see [Installation](#installation) and [USB association (WinUSB) failed](#usb-association-winusb-failed).
+This is a **hobby / open-source** project (Ten Square Software facade): free sources on GitHub, **no** code-signing certificate in this release line, and **no** promise that Setup alone always succeeds on every brand-new PC.
+
+Follow the sections in order. After Bridge + virtualMIDI + **WinUSB association** succeed, you can send and receive MIDI the same day, then complete a first SysEx exchange. On a **clean** PC, Setup often **cannot** finish WinUSB association without a trusted catalog — use the **guided WinUSB** steps (for example **Zadig**) described under [USB association (WinUSB) failed](#usb-association-winusb-failed).
 
 French version: [`unitor-mt4-bridge-guide-utilisateur.md`](unitor-mt4-bridge-guide-utilisateur.md).
 
@@ -37,11 +39,11 @@ Before you install, have the following ready:
 |---|---|
 | Computer | **Windows 10** or **Windows 11**, **64-bit** |
 | Hardware | An **Emagic MT4** MIDI interface |
-| virtualMIDI | The **[virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html)** driver (Tobias Erichsen), already installed |
+| virtualMIDI (interim) | The **[virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi.html)** driver (Tobias Erichsen), already installed — **lab / current Bridge** path |
 
-## Install virtualMIDI
+## Install virtualMIDI (interim lab path)
 
-Unitor MT4 Bridge uses **virtualMIDI** to create the virtual MIDI ports your DAW can see. Install it before the Bridge, for example with:
+Today’s Bridge uses **virtualMIDI** to create the virtual MIDI ports your DAW can see. A later **Windows MIDI Services** backend on **Windows 11** is planned for community ready-to-run binaries (without redistributing the proprietary virtualMIDI SDK). Until then, install virtualMIDI before the Bridge, for example with:
 
 - **[loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html)** (most common choice), or
 - **[rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html)**
@@ -76,9 +78,13 @@ Setup succeeds when:
 
 If something is missing (for example virtualMIDI), the wizard shows a help message: fix that point, then run the installer again.
 
-**WinUSB** is Microsoft’s standard USB component. The installer associates it with the MT4 so the Bridge can talk to the interface. After a **successful** association, you do not need Zadig or further USB tooling for normal use.
+**WinUSB** is Microsoft’s standard USB component (already in Windows). What often fails on a clean PC is *associating this Emagic MT4* with WinUSB when the project INF has no trusted catalog — this hobby project **does not ship** a signing certificate.
 
-**Honesty (community builds today):** on a clean Windows PC, Setup may still fail WinUSB association when the driver package has no trusted catalog / signature yet. That is a known Windows trust limit — not a missing “plug in the MT4” step. See [USB association (WinUSB) failed](#usb-association-winusb-failed) and the SmartScreen section below. Contributor lab signing is **not** the same as public community trust.
+**Hobby install honesty:**
+
+- If Setup’s WinUSB step **succeeds**, you are done for USB — no further tooling for daily use.
+- If Setup’s WinUSB step **fails** (common on a clean PC), that is expected without a paid catalog. Follow [USB association (WinUSB) failed](#usb-association-winusb-failed) — **guided association with Zadig** (or the contributor INF path) is the supported fix, not “wait for a certificate.”
+- Lab self-signing scripts are **not** community trust.
 
 ## Windows SmartScreen (unsigned or unrecognized Setup)
 
@@ -86,7 +92,7 @@ Windows may show **Microsoft Defender SmartScreen** — often “Windows protect
 
 **Only continue if you downloaded Setup from this project’s own download page / Releases** (not a random third-party mirror). Until the first tagged public community release publishes a fixed URL, use the project’s Releases or download page for this repository.
 
-To check whether **this** Setup file is signed: right-click → **Properties** → **Digital Signatures**. If that tab is missing, the file is typically **unsigned**. When signed for public builds, the publisher should be **Ten Square Software**.
+To check whether **this** Setup file is signed: right-click → **Properties** → **Digital Signatures**. If that tab is missing, the file is typically **unsigned**. This project **does not ship** an Authenticode certificate; expect unsigned community builds when binaries are published.
 
 When your PC’s policy allows it:
 
@@ -97,9 +103,9 @@ Alternate mitigation when the file was downloaded from the web: right-click the 
 
 **Honesty:**
 
-- On **enterprise / managed** PCs, policy may block **Run anyway** entirely — contact your PC admin, or try a personal machine for community evaluation. Do not expect the override to always work.
-- Even a **valid** Authenticode signature (publisher **Ten Square Software**) can still warn until SmartScreen reputation accumulates. Signed does **not** mean “never SmartScreen.”
-- Authenticode signing is **strongly recommended** for public builds. V1 may ship unsigned if the certificate is not ready yet — **only** with this guidance. Do **not** turn SmartScreen off globally, whitelist whole folders, or run unsigned copies from untrusted mirrors.
+- On **enterprise / managed** PCs, policy may block **Run anyway** entirely — contact your PC admin, or try a personal machine. Do not expect the override to always work.
+- Do **not** turn SmartScreen off globally, whitelist whole folders, or run copies from untrusted mirrors.
+- SmartScreen is usually easier to work through than the WinUSB catalog problem — see [USB association (WinUSB) failed](#usb-association-winusb-failed).
 
 Contributor / release signing policy (English): [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md).
 
@@ -196,16 +202,18 @@ Install **loopMIDI** or **rtpMIDI**, confirm `teVirtualMIDI.dll` in `C:\Windows\
 
 ## USB association (WinUSB) failed
 
-Setup reports that it could not associate the MT4 with WinUSB, and the install is rolled back (program files / Add-Remove entry are not left as a successful install).
+Setup reports that it could not associate the MT4 with WinUSB, and the install is often rolled back (program files / Add-Remove entry are not left as a successful install).
 
-Common cause on a **clean** PC: Windows rejects an **unsigned** driver package / missing trusted catalog. Replugging the MT4 and clicking Setup again will usually hit the **same** failure until a trusted catalog is available for community builds.
+Common cause on a **clean** PC: Windows rejects an **unsigned** driver package / missing trusted catalog (lab error often looks like `0xE000022F`). Replugging the MT4 and clicking Setup again will usually hit the **same** failure — this project is **not** buying a certificate to “fix” that.
 
-What to do:
+### Supported fix without a paid certificate — guided WinUSB (Zadig)
 
 1. Confirm the MT4 is plugged in and powered.
 2. Confirm you ran the project’s own Setup (see SmartScreen honesty above) — not a random mirror.
-3. Read the Setup message: if it mentions an unsigned driver package, this is the catalog / signature gate (not “forgot to plug the MT4”).
-4. Do **not** use Zadig as the primary community fix. Contributor lab mitigations are separate from public trust.
+3. Read the Setup message: if it mentions an unsigned driver package, this is the catalog gate (not “forgot to plug the MT4”).
+4. Use **[Zadig](https://zadig.akeo.ie/)** (or another documented guided bind) to associate **WinUSB** with the MT4 composite MIDI interface **MI_02** (`USB\VID_086A&PID_0003&MI_02`) — not a random sibling USB interface.
+5. Install / place the Bridge (re-run Setup if it rolled back, or use a contributor build), ensure virtualMIDI is present, then launch **Unitor MT4 Bridge**.
+6. Contributors who prefer the in-repo INF: see [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md).
 
 When association **does** succeed, Device Manager should show the MT4 MIDI interface under WinUSB.
 
@@ -265,21 +273,22 @@ With Unitor MT4 Bridge and an MT4 on Windows 10 / 11 64-bit you can:
 - Open several applications on the same ports (within virtualMIDI limits, about eight per port)
 - Connect a second MT4 when you have one (see [Two MT4 interfaces](#two-mt4-interfaces))
 
-## What this does not do (V1)
+## What this does not do
 
-Do **not** expect the following in this version:
+Do **not** expect the following:
 
-- A guaranteed WinUSB association on every clean PC while community Setup still ships without a trusted INF catalog (Windows may reject the package — see [USB association (WinUSB) failed](#usb-association-winusb-failed))
+- Setup-alone WinUSB success on every clean PC **without** a guided step (this hobby project **does not ship** a signing certificate — see [USB association (WinUSB) failed](#usb-association-winusb-failed))
+- A polished commercial installer experience as the project goal
+- Public GitHub Releases of Bridge/Setup binaries that depend on the proprietary virtualMIDI SDK (out of community scope — community binaries planned after **Windows MIDI Services** on Win11)
 - Patch mode, LTC/VITC, Fast Mode / AMT features from Unitor-family manuals
 - Cascaded / stacked Emagic multi-interface topologies
 - Guaranteed AMT8 / Unitor8 support without validated hardware for those models
-- Windows MIDI Services as the V1 MIDI backend (possible later Win11-only option)
+- Windows MIDI Services as the **current** shipping backend (planned next community backend, Win11-only)
 - A custom kernel MIDI driver
-- Zadig as the recommended community install path (contributor fallback only)
-- Published “studio-done” MIDI latency / jitter numbers (measured later)
-- Instant SmartScreen silence just because a build is signed (reputation still accumulates; see [Windows SmartScreen](#windows-smartscreen-unsigned-or-unrecognized-setup))
+- Published “studio-done” MIDI latency / jitter numbers (Epic 5 measurements)
+- Instant SmartScreen silence on unsigned downloads (see [Windows SmartScreen](#windows-smartscreen-unsigned-or-unrecognized-setup))
 
-See also (contributors / evaluators; English technical page): [License and MIDI backends](../dev/license-and-backends.md) — MIT (this repo) ≠ virtualMIDI (proprietary) ≠ Windows MIDI Services (not V1). Signing policy: [Authenticode and SmartScreen](../dev/authenticode-and-smartscreen.md).
+See also: [License and MIDI backends](../dev/license-and-backends.md) — MIT ≠ virtualMIDI (interim lab) ≠ Windows MIDI Services (next community). Signing policy: [Authenticode and SmartScreen](../dev/authenticode-and-smartscreen.md) (no certificate purchase in this hobby project).
 
 # Two MT4 interfaces
 

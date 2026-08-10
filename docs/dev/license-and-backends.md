@@ -11,35 +11,40 @@ updated: 2026-08-10
 
 This page is the deep companion to the root [`README.md`](../../README.md) **License** section. It keeps three separate claims honest for community evaluators and contributors.
 
+**Course correction (2026-08-10):** hobby / free GitHub posture — see [`sprint-change-proposal-2026-08-10.md`](../../_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-10.md).
+
 ## Three-way split
 
 | Layer | What it is | What it is not |
 |---|---|---|
 | **MIT (this repository)** | Unitor MT4 Bridge sources, installer scripts, and project docs listed under [`LICENSE`](../../LICENSE) — copyright Guillaume DUPONT / **Ten Square Software** | A license for Tobias Erichsen’s virtualMIDI SDK or driver |
-| **virtualMIDI (proprietary, separate)** | V1 DAW-facing MIDI backend ([teVirtualMIDI / virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html)); any install that provides `teVirtualMIDI.dll` qualifies — **loopMIDI** / **rtpMIDI** are the usual eval examples | Covered by this repo’s MIT; freeware SDK; redistributable MSI already cleared for the Public Installer |
-| **Windows MIDI Services (future)** | Optional later **Win11-only** `MidiBackend` behind the same abstraction | V1; available as the shipping backend on Windows 10 |
+| **virtualMIDI (proprietary, separate)** | **Interim lab / personal** DAW-facing MIDI backend ([teVirtualMIDI / virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html)); any install that provides `teVirtualMIDI.dll` qualifies — **loopMIDI** / **rtpMIDI** are the usual eval examples | Covered by this repo’s MIT; freeware SDK; cleared for community binary redistribution |
+| **Windows MIDI Services (next community)** | Planned **Win11-only** `MidiBackend` (Epic 6) behind the same abstraction — intended path for public ready-to-run binaries | Already shipping; available as the community backend on Windows 10 |
 
-### virtualMIDI redistribution honesty (OQ-1)
+### virtualMIDI redistribution honesty (OQ-1 — out of community scope)
 
-The virtualMIDI SDK is **not** freeware. Software that links the SDK — including redistributing **Bridge** / **Setup** binaries built against it — **must not be distributed** without prior clearance from Tobias Erichsen. That clearance is separate from (and broader than) MSI embed.
+The virtualMIDI SDK is **not** freeware. Software that links the SDK — including redistributing **Bridge** / **Setup** binaries built against it — must not be distributed without prior clearance from the author.
 
-The Public Installer therefore:
+**Product decision (Correct Course 2026-08-10):** this hobby project does **not** ship community Releases of VirtualMIDI-linked Bridge/Setup binaries. Community ready-to-run binaries are planned for the **Windows MIDI Services** backend (Epic 6, Win11-only) instead.
 
-- Requires virtualMIDI to be **already present** (`teVirtualMIDI.dll` via loopMIDI / rtpMIDI eval, paid SDK install, or equivalent)
-- Does **not** embed or ship a virtualMIDI MSI / merge module until clearance (**OQ-1** = open redistributable-embed question) is obtained
+Therefore:
 
-Do not read “MIT repo” as permission to redistribute virtualMIDI, nor treat “no MSI in the installer yet” as permission to ship Bridge binaries without Tobias clearance.
+- **Lab / personal use:** virtualMIDI may remain installed via loopMIDI / rtpMIDI (or equivalent) so the current Bridge can run on Win10/Win11 lab machines through Epic 5.
+- **Community redistributable binaries:** wait for the **Windows MIDI Services** backend (Epic 6, Win11-only).
+- **MSI embed** of virtualMIDI in the Public Installer stays **out of scope** under this hobby posture.
+
+Do not read “MIT repo” as permission to redistribute virtualMIDI.
 
 Vendor terms (paraphrase; always check the live page):  
 https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html
 
 ### Windows MIDI Services
 
-Microsoft’s Windows MIDI Services path is a **future optional Win11-only** backend (same scope as the three-way table above). V1 ships and claims **virtualMIDI** only. End-user wording: [What works / what does not](../user/unitor-mt4-bridge-user-guide.md#what-works--what-does-not).
+Microsoft’s Windows MIDI Services path is the **next community** Win11-only backend (Epic 6). Until then, end-user docs may still describe the interim virtualMIDI lab path honestly. See [What works / what does not](../user/unitor-mt4-bridge-user-guide.md#what-works--what-does-not) and the root README.
 
 ## Integration proof (not a fork base)
 
-[aaron1a12/virtual-midi](https://github.com/aaron1a12/virtual-midi) is cited as **existence proof** that virtualMIDI SDK integration can work on Windows. That repository is GPL-3.0 and vendors SDK materials. **Do not fork it** as this project’s base. This tree keeps an original MIT Bridge and loads `teVirtualMIDI.dll` at runtime when present.
+[aaron1a12/virtual-midi](https://github.com/aaron1a12/virtual-midi) is cited as **existence proof** that virtualMIDI SDK integration can work on Windows. That repository is GPL-3.0 and vendors SDK materials. **Do not fork it** as this project’s base. This tree keeps an original MIT Bridge and loads `teVirtualMIDI.dll` at runtime when present (interim backend).
 
 ## Linux Emagic quirk sources — reference only
 
@@ -58,4 +63,4 @@ Public surfaces use **Ten Square Software** (README, LICENSE, installer branding
 - Install prerequisites for musicians: [`docs/user/README.md`](../user/README.md)
 - Contributor dual-machine loop: [`contributor-dual-machine-loop.md`](contributor-dual-machine-loop.md)
 - Operator smoke for this honesty bar: [`docs/tests/smoke-epic4-license-honesty-mt4.md`](../tests/smoke-epic4-license-honesty-mt4.md)
-- Authenticode / SmartScreen policy (lab vs public, OQ-3 deferral): [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md) — operator smoke [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`](../tests/smoke-epic4-authenticode-smartscreen-mt4.md)
+- Authenticode / SmartScreen policy (no certificate purchase in this hobby project): [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md) — operator smoke [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`](../tests/smoke-epic4-authenticode-smartscreen-mt4.md)

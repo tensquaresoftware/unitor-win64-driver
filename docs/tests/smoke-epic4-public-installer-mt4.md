@@ -9,9 +9,11 @@ updated: 2026-08-10
 
 # Smoke guide — Epic 4.1 Public Installer (MT4 on Windows)
 
-Operator guide for **Story 4.1**: a short community Public Installer that binds WinUSB, installs the Bridge, wires Auto-Start, and checks virtualMIDI — so first MIDI the same evening does not feel like a developer toolchain.
+Operator guide for **Story 4.1**: Public Installer packaging that binds WinUSB when trust allows, installs the Bridge, wires Auto-Start, and checks virtualMIDI.
 
-**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Polished end-user docs now live under [`docs/user/README.md`](../user/README.md); SM-5 still needs that story’s user-docs smoke Pass — [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md). Authenticode / SmartScreen honesty ships under Story **4.4** — [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) (do **not** claim full SM-6 while OQ-1 or blank 4.1 hardware rows remain).
+**Course correction (2026-08-10):** hobby / hobby install — Setup-alone WinUSB on clean PC **Fail** without trusted catalog is **expected** (no certificate in this line). Guided WinUSB (Zadig) is the supported clean-PC path. Community VirtualMIDI-linked Releases are **out of scope** (Epic 6 = WMS). See root README + user guides.
+
+**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Do **not** claim polished commercial same-evening Setup-alone success on clean PC.
 
 ## Lab session — 2026-08-10 (clean Win10 x64)
 
@@ -28,7 +30,7 @@ French walkthrough used: [`guide-operateur-smoke-4-1-pc-propre-win10.md`](guide-
 
 ## Product intent
 
-The community path should feel closer to a polished macOS installer than a developer kit. **Zadig is not** the primary user path (contributor fallback only — see [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md)).
+The packaging path should stay short and clear. On clean PCs without a paid catalog, **expect** WinUSB association inside Setup to Fail — then musicians follow **guided WinUSB** (Zadig) in the user guide. Zadig is no longer “contributor-only taboo”; it is the hobby install USB path.
 
 ## Installer technology (locked under AD-12)
 
@@ -52,9 +54,9 @@ The community path should feel closer to a polished macOS installer than a devel
 | 7 | One-time admin | UAC once for Program Files + bind; daily Bridge / Auto-Start must not require admin (`asInvoker`) |
 | 8 | Minimal jargon | Ten Square Software facade; short English UI strings |
 
-### OQ-1 (release gate only)
+### OQ-1 (out of community scope)
 
-Tobias virtualMIDI **MSI embed/redistribution** is a **release gate** for a redistributable installer that ships virtualMIDI. Eval prerequisite messaging (loopMIDI / rtpMIDI) ships **now**. Do not silently embed virtualMIDI MSI without clearance.
+Do **not** embed virtualMIDI MSI. Do **not** claim community redistribution of VirtualMIDI-linked binaries. Community ready-to-run binaries wait on Epic 6 (Windows MIDI Services / Win11).
 
 ## Scope fences
 
@@ -63,7 +65,7 @@ Tobias virtualMIDI **MSI embed/redistribution** is a **release gate** for a redi
 | Polished end-user docs (first MIDI / SysEx / troubleshooting) | **4.2** — [`docs/user/README.md`](../user/README.md); close via [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Three-way MIT vs virtualMIDI vs Windows MIDI Services honesty | **4.3** — [`docs/dev/license-and-backends.md`](../dev/license-and-backends.md); close via [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md) |
 | Authenticode / public catalog signing / SmartScreen honesty | **4.4** — [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md); close via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) |
-| Tobias MSI **embed** redistributable | **OQ-1** release gate only |
+| Tobias MSI **embed** / VirtualMIDI-linked community binaries | **OQ-1 out of community scope** — Epic 6 WMS path |
 | WinUSB bind materials / GUID open policy | **1.3** (reuse; do not rewrite transport) |
 | Auto-Start runtime CLI | **3.1** (wire; no second mechanism / no Session-0 service) |
 | MIDI Path harness | Epic **5** |
@@ -148,8 +150,9 @@ Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installe
 ## Out of scope for this smoke
 
 - Claiming SM-5 fully closed (needs [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) Pass on top of this installer matrix)
-- Claiming **full** SM-6 community-release honesty while **OQ-1** or blank hardware rows remain (Authenticode/SmartScreen **slice** closes via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md))
-- Embedding Tobias virtualMIDI MSI without OQ-1
+- Claiming polished commercial Setup-alone clean-PC WinUSB success without a shipped certificate
+- Embedding Tobias virtualMIDI MSI / shipping VirtualMIDI-linked community Releases (OQ-1 out of community scope)
+- Treating row 5 Fail (`0xE000022F`) as a temporary “until we buy a cert” gap — it is the **known hobby contract**
 - Session-0 Windows Service
 - Zadig as primary community UX
 - MIDI Path latency proof (Epic **5**)

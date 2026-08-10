@@ -110,10 +110,10 @@ Revue **transversale** centrée sur les **joints** entre Installateur × Auto-St
 
 - Chasse overnight SysEx / Matrix → Epic 2.  
 - Hot-plug / dual-MT4 runtime sauf si l’installateur les casse.  
-- Acheter le certificat / trancher OQ-3 — décision Guillaume, pas patch code.  
+- Acheter le certificat / trancher OQ-3 — **décidé no certificate purchase** (Correct Course 2026-08-10).  
 - Epic 5 latence / harness.  
-- Contourner avec Zadig pour « sauver » un Pass install.  
-- Embed MSI Tobias sans OQ-1.
+- Contourner avec Zadig pour « sauver » un Pass install Setup-seul (Zadig = chemin hobby install honnête, pas un Pass Setup-seul).  
+- Embed MSI Tobias / attendre clearance — **OQ-1 out of community scope**.
 
 ### Livrable attendu
 
@@ -182,7 +182,7 @@ Bonne revue.
 
 #### Defer
 
-- [ ] [Review][Defer] `.cat` / Authenticode production + re-smoke AD-12-5…9 sur PC propre — OQ-3 Guillaume
+- [x] [Review][Defer] `.cat` / Authenticode production + re-smoke AD-12-5…9 on clean PC — **superseded 2026-08-10 Correct Course:** OQ-3 **no certificate purchase**; guided WinUSB is the clean-PC path; Fail `0xE000022F` is expected hobby contract
 - [ ] [Review][Defer] Smoke 4.2 rows UJ-1/UJ-2 hardware encore vides — lab après install clean possible
 - [ ] [Review][Defer] Timeout si `pnputil` / Bridge hang sous Inno `Exec` — limitation Inno déjà notée
 - [ ] [Review][Defer] Unregister Auto-Start multi-profil Windows exhaustif — hors V1 (doc suffit pour l’instant)

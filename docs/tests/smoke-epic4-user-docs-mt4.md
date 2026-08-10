@@ -15,7 +15,9 @@ Operator guide for **Story 4.2**: prove a new MT4 owner can complete first MIDI 
 
 ## Product intent
 
-A musician who never saw the French lab smokes under `docs/tests/` can reach first MIDI the same evening and first SysEx without contributor tribal knowledge.
+A musician who never saw the French lab smokes under `docs/tests/` can reach first MIDI and first SysEx using shipped docs — including **guided WinUSB** when Setup-alone fails on a clean PC (hobby / hobby install). Not a polished commercial Setup-alone promise.
+
+**Course correction (2026-08-10):** Zadig / guided WinUSB is the supported clean-PC path; OQ-1 out of community scope; OQ-3 no certificate purchase.
 
 ## Scope fences
 
@@ -24,9 +26,9 @@ A musician who never saw the French lab smokes under `docs/tests/` can reach fir
 | Public Installer AD-12 UX / packaging | **4.1** (describe; do **not** redesign the wizard) |
 | Three-way MIT vs virtualMIDI vs Windows MIDI Services honesty + contributor dual-machine loop | **4.3** — [`docs/dev/license-and-backends.md`](../dev/license-and-backends.md), [`docs/dev/contributor-dual-machine-loop.md`](../dev/contributor-dual-machine-loop.md); close via [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md) |
 | Authenticode / SmartScreen honesty for unsigned public builds | **4.4** — [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md); close via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) |
-| Tobias MSI **embed** redistributable | **OQ-1** release gate only (docs name eval path: loopMIDI / rtpMIDI) |
+| Tobias MSI / VirtualMIDI-linked community binaries | **OQ-1 out of community scope** (docs name interim loopMIDI / rtpMIDI for lab Bridge) |
 | MIDI Path latency claims / harness | Epic **5** (never cite ASIO buffer size as MIDI proof) |
-| Zadig primary path | **Forbidden** — contributor-only in [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md) |
+| Guided WinUSB (Zadig) on clean PC | **Supported** hobby install path — see user guide + [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md) |
 
 ## SSOT citations
 
@@ -74,11 +76,11 @@ Landing: [`docs/user/README.md`](../user/README.md). English guide: [`docs/user/
 
 ## Out of scope for this smoke
 
-- Claiming SM-5 fully closed while rows 1–3 are blank
-- Claiming **full** SM-6 while OQ-1 or blank **4.1** hardware rows remain (Authenticode/SmartScreen slice: [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md))
+- Claiming polished commercial Setup-alone clean-PC success without a shipped certificate
+- Claiming **full** SM-6 while blank **4.1** hardware success rows remain
 - Claiming FR-14 / three-way license polish without [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md) Pass (**4.3**)
-- Embedding Tobias virtualMIDI MSI without OQ-1
-- Zadig as primary community UX
+- Embedding Tobias virtualMIDI MSI / VirtualMIDI-linked community Releases (OQ-1 out of community scope)
+- Treating guided Zadig as “cheating” — it is the hobby install USB path when Setup-alone fails
 - MIDI Path latency proof (Epic **5**)
 - Treating French `docs/tests/` operator guides as community manuals (FR **user** manual under `docs/user/` is an intentional peer)
 

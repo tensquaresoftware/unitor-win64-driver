@@ -9,9 +9,11 @@ updated: 2026-08-10
 
 # Smoke guide — Epic 4.4 Authenticode / SmartScreen honesty (MT4)
 
-Operator guide for **Story 4.4**: prove that a community downloader can tell (a) whether a release is signed, (b) what to do if Windows SmartScreen warns on an unsigned or low-reputation Setup, and (c) that Authenticode is strongly recommended but **not** a V1 hard gate — without tribal knowledge from `_bmad-output/`.
+Operator guide for **Story 4.4**: prove a downloader can tell (a) whether Setup is signed, (b) what to do on SmartScreen, and (c) that this hobby project **does not ship** a certificate — unsigned + docs is the plan.
 
-**Honesty bar:** a blank cell is **not** Pass. Prefer **docs-first** verification (no purchased certificate required for Pass). This story may claim **FR-15 / NFR-S1** closed when its ACs Pass. Phrase **SM-6** as closable for the **Authenticode / SmartScreen slice** once this matrix Passes — but do **not** claim full community-release honesty if **OQ-1** MSI embed is still open or Story **4.1** hardware smoke rows remain blank (SM-5 / installer).
+**Course correction (2026-08-10):** OQ-3 **no certificate purchase / out of scope hobby**. Re-check wording against current [`authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md) + user guides (no “strongly recommended / buy later” as the live plan).
+
+**Honesty bar:** a blank cell is **not** Pass. Prefer **docs-first** verification (no purchased certificate required — and none planned).
 
 ## Product intent
 
@@ -24,8 +26,8 @@ A musician downloading Setup from the official project channel is not silently a
 | Public Installer AD-12 UX / wizard redesign | **4.1** (string/messaging only if bind-fail honesty needs a clearer unsigned/SmartScreen pointer; no wizard redesign) |
 | End-user UJ-1 / UJ-2 chapter structure under `docs/user/` | **4.2** (add SmartScreen section / troubleshooting; do **not** reopen single-file manual shape) |
 | Three-way MIT ≠ virtualMIDI ≠ Windows MIDI Services | **4.3** (cross-link only; do not rewrite license page) |
-| Tobias MSI **embed** redistributable clearance | **OQ-1** (never claim cleared under this story) |
-| OQ-3 personal vs org certificate purchase / cost / timing | **Guillaume** before first tagged public community release (document the *policy*; do **not** decide the choice) |
+| Tobias MSI / VirtualMIDI-linked community binaries | **OQ-1 out of community scope** |
+| OQ-3 certificate purchase | **No certificate purchase / out of scope hobby** (Correct Course 2026-08-10) |
 | MIDI Path latency claims / harness | Epic **5** |
 | Kernel / WHQL / Partner Center attestation signing | **never** (usermode Bridge + WinUSB INF catalog only) |
 
@@ -55,9 +57,9 @@ A musician downloading Setup from the official project channel is not silently a
 |---|---|---|---|---|
 | 1 | User docs (EN) explain SmartScreen behavior + mitigation if public Setup is unsigned / unrecognized (AD-19) | N/A | N/A | Docs-only any-checkout 2026-08-10: [`unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md) Installation + Troubleshooting SmartScreen — **Pass** |
 | 2 | FR user peer covers the same SmartScreen facts (not a stale EN-only island) | N/A | N/A | Docs-only any-checkout 2026-08-10: [`unitor-mt4-bridge-guide-utilisateur.md`](../user/unitor-mt4-bridge-guide-utilisateur.md) — **Pass** |
-| 3 | Public/contributor surface states Authenticode **strongly recommended** but **not** a hard V1 gate (FR-15 / NFR-S1) | N/A | N/A | Docs-only any-checkout 2026-08-10: README Status + [`authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md) — **Pass** |
-| 4 | When signing is documented as available: Ten Square Software / chosen certificate path is written down (without closing OQ-3) | N/A | N/A | Docs-only any-checkout 2026-08-10: authenticode-and-smartscreen.md “When a certificate exists” — **Pass** |
-| 5 | OQ-3 remains explicitly deferred to Guillaume before first tagged public community release | N/A | N/A | Docs-only any-checkout 2026-08-10: authenticode-and-smartscreen.md + smoke fences — **Pass** |
+| 3 | Public/contributor surface states certificate purchase **no certificate purchase** / unsigned + SmartScreen docs is the hobby plan (FR-15 / NFR-S1 course-corrected) | N/A | N/A | Re-verify after Correct Course 2026-08-10 — README + authenticode-and-smartscreen.md |
+| 4 | Optional “if a certificate ever appears” path (if documented) does not contradict no certificate in this line as the default | N/A | N/A | Re-verify after Correct Course 2026-08-10 |
+| 5 | OQ-3 is explicitly **no certificate purchase / out of scope hobby** (not “deferred purchase decision”) | N/A | N/A | Re-verify after Correct Course 2026-08-10 |
 | 6 | Lab `sign-lab-package.ps1` is clearly labeled **not** public Authenticode; two domains (binary Authenticode vs INF catalog) are distinguished | N/A | N/A | Docs-only any-checkout 2026-08-10: authenticode-and-smartscreen.md + lab script header — **Pass** |
 | 7 | Discoverability: community reader can reach SmartScreen / signing honesty from README and/or `docs/user/` without opening `_bmad-output/` | N/A | N/A | Docs-only any-checkout 2026-08-10: README Status + Deliverables + `docs/user/README.md` pointer — **Pass** |
 | 8 | Scope fence: no AD-12 wizard redesign; no 4.3 three-way rewrite; no OQ-1 MSI embed; no kernel/WHQL attestation; no claim that signed == never SmartScreen; no secrets in repo | N/A | N/A | Docs + optional gated PowerShell change set 2026-08-10; fences restated here — **Pass** |
@@ -73,11 +75,9 @@ A musician downloading Setup from the official project channel is not silently a
 
 ## Out of scope for this smoke
 
-- Claiming **full** SM-6 community-release honesty while **OQ-1** or blank **4.1** hardware rows remain
-- Deciding personal vs org certificate (**OQ-3**)
-- Embedding Tobias virtualMIDI MSI (**OQ-1**)
+- Claiming a paid certificate is still the community plan (**OQ-3 no certificate purchase**)
+- Embedding Tobias virtualMIDI MSI / VirtualMIDI-linked community Releases (**OQ-1 out of community scope**)
 - Redesigning Public Installer UX (**4.1**)
-- Rewriting three-way license page (**4.3**)
 - MIDI Path / latency Studio-Done claims (Epic **5**)
 - Kernel / WHQL / attestation signing
 - Requiring a purchased certificate for docs-row Pass
