@@ -147,6 +147,40 @@ def main() -> None:
     )
     must_contain(unregister_ps1, "ProgramData", "ProgramData unregister marker")
 
+    # Story 4.4 — SmartScreen / unsigned honesty on shipped surfaces (no cert required).
+    user_en = REPO / "docs" / "user" / "unitor-mt4-bridge-user-guide.md"
+    user_fr = REPO / "docs" / "user" / "unitor-mt4-bridge-manuel-utilisateur.md"
+    auth_policy = REPO / "docs" / "dev" / "authenticode-and-smartscreen.md"
+    auth_smoke = REPO / "docs" / "tests" / "smoke-epic4-authenticode-smartscreen-mt4.md"
+    sign_public = REPO / "scripts" / "packaging" / "sign-public-artifacts.ps1"
+    for path in (user_en, user_fr, auth_policy, auth_smoke, sign_public):
+        if not path.is_file():
+            fail(f"missing required file: {path.relative_to(REPO)}")
+
+    must_contain(user_en, "SmartScreen", "EN SmartScreen honesty")
+    must_contain(user_en, "Run anyway", "EN SmartScreen mitigation")
+    must_contain(user_en, "Digital Signatures", "EN signed-check tip")
+    must_contain(user_fr, "SmartScreen", "FR SmartScreen honesty")
+    must_contain(user_fr, "Exécuter quand même", "FR SmartScreen mitigation")
+    must_contain(user_fr, "Débloquer", "FR SmartScreen Unblock")
+    must_contain(user_fr, "Signatures numériques", "FR signed-check tip")
+    must_contain(auth_policy, "strongly recommended", "Authenticode strongly recommended")
+    must_contain(auth_policy, "Not a hard V1 gate", "Authenticode not hard gate")
+    must_contain(auth_policy, "OQ-3", "OQ-3 deferred")
+    must_contain(auth_smoke, "FR-15", "Authenticode smoke FR-15")
+    must_contain(auth_smoke, "AD-19", "Authenticode smoke AD-19")
+
+    sign_text = sign_public.read_text(encoding="utf-8")
+    if "Distinct from installer/sign-lab-package.ps1" not in sign_text:
+        fail("sign-public-artifacts.ps1 must stay distinct from lab catalog signing")
+    if "UNITOR_CODE_SIGNING_CERT_SUBJECT" not in sign_text:
+        fail("sign-public-artifacts.ps1 must gate on UNITOR_CODE_SIGNING_CERT_SUBJECT")
+    if "sign-public-artifacts.ps1" not in build_text:
+        fail("build-public-installer.ps1 must invoke optional public signing helper")
+
+    if "authenticode-and-smartscreen.md" not in iss_text:
+        fail("public-installer.iss bind-fail copy must point at authenticode-and-smartscreen.md")
+
     print("OK: installer contract checks passed")
     raise SystemExit(0)
 

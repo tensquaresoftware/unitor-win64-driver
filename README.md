@@ -6,7 +6,7 @@ There is no official 64-bit driver. The last vendor package targeted Windows XP 
 
 This project fixes that **without writing a custom kernel driver**: WinUSB in user mode, an Emagic protocol layer, and virtual MIDI ports (virtualMIDI) exposed to your DAW via **Unitor MT4 Bridge** (Ten Square Software).
 
-> **Status:** V1 Bridge capabilities (ports, SysEx, Auto-Start, hot-plug, multi-client) are implemented for **MT4**. End-user docs ship under [`docs/user/README.md`](docs/user/README.md). Public Installer work continues (Story **4.1** — hardware smoke rows may still be blank). License / backend honesty for community readers is documented (Story **4.3** — see [License](#license)). Authenticode / SmartScreen honesty remains Story **4.4**. Latency “studio-done” numbers are Epic 5.
+> **Status:** V1 Bridge capabilities (ports, SysEx, Auto-Start, hot-plug, multi-client) are implemented for **MT4**. End-user docs ship under [`docs/user/README.md`](docs/user/README.md). Public Installer work continues (Story **4.1** — hardware smoke rows may still be blank). License / backend honesty for community readers is documented (Story **4.3** — see [License](#license)). Authenticode is **strongly recommended** but **not** a hard V1 gate; SmartScreen honesty for unsigned / low-reputation Setup ships in the [user guide](docs/user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) and [`docs/dev/authenticode-and-smartscreen.md`](docs/dev/authenticode-and-smartscreen.md). Latency “studio-done” numbers are Epic 5.
 
 ## Start here (community users)
 
@@ -53,7 +53,7 @@ A KMDF / PortCls stack needs the WDK, Microsoft attestation signing for Secure B
 - Public Installer (`UnitorMt4Bridge-Setup.exe`) — WinUSB association, Bridge, Auto-Start, virtualMIDI presence gate
 - Usermode C++ Bridge (`Bridge.exe`)
 - End-user docs: [`docs/user/README.md`](docs/user/README.md)
-- Optional Authenticode signing of the usermode binary (Story 4.4 — recommended for SmartScreen trust; not a kernel signature)
+- Optional Authenticode signing of the usermode binary / Setup — **strongly recommended**, not a hard V1 gate; policy + SmartScreen honesty: [`docs/dev/authenticode-and-smartscreen.md`](docs/dev/authenticode-and-smartscreen.md)
 
 ## MVP scope (V1)
 
@@ -98,7 +98,7 @@ If original Emagic protocol documents cannot be recovered from community archive
 
 ```
 docs/user/         End-user manual (single guide — start here for community installs)
-docs/dev/          Contributor / process docs (WinUSB bind, license honesty, dual-machine loop)
+docs/dev/          Contributor / process docs (WinUSB bind, license honesty, Authenticode / SmartScreen, dual-machine loop)
 docs/tests/        Operator smoke guides
 scripts/quality/   Diff-scoped Clean Code quality gate
 scripts/dev/       Developer helpers

@@ -193,7 +193,7 @@ begin
     GGatesFailedMessage :=
       'WinUSB association failed (pnputil exit ' + IntToStr(ResultCode) + ').' + #13#10 +
       'On clean machines an unsigned INF may be rejected. Lab mitigation: installer/sign-lab-package.ps1. ' +
-      'Public Authenticode/catalog policy is Story 4.4. ' +
+      'Public Authenticode/catalog policy: docs/dev/authenticode-and-smartscreen.md. ' +
       'Do not use Zadig as the primary community path.';
     Result := False;
     Exit;

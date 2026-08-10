@@ -11,7 +11,7 @@ updated: 2026-08-10
 
 Operator guide for **Story 4.1**: a short community Public Installer that binds WinUSB, installs the Bridge, wires Auto-Start, and checks virtualMIDI — so first MIDI the same evening does not feel like a developer toolchain.
 
-**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Polished end-user docs now live under [`docs/user/README.md`](../user/README.md); SM-5 still needs that story’s user-docs smoke Pass — [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md). Do **not** claim SM-6 Authenticode closed (Story **4.4**).
+**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Polished end-user docs now live under [`docs/user/README.md`](../user/README.md); SM-5 still needs that story’s user-docs smoke Pass — [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md). Authenticode / SmartScreen honesty ships under Story **4.4** — [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) (do **not** claim full SM-6 while OQ-1 or blank 4.1 hardware rows remain).
 
 ## Product intent
 
@@ -49,7 +49,7 @@ Tobias virtualMIDI **MSI embed/redistribution** is a **release gate** for a redi
 |---|---|
 | Polished end-user docs (first MIDI / SysEx / troubleshooting) | **4.2** — [`docs/user/README.md`](../user/README.md); close via [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Three-way MIT vs virtualMIDI vs Windows MIDI Services honesty | **4.3** — [`docs/dev/license-and-backends.md`](../dev/license-and-backends.md); close via [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md) |
-| Authenticode / public catalog signing / SmartScreen honesty | **4.4** |
+| Authenticode / public catalog signing / SmartScreen honesty | **4.4** — [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md); close via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) |
 | Tobias MSI **embed** redistributable | **OQ-1** release gate only |
 | WinUSB bind materials / GUID open policy | **1.3** (reuse; do not rewrite transport) |
 | Auto-Start runtime CLI | **3.1** (wire; no second mechanism / no Session-0 service) |
@@ -127,12 +127,12 @@ Auto-Start registration (must be interactive user, not elevated admin profile):
 
 ## Lab mitigation (unsigned INF)
 
-Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1). Public Authenticode / catalog policy is Story **4.4** — still exercise the association path now; fail closed with English diagnostics (no success screen on bind failure).
+Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1). Public Authenticode / catalog policy: [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md) — operator smoke [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md). Still exercise the association path now; fail closed with English diagnostics (no success screen on bind failure).
 
 ## Out of scope for this smoke
 
 - Claiming SM-5 fully closed (needs [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) Pass on top of this installer matrix)
-- Claiming SM-6 Authenticode closed (**4.4**)
+- Claiming **full** SM-6 community-release honesty while **OQ-1** or blank hardware rows remain (Authenticode/SmartScreen **slice** closes via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md))
 - Embedding Tobias virtualMIDI MSI without OQ-1
 - Session-0 Windows Service
 - Zadig as primary community UX
@@ -143,6 +143,7 @@ Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installe
 - End-user docs: [`docs/user/README.md`](../user/README.md)
 - User-docs smoke (Story 4.2): [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md)
 - License / backend honesty smoke (Story 4.3): [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md)
+- Authenticode / SmartScreen smoke (Story 4.4): [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md)
 - WinUSB bind (contributor / Zadig fallback): [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md)
 - Auto-Start runtime smoke: [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
 - Installer sources: `installer/public-installer.iss`

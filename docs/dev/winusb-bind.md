@@ -127,9 +127,18 @@ If you use Zadig:
 
 Zadig fallback refuses to open when **more than one** USB device matches the MT4 hardware ID (same fail-closed rule as the GUID path).
 
-## Signing note
+## Signing note (lab vs public)
 
-Authenticode / catalog signing for public release is tracked later (Story 4.4). Unsigned INF is acceptable for contributor bind; document local test-signing or Device Manager browse-install as needed.
+Two separate trust domains — do not conflate them:
+
+1. **Authenticode** on `Bridge.exe` / `UnitorMt4Bridge-Setup.exe` (SmartScreen / publisher trust)
+2. **WinUSB INF catalog** (`.cat`) for clean-machine Driver Store association (`CatalogFile=mt4-winusb.cat`)
+
+**Lab only:** [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1) builds a self-signed catalog and stages LocalMachine Root / TrustedPublisher. That is **not** public Authenticode and must not be described as community trust.
+
+**Public policy:** Authenticode is **strongly recommended** but **not** a hard V1 gate. Unsigned INF is still acceptable for contributor bind (Device Manager browse-install / test-signing as needed). Full lab-vs-public runbook, optional SignTool helper, and OQ-3 deferral: [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md). Musician-facing SmartScreen steps: [user guide](../user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup).
+
+Zadig remains contributor fallback only (see above) — never the primary community path.
 
 ## Daily use after bind (Auto-Start)
 

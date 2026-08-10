@@ -11,7 +11,7 @@ updated: 2026-08-10
 
 Operator guide for **Story 4.3**: prove that a community reader or contributor can tell what this repo licenses (MIT), what virtualMIDI requires separately (proprietary), and that Windows MIDI Services is **not** the V1 backend — without tribal knowledge from `_bmad-output/` planning artifacts.
 
-**Honesty bar:** a blank cell is **not** Pass. Prefer **docs-only** verification (no physical MT4 required for Pass). Win10 x64 remains listed when any hardware-adjacent claim is checked. This story may claim **FR-14 / CAP-14** closed when its ACs Pass. Phrase **SM-6** as **partially** met (license/backend honesty only) — full community-release honesty still needs Story **4.4** SmartScreen / Authenticode messaging.
+**Honesty bar:** a blank cell is **not** Pass. Prefer **docs-only** verification (no physical MT4 required for Pass). Win10 x64 remains listed when any hardware-adjacent claim is checked. This story may claim **FR-14 / CAP-14** closed when its ACs Pass. Phrase **SM-6** as **partially** met (license/backend honesty) — the Authenticode / SmartScreen honesty slice closes via Story **4.4** ([`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md)); full community-release honesty still needs **OQ-1** and credible **4.1** installer smoke.
 
 ## Product intent
 
@@ -23,7 +23,7 @@ A contributor or community evaluator can trust public messaging about licenses a
 |---|---|
 | Public Installer AD-12 UX / packaging | **4.1** (do **not** redesign the wizard; keep OQ-1 MSI-embed honesty as-is) |
 | End-user UJ-1 / UJ-2 manuals under `docs/user/` | **4.2** (do **not** reopen chapter structure; light cross-links OK) |
-| Authenticode / SmartScreen honesty for unsigned public builds | **4.4** |
+| Authenticode / SmartScreen honesty for unsigned public builds | **4.4** — [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md); close via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) |
 | Tobias MSI **embed** redistributable clearance | **OQ-1** release gate only (never claim cleared under this story) |
 | MIDI Path latency claims / harness | Epic **5** |
 | Protocol reimplementation / Emagic mapper code | Epics **1–2** (already done; this story documents honesty only) |
@@ -61,7 +61,7 @@ A contributor or community evaluator can trust public messaging about licenses a
 | 5 | Public facade **Ten Square Software** visible on README + LICENSE (and not contradicted by installer / user docs) | N/A | N/A | Docs-only any-checkout 2026-08-10: LICENSE copyright; README Bridge blurb; installer / `docs/user/` already Ten Square — **Pass** |
 | 6 | OQ-1 honesty preserved: no claim that virtualMIDI MSI embed is cleared / redistributable in the Public Installer | N/A | N/A | Docs-only 2026-08-10: license-and-backends.md + **read-only** check of existing installer virtualMIDI / MSI-gate strings (no installer edit in this story) — **Pass** |
 | 7 | Discoverability: community reader can reach the three-way explanation from README without opening `_bmad-output/` | N/A | N/A | Docs-only any-checkout 2026-08-10: README § License → deep page link — **Pass** |
-| 8 | Scope fence: no SmartScreen/Authenticode chapter claimed under this story ID (→ 4.4); no 4.2 manual rewrite; no installer UX redesign | N/A | N/A | Docs-only change set; fences restated in this guide — **Pass** |
+| 8 | Scope fence: no SmartScreen/Authenticode chapter claimed under this story ID (→ 4.4 finished surfaces); no 4.2 manual rewrite; no installer UX redesign | N/A | N/A | Docs-only change set; fences restated in this guide; SmartScreen lives under 4.4 — **Pass** |
 
 ## Related docs
 
@@ -69,13 +69,14 @@ A contributor or community evaluator can trust public messaging about licenses a
 - Contributor dual-machine loop: [`docs/dev/contributor-dual-machine-loop.md`](../dev/contributor-dual-machine-loop.md)
 - Public Installer smoke: [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md)
 - User docs smoke: [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md)
+- Authenticode / SmartScreen smoke: [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md)
 - End-user manuals: [`docs/user/README.md`](../user/README.md)
 
 ## Out of scope for this smoke
 
-- Claiming **SM-6** fully closed without Story **4.4**
+- Claiming **full** SM-6 while OQ-1 or blank **4.1** hardware rows remain (Authenticode/SmartScreen slice: [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md))
 - Claiming Tobias virtualMIDI MSI embed cleared (**OQ-1**)
-- SmartScreen / Authenticode policy prose (**4.4**)
+- Owning SmartScreen / Authenticode policy prose under this story ID (**4.4**)
 - Rewriting `docs/user/` UJ manuals (**4.2**)
 - Redesigning Public Installer UX (**4.1**)
 - MIDI Path / latency Studio-Done claims (Epic **5**)

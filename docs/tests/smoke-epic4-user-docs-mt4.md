@@ -11,7 +11,7 @@ updated: 2026-08-10
 
 Operator guide for **Story 4.2**: prove a new MT4 owner can complete first MIDI (**UJ-1**) and first SysEx (**UJ-2**) using **only** the shipped [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md) plus **named** external prerequisites (virtualMIDI via loopMIDI/rtpMIDI; Ableton Live 12 or MIDI-OX; Matrix-Control or documented SysEx equivalent).
 
-**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for MIDI / SysEx rows. Do **not** claim SM-5 closed until this matrix Passes **and** Story **4.1** installer path is credible. Do **not** claim SM-6 / FR-14 / Authenticode under this story ID.
+**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for MIDI / SysEx rows. Do **not** claim SM-5 closed until this matrix Passes **and** Story **4.1** installer path is credible. Do **not** claim FR-14 under this story ID. Authenticode / SmartScreen honesty is Story **4.4** — [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md).
 
 ## Product intent
 
@@ -23,7 +23,7 @@ A musician who never saw the French lab smokes under `docs/tests/` can reach fir
 |---|---|
 | Public Installer AD-12 UX / packaging | **4.1** (describe; do **not** redesign the wizard) |
 | Three-way MIT vs virtualMIDI vs Windows MIDI Services honesty + contributor dual-machine loop | **4.3** — [`docs/dev/license-and-backends.md`](../dev/license-and-backends.md), [`docs/dev/contributor-dual-machine-loop.md`](../dev/contributor-dual-machine-loop.md); close via [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md) |
-| Authenticode / SmartScreen honesty for unsigned public builds | **4.4** |
+| Authenticode / SmartScreen honesty for unsigned public builds | **4.4** — [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md); close via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) |
 | Tobias MSI **embed** redistributable | **OQ-1** release gate only (docs name eval path: loopMIDI / rtpMIDI) |
 | MIDI Path latency claims / harness | Epic **5** (never cite ASIO buffer size as MIDI proof) |
 | Zadig primary path | **Forbidden** — contributor-only in [`docs/dev/winusb-bind.md`](../dev/winusb-bind.md) |
@@ -75,7 +75,7 @@ Landing: [`docs/user/README.md`](../user/README.md). English manual: [`docs/user
 ## Out of scope for this smoke
 
 - Claiming SM-5 fully closed while rows 1–3 are blank
-- Claiming SM-6 Authenticode closed (**4.4**)
+- Claiming **full** SM-6 while OQ-1 or blank **4.1** hardware rows remain (Authenticode/SmartScreen slice: [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md))
 - Claiming FR-14 / three-way license polish without [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md) Pass (**4.3**)
 - Embedding Tobias virtualMIDI MSI without OQ-1
 - Zadig as primary community UX
@@ -86,6 +86,7 @@ Landing: [`docs/user/README.md`](../user/README.md). English manual: [`docs/user
 
 - Public Installer smoke: [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md)
 - License / backend honesty smoke: [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md)
+- Authenticode / SmartScreen smoke: [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md)
 - User docs landing: [`docs/user/README.md`](../user/README.md)
 - User manual (EN): [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md)
 - Manuel utilisateur (FR): [`docs/user/unitor-mt4-bridge-manuel-utilisateur.md`](../user/unitor-mt4-bridge-manuel-utilisateur.md)

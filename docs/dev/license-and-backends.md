@@ -58,4 +58,4 @@ Public surfaces use **Ten Square Software** (README, LICENSE, installer branding
 - Install prerequisites for musicians: [`docs/user/README.md`](../user/README.md)
 - Contributor dual-machine loop: [`contributor-dual-machine-loop.md`](contributor-dual-machine-loop.md)
 - Operator smoke for this honesty bar: [`docs/tests/smoke-epic4-license-honesty-mt4.md`](../tests/smoke-epic4-license-honesty-mt4.md)
-- Authenticode / SmartScreen messaging: Story **4.4** (not this page)
+- Authenticode / SmartScreen policy (lab vs public, OQ-3 deferral): [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md) — operator smoke [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`](../tests/smoke-epic4-authenticode-smartscreen-mt4.md)

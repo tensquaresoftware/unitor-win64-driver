@@ -78,6 +78,29 @@ Si quelque chose manque (par exemple virtualMIDI), l’assistant affiche un mess
 
 **WinUSB** est le composant USB standard de Microsoft. L’installeur l’associe à la MT4 pour que le Bridge puisse communiquer avec elle. Vous n’avez rien à configurer de plus pour un usage normal.
 
+## Windows SmartScreen (Setup non signe ou non reconnu)
+
+Windows peut afficher **Microsoft Defender SmartScreen** — souvent « Windows a protégé votre PC » ou un avertissement d’application non reconnue — lorsque vous ouvrez `UnitorMt4Bridge-Setup.exe`. Cela peut arriver si une build communautaire est **non signée**, ou si elle est signée mais **pas encore assez réputée**. Un avertissement ne signifie **pas** automatiquement que le fichier est un malware.
+
+**Ne continuez que si vous avez téléchargé le Setup depuis la page de téléchargement / Releases de ce projet** (pas un miroir tiers au hasard). Tant qu’une URL figée n’est pas publiée avec la première release publique taguée, utilisez la page Releases ou de téléchargement de ce dépôt.
+
+Pour vérifier si **ce** fichier Setup est signé : clic droit → **Propriétés** → **Signatures numériques**. Si cet onglet est absent, le fichier est en général **non signé**. Pour une build publique signée, l’éditeur attendu est **Ten Square Software**.
+
+Lorsque la stratégie de votre PC le permet :
+
+1. Choisissez **Plus d’infos** (**More info**).
+2. Choisissez **Exécuter quand même** (**Run anyway**).
+
+Autre solution si le fichier vient du web : clic droit sur le Setup → **Propriétés** → cochez **Débloquer** (**Unblock**) s’il est proposé (marque Zone.Identifier), puis Appliquer / OK, et relancez le Setup.
+
+**Honnêteté :**
+
+- Sur un PC **entreprise / géré**, la stratégie peut bloquer entièrement **Exécuter quand même** — contactez l’administrateur du PC, ou utilisez une machine personnelle pour évaluer. Ne comptez pas sur le contournement dans tous les cas.
+- Même une signature Authenticode **valide** (éditeur **Ten Square Software**) peut encore avertir jusqu’à ce que la réputation SmartScreen s’accumule. Signé ne veut **pas** dire « jamais SmartScreen ».
+- La signature Authenticode est **fortement recommandée** pour les builds publiques. La V1 peut être livrée non signée si le certificat n’est pas encore prêt — **uniquement** avec ce guide. Ne **désactivez pas** SmartScreen globalement, ne mettez pas en liste blanche des dossiers entiers, et n’exécutez pas de copies non signées depuis des miroirs non fiables.
+
+Politique de signature pour contributeurs / release (page technique en anglais) : [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md).
+
 # Démarrage automatique
 
 Après l’installation, Unitor MT4 Bridge se lance avec votre session Windows. Les ports MIDI apparaissent sans que vous ayez à ouvrir le programme à chaque fois, et sans mot de passe Administrateur au quotidien.
@@ -159,6 +182,10 @@ Rebranchez la MT4, demandez à votre logiciel de rescanner les ports MIDI, et si
 
 # Dépannage
 
+## SmartScreen bloque le Setup (« Windows a protégé votre PC »)
+
+Voir [Windows SmartScreen (Setup non signe ou non reconnu)](#windows-smartscreen-setup-non-signe-ou-non-reconnu). Vérifiez que le téléchargement vient de la page de téléchargement / Releases de ce projet, puis utilisez **Plus d’infos → Exécuter quand même** lorsque la stratégie le permet, ou Propriétés → **Débloquer**. Ne désactivez pas SmartScreen globalement.
+
 ## virtualMIDI manquant
 
 Installez **loopMIDI** ou **rtpMIDI**, vérifiez `teVirtualMIDI.dll` dans `C:\Windows\System32\`, puis relancez l’installeur Unitor MT4 Bridge.
@@ -234,8 +261,9 @@ N’attendez **pas** ceci dans cette version :
 - Un pilote MIDI noyau custom
 - Zadig comme chemin d’installation communautaire recommandé (secours contributeur seulement)
 - Chiffres de latence / jitter MIDI « studio-done » publiés (mesurés plus tard)
+- Un SmartScreen silencieux uniquement parce qu’une build est signée (la réputation s’accumule encore ; voir [Windows SmartScreen](#windows-smartscreen-setup-non-signe-ou-non-reconnu))
 
-Voir aussi (contributeurs / évaluateurs ; page technique en anglais) : [Licence et backends MIDI](../dev/license-and-backends.md) — MIT (ce dépôt) ≠ virtualMIDI (propriétaire) ≠ Windows MIDI Services (pas la V1).
+Voir aussi (contributeurs / évaluateurs ; page technique en anglais) : [Licence et backends MIDI](../dev/license-and-backends.md) — MIT (ce dépôt) ≠ virtualMIDI (propriétaire) ≠ Windows MIDI Services (pas la V1). Politique de signature : [Authenticode and SmartScreen](../dev/authenticode-and-smartscreen.md).
 
 # Deux interfaces MT4
 

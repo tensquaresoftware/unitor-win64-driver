@@ -78,6 +78,29 @@ If something is missing (for example virtualMIDI), the wizard shows a help messa
 
 **WinUSB** is Microsoft’s standard USB component. The installer associates it with the MT4 so the Bridge can talk to the interface. You do not need further USB setup for normal use.
 
+## Windows SmartScreen (unsigned or unrecognized Setup)
+
+Windows may show **Microsoft Defender SmartScreen** — often “Windows protected your PC” or an unrecognized-app warning — when you open `UnitorMt4Bridge-Setup.exe`. That can happen when a community build is **unsigned**, or when a build is signed but **not yet reputation-trusted**. A warning does **not** automatically mean the file is malware.
+
+**Only continue if you downloaded Setup from this project’s own download page / Releases** (not a random third-party mirror). Until the first tagged public community release publishes a fixed URL, use the project’s Releases or download page for this repository.
+
+To check whether **this** Setup file is signed: right-click → **Properties** → **Digital Signatures**. If that tab is missing, the file is typically **unsigned**. When signed for public builds, the publisher should be **Ten Square Software**.
+
+When your PC’s policy allows it:
+
+1. Choose **More info**.
+2. Choose **Run anyway**.
+
+Alternate mitigation when the file was downloaded from the web: right-click the Setup file → **Properties** → enable **Unblock** if shown (mark-of-the-web), then Apply / OK, and run Setup again.
+
+**Honesty:**
+
+- On **enterprise / managed** PCs, policy may block **Run anyway** entirely — contact your PC admin, or try a personal machine for community evaluation. Do not expect the override to always work.
+- Even a **valid** Authenticode signature (publisher **Ten Square Software**) can still warn until SmartScreen reputation accumulates. Signed does **not** mean “never SmartScreen.”
+- Authenticode signing is **strongly recommended** for public builds. V1 may ship unsigned if the certificate is not ready yet — **only** with this guidance. Do **not** turn SmartScreen off globally, whitelist whole folders, or run unsigned copies from untrusted mirrors.
+
+Contributor / release signing policy (English): [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md).
+
 # Auto-Start
 
 After installation, Unitor MT4 Bridge starts with your Windows session. MIDI ports appear without opening the program every day, and without an Administrator password for daily use.
@@ -159,6 +182,10 @@ Plug the MT4 back in, ask your software to rescan MIDI ports, and restart **Unit
 
 # Troubleshooting
 
+## SmartScreen blocks Setup (“Windows protected your PC”)
+
+See [Windows SmartScreen (unsigned or unrecognized Setup)](#windows-smartscreen-unsigned-or-unrecognized-setup). Confirm the download came from this project’s own download page / Releases, then use **More info → Run anyway** when policy allows, or Properties → **Unblock**. Do not disable SmartScreen globally.
+
 ## virtualMIDI missing
 
 Install **loopMIDI** or **rtpMIDI**, confirm `teVirtualMIDI.dll` in `C:\Windows\System32\`, then run the Unitor MT4 Bridge installer again.
@@ -234,8 +261,9 @@ Do **not** expect the following in this version:
 - A custom kernel MIDI driver
 - Zadig as the recommended community install path (contributor fallback only)
 - Published “studio-done” MIDI latency / jitter numbers (measured later)
+- Instant SmartScreen silence just because a build is signed (reputation still accumulates; see [Windows SmartScreen](#windows-smartscreen-unsigned-or-unrecognized-setup))
 
-See also (contributors / evaluators; English technical page): [License and MIDI backends](../dev/license-and-backends.md) — MIT (this repo) ≠ virtualMIDI (proprietary) ≠ Windows MIDI Services (not V1).
+See also (contributors / evaluators; English technical page): [License and MIDI backends](../dev/license-and-backends.md) — MIT (this repo) ≠ virtualMIDI (proprietary) ≠ Windows MIDI Services (not V1). Signing policy: [Authenticode and SmartScreen](../dev/authenticode-and-smartscreen.md).
 
 # Two MT4 interfaces
 

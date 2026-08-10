@@ -113,6 +113,37 @@ if ($resolvedBridgeDir -match '(?i)[\\/]debug([\\/]|$)')
 $outDir = Join-Path $repoRoot "builds\installer"
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
+# Optional Authenticode (Story 4.4) — strongly recommended, not a hard gate.
+# Without UNITOR_CODE_SIGNING_CERT_SUBJECT the helper SKIPs (exit 0).
+# When the env is set, Bridge is signed before packaging and Setup after.
+$signHelper = Join-Path $repoRoot "scripts\packaging\sign-public-artifacts.ps1"
+$wantPublicSign = -not [string]::IsNullOrWhiteSpace($env:UNITOR_CODE_SIGNING_CERT_SUBJECT)
+if ($wantPublicSign -and -not (Test-Path -LiteralPath $signHelper))
+{
+    throw "UNITOR_CODE_SIGNING_CERT_SUBJECT is set but missing sign helper: $signHelper"
+}
+
+function Invoke-PublicSign
+{
+    param([string[]]$ArtifactPaths)
+
+    if (-not (Test-Path -LiteralPath $signHelper))
+    {
+        return
+    }
+
+    & $signHelper -Paths $ArtifactPaths
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "sign-public-artifacts.ps1 exited $LASTEXITCODE"
+    }
+}
+
+if ($wantPublicSign)
+{
+    Invoke-PublicSign -ArtifactPaths @($bridgeExe)
+}
+
 Write-Host "Compiling Public Installer"
 Write-Host "  BridgeSource: $resolvedBridgeDir"
 Write-Host "  AppVersion:   $AppVersion"
@@ -129,6 +160,8 @@ if (-not (Test-Path -LiteralPath $setup))
 {
     throw "Expected output missing: $setup"
 }
+
+Invoke-PublicSign -ArtifactPaths @($setup)
 
 Write-Host "OK: $setup"
 exit 0

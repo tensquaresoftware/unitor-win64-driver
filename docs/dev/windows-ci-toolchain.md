@@ -97,5 +97,5 @@ Keep these on a Windows 10/11 x64 machine with hardware / DAW as needed:
 | `quality-gate` + `lint-touched` on diff | Multi-OS build matrix (macOS/Linux) |
 | `ci-success` as sole merge signal | Draft-PR fast tier / `ci-full` label |
 | `actions/checkout@v5` | JUCE checkout / plugin presets |
-| Push/PR base resolution for lint | `release.yml` / Authenticode packaging |
+| Push/PR base resolution for lint | `release.yml` / Authenticode packaging (see [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md) — omitted until Guillaume adds a secrets-backed release workflow) |
 | Catch2 `BridgeTests` in `build` job | Hardware / DAW automation |

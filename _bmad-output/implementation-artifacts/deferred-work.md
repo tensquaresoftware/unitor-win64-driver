@@ -1,5 +1,11 @@
 # Deferred work
 
+## Deferred from: code review of 4-4-authenticode-policy-and-smartscreen-honesty.md (2026-08-10)
+
+- Production INF `.cat` still not produced/packaged for Public Installer — policy honesty is in `docs/dev/authenticode-and-smartscreen.md`; remaining produce/package step waits on OQ-3 certificate path (overlaps 4.1 deferral already restated for 4.4).
+- Optional SignTool description/URL metadata (`/d`, `/du`) and dual-sign guidance not wired in `sign-public-artifacts.ps1` — nice-to-have for tagged public releases once a real cert path exists; not required to close Story 4.4 docs-first ACs.
+- SmartScreen “official channel” / “canal officiel” in EN+FR user guides stays generic (“project download page / Releases”) until the first tagged public community release — then replace with the concrete download URL (e.g. GitHub Releases owner/repo or project site) so musicians can verify the source without tribal knowledge.
+
 ## Deferred from: code review of 4-3-technical-docs-and-three-way-license-honesty.md (2026-08-10)
 
 - loopMIDI/rtpMIDI product names hyperlink to the virtualMIDI SDK page (not end-user download pages) — pre-existing README pattern; not introduced by 4.3.
@@ -12,7 +18,7 @@
 
 ## Deferred from: code review of 4-1-public-installer-meeting-ad-12-ux-bar.md (2026-08-10)
 
-- Unsigned INF / missing `.cat` in Public Installer payload — clean-machine association may fail until Story **4.4** Authenticode/catalog; lab mitigation remains `installer/sign-lab-package.ps1` (story fence, not a silent skip).
+- Unsigned INF / missing production `.cat` in Public Installer payload — **policy documented** under Story **4.4** ([`docs/dev/authenticode-and-smartscreen.md`](../../docs/dev/authenticode-and-smartscreen.md)): Public Installer ships INF without a production catalog today; clean-machine association may fail until a real public `.cat` is produced under the chosen certificate. Lab mitigation remains `installer/sign-lab-package.ps1` (not public Authenticode). Remaining work: produce/package a production catalog when OQ-3 cert path exists — not a silent docs skip.
 - No timeout if `pnputil` or Bridge hangs under Inno `Exec` / `ExecAsOriginalUser` — installer wizard can block indefinitely; Inno limitation deferred unless a reusable timeout wrapper is added later.
 - Blank Win10 Public Installer smoke matrix — honesty blank kept for code-review pass; lab Pass still required before story `done`.
 

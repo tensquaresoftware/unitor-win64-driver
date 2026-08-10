@@ -22,3 +22,5 @@ Community end-user docs for **Unitor MT4 Bridge** (Ten Square Software) and the 
 9. Two MT4 interfaces  
 
 Open the English or French manual and follow those sections in order.
+
+**SmartScreen:** if Windows warns on Setup (“Windows protected your PC”), see the Installation / Troubleshooting SmartScreen sections in either manual — unsigned or low-reputation community builds are documented honestly; Authenticode remains strongly recommended but not a hard V1 gate.

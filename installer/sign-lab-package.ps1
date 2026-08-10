@@ -1,6 +1,6 @@
 # Lab-only: build a self-signed catalog for mt4-winusb.inf and stage it with pnputil.
 # Requires elevated PowerShell + Windows SDK (MakeCat + SignTool).
-# Not for public release (Story 4.4 Authenticode is separate).
+# Not for public release — see docs/dev/authenticode-and-smartscreen.md (public Authenticode ≠ this script).
 
 [CmdletBinding()]
 param(
