@@ -51,6 +51,7 @@ struct InterfaceOpenArgs
     SP_DEVICE_INTERFACE_DATA* interfaceData;
     const DeviceProfile* profile;
     const std::string* requiredHardwareId;
+    const wchar_t* selectedDevicePath;
     WinUsbHandles* handles;
 };
 
@@ -67,9 +68,36 @@ struct GuidOpenRequest
     const GUID* interfaceGuid = nullptr;
     const DeviceProfile* profile = nullptr;
     const std::string* requiredHardwareId = nullptr;
+    // When non-null, only the matching device interface path may open.
+    const wchar_t* selectedDevicePath = nullptr;
     WinUsbHandles* handles = nullptr;
 };
 
 bool openByDeviceInterfaceGuidFiltered(GuidOpenRequest& request, std::string& errorOut);
+
+std::string wideToUtf8Lossy(const std::wstring& wide);
+std::wstring utf8ToWideLossy(const std::string& text);
+
+bool readDeviceInstanceId(
+    HDEVINFO deviceInfo,
+    SP_DEVINFO_DATA& devInfo,
+    std::wstring& instanceIdOut,
+    std::string& errorOut);
+
+bool readDeviceSerialNumber(
+    HDEVINFO deviceInfo,
+    SP_DEVINFO_DATA& devInfo,
+    std::wstring& serialOut);
+
+bool deviceHardwareIdSuggestsIfnum(
+    HDEVINFO deviceInfo,
+    SP_DEVINFO_DATA& devInfo,
+    uint8_t ifnum);
+
+bool bindUtf8SelectedDevicePath(
+    const std::string& selectedDevicePathUtf8,
+    std::wstring& selectedWideOut,
+    const wchar_t*& selectedPathOut,
+    std::string& errorOut);
 
 #endif // _WIN32

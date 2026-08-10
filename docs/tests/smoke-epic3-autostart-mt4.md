@@ -38,7 +38,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 |---|---|
 | Débranche / rebranche en session | **3.2** |
 | Multi-client DAW + MIDI-OX (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
-| Noms stables pour deux MT4 | **3.4** |
+| Noms stables pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
 | Packaging Auto-Start dans l’installeur public | **4.1** |
 | Doc utilisateur polie | **4.2** |
 | Mesures de latence MIDI | Epic **5** |

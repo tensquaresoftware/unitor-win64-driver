@@ -2,6 +2,7 @@
 
 #include "App/Mt4WinUsbPresence.h"
 
+#include "Profile/DeviceProfile.h"
 #include "Usb/WinUsbTransport.h"
 
 #include <cstdio>
@@ -14,6 +15,9 @@
 #include <windows.h>
 #include <objbase.h>
 #include <setupapi.h>
+
+#include "Usb/WinUsbOpenDetail.h"
+#include "Usb/WinUsbOpenSupport.h"
 #endif
 
 namespace
@@ -36,6 +40,12 @@ bool parseProjectGuid(GUID& guidOut, std::string& detailOut)
         return false;
     }
     return true;
+}
+
+UnitIdentityKind toRegistryKind(Mt4UnitIdentityKind kind)
+{
+    return kind == Mt4UnitIdentityKind::Serial ? UnitIdentityKind::Serial
+                                               : UnitIdentityKind::Topology;
 }
 
 Mt4WinUsbPresence enumHasPresentInterface(const GUID& guid, std::string& detailOut)
@@ -77,6 +87,25 @@ Mt4WinUsbPresence enumHasPresentInterface(const GUID& guid, std::string& detailO
     detailOut = buffer;
     return Mt4WinUsbPresence::Error;
 }
+
+bool appendPresentInterface(
+    const Mt4PresentWinUsbInterface& entry,
+    std::vector<Mt4WinUsbInterfaceInfo>& interfacesOut,
+    std::string& errorOut)
+{
+    Mt4WinUsbInterfaceInfo info;
+    info.devicePathUtf8 = wideToUtf8Lossy(entry.devicePath);
+    if (info.devicePathUtf8.empty())
+    {
+        errorOut = "MT4 device path UTF-8 conversion failed";
+        return false;
+    }
+    info.identityKey = entry.identityKey;
+    info.identityKind = toRegistryKind(entry.identityKind);
+    info.topologyKey = entry.topologyKey;
+    interfacesOut.push_back(std::move(info));
+    return true;
+}
 #endif
 } // namespace
 
@@ -92,5 +121,44 @@ Mt4WinUsbPresence queryMt4WinUsbPresence(std::string& detailOut)
 #else
     detailOut = "MT4 WinUSB presence check requires Windows";
     return Mt4WinUsbPresence::Error;
+#endif
+}
+
+bool listMt4WinUsbInterfaces(
+    std::vector<Mt4WinUsbInterfaceInfo>& interfacesOut,
+    std::string& errorOut)
+{
+    interfacesOut.clear();
+#ifdef _WIN32
+    const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
+    if (mt4 == nullptr)
+    {
+        errorOut = "MT4 DeviceProfile not found";
+        return false;
+    }
+    GUID guid = {};
+    if (!parseProjectGuid(guid, errorOut))
+    {
+        return false;
+    }
+    std::vector<Mt4PresentWinUsbInterface> raw;
+    if (!enumeratePresentMt4WinUsbInterfaces(guid, *mt4, raw, errorOut))
+    {
+        return false;
+    }
+    interfacesOut.reserve(raw.size());
+    for (const Mt4PresentWinUsbInterface& entry : raw)
+    {
+        if (!appendPresentInterface(entry, interfacesOut, errorOut))
+        {
+            interfacesOut.clear();
+            return false;
+        }
+    }
+    errorOut.clear();
+    return true;
+#else
+    errorOut = "MT4 WinUSB interface listing requires Windows";
+    return false;
 #endif
 }

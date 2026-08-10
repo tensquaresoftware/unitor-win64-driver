@@ -28,15 +28,11 @@ class DeviceSessionManager
 public:
     DeviceSessionManager() = default;
 
-    // V1 hard-wires single-unit K = 1 (multi-unit persistence = Story 3.4).
-    unsigned unitOrdinalK() const noexcept { return unitOrdinalK_; }
-
     // Build ready-made PortNameSet from Profile product port counts (2 IN / 4 OUT for MT4).
+    // unitOrdinalK comes from UnitIdentityRegistry (AD-6); never invent K here from USB.
     bool buildPortNameSet(
         const DeviceProfile& profile,
+        unsigned unitOrdinalK,
         PortNameSet& namesOut,
         std::string& errorOut) const;
-
-private:
-    unsigned unitOrdinalK_ = 1;
 };

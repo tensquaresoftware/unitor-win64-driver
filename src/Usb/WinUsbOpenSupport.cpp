@@ -87,7 +87,7 @@ namespace
 {
 std::wstring utf8ToWide(const std::string& text)
 {
-    return std::wstring(text.begin(), text.end());
+    return utf8ToWideLossy(text);
 }
 
 bool hardwareIdEntryMatches(const wchar_t* entry, const std::wstring& needle)
@@ -347,6 +347,13 @@ bool tryOpenInterfaceDetail(InterfaceOpenArgs& args, std::string& errorOut)
             args.deviceInfo, devInfo, *args.requiredHardwareId))
     {
         errorOut = "Device interface hardware ID does not match DeviceProfile";
+        return false;
+    }
+
+    if (args.selectedDevicePath != nullptr && args.selectedDevicePath[0] != L'\0'
+        && _wcsicmp(detail->DevicePath, args.selectedDevicePath) != 0)
+    {
+        errorOut = "Device interface path does not match selected instance";
         return false;
     }
 

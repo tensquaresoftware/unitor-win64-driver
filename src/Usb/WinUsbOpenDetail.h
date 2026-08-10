@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 
 struct WinUsbHandles
 {
@@ -45,10 +46,36 @@ struct WinUsbOpenRequest
     const DeviceProfile* profile = nullptr;
     const GUID* projectGuid = nullptr;
     bool preferZadig = false;
+    // When non-null and non-empty, open this device interface path (UTF-16).
+    const wchar_t* selectedDevicePath = nullptr;
     WinUsbHandles* handles = nullptr;
 };
 
 // preferZadig: HWID/Zadig first (lab --dev-zadig); else GUID-only fail-closed.
+// Selected path skips unique-match enumeration and opens that instance only.
 bool openWinUsbHandles(WinUsbOpenRequest& request, std::string& errorOut);
+
+enum class Mt4UnitIdentityKind : unsigned char
+{
+    Serial = 1,
+    Topology = 2
+};
+
+// One present WinUSB interface matching project GUID + profile ifnum (no open claim).
+struct Mt4PresentWinUsbInterface
+{
+    std::wstring devicePath;
+    std::string identityKey;
+    Mt4UnitIdentityKind identityKind = Mt4UnitIdentityKind::Topology;
+    // Always filled when known so serial→topology migration can keep the same K.
+    std::string topologyKey;
+};
+
+// Enumerate all present MT4 WinUSB interfaces for the project GUID (paths + identity).
+bool enumeratePresentMt4WinUsbInterfaces(
+    const GUID& interfaceGuid,
+    const DeviceProfile& profile,
+    std::vector<Mt4PresentWinUsbInterface>& interfacesOut,
+    std::string& errorOut);
 
 #endif // _WIN32

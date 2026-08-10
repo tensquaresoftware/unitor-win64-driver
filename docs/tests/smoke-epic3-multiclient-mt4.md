@@ -37,7 +37,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 
 | Sujet | Story |
 |---|---|
-| Noms / persistance pour deux MT4 | **3.4** |
+| Noms / persistance pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
 | Chapitre multi-client poli dans `docs/user/` | **4.2** |
 | Installateur public / redistribuable VirtualMIDI | **4.1** / OQ-1 |
 | Mesures de latence MIDI | Epic **5** |

@@ -34,6 +34,9 @@ struct WinUsbOpenOptions
     // When true, open HWID/Zadig-first (same path as --probe-usb); GUID is backup.
     // Default builds remain GUID-only and fail closed when the GUID is missing.
     bool allowZadigFallback = false;
+    // When non-empty (UTF-8 device interface path), open that instance only.
+    // Empty keeps the unique-match gate (matchCount == 1) — fail closed on multi-match.
+    std::string selectedDevicePath;
 };
 
 // One completed bulk IN packet from the async ring (buffer owned by the transport).

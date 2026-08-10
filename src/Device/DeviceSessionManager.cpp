@@ -41,6 +41,11 @@ bool fillDirectionalNames(
         errorOut = "DeviceSessionManager: invalid PortNameSet destination";
         return false;
     }
+    if (fill.unitOrdinalK < 1)
+    {
+        errorOut = "DeviceSessionManager: unit ordinal K must be >= 1";
+        return false;
+    }
 
     uint8_t cableIndices[kMaxEmagicCableCount] = {};
     const std::size_t cableCount = collectProductCableIndices(
@@ -67,13 +72,14 @@ bool fillDirectionalNames(
 
 bool DeviceSessionManager::buildPortNameSet(
     const DeviceProfile& profile,
+    unsigned unitOrdinalK,
     PortNameSet& namesOut,
     std::string& errorOut) const
 {
     PortNameSet built;
     DirectionalNameFill inFill{
         profile.inCables,
-        unitOrdinalK_,
+        unitOrdinalK,
         MidiPortDirection::In,
         built.inNames,
         kMaxMidiBackendInPorts};
@@ -84,7 +90,7 @@ bool DeviceSessionManager::buildPortNameSet(
 
     DirectionalNameFill outFill{
         profile.outCables,
-        unitOrdinalK_,
+        unitOrdinalK,
         MidiPortDirection::Out,
         built.outNames,
         kMaxMidiBackendOutPorts};

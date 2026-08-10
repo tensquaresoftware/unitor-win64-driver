@@ -5,12 +5,101 @@
 #ifdef _WIN32
 
 #include "Protocol/EmagicCableMapper.h"
+#include "Usb/WinUsbOpenDetail.h"
 #include "Usb/WinUsbOpenSupport.h"
+
+#include <cstring>
 
 namespace
 {
 constexpr std::uint32_t kSessionBulkTimeoutMs = 3000;
 constexpr std::uint32_t kDrainInTimeoutMs = 200;
+
+bool parseProjectDeviceInterfaceGuid(GUID& guidOut, std::string& errorOut)
+{
+    const std::size_t length = std::strlen(kMt4WinUsbDeviceInterfaceGuid);
+    std::wstring wide(kMt4WinUsbDeviceInterfaceGuid, kMt4WinUsbDeviceInterfaceGuid + length);
+    if (FAILED(CLSIDFromString(wide.c_str(), &guidOut)))
+    {
+        errorOut = "Internal error: invalid project DeviceInterfaceGUID constant";
+        return false;
+    }
+    return true;
+}
+
+struct OpenedHandleSink
+{
+    void** deviceHandle = nullptr;
+    void** winUsbHandle = nullptr;
+    void** winUsbRootHandle = nullptr;
+    void** winUsbAssociated = nullptr;
+    std::size_t* winUsbAssociatedCount = nullptr;
+};
+
+void adoptOpenedHandles(WinUsbHandles& handles, OpenedHandleSink& sink)
+{
+    *sink.deviceHandle = handles.device;
+    *sink.winUsbHandle = handles.winUsb;
+    *sink.winUsbRootHandle = handles.winUsbRoot;
+    *sink.winUsbAssociatedCount = handles.associatedCount;
+    for (std::size_t index = 0; index < handles.associatedCount; ++index)
+    {
+        sink.winUsbAssociated[index] = handles.associated[index];
+    }
+    handles.associatedCount = 0;
+    handles.winUsb = nullptr;
+    handles.winUsbRoot = nullptr;
+    handles.device = INVALID_HANDLE_VALUE;
+}
+} // namespace
+
+bool WinUsbTransport::Open(
+    const DeviceProfile& profile,
+    std::string& errorOut,
+    WinUsbOpenOptions options)
+{
+    Close();
+
+    GUID projectGuid = {};
+    if (!parseProjectDeviceInterfaceGuid(projectGuid, errorOut))
+    {
+        return false;
+    }
+
+    WinUsbHandles handles;
+    WinUsbOpenRequest openRequest;
+    openRequest.profile = &profile;
+    openRequest.projectGuid = &projectGuid;
+    openRequest.preferZadig = options.allowZadigFallback;
+    openRequest.handles = &handles;
+    std::wstring selectedWide;
+    if (!bindUtf8SelectedDevicePath(
+            options.selectedDevicePath,
+            selectedWide,
+            openRequest.selectedDevicePath,
+            errorOut)
+        || !openWinUsbHandles(openRequest, errorOut))
+    {
+        return false;
+    }
+
+    OpenedHandleSink sink{
+        &deviceHandle_,
+        &winUsbHandle_,
+        &winUsbRootHandle_,
+        winUsbAssociated_,
+        &winUsbAssociatedCount_};
+    adoptOpenedHandles(handles, sink);
+    if (!discoverBulkPipes(errorOut)
+        || !applyBulkTransferTimeouts(errorOut)
+        || !prepareBulkPipes(errorOut))
+    {
+        Close();
+        return false;
+    }
+
+    errorOut.clear();
+    return true;
 }
 
 bool WinUsbTransport::setPipeTransferTimeoutMs(

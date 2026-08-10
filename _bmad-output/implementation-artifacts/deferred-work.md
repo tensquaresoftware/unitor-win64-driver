@@ -45,13 +45,13 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - Epic 1 integration CR (2026-08-05) **patched**: host→device WriteBulk under `usbIoMutex_`, VirtualMIDI sink mutex, bulk OUT `PIPE_TRANSFER_TIMEOUT`, atomic `running_`, Zadig multi-match refuse, bind docs `--start-session`/`--run-midi`. Remaining lifecycle edge: orphan ports after hard crash / CTRL_CLOSE kill (was 1-5 / 1-6).
 - After `recordPumpFailure`, Virtual Ports stay up until CLI ~50 ms poll calls `Stop`; host→device encode silently no-ops in that window.
 - `processBulkRead` holds `usbIoMutex_` across full `DecodeFromDevice` + allocations — busy IN can stall host→device encode (latency under load; not a wrong-cable bug once WriteBulk is locked).
-- Zadig fallback opens the first hardware-ID match without counting multiple MT4s — ambiguous multi-unit open (Epic 3 / multi-device; primary GUID path already refuses `matchCount != 1`).
+- Zadig fallback opens the first hardware-ID match without counting multiple MT4s — ambiguous multi-unit open (Epic 3 / multi-device; primary GUID path already refuses `matchCount != 1`). — **partially closed by story 3.4**: product GUID path has selected-path open + multi-unit enumerate/open-by-identity. **`--dev-zadig` remains single-unit lab only** (GUID listing; Zadig open ignores selected path) — reopen if dual Zadig-bound units must be hosted.
 - Partial `CreatePortSet` errors omit which `MT4 Port N` / IN·OUT failed.
 - First host→device encode on Port 1 may omit F5 when mapper `currentOutCable_` starts at 0 (Port 1 == cable 0); **patched** 2026-08-05 evening (`currentOutCable_=0xFF` sentinel); **hardware retest OK** (first Out 1 notes no longer fan all Out LEDs).
 - **P0 lab 2026-08-05**: device DIN In 1/2 LEDs blink but Ableton silent on virtual IN — **patched** evening. Root cause: WinUSB `ReadBulk` used a 512-byte buffer while Emagic sends full `wMaxPacketSize` packets (lab: 32) padded with `0xFF`, so reads timed out with 0 bytes; fix reads at endpoint max packet size. Also: init IN drain before further OUT, Set Computer Mode + channel CC kick, `MidiMessageFramer` before `SendToHost`. **Hardware OK**: notes+CC on In 1/2 in Ableton (C3, CC7).
 - Hardware notes/CC **full** round-trip on all 2 IN + 4 OUT — **lab OK** 2026-08-05 evening (notes then CC); keep section 6.3 parallel multi-OUT optional.
 - Identical IN/OUT `MT4 Port N` teVirtualMIDI collision — **patched** in lab session (merged bidirectional create); keep an eye on DAW IN/OUT pairing.
-- Shared `MidiBackend` across concurrent `DeviceSession` instances not rejected — still open (was 1-5 / Epic 3).
+- Shared `MidiBackend` across concurrent `DeviceSession` instances not rejected — still open (was 1-5 / Epic 3). — **closed by story 3.4**: one `VirtualMidiBackend` instance per `DeviceSession` / unit in the multi-unit host.
 - Device-host counter lines were invisible in PowerShell during successful retest (reader-thread `cout` buffering) — **patched** to `cerr` + flush + Start hint (re-confirm next session).
 
 ## Deferred from: code review of 1-6-notes-and-cc-round-trip-on-all-ports.md (2026-08-05)
@@ -67,7 +67,7 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - Same AD-5 display names on IN and OUT need Windows collision proof with teVirtualMIDI (exact spelling vs `#2` suffixes).
 - `--start-session` prints expected names but does not enumerate live Windows MIDI endpoints — strengthen when hardware Validation Matrix automation exists.
 - Hand-rolled teVirtualMIDI flag constants unpinned to an SDK version/checksum (AQ-3).
-- Shared `MidiBackend` across concurrent `DeviceSession` instances is not rejected — Epic 3 multi-unit ownership.
+- Shared `MidiBackend` across concurrent `DeviceSession` instances is not rejected — Epic 3 multi-unit ownership. — **closed by story 3.4** (one backend per session).
 
 ## Deferred from: code review of 1-4-devicesession-and-emagic-cable-mapper-usermode.md (2026-08-05)
 
@@ -239,3 +239,9 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - Offline hot-plug coverage only asserts wait-constant aliases — thin offline pattern carried from 3.1; hardware SM-4 remains the gate (`tests/unit/HotPlugContractTests.cpp`).
 - Surprise-removal `DeviceSession::Stop` still runs best-effort finish-magic `WriteBulk` that can block on a dead device — pre-existing; story 3.2 documented order only (harden with hang evidence).
 - After SM-4 lab evidence: try to shorten mid-session re-attach latency after replug — V1 reuses Auto-Start cadence (2 s poll / 900 s fail-closed / Start retries); story 3.2 already allowed a shorter hot-plug-specific bound or faster detection (`CM_Register_Notification`) once real rack-move timings are measured; do not change fail-closed honesty.
+
+## Deferred from: code review of 3-4-two-mt4-units-with-stable-distinguishable-names.md (2026-08-10)
+
+- Offline hot-plug coverage still only asserts wait-constant aliases while the multi-unit product loop no longer calls that wait helper — thin offline pattern; hardware SM-4 / dual-MT4 smoke remain the gate (`tests/unit/HotPlugContractTests.cpp`).
+- Topology identity keys use the full USB instance ID and change when a serial-less MT4 moves hub/port — known fallback limit; AQ-1 stays lab notes (`src/Usb/WinUsbEnumerate.cpp`).
+- Two Bridge processes can race the same `%LOCALAPPDATA%` identity registry file — V1 assumes a single Bridge host (`src/Device/UnitIdentityRegistry.cpp`).

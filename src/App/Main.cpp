@@ -147,6 +147,30 @@ bool expectMt4DirectionalPortNames(const PortNameSet& names)
         && expectExactName(names.outNames[3], "MT4 Out 4", "OUT 4");
 }
 
+bool expectMt4Unit2DirectionalPortNames(const PortNameSet& names)
+{
+    return expectExactName(names.inNames[0], "MT4 #2 In 1", "K2 IN 1")
+        && expectExactName(names.inNames[1], "MT4 #2 In 2", "K2 IN 2")
+        && expectExactName(names.outNames[0], "MT4 #2 Out 1", "K2 OUT 1")
+        && expectExactName(names.outNames[1], "MT4 #2 Out 2", "K2 OUT 2")
+        && expectExactName(names.outNames[2], "MT4 #2 Out 3", "K2 OUT 3")
+        && expectExactName(names.outNames[3], "MT4 #2 Out 4", "K2 OUT 4");
+}
+
+bool printPortNameSet(const char* title, const PortNameSet& names)
+{
+    std::cout << title << " (" << names.inCount << " IN / " << names.outCount << " OUT):\n";
+    for (std::size_t index = 0; index < names.inCount; ++index)
+    {
+        std::cout << "  IN  " << names.inNames[index] << '\n';
+    }
+    for (std::size_t index = 0; index < names.outCount; ++index)
+    {
+        std::cout << "  OUT " << names.outNames[index] << '\n';
+    }
+    return !portNameSetHasInOutCollision(names);
+}
+
 bool printAndCheckBuiltMt4PortNameSet()
 {
     const DeviceProfile* mt4 = findDeviceProfile(kEmagicVendorId, kMt4ProductId);
@@ -158,40 +182,25 @@ bool printAndCheckBuiltMt4PortNameSet()
 
     DeviceSessionManager manager;
     PortNameSet names;
+    PortNameSet namesK2;
     std::string error;
-    if (!manager.buildPortNameSet(*mt4, names, error))
+    if (!manager.buildPortNameSet(*mt4, 1, names, error)
+        || !manager.buildPortNameSet(*mt4, 2, namesK2, error))
     {
         std::cerr << "buildPortNameSet failed: " << error << '\n';
         return false;
     }
-
     if (names.inCount != 2 || names.outCount != 4)
     {
         std::cerr << "PortNameSet counts mismatch (expected 2 IN / 4 OUT)\n";
         return false;
     }
 
-    std::cout << "Unit 1 Virtual Ports (" << names.inCount << " IN / " << names.outCount
-              << " OUT):\n";
-    for (std::size_t index = 0; index < names.inCount; ++index)
-    {
-        std::cout << "  IN  " << names.inNames[index] << '\n';
-    }
-    for (std::size_t index = 0; index < names.outCount; ++index)
-    {
-        std::cout << "  OUT " << names.outNames[index] << '\n';
-    }
-
-    std::cout << "Multi-unit samples:\n";
-    std::cout << "  IN  " << formatPortDisplayName(2, 1, MidiPortDirection::In) << '\n';
-    std::cout << "  OUT " << formatPortDisplayName(2, 3, MidiPortDirection::Out) << '\n';
-
-    if (portNameSetHasInOutCollision(names))
-    {
-        return false;
-    }
-
-    return expectMt4DirectionalPortNames(names) && testFormatPortDisplayNames();
+    return printPortNameSet("Unit 1 Virtual Ports", names)
+        && printPortNameSet("Unit 2 Virtual Ports", namesK2)
+        && expectMt4DirectionalPortNames(names)
+        && expectMt4Unit2DirectionalPortNames(namesK2)
+        && testFormatPortDisplayNames();
 }
 
 int runPortNameTests()

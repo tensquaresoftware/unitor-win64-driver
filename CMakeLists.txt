@@ -36,6 +36,8 @@ add_executable(Bridge
     src/App/FramerMtcSmoke.cpp
     src/App/FramerSysexSmoke.cpp
     src/App/MidiSessionCli.cpp
+    src/App/MidiSessionMultiHost.cpp
+    src/App/MidiSessionMultiHostHotPlug.cpp
     src/App/MidiSessionDiagnostics.cpp
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionDeviceHost.cpp
@@ -43,6 +45,8 @@ add_executable(Bridge
     src/Device/DeviceSessionMatrixDump.cpp
     src/Device/DeviceSessionBulkInDeliver.cpp
     src/Device/DeviceSessionManager.cpp
+    src/Device/UnitIdentityRegistry.cpp
+    src/Device/UnitIdentityRegistryIo.cpp
     src/Device/DeviceHostCounters.cpp
     src/Device/DeviceSessionSupport.cpp
     src/Device/HostOutboundQueue.cpp
@@ -72,6 +76,8 @@ if(WIN32)
         src/Midi/VirtualMidiWinSupport.cpp
         src/Usb/WinUsbOpenDetail.cpp
         src/Usb/WinUsbOpenSupport.cpp
+        src/Usb/WinUsbOpenIdentity.cpp
+        src/Usb/WinUsbEnumerate.cpp
         src/App/Bridge.manifest
     )
     target_link_libraries(Bridge
@@ -105,12 +111,16 @@ add_executable(BridgeTests
     tests/unit/AutoStartContractTests.cpp
     tests/unit/HotPlugContractTests.cpp
     tests/unit/MultiClientContractTests.cpp
+    tests/unit/UnitIdentityRegistryTests.cpp
     src/App/AutoStartRegistration.cpp
     src/App/AutoStartTaskScheduler.cpp
     src/App/AutoStartRunKey.cpp
     src/App/AutoStartWinUtil.cpp
     src/Device/HostOutboundQueue.cpp
     src/Device/DeviceSessionSupport.cpp
+    src/Device/DeviceSessionManager.cpp
+    src/Device/UnitIdentityRegistry.cpp
+    src/Device/UnitIdentityRegistryIo.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
     src/Protocol/EmagicMapperSmokeSupport.cpp

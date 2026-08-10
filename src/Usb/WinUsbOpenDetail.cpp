@@ -55,6 +55,7 @@ bool considerInterfaceCandidate(CandidateContext& ctx, std::string& lastError)
         ctx.interfaceData,
         ctx.request->profile,
         ctx.request->requiredHardwareId,
+        ctx.request->selectedDevicePath,
         &trial};
     if (!tryOpenInterfaceDetail(args, lastError))
     {
@@ -278,6 +279,16 @@ bool openWinUsbHandles(WinUsbOpenRequest& request, std::string& errorOut)
         || request.handles == nullptr)
     {
         errorOut = "openWinUsbHandles requires profile, GUID, and handles";
+        return false;
+    }
+
+    if (request.selectedDevicePath != nullptr && request.selectedDevicePath[0] != L'\0')
+    {
+        if (initializeFromDevicePath(
+                request.selectedDevicePath, *request.profile, *request.handles, errorOut))
+        {
+            return true;
+        }
         return false;
     }
 

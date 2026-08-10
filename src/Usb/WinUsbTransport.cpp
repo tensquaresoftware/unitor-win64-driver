@@ -5,23 +5,10 @@
 #include "Usb/WinUsbOpenDetail.h"
 #include "Usb/WinUsbOpenSupport.h"
 
-#include <cstring>
 #include <sstream>
 
 namespace
 {
-bool parseProjectDeviceInterfaceGuid(GUID& guidOut, std::string& errorOut)
-{
-    const std::size_t length = std::strlen(kMt4WinUsbDeviceInterfaceGuid);
-    std::wstring wide(kMt4WinUsbDeviceInterfaceGuid, kMt4WinUsbDeviceInterfaceGuid + length);
-    if (FAILED(CLSIDFromString(wide.c_str(), &guidOut)))
-    {
-        errorOut = "Internal error: invalid project DeviceInterfaceGUID constant";
-        return false;
-    }
-    return true;
-}
-
 bool isBulkOutPipe(const WINUSB_PIPE_INFORMATION& pipe) noexcept
 {
     return pipe.PipeType == UsbdPipeTypeBulk
@@ -161,55 +148,6 @@ bool WinUsbTransport::discoverBulkPipes(std::string& errorOut)
         return false;
     }
     pipesReady_ = true;
-    return true;
-}
-
-bool WinUsbTransport::Open(
-    const DeviceProfile& profile,
-    std::string& errorOut,
-    WinUsbOpenOptions options)
-{
-    Close();
-
-    GUID projectGuid = {};
-    if (!parseProjectDeviceInterfaceGuid(projectGuid, errorOut))
-    {
-        return false;
-    }
-
-    WinUsbHandles handles;
-    WinUsbOpenRequest openRequest;
-    openRequest.profile = &profile;
-    openRequest.projectGuid = &projectGuid;
-    openRequest.preferZadig = options.allowZadigFallback;
-    openRequest.handles = &handles;
-    if (!openWinUsbHandles(openRequest, errorOut))
-    {
-        return false;
-    }
-
-    deviceHandle_ = handles.device;
-    winUsbHandle_ = handles.winUsb;
-    winUsbRootHandle_ = handles.winUsbRoot;
-    winUsbAssociatedCount_ = handles.associatedCount;
-    for (std::size_t index = 0; index < handles.associatedCount; ++index)
-    {
-        winUsbAssociated_[index] = handles.associated[index];
-    }
-    handles.associatedCount = 0;
-    handles.winUsb = nullptr;
-    handles.winUsbRoot = nullptr;
-    handles.device = INVALID_HANDLE_VALUE;
-
-    if (!discoverBulkPipes(errorOut)
-        || !applyBulkTransferTimeouts(errorOut)
-        || !prepareBulkPipes(errorOut))
-    {
-        Close();
-        return false;
-    }
-
-    errorOut.clear();
     return true;
 }
 
