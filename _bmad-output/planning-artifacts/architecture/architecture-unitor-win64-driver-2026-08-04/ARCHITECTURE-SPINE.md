@@ -116,11 +116,12 @@ flowchart TB
 - **Prevents:** Port names swapping between two MT4s after reboot/replug; dual owners of ordinal `K`
 - **Rule:** `DeviceSessionManager` is the sole owner of unit identity → ordinal `K` mapping. Prefer USB serial string when present; otherwise a durable local map keyed by USB topology path (`bus/port` chain) persisted by the Bridge. Ordinal `K` must not reshuffle for a known unit while another unit is (un)plugged. `[ASSUMPTION: MT4 exposes a usable USB serial string on typical units; if not, topology-path map is authoritative.]`
 
-### AD-7 — VirtualMIDI is the V1 MidiBackend; ports are SDK-owned `[ADOPTED]`
+### AD-7 — MidiBackend: interim VirtualMIDI; next community = Windows MIDI Services `[ADOPTED — course-corrected 2026-08-10]`
 
-- **Binds:** FR-2, FR-12, glossary VirtualMIDI
-- **Prevents:** Manual-only loopMIDI UI as the product path; forking GPL integration samples as base
-- **Rule:** The Bridge creates and destroys Virtual Ports via the VirtualMIDI **SDK**. The VirtualMIDI **driver must be present** (eval: loopMIDI/rtpMIDI preinstalled; redistributable MSI only after author clearance — release gate, not Architecture blocker). Do not fork `aaron1a12/virtual-midi` (GPL + vendored SDK); it is integration existence proof only.
+- **Binds:** FR-2, FR-12, glossary VirtualMIDI / Windows MIDI Services
+- **Prevents:** Manual-only loopMIDI UI as the product path; forking GPL integration samples as base; blocking community strategy on VirtualMIDI redistribution clearance
+- **Rule (interim lab / personal through Epic 5):** The Bridge creates and destroys Virtual Ports via the VirtualMIDI **SDK**. The VirtualMIDI **driver must be present** (eval: loopMIDI/rtpMIDI). Do **not** redistribute Bridge/Setup binaries that use the SDK as a community release (OQ-1 out of community scope). Do not fork `aaron1a12/virtual-midi` (GPL + vendored SDK); it is integration existence proof only.
+- **Rule (next community — Epic 6):** Implement a Windows MIDI Services `MidiBackend` on **Win11 only**. That path is the intended vehicle for public MIT binaries without depending on virtualMIDI SDK redistribution clearance. Win10 drops as a community claim after cutover.
 
 ### AD-8 — Multi-client VirtualMIDI (OQ-7) `[ADOPTED]`
 
@@ -203,11 +204,11 @@ flowchart TB
 - **Prevents:** Designs that require Bridge restart for normal librarian dumps or fail ~4h studio use
 - **Rule:** The Bridge is designed for about **4 hours** continuous studio/editor use (including SysEx Sessions) without a mandatory restart for normal operation. SysEx bursts for Matrix-Control librarian vectors must be buffered/queued so dumps complete without Bridge restart under the PRD pass vectors. Incomplete/corrupt dumps under those vectors are failures.
 
-### AD-19 — User docs, facade, and unsigned-build honesty `[ADOPTED]`
+### AD-19 — User docs, facade, and unsigned-build honesty `[ADOPTED — course-corrected 2026-08-10]`
 
 - **Binds:** FR-13, FR-14, FR-15, SM-5, SM-6
-- **Prevents:** Contributor-only docs; missing SmartScreen guidance; unclear public identity
-- **Rule:** Shipped **user** docs cover VirtualMIDI prerequisites, install, Auto-Start, first MIDI test, first SysEx test, troubleshooting, and an explicit works / does-not-work list. Public facade is **Ten Square Software**. If a public build ships unsigned, docs explain SmartScreen behavior and mitigation; certificate personal-vs-org choice remains Deferred for Guillaume.
+- **Prevents:** Contributor-only docs; missing SmartScreen guidance; unclear public identity; polished commercial oversell without cert
+- **Rule:** Shipped **user** docs cover MIDI-backend prerequisites, install, Auto-Start, first MIDI test, first SysEx test, troubleshooting, and an explicit works / does-not-work list. Public facade is **Ten Square Software**. Unsigned public builds (when shipped) require SmartScreen “Run anyway” docs. Certificate purchase is **no certificate purchase** (OQ-3). Clean-PC WinUSB without trusted catalog uses a **guided** association path — not promised via Setup-alone.
 
 ### AD-20 — Bridge runtime host `[ADOPTED]`
 
@@ -239,8 +240,8 @@ flowchart TB
 | Language | C++17 |
 | Platform | Windows 10 x64 + Windows 11 x64 (Win10 mandatory in validation matrix) |
 | USB API | WinUSB (`winusb.sys` / `winusb.dll`) |
-| MIDI backend V1 | VirtualMIDI SDK (Tobias Erichsen) — pin exact SDK build at first integration; driver via loopMIDI/rtpMIDI (eval) or licensed MSI |
-| Future MIDI backend | Windows MIDI Services — Win11-only, post-V1 second adapter |
+| MIDI backend (interim lab) | VirtualMIDI SDK (Tobias Erichsen) — lab/personal only; pin SDK if needed (AQ-3); no community binary redistrib |
+| MIDI backend (next community) | Windows MIDI Services — Win11-only, Epic 6 |
 | Build | CMake → `builds/` `[ASSUMPTION: CMake 3.20+; raise with pinned VS generator if required]` |
 | CI | Windows compile CI; pin runner image (AD-13) |
 | Quality | `scripts/quality/lint-touched.py` + `conventions.md` §3 |
@@ -313,14 +314,14 @@ flowchart TB
 
 ## Deferred
 
-| Item | Why it can wait |
+| Item | Why it can wait / status |
 | --- | --- |
-| Tobias Erichsen / MSI redistribution terms | Release gate for Public Installer only — not Architecture blocker (owner: Guillaume) |
-| Authenticode personal vs org certificate | Guillaume before first public release; strongly recommended, not hard V1 gate — SmartScreen docs still required if unsigned (AD-19) |
-| Final latency/jitter thresholds | After harness measurements (Studio-Done Gate); provisional anchors remain in PRD |
+| VirtualMIDI MSI / binary redistribution terms | **Out of community scope** (Correct Course 2026-08-10) — community binaries via Epic 6 WMS |
+| Authenticode / production catalog certificate purchase | **No certificate purchase / out of scope hobby** (Correct Course 2026-08-10) — SmartScreen docs + guided WinUSB |
+| Final latency/jitter thresholds | After harness measurements (Studio-Done Gate / **Epic 5**); provisional anchors remain in PRD |
 | SysEx vector refinement | PRD minimum locked; Guillaume if Matrix-Control changes |
 | Cousin DeviceProfiles product ship (AMT8 / Unitor8) | Hardware-gated; structure ready via AD-3 |
-| Windows MIDI Services backend | Post-V1; Win11-only second adapter |
+| Windows MIDI Services community backend | **Epic 6** after Epic 5 + Win11 lab — not vague post-V1 |
 | Exact CMake/CI workflow filenames | Land with first scaffold under AD-13 |
 | Installer product (WiX vs Inno vs other) | Constrained by AD-12 checklist only |
 | Bumping Validation Matrix DAW major versions | Product/PRD change only — Architecture inherits §10 |
@@ -331,5 +332,5 @@ flowchart TB
 | --- | --- | --- |
 | AQ-1 | Does typical MT4 USB serial string suffice for AD-6, or must topology-path map be primary? | First dual-unit USB enumeration on Windows |
 | AQ-2 | Preferred supervised hot-plug UX: silent session recreate vs require Bridge restart acknowledgment? | First hot-plug soak against Ableton/Reason (lifecycle ownership already fixed in AD-9) |
-| AQ-3 | Pin exact VirtualMIDI SDK version + redistributable terms once Tobias replies | Author reply or eval SDK freeze for first public build |
-| AQ-4 | VirtualMIDI dynamic port create/destroy behavior on current Win11 (incl. coexistence with Windows MIDI Services) | First Win11 matrix soak; document caveats under AD-8 if any |
+| AQ-3 | Pin exact VirtualMIDI SDK version for **lab-only** use (community redistrib out of scope — OQ-1) | Lab freeze if needed; not a community binary gate |
+| AQ-4 | VirtualMIDI dynamic port create/destroy on Win11; expand to **WMS-primary** notes under Epic 6 | First Win11 matrix soak / Epic 6 |

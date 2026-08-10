@@ -154,20 +154,20 @@ Counter-metrics (do not optimize in stories): cousin-device checkboxes over MT4 
 - Patch mode, LTC/VITC, Fast Mode / AMT
 - Emagic cascaded / stacked multi-interface topologies
 - Guaranteed AMT8 / Unitor8 products without hardware
-- Windows MIDI Services as V1 backend; custom kernel MIDI driver; MIDI 2.0 claims
+- Treating Windows MIDI Services as already-shipped community backend before Epic 6; custom kernel MIDI driver; MIDI 2.0 product claims; paid Authenticode under hobby posture
 - Matrix-Control as Bridge runtime dependency
 - Vendoring GPL Linux sources; forking `aaron1a12/virtual-midi` as base
-- Inventing final latency thresholds before harness; blocking epics on Tobias MSI reply
+- Inventing final latency thresholds before harness; blocking epics on VirtualMIDI redistribution clearance
 
 #### Deferred / open (do not block epic design)
 
-- OQ-1 / release gate: VirtualMIDI MSI redistribution — Public Installer release only
-- OQ-2: Final latency/jitter thresholds after harness
-- OQ-3: Authenticode personal vs org before first public release
+- OQ-1: VirtualMIDI-linked community Releases — **out of community scope** (Correct Course 2026-08-10); community binaries after Epic 6 WMS
+- OQ-2: Final latency/jitter thresholds after harness (**Epic 5**)
+- OQ-3: Authenticode purchase — **Out of scope hobby / no certificate purchase** (Correct Course 2026-08-10)
 - AQ-1: USB serial vs topology-path for unit ordinal K
 - AQ-2: Hot-plug UX acknowledge vs silent recreate (lifecycle already AD-9)
-- AQ-3: Pin VirtualMIDI SDK version
-- AQ-4: Win11 dynamic ports / Windows MIDI Services coexistence notes
+- AQ-3: Pin VirtualMIDI SDK version for **lab only**
+- AQ-4: Win11 dynamic ports / Windows MIDI Services notes (Epic 6)
 
 ### UX Design Requirements
 
@@ -232,16 +232,25 @@ After this epic, daily use needs no manual Bridge launch; unplug/replug restores
 **User journeys:** UJ-3, UJ-4; hardens UJ-1/UJ-2 for real sessions
 
 ### Epic 4: Community Install and Trust
-After this epic, a new community user can install via the Public Installer UX bar (AD-12 checklist), follow shipped docs to first MIDI and first SysEx, and see honest MIT vs VirtualMIDI vs future Windows MIDI Services messaging — with Authenticode strongly recommended and SmartScreen documented if unsigned.
+Epic 4 **delivered** Public Installer packaging, user/tech docs, license honesty, and Authenticode/SmartScreen **policy**. Correct Course 2026-08-10 rewrites the community promise: no paid cert; clean-PC WinUSB = guided path; public VirtualMIDI-linked binaries out of scope until Epic 6 (WMS).
 **FRs covered:** FR-12, FR-13, FR-14, FR-15
-**Also:** CAP-12..14; AD-12, AD-19; SM-5, SM-6; OQ-1 noted as Public Installer release gate only
-**User journeys:** Makes UJ-1/UJ-2 community-ready
+**Also:** CAP-12..14; AD-12, AD-19; SM-5, SM-6; OQ-1 **out of community scope**; OQ-3 **no certificate purchase**
+**User journeys:** Install/docs foundation; full redistributable community launch waits on Epic 6
 
 ### Epic 5: MIDI Path Proof (Studio-Done Gate)
 After this epic, the project has an in-repo MIDI Path harness, published measurement method/results, and a clear path to confirm or revise provisional latency/jitter anchors — without using ASIO buffer size as proof.
 **FRs covered:** (none numbered — Spec CAP-16 / NFR-P1..P3 / SM-9)
 **Also:** AD-11; CAP-16; tools under `tools/midi-path-harness/`; results under `docs/dev/measurements/`
 **User journeys:** Studio credibility gate (SM-9); does not invent final thresholds (OQ-2)
+**Sequencing:** **NEXT after Epic 4.** Not blocked by OQ-1, OQ-3, or WMS. Runs on interim VirtualMIDI + Win10 lab.
+
+### Epic 6: Community MIDI backend on Windows MIDI Services (Win11-only)
+After this epic, the Bridge uses Windows MIDI Services for virtual ports on Windows 11; community may distribute MIT Bridge/Setup binaries without VirtualMIDI SDK clearance; community Validation Matrix claims are Win11-only; install docs match the hobby install contract (SmartScreen + guided WinUSB).
+**FRs covered:** Retargets FR-2/FR-9/FR-12/FR-14 community claims; NFR-Q3 realization
+**Also:** New WMS `MidiBackend`; drop Win10 community target; OQ-1 permanently irrelevant for community binaries
+**Depends on:** Epic 5 (measurement method at least); Win11 lab machine
+**User journeys:** Honest free GitHub + ready-to-run community path without depending on virtualMIDI SDK redistribution
+**Does not include:** Paid Authenticode; VirtualMIDI MSI embed; kernel driver; Epic 5 implementation
 
 ## Epic 1: First Working MT4 MIDI
 
@@ -536,12 +545,13 @@ So that DAWs recall the right ports and units never cross-wire after relaunch/re
 
 ## Epic 4: Community Install and Trust
 
-After this epic, a new community user can install via the Public Installer UX bar (AD-12 checklist), follow shipped docs to first MIDI and first SysEx, and see honest MIT vs VirtualMIDI vs future Windows MIDI Services messaging — with Authenticode strongly recommended and SmartScreen documented if unsigned.
+Epic 4 **delivered** (stories 4.1–4.4 done): Public Installer packaging, user/tech docs, three-way license honesty, and Authenticode/SmartScreen policy. **Correct Course 2026-08-10** amends the *product promise*: hobby / free GitHub; OQ-1 out of community scope; OQ-3 no certificate purchase; clean-PC WinUSB without trusted catalog is guided (not Setup-alone polished commercial); public VirtualMIDI-linked binaries out of scope until Epic 6.
 
 **FRs covered:** FR-12, FR-13, FR-14, FR-15  
 **CAPs:** CAP-12, CAP-13, CAP-14  
 **ADs:** AD-12, AD-19  
-**UX:** AD-12 checklist items UX-AD12-1…8 (no bmad-ux contract)
+**UX:** AD-12 checklist items UX-AD12-1…8 (no bmad-ux contract)  
+**Post-course follow-ups:** Rewrite user docs / README / smokes for hobby install honesty (may parallel Epic 5; does not block Epic 5).
 
 ### Story 4.1: Public Installer meeting AD-12 UX bar
 
@@ -615,6 +625,8 @@ So that trust issues do not silently kill adoption.
 
 After this epic, the project has an in-repo MIDI Path harness, published measurement method/results, and a clear path to confirm or revise provisional latency/jitter anchors — without using ASIO buffer size as proof.
 
+**Sequencing (Correct Course 2026-08-10):** Epic 5 is **NEXT**. Not blocked by a certificate, VirtualMIDI redistribution clearance, or Windows MIDI Services. Use interim VirtualMIDI + Win10 lab. Epic 6 (WMS) follows after Epic 5 and Win11 lab availability.
+
 **FRs covered:** (none numbered — Spec CAP-16 / NFR-P1..P3 / SM-9)  
 **CAPs:** CAP-16  
 **ADs:** AD-11  
@@ -671,3 +683,60 @@ So that V1 does not claim “studio-done timing” on planning numbers alone.
 **And** SM-9 is satisfiable: method exists; anchors confirmed or explicitly revised before calling timing “done”
 
 **Traces:** CAP-16, NFR-P1, NFR-P2, SM-9, OQ-2, AD-11
+
+## Epic 6: Community MIDI backend on Windows MIDI Services (Win11-only)
+
+**Status:** backlog (after Epic 5). Correct Course 2026-08-10.
+
+After this epic, community users on **Windows 11** can use a Bridge that creates/destroys virtual ports via **Windows MIDI Services**, and the project may publish ready-to-run MIT binaries on GitHub **without** VirtualMIDI SDK clearance. Windows 10 is dropped as a **community** claim (lab Win10 history remains valid for Epic 5 evidence).
+
+**FRs / NFRs:** Retargets community reading of FR-2, FR-9, FR-12, FR-14; realizes NFR-Q3  
+**Depends on:** Epic 5 complete (or measurement method published); Win11 development/validation PC  
+**Out of scope:** Paid Authenticode; VirtualMIDI MSI / VirtualMIDI redistribution; custom kernel driver; implementing Epic 5 here
+
+### Story 6.1: Windows MIDI Services MidiBackend (Win11)
+
+As a community Windows 11 user,
+I want the Bridge to expose MT4 Port N endpoints through Windows MIDI Services,
+So that I do not depend on proprietary virtualMIDI for community use.
+
+**Acceptance Criteria:**
+
+**Given** a Win11 lab with Windows MIDI Services available and a live DeviceSession
+**When** the WMS `MidiBackend` starts
+**Then** Virtual Ports are created/destroyed through WMS APIs (same AD-5 naming rules)
+**And** VirtualMIDI is not required for this community path
+**And** Protocol/Profile remain free of WMS/WinUSB headers (AD-2)
+
+**Traces:** FR-2, NFR-Q3, AD-2; Correct Course 2026-08-10
+
+### Story 6.2: Community binary + hobby install honesty on Win11
+
+As Guillaume publishing freely on GitHub,
+I want to ship Bridge/Setup binaries that do not link VirtualMIDI,
+So that community redistribution does not depend on VirtualMIDI SDK redistribution clearance.
+
+**Acceptance Criteria:**
+
+**Given** Story 6.1 works on Win11
+**When** public materials describe install
+**Then** docs state Win11 community target; SmartScreen “Run anyway”; guided WinUSB for clean-PC association without paid catalog
+**And** materials do not promise Setup-alone WinUSB success without trusted catalog
+**And** OQ-1 remains out of community scope; OQ-3 remains no certificate in this line
+
+**Traces:** FR-12, FR-14, FR-15, SM-6; Correct Course 2026-08-10
+
+### Story 6.3: Win11 Validation Matrix soak for WMS path
+
+As a studio user on Windows 11,
+I want notes/CC/clock/SysEx (Matrix-Control minimum) proven on the WMS backend,
+So that the community path is not “compiles only.”
+
+**Acceptance Criteria:**
+
+**Given** WMS backend Bridge on Win11 with MT4
+**When** Validation Matrix hosts exercise the community path
+**Then** notes/CC and Matrix-Control minimum SysEx vectors pass (or Fail documented honestly)
+**And** multi-client expectations are documented for WMS (replace VirtualMIDI-only AD-8 ceilings where needed)
+
+**Traces:** FR-6, FR-8, FR-9, SM-1, SM-2, SM-7; Correct Course 2026-08-10

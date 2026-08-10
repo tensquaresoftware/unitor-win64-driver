@@ -95,7 +95,7 @@ Differentiation is honesty and operability for orphaned hardware: measurable tim
 - **Matrix-Control** — Ten Square first-party SysEx validation target; **not** a runtime dependency of the Bridge.
 - **Validation Matrix** — Locked V1 host set: **Ableton Live 12**, **Reason Studios 12**, **Matrix-Control**, **MIDI-OX**, on **Windows 10 x64** (mandatory) and **Windows 11 x64**.
 - **MIDI Path** — End-to-end path used for latency/jitter measurement through the Bridge and Virtual Ports — **not** ASIO audio buffer size.
-- **VirtualMIDI** — Tobias Erichsen’s proprietary virtual MIDI **SDK** and driver stack used as the V1 Virtual Port backend. The Bridge creates and destroys Virtual Ports **programmatically via the SDK**; end users need not manage Virtual Ports solely through the VirtualMIDI end-user UI. The VirtualMIDI **driver must be present** on the machine. Licensing, evaluation vs redistribution paths, and author clearance: `addendum.md` §VirtualMIDI licensing; release gate OQ-1.
+- **VirtualMIDI** — Tobias Erichsen’s proprietary virtual MIDI **SDK** and driver stack used as the **interim lab / personal** Virtual Port backend through Epic 5. The Bridge creates and destroys Virtual Ports **programmatically via the SDK**; the driver must be present. Community redistribution of VirtualMIDI-linked binaries is **out of scope** (OQ-1 out of community scope). Next community backend: Windows MIDI Services (Epic 6). Details: `addendum.md` §VirtualMIDI licensing.
 - **Windows MIDI Services** — Microsoft MIDI stack; allowed as a future **second backend on Windows 11 only**; **not** the V1 target (Win10 is mandatory).
 - **Auto-Start** — Bridge starts with Windows and/or on MT4 USB arrival so the user need not launch it manually before every session.
 - **Hot-Plug Recovery** — After unplug/replug, usable Virtual Ports return without a Windows reboot; host rescan or supervised Bridge restart is acceptable.
@@ -240,8 +240,8 @@ The Public Installer feels closer to a polished macOS installer than a developer
 
 **Consequences (testable):**
 - One-time Administrator elevation at install is acceptable; daily use is not.
-- Install covers WinUSB association + Bridge + Auto-Start wiring + VirtualMIDI prerequisite messaging (driver present; eval vs licensed MSI paths documented).
-- Shipping a redistributable Public Installer that embeds/redistributes VirtualMIDI requires prior author clearance (release gate for the installer only — not a blocker for PRD finalization or Architecture start).
+- Install covers Bridge + Auto-Start wiring + MIDI-backend prerequisite messaging, plus WinUSB association **when a trusted catalog path exists**.
+- **Hobby / Correct Course 2026-08-10:** Without a paid certificate, clean-PC WinUSB success is **not** promised via Setup-alone. Supported path = guided association (Zadig or documented equivalent) + SmartScreen guidance for unsigned Setup. Embedding / redistributing VirtualMIDI (MSI or Bridge/Setup binaries that use the SDK) is **out of community release scope** (OQ-1 out of community scope) until the Windows MIDI Services community backend ships.
 
 #### FR-13: User documentation
 
@@ -252,19 +252,21 @@ User docs cover VirtualMIDI prerequisites, install, Auto-Start, first MIDI test,
 
 #### FR-14: Technical documentation and license honesty
 
-Technical docs enable contributors without shipping GPL Linux sources. Licensing messaging states: MIT for this repository; VirtualMIDI is proprietary and separate; Windows MIDI Services is a future backend, not the V1 claim. Realizes community credibility goals.
+Technical docs enable contributors without shipping GPL Linux sources. Licensing messaging states: MIT for this repository; VirtualMIDI is proprietary and separate (interim **lab / personal** backend only under the 2026-08-10 hobby posture); Windows MIDI Services is the **next community** backend (Win11-only), not a claim while VirtualMIDI remains the lab path. Realizes community credibility goals.
 
 **Consequences (testable):**
-- README/docs contain the three-way license clarity above.
+- README/docs contain the three-way license clarity above (lab vs community backend timing honest).
 - No GPL Linux sources are vendored in the repository.
 
 #### FR-15: Authenticode policy
 
-Authenticode signing is strongly recommended for public builds but is **not** a hard gate if the certificate lags. Realizes trust goals without blocking first public build.
+Authenticode signing is **out of scope for purchase** under the hobby posture (OQ-3 no certificate purchase). Unsigned public builds (when binaries ship after the WMS community backend) are allowed **with** SmartScreen documentation. Realizes honest trust messaging without a paid certificate.
 
 **Consequences (testable):**
-- If a public build ships unsigned, docs explain SmartScreen behavior and mitigation steps.
-- Signed builds, when available, use the Ten Square Software / chosen certificate path documented for the release.
+- Docs explain SmartScreen “Run anyway” for unsigned Setup.
+- No merge CI / packaging hard-fail solely because a certificate is absent.
+- Production INF `.cat` is not promised without a certificate (clean-PC WinUSB = guided path).
+- If this line later ships a certificate, signed builds would use the Ten Square Software certificate path documented for the release.
 
 ### 4.7 Extensibility Without Scope Creep
 
@@ -285,8 +287,11 @@ V1 includes a multi-DeviceProfile architecture and validates the MT4 profile; AM
 - Patch mode, LTC/VITC, Fast Mode / AMT in V1.
 - Emagic-style cascaded / stacked multi-interface topologies in V1.
 - Guaranteed AMT8 / Unitor8 / Unitor8 mk2 support without real test hardware.
-- “Windows MIDI Services only” as the V1 target (Win10 is mandatory).
+- Paid Authenticode / production INF catalog certificate purchase (hobby posture — OQ-3 no certificate purchase).
+- Depending on third-party virtualMIDI clearance for community binary redistribution (OQ-1 — VirtualMIDI-linked community Releases out of scope).
+- polished commercial same-evening install on a clean PC via unsigned Setup-alone WinUSB association.
 - Custom kernel MIDI driver in V1.
+- (Superseded 2026-08-10) Treating “Windows MIDI Services only” as forever rejected — WMS Win11-only is the **next community** MVP after Epic 5; Win10 remains valid for **interim lab** through Epic 5.
 - MIDI 2.0 as a V1 product claim for this hardware era.
 - Vendoring GPL Linux sources into the tree.
 - Treating Matrix-Control as a runtime dependency of the Bridge.
@@ -320,7 +325,7 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 - **SM-3 Session stability:** Continuous studio/editor use for about **4 hours** (including SysEx Session activity) without requiring a Bridge restart for normal use. Validates FR-6–FR-8, NFR-R1.
 - **SM-4 Hot-Plug Recovery:** Unplug/replug restores usable ports without Windows reboot (rescan/supervised restart OK). Validates FR-11.
 - **SM-5 Install & Auto-Start:** New user completes install + Auto-Start path and reaches first MIDI without daily admin. Validates FR-1, FR-3, FR-12, FR-13.
-- **SM-6 Community release honesty:** Public materials state MIT vs VirtualMIDI clearly; VirtualMIDI author clearance obtained before redistributable Public Installer; Authenticode strongly recommended / SmartScreen documented if unsigned. Validates FR-12–FR-15.
+- **SM-6 Community release honesty:** Public materials state MIT vs interim VirtualMIDI (lab) vs Windows MIDI Services (next community backend); VirtualMIDI-linked community Releases out of scope; OQ-3 no certificate in this line; SmartScreen documented for unsigned builds; clean-PC WinUSB honesty (guided path). Validates FR-12–FR-15.
 
 **Secondary**
 
@@ -357,7 +362,7 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 
 ### Security / trust
 
-- **NFR-S1:** Authenticode strongly recommended; unsigned public build allowed with SmartScreen documentation if certificate lags.
+- **NFR-S1:** Certificate purchase out of scope (OQ-3 no certificate purchase); unsigned public build allowed with SmartScreen documentation.
 - **NFR-S2:** No custom kernel driver attack surface in V1.
 
 ### Quality / maintainability
@@ -370,12 +375,13 @@ Same exclusions as §5 Non-Goals — no additional MVP carve-outs. Cousin Device
 
 | Risk / dependency | Impact | Mitigation |
 | --- | --- | --- |
-| VirtualMIDI redistribution / MSI terms | Blocks redistributable Public Installer only (not PRD/Architecture) | Outreach to Tobias Erichsen **sent** (2026-08); **no reply yet**; owner **Guillaume**; eval path vs licensed MSI documented; clearance is a **release gate** |
-| Usermode latency/jitter | Studio credibility | Explicit provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms) + Studio-Done Gate + MIDI Path harness; jitter non-alibi |
+| VirtualMIDI redistribution / MSI / binaries | Would block public VirtualMIDI-linked Setup | **OQ-1 out of community scope** — community binaries after WMS (Epic 6); lab/eval VirtualMIDI only meanwhile |
+| Usermode latency/jitter | Studio credibility | Explicit provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms) + Studio-Done Gate + MIDI Path harness (**Epic 5**); jitter non-alibi |
 | Large/bursty SysEx | Matrix-Control / editors fail | Explicit SysEx acceptance tests; buffering |
 | Scarce Emagic protocol docs | Implementation risk | Linux reference (no copy) + USB captures if needed |
-| SmartScreen / unsigned builds | Users abandon download | Authenticode strongly recommended; document if deferred |
-| Dual-machine / hardware access | Gaps in CI and dual-MT4 proof | Win10 x64 validation loop; honest multi-MT4 validation status |
+| SmartScreen / unsigned builds | Users abandon download | Document “Run anyway”; no paid cert (OQ-3 no certificate purchase) |
+| Clean-PC WinUSB without trusted catalog | Setup-alone Fail `0xE000022F` | Guided WinUSB (Zadig or equivalent); no polished commercial unsigned Setup-alone promise |
+| Dual-machine / hardware access | Gaps in CI and dual-MT4 proof | Win10 x64 lab through Epic 5; Win11 lab for Epic 6+ |
 | Multi-MT4 naming | Wrong DAW port recalls | Stable per-unit naming rule; Architecture/UX spelling |
 | Cousin-device pressure | Scope creep | Non-goals + DeviceProfile + hardware-gated stories only |
 | VirtualMIDI multi-client caveats | FR-9 fails | Confirm in Architecture; document host limits |
@@ -409,29 +415,30 @@ Detail and opcodes: `addendum.md` §Matrix-Control SysEx pass vectors; extract n
 
 ## 11. Constraints and Guardrails (Locked Product Decisions)
 
-Inherited from brief — **do not reopen** unless a blocking risk is documented:
+Inherited from brief — **do not reopen** unless a blocking risk is documented. **Course correction 2026-08-10** (`sprint-change-proposal-2026-08-10.md`) intentionally retargets platforms / MIDI backend / trust gates below:
 
 | Topic | Decision |
 | --- | --- |
-| Platforms | Windows 10 and 11, 64-bit — Win10 required |
+| Platforms | **Interim (through Epic 5):** Windows 10 and 11, 64-bit — Win10 required in lab Validation Matrix. **Next community MVP (Epic 6+):** Windows **11** x64 community claims; Win10 dropped as community target |
 | Solution type | Usermode (WinUSB + **C++17** Bridge) — no custom kernel driver in V1 |
-| MIDI backend V1 | VirtualMIDI **SDK** (programmatic ports) — Windows MIDI Services = optional second backend **(Win11 only)** later |
+| MIDI backend | **Interim lab / personal:** VirtualMIDI **SDK**. **Next community:** Windows MIDI Services (**Win11 only**). No public redistribution of VirtualMIDI-linked binaries (out of community scope) |
 | License | MIT (original reimplementation) |
 | Hardware V1 | MT4 validated; multi-DeviceProfile + multi-instance from day one |
 | MIDI content | Channel + clock + **Start/Stop/Continue** + **MTC** + SysEx (required) |
 | Port naming | Stable macOS-like MT4 Port N; distinguishable multi-MT4 |
 | Quality | conventions.md + lint-touched.py when C++ exists |
 | Public facade | Ten Square Software |
-| Authenticode | Strongly recommended; not a hard gate if certificate lags |
-| Independence | Backend abstraction for future backends; **no** home-grown kernel VirtualMIDI Plan B in V1 |
+| Authenticode | **No certificate purchase** (hobby). Unsigned + SmartScreen docs when binaries ship. Not a hard gate — certificate purchase is out of scope |
+| Hobby install | Clean-PC WinUSB via **guided** association when Setup-alone lacks trusted catalog; no polished commercial unsigned Setup-alone promise |
+| Independence | Backend abstraction; **no** home-grown kernel VirtualMIDI Plan B |
 
 ## 12. Open Questions
 
 | ID | Topic | Class | Owner | Status / next action |
 | --- | --- | --- | --- | --- |
-| OQ-1 | VirtualMIDI evaluation vs redistribution / MSI terms after author contact | **Release gate** (Public Installer only — **not** a PRD or Architecture blocker) | Guillaume | Outreach **sent**; **no reply yet**. Wait for reply / document terms. Eval path remains viable for development. |
-| OQ-2 | Final latency/jitter thresholds after MIDI Path harness (replace provisional NFR-P1/P2) | Studio-Done Gate; harness → Architecture | Guillaume + Architecture | Keep provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms). Measure MIDI Path, then confirm or revise. |
-| OQ-3 | Authenticode certificate path/cost (personal vs org Ten Square Software) and timing vs first public build | Deferred — not a hard V1 gate | Guillaume | Revisit **before the first tagged public community release** (unsigned OK only with SmartScreen docs per FR-15). |
+| OQ-1 | VirtualMIDI redistribution / MSI / binary clearance (Tobias Erichsen) | **Out of community scope** (Correct Course 2026-08-10) | Guillaume | No community Releases of VirtualMIDI-linked binaries. virtualMIDI = interim lab/personal only. Community binaries after Windows MIDI Services (Epic 6). MSI embed out of scope under hobby posture. |
+| OQ-2 | Final latency/jitter thresholds after MIDI Path harness (replace provisional NFR-P1/P2) | Studio-Done Gate; harness → Architecture | Guillaume + Architecture | Keep provisional anchors (≤4–5 ms / ≤1–2 ms; ceiling ~8–10 ms). Measure MIDI Path (**Epic 5 next**), then confirm or revise. Not blocked by OQ-1/OQ-3/WMS. |
+| OQ-3 | Authenticode / production INF catalog certificate purchase | **Out of scope hobby / no certificate purchase** (Correct Course 2026-08-10) | Guillaume | No certificate purchase planned. Unsigned + SmartScreen docs when binaries ship. Clean-PC Setup-alone WinUSB without trusted catalog is **not** promised. |
 | OQ-4 | Original Emagic protocol documentation vs Linux reference + USB capture fallback | Architecture orientation | Architecture | Defer; not a PRD phase-blocker. |
 | OQ-5 | CI/CD detail (macOS edit / Windows validate); Windows build CI minimum | Architecture | Architecture | Defer detail; NFR-D3 already requires Windows build CI minimum. |
 | OQ-6 | Exact multi-MT4 Port Name disambiguation spelling | Architecture / UX | Architecture / UX | Product rule locked; spelling deferred. |
@@ -459,7 +466,8 @@ Inherited from brief — **do not reopen** unless a blocking risk is documented:
 | Latency deferred to PRD with anchors | NFR-P1–P3, Studio-Done Gate, OQ-2 |
 | ~4h stability, hot-plug, multi-client, multi-MT4 | FR-9–FR-11, NFR-R1–R2, SM-3–SM-4, SM-7–SM-8 |
 | Installer + docs + license honesty | FR-12–FR-14, SM-5–SM-6 |
-| VirtualMIDI clearance gate | FR-12, SM-6, OQ-1 |
-| Authenticode policy | FR-15, NFR-S1 |
+| VirtualMIDI clearance gate | FR-12, SM-6, OQ-1 (**abandoned** — see Correct Course 2026-08-10) |
+| Authenticode policy | FR-15, NFR-S1, OQ-3 (**no certificate purchase**) |
+| WMS community retarget | §11, Epic 6 (after Epic 5) |
 | Open questions carried forward | §12 |
 | Technical tables / rejected alternatives | `addendum.md` |

@@ -376,7 +376,7 @@ Patterns to extend: single `Bridge` exe, flag-gated hardware paths, fail-closed 
 
 - teVirtualMIDI: `virtualMIDICreatePortEx2` accepts optional `LPVM_MIDI_DATA_CB`; with NULL callback, apps may poll `virtualMIDIGetData` — **prefer callback** for OUT ports in this Bridge
 - `virtualMIDISendData` expects complete MIDI commands when practical; do not intermingle realtime octets inside other commands (relevant later for Epic 2 clock — for 1.6, send channel messages as complete units)
-- Driver still via loopMIDI/rtpMIDI for eval; SDK not freeware; no redistribute without Tobias clearance (OQ-1)
+- Driver still via loopMIDI/rtpMIDI for eval; SDK not freeware; VirtualMIDI-linked community Releases out of scope (OQ-1)
 - WinUSB: `WinUsb_SetPipePolicy(..., PIPE_TRANSFER_TIMEOUT, ...)` is the standard way to bound blocking reads for shutdown
 - Do not treat Windows MIDI Services loopback as a substitute for Emagic-shaped Bridge ports
 

@@ -1,16 +1,29 @@
 # Deferred work
 
+## Correct Course 2026-08-10 — hobby pivot (applied)
+
+Source: `_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-10.md` (approved for implementation).
+
+| Item | New status |
+|---|---|
+| OQ-1 Tobias VirtualMIDI clearance / MSI embed / community VirtualMIDI-linked binaries | **Out of community scope** — community binaries after Epic 6 (WMS) |
+| OQ-3 Authenticode / production INF `.cat` certificate purchase | **Out of scope hobby / no certificate purchase** |
+| Production `.cat` packaging waiting on OQ-3 purchase | **Out of scope for hobby posture** (revisit only if this line later ships a certificate) |
+| Clean-PC WinUSB without trusted catalog | **Supported via guided association** (Zadig or equivalent) — not Setup-alone commercial-installer promise |
+| Epic sequencing | **Epic 5 next** → then Epic 6 WMS Win11 (after Win11 lab PC) |
+| User docs / README / Epic 4 smokes / license / authenticode / winusb-bind hobby install rewrite | **Done 2026-08-10** (README, docs/user EN+FR + index, license-and-backends, authenticode-and-smartscreen, winusb-bind, Epic 4 smokes, revue Epic 4, SPEC constraints, prompt-demarrage banner). Optional later: deeper Zadig screenshots / operator FR smoke polish. |
+
 ## Deferred from: code review of 4-4-authenticode-policy-and-smartscreen-honesty.md (2026-08-10)
 
-- Production INF `.cat` still not produced/packaged for Public Installer — policy honesty is in `docs/dev/authenticode-and-smartscreen.md`; remaining produce/package step waits on OQ-3 certificate path (overlaps 4.1 deferral already restated for 4.4).
-- Optional SignTool description/URL metadata (`/d`, `/du`) and dual-sign guidance not wired in `sign-public-artifacts.ps1` — nice-to-have for tagged public releases once a real cert path exists; not required to close Story 4.4 docs-first ACs.
+- ~~Production INF `.cat` still not produced/packaged for Public Installer — waits on OQ-3 certificate path~~ — **superseded 2026-08-10:** no certificate in this line; guided WinUSB is the clean-PC path.
+- Optional SignTool description/URL metadata (`/d`, `/du`) and dual-sign guidance not wired in `sign-public-artifacts.ps1` — nice-to-have only if a cert ever appears; not required under the no-certificate hobby posture.
 - SmartScreen “official channel” / “canal officiel” in EN+FR user guides stays generic (“project download page / Releases”) until the first tagged public community release — then replace with the concrete download URL (e.g. GitHub Releases owner/repo or project site) so musicians can verify the source without tribal knowledge.
 
 ## Deferred from: code review of 4-3-technical-docs-and-three-way-license-honesty.md (2026-08-10)
 
 - loopMIDI/rtpMIDI product names hyperlink to the virtualMIDI SDK page (not end-user download pages) — pre-existing README pattern; not introduced by 4.3.
-- “Public Installer” product naming while OQ-1 redistributable MSI clearance remains open — pre-existing Epic 4 naming; reconcile under 4.1 / OQ-1, not a 4.3 docs patch alone.
-- Vendor virtualMIDI marketing OS claims (often Win7–Win10) vs project Validation Matrix (Win10+Win11 mandatory Win10) — optional honesty note; story Dev Notes already warn authors; not an AC miss.
+- ~~“Public Installer” product naming while OQ-1 redistributable MSI clearance remains open~~ — **superseded 2026-08-10:** OQ-1 out of community scope; rename/honesty pass under hobby install docs follow-up / Epic 6.
+- Vendor virtualMIDI marketing OS claims (often Win7–Win10) vs project Validation Matrix (Win10+Win11 mandatory Win10) — optional honesty note; story Dev Notes already warn authors; not an AC miss. (Community target becomes Win11 under Epic 6.)
 
 ## Deferred from: code review of 4-2-end-user-documentation-for-first-midi-and-sysex.md (2026-08-10)
 
@@ -18,7 +31,7 @@
 
 ## Deferred from: code review of 4-1-public-installer-meeting-ad-12-ux-bar.md (2026-08-10)
 
-- Unsigned INF / missing production `.cat` in Public Installer payload — **policy documented** under Story **4.4** ([`docs/dev/authenticode-and-smartscreen.md`](../../docs/dev/authenticode-and-smartscreen.md)): Public Installer ships INF without a production catalog today; clean-machine association may fail until a real public `.cat` is produced under the chosen certificate. Lab mitigation remains `installer/sign-lab-package.ps1` (not public Authenticode). Remaining work: produce/package a production catalog when OQ-3 cert path exists — not a silent docs skip. **Lab confirmed 2026-08-10:** clean Win10 Fail `0xE000022F` (see `smoke-epic4-public-installer-mt4.md`).
+- Unsigned INF / missing production `.cat` in Public Installer payload — **policy:** no certificate purchase cert (Correct Course 2026-08-10). Lab confirmed Fail `0xE000022F` on clean Win10. Community path = guided WinUSB; lab mitigation remains `installer/sign-lab-package.ps1` (not public trust).
 - No timeout if `pnputil` or Bridge hangs under Inno `Exec` / `ExecAsOriginalUser` — installer wizard can block indefinitely; Inno limitation deferred unless a reusable timeout wrapper is added later.
 - ~~Blank Win10 Public Installer smoke matrix~~ — **filled 2026-08-10** (`smoke-epic4-public-installer-mt4.md`); row 5 Fail (unsigned INF); rows 6/8/9 N/A after rollback.
 

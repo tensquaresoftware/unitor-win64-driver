@@ -26,7 +26,7 @@ No hard contradiction with locked brief decisions. One **input-source conflict**
 | # | Locked fact (memlog / passation) | PRD | Addendum | Verdict |
 | --- | --- | --- | --- | --- |
 | 1 | VirtualMIDI = SDK **programmatic port create/destroy**; driver prerequisite (eval via loopMIDI/rtpMIDI or licensed MSI) | Glossary: "SDK/driver stack" only. FR-12 mentions prerequisite messaging, not SDK integration model. | §VirtualMIDI licensing covers eval path (loopMIDI/rtpMIDI), MSI, redistribution gate. Does **not** state programmatic create/destroy. | **Partial** — addendum closer; PRD body gap |
-| 2 | Mail sent to Tobias Erichsen; no reply; **NOT PRD/Architecture blocker** — release gate for redistributable installer; **owner Guillaume** | OQ-1: "blocker for **Public Installer**" (scope OK). No sent/no-reply status, no owner, no explicit non-blocker for PRD/Arch. | Author outreach = release gate. No contact status or owner. | **Gap** — triage intent partially there, status/owner missing |
+| 2 | VirtualMIDI redistribution / community binary scope (owner Guillaume) — historically release-gate discussion; Correct Course 2026-08-10 sets VirtualMIDI-linked community Releases **out of scope** | OQ-1 scope historically incomplete | Author clearance / redistrib terms | **Superseded** by Correct Course 2026-08-10 |
 | 3 | Explicit provisional latency: healthy bridge-added **≤4–5 ms p99**; jitter **≤1–2 ms p99**; **do-not-ship-worse ~8–10 ms p99**; MIDI Path not ASIO; Studio-Done Gate | NFR-P1/P2: "low single-digit ms" / "sub-ms to low-ms" (vague). No ship ceiling. MIDI Path + Studio-Done Gate present. | Same vague anchors in §Latency planning context. | **Gap** — numeric anchors locked in memlog not in artifacts |
 | 4 | Home-grown kernel VirtualMIDI **Plan B deferred** V1; independence = backend abstraction + possible Windows MIDI Services later | Non-goals: custom kernel driver rejected. NFR-Q3: abstractable backend. Windows MIDI Services as future backend. | Rejected: custom KMDF driver. Backend abstraction noted. | **Partial** — generic kernel rejection covers spirit; **Plan B** not named |
 | 5 | `github.com/aaron1a12/virtual-midi` = integration proof only, **NOT fork base** (GPL) | Not mentioned. GPL vendoring rejected generically (FR-14, NFR-Q2). | Not mentioned. | **Missing** |
@@ -48,7 +48,7 @@ No hard contradiction with locked brief decisions. One **input-source conflict**
 
 | Gap | Source | What's missing |
 | --- | --- | --- |
-| **M-1 Tobias contact status + owner + non-blocker scope** | Memlog + passation §2 row 1 | Document: outreach sent, no reply yet, owner Guillaume, blocks **Public Installer redistribution only**, not PRD finalization or Architecture start. |
+| **M-1 VirtualMIDI redistrib / community binary scope** | Memlog + passation §2 row 1 | Document owner Guillaume; community VirtualMIDI-linked Releases **out of scope** (Correct Course 2026-08-10); Epic 6 WMS path |
 | **M-2 Open Questions triage table** | Passation §2 + Finalize step 4 | §12 needs per-item: owner, blocker class (release / Architecture / docs), defer OK?, next action. Especially OQ-1 (Guillaume), OQ-8 (Guillaume, SysEx vectors). |
 | **M-3 aaron1a12/virtual-midi reference policy** | Memlog decision | Addendum "Reference / community evidence" or Architecture orientation: proof-of-integration only; GPL — not fork base. |
 | **M-4 Home-grown kernel VirtualMIDI Plan B deferred** | Memlog decision | Name explicitly in addendum rejected/deferred table (distinct from generic KMDF rejection). |
@@ -69,9 +69,9 @@ No hard contradiction with locked brief decisions. One **input-source conflict**
 | Source | Statement |
 | --- | --- |
 | Passation line 120 | "Pas de contact Tobias encore documenté comme fait" |
-| Memlog (Finalize audit) | "Tobias Erichsen outreach sent; no reply yet" |
+| Memlog (Finalize audit) | VirtualMIDI redistrib / clearance tracked as owner concern; later Correct Course sets community Releases out of scope |
 
-**Resolution for Finalize:** Treat memlog as authoritative (post-audit). Passation predates or was not updated after outreach. PRD should reflect memlog, not passation line 120.
+**Resolution for Finalize:** Keep third-party contact status out of public docs. Planning wording states product scope (out of community scope / Epic 6 WMS), not private contact narrative.
 
 ### C-2 OQ-1 wording ambiguity (soft — not a true conflict)
 
@@ -89,7 +89,7 @@ Passation explicitly forbids reopening: usermode, VirtualMIDI V1, MIT, MT4-only 
 
 | # | Passation action | PRD §12 present? | Owner / defer in PRD? |
 | --- | --- | --- | --- |
-| 1 | VirtualMIDI eval/redist + Tobias — release gate; open OK; note owner/action | OQ-1 (partial scope) | **Missing** owner Guillaume, sent/no-reply, non-blocker for Arch |
+| 1 | VirtualMIDI eval/redist scope — release gate historically; open OK; note owner/action | OQ-1 (partial scope) | **Missing** owner Guillaume, community-scope framing, non-blocker for Arch |
 | 2 | Latency — OK provisional + Studio-Done Gate | OQ-2 + NFR-P1–P3 | Covered (numbers should tighten per H-1) |
 | 3 | Authenticode — defer with owner | OQ-3 + FR-15 | Owner missing |
 | 4 | Emagic docs — defer Architecture | OQ-4 | Covered |
@@ -128,9 +128,9 @@ Passation explicitly forbids reopening: usermode, VirtualMIDI V1, MIT, MT4-only 
 **Target:** §12 item 1; optionally §9 VirtualMIDI row.
 
 **Add essence:**
-- Outreach to Tobias Erichsen **sent**; **no reply yet** (as of 2026-08-04).
+- Community Releases of VirtualMIDI-linked binaries are **out of scope** as of Correct Course 2026-08-10 (see `prd.md` OQ-1); Epic 6 WMS is the community binary path.
 - **Owner:** Guillaume.
-- **Blocks:** redistributable Public Installer only.
+- **Blocks:** redistributable Public Installer only (historical framing).
 - **Does not block:** PRD finalization or Architecture.
 
 ### Patch 3 — `prd.md` NFR-P1, NFR-P2, assumptions index + `addendum.md` §Latency
@@ -157,7 +157,7 @@ Passation explicitly forbids reopening: usermode, VirtualMIDI V1, MIT, MT4-only 
 
 **Add columns/fields:** Owner | Blocks | Defer OK | Next action/revisit.
 
-Example for OQ-1: Guillaume | Public Installer redistribution | Yes (PRD/Arch proceed) | Await Tobias reply; evaluate loopMIDI/rtpMIDI vs licensed MSI path.
+Example for OQ-1: Guillaume | Public Installer redistribution | Yes (PRD/Arch proceed) | Keep VirtualMIDI-linked community Releases out of scope; evaluate loopMIDI/rtpMIDI for lab vs Epic 6 WMS community path.
 
 Example for OQ-8: Guillaume | Studio-Done SysEx acceptance definition | Yes until vectors defined | Define representative Matrix-Control dump/restore pass set.
 

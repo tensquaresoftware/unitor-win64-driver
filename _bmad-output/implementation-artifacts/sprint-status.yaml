@@ -1,5 +1,5 @@
 # generated: 2026-08-04T21:38:31Z
-# last_updated: 2026-08-10T18:05:00Z
+# last_updated: 2026-08-10T23:15:00Z
 # project: unitor-win64-driver
 # project_key: NOKEY
 # tracking_system: file-system
@@ -7,13 +7,14 @@
 #
 # SOURCE: _bmad-output/planning-artifacts/epics/epics-unitor-win64-driver-2026-08-04/epics.md
 # READINESS: READY 2026-08-04 (16/16 FR; UX absent OK via AD-12 + story 4.1)
-# NEXT: Epic 4 done (4.1–4.4); optional epic-4 retrospective; transversal Epic 4 code review; Epic 5 backlog; deferred: Scarlett/DAW clock+MTC UAT, Matrix-Control GUI UAT, 8h soak; clean-PC WinUSB catalog Fail confirmed (Authenticode/catalog / OQ-3)
-#
-# DEFERRED (do not block sprint):
-#   AQ-1…AQ-4 (architecture spine)
-#   OQ-1 VirtualMIDI MSI Tobias — Public Installer redistributable release gate only
+# COURSE CORRECTION: 2026-08-10 sprint-change-proposal-2026-08-10.md (approved)
+# NEXT: Epic 5 (MIDI Path) on interim VirtualMIDI + Win10 lab — NOT blocked by cert/Tobias/WMS
+# AFTER EPIC 5: Epic 6 WMS Win11 community backend (Guillaume acquires Win11 lab PC)
+# DEFERRED / CLOSED GATES:
+#   AQ-1…AQ-4 (architecture spine; AQ-3 lab-only pin)
+#   OQ-1 VirtualMIDI-linked community Releases — out of scope (lab virtualMIDI OK; community binaries after Epic 6 WMS)
 #   OQ-2 latency/jitter thresholds — after Epic 5 measurements
-#   OQ-3 Authenticode personal vs org — before first public release
+#   OQ-3 Authenticode / catalog cert purchase — OUT OF SCOPE HOBBY / no certificate purchase
 #
 # STATUS DEFINITIONS:
 # ==================
@@ -40,7 +41,7 @@
 # Action Item Status:
 #   - open: Committed during a retrospective, not yet addressed
 #   - in-progress: Actively being worked on
-#   - done: Completed
+#   - done: Addressed
 #
 # WORKFLOW NOTES:
 # ===============
@@ -51,7 +52,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-10T18:05:00Z"
+last_updated: "2026-08-10T23:15:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -86,6 +87,7 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Community Install and Trust
+  # Done for packaging/docs/policy; product promise rewritten by Correct Course 2026-08-10
   epic-4: done
   4-1-public-installer-meeting-ad-12-ux-bar: done
   4-2-end-user-documentation-for-first-midi-and-sysex: done
@@ -93,9 +95,16 @@ development_status:
   4-4-authenticode-policy-and-smartscreen-honesty: done
   epic-4-retrospective: optional
 
-  # Epic 5: MIDI Path Proof (Studio-Done Gate)
+  # Epic 5: MIDI Path Proof (Studio-Done Gate) — NEXT
   epic-5: backlog
   5-1-in-repo-midi-path-harness-scaffold: backlog
   5-2-publish-measurement-method-and-baseline-tables: backlog
   5-3-studio-done-gate-decision-record-for-timing-anchors: backlog
   epic-5-retrospective: optional
+
+  # Epic 6: Community MIDI backend on Windows MIDI Services (Win11-only) — after Epic 5
+  epic-6: backlog
+  6-1-windows-midi-services-midibackend-win11: backlog
+  6-2-community-binary-and-install-0eur-honesty-win11: backlog
+  6-3-win11-validation-matrix-soak-for-wms-path: backlog
+  epic-6-retrospective: optional
