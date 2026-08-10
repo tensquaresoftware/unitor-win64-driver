@@ -141,7 +141,7 @@ Tu peux utiliser **deux câbles DIN** en même temps (un dans chaque sens) pour 
 **Sur le PC (Boot Camp)**
 
 1. CMake + Visual Studio / Build Tools x64. → ✅
-2. **VirtualMIDI** via **loopMIDI** (ou rtpMIDI). → ✅
+2. **virtualMIDI** via **loopMIDI** (ou rtpMIDI). → ✅
 3. **Ableton Live 12**. → ✅
 4. **MIDI-OX** (observateur / log MIDI sur le PC). → ✅
    📌 MidiView testé puis **abandonné** (BSOD `htmididriver64.sys` en §5.2).

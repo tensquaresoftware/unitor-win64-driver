@@ -59,7 +59,7 @@ Ce guide te sert pour **les premiers essais réels** ce soir : brancher le MT4, 
 ### 0.2 Logiciels à avoir installés
 
 1. **Outils de build** déjà utilisés pour ce projet (CMake + Visual Studio / Build Tools x64) — pour compiler le Bridge avec les correctifs d’aujourd’hui.
-2. **VirtualMIDI** (teVirtualMIDI) : en pratique, installer **loopMIDI** (ou rtpMIDI) depuis le site Tobias Erichsen, pour que `teVirtualMIDI.dll` soit disponible sur la machine.
+2. **virtualMIDI** (teVirtualMIDI) : en pratique, installer **loopMIDI** (ou rtpMIDI) depuis le site Tobias Erichsen, pour que `teVirtualMIDI.dll` soit disponible sur la machine.
 3. Un utilitaire pour **voir** le MIDI entrant, par ex. **MIDI-OX** (recommandé dans la Validation Matrix du projet). Une DAW (Ableton, Reason, etc.) convient aussi.
 4. (Optionnel) Un moyen d’**envoyer** du MIDI depuis le PC vers un port OUT virtuel (DAW, clavier virtuel, utilitaire MIDI out).
 
@@ -74,7 +74,7 @@ Validation :
 
 - Dépôt présent sur le PC Windows : ✅
 - Je suis bien à la racine du dépôt (je vois `CMakeLists.txt`, `src/`, `installer/`) : ✅
-- VirtualMIDI / loopMIDI installé : ✅ (installé via loopMIDI)
+- virtualMIDI / loopMIDI installé : ✅ (installé via loopMIDI)
   - MIDI-OX (ou DAW) prêt : ✅ (Ableton Live 12 Suite & MIDI-OX installés)
 
 📌 Remarques GD :
@@ -290,7 +290,7 @@ Validation :
 - 2 IN visibles : ✅ (Ableton Live 12 → Réglages → MIDI → Input Ports)
 - 4 OUT visibles : ✅ (idem Output Ports ; Track coché pour notes/CC)
 - Noms exacts `MT4 Input N` / `MT4 Output Y` (pas un suffixe bizarre du type `#2`, ou le noter) : ✅
-- Échec éventuel (VirtualMIDI manquant, open USB, etc.) — coller le message : _(aucun)_
+- Échec éventuel (virtualMIDI manquant, open USB, etc.) — coller le message : _(aucun)_
 
 📌 Remarques GD : Lab 2026-08-05 Boot Camp — session avec `--dev-zadig`. Ports créés par Bridge (teVirtualMIDI), pas via la UI loopMIDI.
 
@@ -443,7 +443,7 @@ Validation (informatif, pas un critère de réussite Epic 1) :
 
 - Ports orphelins après fermeture croix : oui / non / non testé
 
-Si oui : redémarrage PC ou nettoyage VirtualMIDI / nouvel essai après Ctrl+C propre — note ta méthode.
+Si oui : redémarrage PC ou nettoyage virtualMIDI / nouvel essai après Ctrl+C propre — note ta méthode.
 
 📌 Remarques GD :
 
@@ -463,7 +463,7 @@ Remplis après les tests (même partiels).
 
 **Ce qui a le mieux marché**
 
-- WinUSB lab (cas B) + init magic + session VirtualMIDI.
+- WinUSB lab (cas B) + init magic + session virtualMIDI.
 - 2 IN / 4 OUT nommés `MT4 Input` / `MT4 Output` dans Ableton Live 12.
 - **Round-trip notes/CC** boîtier↔PC sur les ports testés (retest soir).
 - Arrêt Ctrl+C (LEDs + ports Live), avec délai USB possible.
@@ -505,7 +505,7 @@ Remplis après les tests (même partiels).
 | « Aucun pilote » / pas de `MI_02` | Cas B : ne force pas « USB composite » ; Zadig sur le MT4 unique. |
 | Zadig sans menu Interface 2 | Normal en cas B : Install WinUSB sur l’entrée « MT4 » seule. |
 | `--probe-usb` / init : erreur 121 sur OUT 0x2 | Bon canal trouvé mais le boîtier ne répond pas. Débranche/rebranche ; remplace Zadig par `installer\mt4-winusb.inf` (Disque fourni) ; autre port USB ; redémarrage PC. |
-| Session échoue, parle de VirtualMIDI / DLL / Win32=1379 | Installer loopMIDI / teVirtualMIDI ; si « existe déjà » : fermer une ancienne session Bridge (ports `MT4 Input` / `MT4 Output` ou anciens `MT4 Port N` zombies) et les entrées loopMIDI homonymes, puis relancer. |
+| Session échoue, parle de virtualMIDI / DLL / Win32=1379 | Installer loopMIDI / teVirtualMIDI ; si « existe déjà » : fermer une ancienne session Bridge (ports `MT4 Input` / `MT4 Output` ou anciens `MT4 Port N` zombies) et les entrées loopMIDI homonymes, puis relancer. |
 | Aucun port `MT4 Input`/`MT4 Output` dans loopMIDI | **Normal** — Bridge crée les ports via teVirtualMIDI ; regarde Ableton / MIDI-OX. |
 | Aucun port `MT4 Input`/`MT4 Output` dans la DAW | La session n’a pas démarré ; ou DAW ouverte **avant** sans refresh. |
 | Ports présents mais silence total (PC→boîtier) | Mauvais câble ; mauvais port OUT ; Track non coché dans Live. |

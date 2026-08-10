@@ -52,7 +52,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 
 - Story **3.1** Auto-Start OK sur cette session ([`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md))
 - Epic 1–2 déjà OK (notes/CC + bind WinUSB)
-- VirtualMIDI installé
+- virtualMIDI installé
 - `Bridge.exe` sous `builds/` (ex. `builds/debug`)
 - Un hôte de la matrice ouvert pendant le drill : MIDI-OX et/ou une DAW qui liste les ports virtuels
 

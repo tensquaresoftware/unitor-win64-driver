@@ -21,7 +21,7 @@ Il est calqué sur les guides Epic 3 : français, résultat **au fil de l’eau*
 | Sujet | Contrat |
 |---|---|
 | Hôte produit | `Bridge.exe --auto-session` (ou `--start-session` pour un labo one-shot). Processus de session utilisateur seulement |
-| Une boîte = une session | Chaque MT4 a son propre WinUSB, son mapper, son jeu de ports VirtualMIDI — **pas** de handle USB partagé, **pas** d’un seul backend pour deux boîtes |
+| Une boîte = une session | Chaque MT4 a son propre WinUSB, son mapper, son jeu de ports virtualMIDI — **pas** de handle USB partagé, **pas** d’un seul backend pour deux boîtes |
 | Noms unit 1 (`K==1`) | `MT4 In N` / `MT4 Out N` (silkscreen In/Out) |
 | Noms unit K≥2 | `MT4 #K In N` / `MT4 #K Out N` exactement |
 | Qui choisit `K` | Uniquement le registre d’identité du Bridge (serial USB préféré ; chemin d’instance / topologie en secours). Les backends MIDI reçoivent des noms déjà prêts |
@@ -54,7 +54,7 @@ Il est calqué sur les guides Epic 3 : français, résultat **au fil de l’eau*
 
 - Stories **3.1** / **3.2** / **3.3** OK sur cette machine si tu valides le chemin produit complet
 - Epic 1–2 déjà OK (notes/CC + bind WinUSB)
-- VirtualMIDI installé
+- virtualMIDI installé
 - `Bridge.exe` sous `builds/` (ex. `builds/debug`)
 - Idéalement **deux** MT4 WinUSB bindés avec le GUID projet ; sinon un seul + preuves offline / simulation d’identités
 - Le mode lab `--dev-zadig` reste **une seule** boîte (énumération GUID projet seulement). Le dual produit se valide avec le bind WinUSB du projet, pas Zadig multi-instance

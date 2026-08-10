@@ -74,7 +74,7 @@ Treat these as **observe during the sample**. Any hit under normal pacing is a *
 | After pump fail, ports until CLI Stop | ~50 ms poll then Stop — expected Fail→Stop, not silent death |
 | Heartbeat every 3 s | Ops risk for redirected 4 h logs — avoid redirect; void if logging dies mid-soak |
 
-**Forbidden excuses:** “usermode can’t do 4 h”, “VirtualMIDI limit”, “WinUSB always needs restart” — without measurement and a logged defect.
+**Forbidden excuses:** “usermode can’t do 4 h”, “virtualMIDI limit”, “WinUSB always needs restart” — without measurement and a logged defect.
 
 ## Scope
 

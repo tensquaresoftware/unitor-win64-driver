@@ -1,7 +1,7 @@
 # Evidence — macOS overnight SysEx (2026-08-08/09)
 
 **Machine :** MacBook Pro M5, macOS Tahoe  
-**Stack :** Emagic MT4, **Apple driver** (no Bridge, no WinUSB, no VirtualMIDI)  
+**Stack :** Emagic MT4, **Apple driver** (no Bridge, no WinUSB, no virtualMIDI)  
 **Run :** `scripts/lab/overnight-macos-sysex-stress.py --hours 8` under `caffeinate -dims`  
 **Summary log :** [`overnight-20260808T214135Z.log`](overnight-20260808T214135Z.log)
 

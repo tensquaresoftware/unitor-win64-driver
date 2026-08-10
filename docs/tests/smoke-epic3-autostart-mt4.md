@@ -28,7 +28,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 | Privilèges | Le bind WinUSB / signature lab reste **admin une fois** (install). Enregistrer / lancer / désenregistrer au quotidien = utilisateur interactif **sans élévation** (NFR-D2) |
 | Comportement `--auto-session` | MT4 déjà là → démarre la session (ports virtuels). Absent → attend / rescane le GUID WinUSB `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` |
 | Attente | Sondage toutes les **2 s**, progression toutes les **30 s**, échec fermé après **900 s** (15 min) avec diagnostics **en anglais** — pas de hang silencieux |
-| VirtualMIDI manquant | Échec fermé + chemin de correction en anglais (liste de ports vide ≠ succès) |
+| virtualMIDI manquant | Échec fermé + chemin de correction en anglais (liste de ports vide ≠ succès) |
 | Arrêt propre | Préfère **Ctrl+C** (pas la croix de la console). Risque connu reporté : `CTRL_CLOSE` peut laisser des ports orphelins (`deferred-work.md`) |
 | Chemin labo conservé | `Bridge.exe --start-session` / `--run-midi` (+ optionnel `--dev-zadig`) inchangés pour les labs |
 
@@ -53,7 +53,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 ## Prérequis
 
 - Epic 1–2 déjà OK sur cette session Windows (notes/CC + bind WinUSB)
-- VirtualMIDI installé pour les lignes qui exigent des ports ; la ligne 6 le retire / désactive volontairement
+- virtualMIDI installé pour les lignes qui exigent des ports ; la ligne 6 le retire / désactive volontairement
 - `Bridge.exe` compilé sous `builds/` (ex. `builds/debug`)
 - Enregistrement / désenregistrement / auto-session en utilisateur **standard** (non-admin) pour la claim « quotidien »
 
@@ -72,7 +72,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 | 3 | Après login sans MT4, brancher le MT4 → ports sans lancement manuel (attente / rescan ≤ 900 s) | | | |
 | 4 | Processus en session utilisateur (Gestionnaire des tâches → Détails : `Bridge.exe` sous l’utilisateur connecté ; **pas** de service Session-0) | | | |
 | 5 | Pas de prompt UAC au lancement Auto-Start quotidien | | | |
-| 6 | VirtualMIDI retiré / désactivé : échec fermé + message de correction en anglais (pas de succès vide silencieux) | | | |
+| 6 | virtualMIDI retiré / désactivé : échec fermé + message de correction en anglais (pas de succès vide silencieux) | | | |
 | 7 | `Bridge.exe --unregister-auto-start` puis logon → le Bridge **ne** démarre **pas** | | | |
 
 ## Commandes (référence)

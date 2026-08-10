@@ -21,9 +21,9 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 | Sujet | Contrat |
 |---|---|
 | Hôte produit | `Bridge.exe --auto-session` (ou `--start-session` pour un labo one-shot). Processus de session utilisateur seulement (AD-20) |
-| Qui gère le multi-client | **VirtualMIDI** (teVirtualMIDI) autorise plusieurs apps sur le même port virtuel en parallèle |
-| Plafond | Jusqu’à **8** applications concurrentes par port VirtualMIDI (AD-8 + docs auteur Tobias Erichsen). Le Bridge **n’invente pas** une limite plus basse de son côté |
-| Politique Bridge | Le Bridge **ne** doit **pas** ajouter d’exclusive-open / « le premier qui ouvre gagne » / refus au compteur de clients par-dessus VirtualMIDI (AD-8) |
+| Qui gère le multi-client | **virtualMIDI** (teVirtualMIDI) autorise plusieurs apps sur le même port virtuel en parallèle |
+| Plafond | Jusqu’à **8** applications concurrentes par port virtualMIDI (AD-8 + docs auteur Tobias Erichsen). Le Bridge **n’invente pas** une limite plus basse de son côté |
+| Politique Bridge | Le Bridge **ne** doit **pas** ajouter d’exclusive-open / « le premier qui ouvre gagne » / refus au compteur de clients par-dessus virtualMIDI (AD-8) |
 | Flags de création | Faces IN : `PARSE_TX \| INSTANTIATE_TX` ; faces OUT : `PARSE_RX \| INSTANTIATE_RX` seulement — pas de bit exclusive-open |
 | Cycle de vie des ports | Seule une `DeviceSession` live crée / détruit le jeu de ports (AD-9). Le multi-client = ouverture côté apps des ports déjà créés — l’App n’appelle jamais Create/DestroyPortSet |
 | Noms affichés (K=1) | Utilise les **vrais** noms : `MT4 In N` / `MT4 Out N` (pas seulement le raccourci AD-5 `MT4 Port N`) |
@@ -39,7 +39,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 |---|---|
 | Noms / persistance pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
 | Chapitre multi-client poli dans `docs/user/` | **4.2** — note ≤8 clients in [`user guide — Several applications at once`](../user/unitor-mt4-bridge-user-guide.md#several-applications-at-once) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
-| Installateur public / redistribuable VirtualMIDI | **4.1** / OQ-1 |
+| Installateur public / redistribuable virtualMIDI | **4.1** / OQ-1 |
 | Mesures de latence MIDI | Epic **5** |
 | Boucle de recréation hot-plug | **3.2** (ne pas rouvrir) |
 | Backend V1 sur Windows MIDI Services | hors V1 (AQ-4) |
@@ -51,13 +51,13 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 - PRD FR-9 / SM-7 / UJ-2
 - Architecture **AD-8** (OQ-7 clos) — `ARCHITECTURE-SPINE.md` : jusqu’à **8** clients/port ; Bridge sans exclusive-open ; AD-7, AD-9
 - SPEC CAP-9
-- Docs auteur VirtualMIDI (Tobias Erichsen / tobias-erichsen.de) cités par AD-8
+- Docs auteur virtualMIDI (Tobias Erichsen / tobias-erichsen.de) cités par AD-8
 
 ## Prérequis
 
 - Stories **3.1** Auto-Start et **3.2** hot-plug OK sur cette session si tu utilises le chemin produit
 - Epic 1–2 déjà OK (notes/CC + bind WinUSB)
-- VirtualMIDI installé (loopMIDI / rtpMIDI pour que `teVirtualMIDI.dll` soit là)
+- virtualMIDI installé (loopMIDI / rtpMIDI pour que `teVirtualMIDI.dll` soit là)
 - `Bridge.exe` sous `builds/` (ex. `builds/debug`)
 - Ableton Live 12 **ou** Reason Studios 12 dispo
 - **MIDI-OX** dispo (obligatoire — pas de substitut sans changement de PRD ; pas ShowMIDI / MidiView)
@@ -75,7 +75,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 2. Si refus : ferme **MIDI-OX** (ou la DAW), réessaie l’autre seul — si un hôte seul ouvre OK, ce n’est **pas** un verrou Bridge à la création des ports.
 3. Vérifie les prefs exclusive/takeover de la DAW (voir Prérequis).
 4. Si le Bridge tourne et les ports existent, mais le second hôte est refusé **uniquement** à cause d’un mode hôte / WMS → ligne 5 **N/A**, documente en ligne 6.
-5. Fail ligne 5 **seulement** si tu as une preuve que le **Bridge** impose l’exclusivité (politique / refus côté Bridge), pas VirtualMIDI multi-client.
+5. Fail ligne 5 **seulement** si tu as une preuve que le **Bridge** impose l’exclusivité (politique / refus côté Bridge), pas virtualMIDI multi-client.
 
 ## Matrice Pass / Fail (SM-7)
 

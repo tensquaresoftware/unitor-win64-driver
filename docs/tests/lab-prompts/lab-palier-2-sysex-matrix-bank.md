@@ -22,7 +22,7 @@ Stress SysEx **palier 2** sur **Bridge Windows** MT4 ↔ Matrix-1000 : valider �
 Rapport SSOT : `docs/tests/lab-reports/macos-sysex-paliers-2026-08-07.md`
 
 Sous macOS + **pilote Apple** (pas Bridge) : palier 2 = **100 %** (2×100 dumps patch, stamp `20260807T171139Z`).  
-Donc : ne pas accuser Matrix, câble DIN, ni MT4 si Windows échoue. Le défaut, s’il y en a un, est dans la **pile Bridge (WinUSB + session + VirtualMIDI)**.
+Donc : ne pas accuser Matrix, câble DIN, ni MT4 si Windows échoue. Le défaut, s’il y en a un, est dans la **pile Bridge (WinUSB + session + virtualMIDI)**.
 
 ## Forme du gate (déjà tranchée)
 

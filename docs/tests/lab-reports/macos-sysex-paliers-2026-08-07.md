@@ -1,7 +1,7 @@
 # Rapport lab macOS — paliers SysEx MT4 (2026-08-07)
 
 **Machine :** MacBook Pro M5, macOS Tahoe  
-**Interface :** Emagic MT4, **pilote Apple** (pas de Bridge, pas de WinUSB, pas de VirtualMIDI)  
+**Interface :** Emagic MT4, **pilote Apple** (pas de Bridge, pas de WinUSB, pas de virtualMIDI)  
 **But :** établir une référence hardware « clean » avant de continuer l’investigation du Bridge Windows (trou récurrent sur le premier gros dump après Start).
 
 Ce rapport est la **mémoire opérationnelle** pour la reprise sur PC. Les journaux bruts restent sous `tests/lab-logs/`.

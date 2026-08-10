@@ -1,7 +1,7 @@
 # Evidence — Windows overnight Matrix (2026-08-07/08)
 
 **Machine :** Windows Boot Camp lab PC  
-**Stack :** Bridge debug + WinUSB + VirtualMIDI, ports **MT4 Out 1 / MT4 In 1**  
+**Stack :** Bridge debug + WinUSB + virtualMIDI, ports **MT4 Out 1 / MT4 In 1**  
 **Run :** `overnight-matrix-stress.py` ~8 h (`hours=8`, mid×10 + bank×100 per cycle)  
 **Summary log :** [`overnight-20260807T222620Z.log`](overnight-20260807T222620Z.log)
 
@@ -40,14 +40,14 @@ Each sample folder has the suite log (`sysex-matrix-*.log`) and the matching Bri
 
 ## Follow-up (review → fixes)
 
-Cross-cutting review focused on joints WinUSB → DeviceSession → VirtualMIDI (short Matrix SysEx first).
+Cross-cutting review focused on joints WinUSB → DeviceSession → virtualMIDI (short Matrix SysEx first).
 
 Landed on `main` (2026-08-08), among others:
 
 - `0c85e20` — sticky Emagic F5 must not steal mid-SysEx data as a port index  
 - `f9651a2` — fail closed on short Matrix dumps; USB pad must not delay 274/350 idle finalize; cleaner Stop  
 - `7e197bd` — WinUSB async stop/sync hardening  
-- `b75345f` — log VirtualMIDI host→device drops while sink unset  
+- `b75345f` — log virtualMIDI host→device drops while sink unset  
 
 **Next lab check :** re-run bank (and optionally a short overnight) and compare against this capsule — expect either higher OK rate or **visible Bridge pump failures** instead of mute TIMEOUT / `bridge_fail=0`.
 
