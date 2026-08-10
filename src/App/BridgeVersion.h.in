@@ -1,0 +1,9 @@
+#pragma once
+
+// Generated from CMake project(VERSION ...). Edit CMakeLists.txt to bump.
+
+inline constexpr int kBridgeVersionMajor = @PROJECT_VERSION_MAJOR@;
+inline constexpr int kBridgeVersionMinor = @PROJECT_VERSION_MINOR@;
+inline constexpr int kBridgeVersionPatch = @PROJECT_VERSION_PATCH@;
+inline constexpr const char* kBridgeVersionString = "@PROJECT_VERSION@";
+inline constexpr const char* kBridgeProductName = "Unitor MT4 Bridge";

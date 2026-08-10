@@ -120,8 +120,7 @@ so that I can reach first MIDI the same evening without a developer toolchain fe
 
 - [x] [Review][Defer] Unsigned INF / missing `.cat` on clean machines [`installer/mt4-winusb.inf` / `installer/public-installer.iss`] — deferred, pre-existing fence to Story 4.4 (documented lab `sign-lab-package.ps1`)
 - [x] [Review][Defer] No timeout if pnputil/Bridge hang under Inno `Exec` [`installer/public-installer.iss:BindMt4WinUsb`] — deferred, pre-existing Inno limitation
-
-## Dev Notes
+- [ ] [Review][Patch] Own Bridge single-version CMake path already on disk (`BridgeVersion*.in`, generated VERSIONINFO/manifest, `--version` / startup banner) and finish installer `MyAppVersion` wiring from the same source — transferred from Story 4.2 code review (do not revert)
 
 ### Soft dependencies
 

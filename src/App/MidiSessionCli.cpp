@@ -2,6 +2,7 @@
 
 #include "App/MidiSessionCli.h"
 
+#include "App/BridgeVersion.h"
 #include "App/MidiSessionMultiHost.h"
 #include "App/Mt4PresenceWait.h"
 #include "Profile/DeviceProfile.h"
@@ -91,8 +92,14 @@ bool armMidiSessionCancel(bool preserveCancel)
     return true;
 }
 
+void printBridgeVersionLine()
+{
+    std::cout << kBridgeProductName << " " << kBridgeVersionString << '\n';
+}
+
 void printAutoSessionHostBanner()
 {
+    printBridgeVersionLine();
     std::cout << "Auto-session host (user-session Bridge; not a Windows Service)\n";
     std::cout << "Prefer clean exit with Ctrl+C so Virtual Ports tear down "
                  "(closing the console window may leave orphan ports).\n";
@@ -136,6 +143,7 @@ int runMt4SessionsHost(bool allowZadigFallback, bool preserveCancel, bool recove
 
 int runMt4MidiSession(bool allowZadigFallback, bool preserveCancel)
 {
+    printBridgeVersionLine();
     return runMt4SessionsHost(allowZadigFallback, preserveCancel, false);
 }
 

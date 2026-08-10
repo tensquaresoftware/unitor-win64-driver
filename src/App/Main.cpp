@@ -1,6 +1,7 @@
 // Bridge process entry — user-session host (not a Windows Service).
 
 #include "App/AutoStartRegistration.h"
+#include "App/BridgeVersion.h"
 #include "App/MapperSmoke.h"
 #include "App/MidiSessionCli.h"
 #include "Device/DeviceSessionManager.h"
@@ -325,6 +326,13 @@ int dispatchBridgeFlags(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    // Answer --version before profile smoke so the version is always available.
+    if (hasFlag(argc, argv, "--version"))
+    {
+        std::cout << kBridgeProductName << " " << kBridgeVersionString << '\n';
+        return 0;
+    }
+
     const int profileResult = runProfileSmoke();
     if (profileResult != 0)
     {

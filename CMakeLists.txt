@@ -19,6 +19,25 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Single version source for Bridge.exe (--version, console banner, VERSIONINFO, manifest).
+set(UNITOR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+file(MAKE_DIRECTORY "${UNITOR_GENERATED_DIR}/App")
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/App/BridgeVersion.h.in"
+    "${UNITOR_GENERATED_DIR}/App/BridgeVersion.h"
+    @ONLY
+)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/App/BridgeVersion.rc.in"
+    "${UNITOR_GENERATED_DIR}/App/BridgeVersion.rc"
+    @ONLY
+)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/App/Bridge.manifest.in"
+    "${UNITOR_GENERATED_DIR}/App/Bridge.manifest"
+    @ONLY
+)
+
 # Out-of-source builds only. Configure into builds/ (e.g. builds/debug, builds/ci).
 # Example: cmake --preset debug && cmake --build --preset debug
 # Or: cmake -S . -B builds/debug && cmake --build builds/debug
@@ -71,6 +90,7 @@ add_executable(Bridge
 target_include_directories(Bridge
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
+        "${UNITOR_GENERATED_DIR}"
 )
 
 if(WIN32)
@@ -80,7 +100,8 @@ if(WIN32)
         src/Usb/WinUsbOpenSupport.cpp
         src/Usb/WinUsbOpenIdentity.cpp
         src/Usb/WinUsbEnumerate.cpp
-        src/App/Bridge.manifest
+        "${UNITOR_GENERATED_DIR}/App/BridgeVersion.rc"
+        "${UNITOR_GENERATED_DIR}/App/Bridge.manifest"
     )
     target_link_libraries(Bridge
         PRIVATE
