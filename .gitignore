@@ -58,5 +58,8 @@ tests/lab-logs/midi-concurrent-in/
 
 # Local review scratch (not product docs)
 _edge_diff.txt
+_bmad-output/tmp-*
+_bmad-output/**/*.tmp
+_bmad-output/implementation-artifacts/_tmp-*.diff
 _bmad-output/implementation-artifacts/_cr-epic1-group-*.diff
 _bmad-output/implementation-artifacts/_cr-epic2-group-*.diff
