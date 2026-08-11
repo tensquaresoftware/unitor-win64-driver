@@ -229,6 +229,10 @@ bool DeviceSession::writeHostOutboundItem(
     betweenOutChunkDemuxFailed_ = false;
     deferredHostSends_.clear();
     deferHostSendDuringOut_ = true;
+    if (!item.midi.empty() && item.midi[0] == 0xF0 && item.midi.size() >= 512)
+    {
+        resetLongSysexGapProbe();
+    }
     const auto outStarted = std::chrono::steady_clock::now();
     const std::size_t deliverDepthAtStart = bulkInDeliverQueueDepth();
     // Drain+frame IN between Emagic OUT packets while usbIoMutex_ stays held;
@@ -248,6 +252,12 @@ bool DeviceSession::writeHostOutboundItem(
     finish.wrote = wrote;
     const bool finishedOk = finishHostOutboundWrite(finish);
     flushDeferredHostSends();
+    // Stop gap sampling after deferred SendToHost so later traffic does not keep
+    // calling CountArmedBulkInSlots on every bulk IN enqueue.
+    if (!item.midi.empty() && item.midi[0] == 0xF0 && item.midi.size() >= 512)
+    {
+        longSysexGapProbeActive_.store(false, std::memory_order_release);
+    }
     return finishedOk;
 }
 

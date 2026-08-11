@@ -6,6 +6,7 @@
 #include "Protocol/EmagicCableMapper.h"
 #include "Protocol/EmagicMapperSmokeSupport.h"
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -83,6 +84,79 @@ TEST_CASE("mapper sticky F5 then mid-SysEx data byte is not a cable index", "[ma
     REQUIRE(spans.size() == 1);
     REQUIRE(spans[0].size() == 3);
     REQUIRE(spans[0][0] == 0x10);
+}
+
+TEST_CASE("mapper sticky F5 mid-SysEx does not steal product port data 0x02", "[mapper]")
+{
+    // Residual hole after 0c85e20: MT4 product IN port bytes (0x01/0x02) were still
+    // consumed after a cross-URB sticky F5, dropping exactly one SysEx data byte.
+    EmagicCableMapper mapper(requireMt4Profile());
+    std::string error;
+    std::vector<uint8_t> assembled;
+
+    auto sink = [&](uint8_t, const uint8_t* midi, std::size_t n) {
+        assembled.insert(assembled.end(), midi, midi + n);
+    };
+
+    const uint8_t open[] = {0xF0, 0x00, 0x01, 0xF5}; // SysEx open, F5 at URB end
+    REQUIRE(mapper.DecodeFromDevice(open, sizeof(open), sink, error));
+    const uint8_t padOnly[] = {0xFF};
+    REQUIRE(mapper.DecodeFromDevice(padOnly, sizeof(padOnly), sink, error));
+    // 0x02 is wire port for In2 — must remain SysEx data, not a port index.
+    const uint8_t cont[] = {0x02, 0x03, 0xF7, 0xFF};
+    REQUIRE(mapper.DecodeFromDevice(cont, sizeof(cont), sink, error));
+
+    const uint8_t expected[] = {0xF0, 0x00, 0x01, 0x02, 0x03, 0xF7};
+    REQUIRE(assembled.size() == sizeof(expected));
+    REQUIRE(std::equal(assembled.begin(), assembled.end(), expected));
+    REQUIRE(mapper.StickyF5SysexPreserveCount() == 1);
+    REQUIRE(mapper.CurrentInCable() == 0);
+}
+
+TEST_CASE("mapper sticky F5 mid-SysEx does not steal product port data 0x01", "[mapper]")
+{
+    EmagicCableMapper mapper(requireMt4Profile());
+    std::string error;
+    std::vector<uint8_t> assembled;
+
+    auto sink = [&](uint8_t, const uint8_t* midi, std::size_t n) {
+        assembled.insert(assembled.end(), midi, midi + n);
+    };
+
+    const uint8_t open[] = {0xF0, 0x10, 0xF5};
+    REQUIRE(mapper.DecodeFromDevice(open, sizeof(open), sink, error));
+    const uint8_t cont[] = {0x01, 0x20, 0xF7, 0xFF};
+    REQUIRE(mapper.DecodeFromDevice(cont, sizeof(cont), sink, error));
+
+    const uint8_t expected[] = {0xF0, 0x10, 0x01, 0x20, 0xF7};
+    REQUIRE(assembled.size() == sizeof(expected));
+    REQUIRE(std::equal(assembled.begin(), assembled.end(), expected));
+    REQUIRE(mapper.StickyF5SysexPreserveCount() == 1);
+}
+
+TEST_CASE("mapper same-URB F5 mid-SysEx still consumes port retag", "[mapper]")
+{
+    EmagicCableMapper mapper(requireMt4Profile());
+    std::string error;
+    std::vector<uint8_t> cables;
+    std::vector<uint8_t> assembled;
+
+    auto sink = [&](uint8_t cableIndex, const uint8_t* midi, std::size_t n) {
+        cables.push_back(cableIndex);
+        assembled.insert(assembled.end(), midi, midi + n);
+    };
+
+    // Real Emagic retag in one URB: strip F5 02, keep SysEx payload on cable 1.
+    const uint8_t bulk[] = {0xF0, 0x10, 0xF5, 0x02, 0x20, 0xF7, 0xFF};
+    REQUIRE(mapper.DecodeFromDevice(bulk, sizeof(bulk), sink, error));
+    REQUIRE(mapper.CurrentInCable() == 1);
+    REQUIRE(assembled.size() == 4);
+    REQUIRE(assembled[0] == 0xF0);
+    REQUIRE(assembled[1] == 0x10);
+    REQUIRE(assembled[2] == 0x20);
+    REQUIRE(assembled[3] == 0xF7);
+    REQUIRE(mapper.SysexF5StripCount() == 1);
+    REQUIRE(mapper.StickyF5SysexPreserveCount() == 0);
 }
 
 TEST_CASE("mapper smoke encode Timing Clock Continue and Stop", "[mapper]")

@@ -317,3 +317,13 @@ Design note already captured in the longevity guide (not an open deferral): afte
 
 - Soft-echo OFF for Gate confirm remains human-attested bridge excerpts / CLI confirm — no harness JSON `soft_echo` field (carried from Story 5.3 defer).
 - NFR-P1 lead “beyond the host USB path” kept with measurement-plane footnote (Story 5.3 decision); not reopened in Wave 2.
+
+## Deferred from: code review of spec-sysex-long-truncation-32.md (2026-08-11)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-sysex-long-truncation-32.md`
+  summary: Cross-URB sticky F5 while SysEx is open preserves product port bytes as data, so a real Emagic mid-SysEx cable retag split across URBs will not update the IN cable.
+  evidence: Blind Hunter; intentional tradeoff vs MT4 In1/In2 `0x01`/`0x02` steal; same-URB `F5 xx` still retags; no DIN loopback evidence of mid-SysEx cross-URB retags on this preflight.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-sysex-long-truncation-32.md`
+  summary: Bulk IN ring sits at WFMO ceiling (63 slots + stop = 64) with no automated transport test for the re-harvest-during-deliver path.
+  evidence: Blind/Edge hunters; Ask First only forbids going past 64; solo lab green is the gate, not CI URB simulation.

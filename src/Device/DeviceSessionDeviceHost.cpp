@@ -2,7 +2,6 @@
 #include "Device/DeviceSessionSupport.h"
 
 #include <chrono>
-#include <cstring>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -86,8 +85,20 @@ void DeviceSession::noteSendToHostSuccess(
     std::size_t byteCount)
 {
     deviceHostCounters_.AddSendOk();
-    logLongSysexSendToHost(
-        inPortIndex, midiBytes, byteCount, bulkInDeliverHighWater_.load());
+    LongSysexGapProbeSnapshot gapSnap{};
+    LongSysexSendToHostLog log;
+    log.inPortIndex = inPortIndex;
+    log.midiBytes = midiBytes;
+    log.byteCount = byteCount;
+    log.deliverHighWater = bulkInDeliverHighWater_.load();
+    if (byteCount >= 512 && midiBytes != nullptr && midiBytes[0] == 0xF0
+        && midiBytes[byteCount - 1] == 0xF7
+        && longSysexGapProbeActive_.load(std::memory_order_acquire))
+    {
+        gapSnap = snapshotLongSysexGapProbe();
+        log.gapProbe = &gapSnap;
+    }
+    logLongSysexSendToHost(log);
     if (isMatrixDumpReply(midiBytes, byteCount) && isExactMatrixDumpLength(byteCount))
     {
         clearExpectInBurst();
@@ -179,6 +190,7 @@ void DeviceSession::forwardDeviceMidi(
         expectInBurstActive() && !inFramers_[inPortIndex].IsHoldingSysEx();
     const MidiPushView push =
         maybePrependLostLeadingF0(armRepair, midiBytes, byteCount, repairStorage);
+    maybeNoteGapProbeHoldPush(inPortIndex, push);
     inFramers_[inPortIndex].Push(
         push.bytes,
         push.count,
@@ -303,41 +315,6 @@ bool DeviceSession::bulkInPacketThunk(
         return true;
     }
     return session->enqueueBulkInPacket(data, size);
-}
-
-bool DeviceSession::enqueueBulkInPacket(const uint8_t* data, std::size_t size)
-{
-    if (size > 512)
-    {
-        recordPumpFailure(
-            "Device→host bulk IN enqueue rejected: packet size "
-            + std::to_string(size) + " exceeds 512");
-        return false;
-    }
-    std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
-    if (bulkInDeliverQueue_.size() >= kMaxQueuedBulkInPackets)
-    {
-        recordPumpFailure(
-            "Device→host bulk IN enqueue rejected: deliver queue full ("
-            + std::to_string(kMaxQueuedBulkInPackets)
-            + ") during host→device WriteBurst");
-        return false;
-    }
-    QueuedBulkInPacket packet;
-    packet.size = size;
-    if (size > 0 && data != nullptr)
-    {
-        std::memcpy(packet.data.data(), data, size);
-    }
-    bulkInDeliverQueue_.push_back(packet);
-    const std::size_t depth = bulkInDeliverQueue_.size();
-    std::size_t high = bulkInDeliverHighWater_.load(std::memory_order_relaxed);
-    while (depth > high
-        && !bulkInDeliverHighWater_.compare_exchange_weak(
-            high, depth, std::memory_order_relaxed))
-    {
-    }
-    return true;
 }
 
 int DeviceSession::drainQueuedBulkInPackets()

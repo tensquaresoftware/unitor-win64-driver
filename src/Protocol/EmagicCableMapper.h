@@ -80,12 +80,29 @@ public:
     // IN demux sticky cable (updated by IN F5, or by OUT encode to a matching IN cable).
     uint8_t CurrentInCable() const noexcept { return currentInCable_; }
 
+    // Lab counters: F5 seen while an open SysEx is demuxed; cross-buffer sticky F5
+    // that refused to eat a product-port-looking SysEx data byte.
+    std::uint64_t SysexF5StripCount() const noexcept { return sysexF5StripCount_; }
+    std::uint64_t StickyF5SysexPreserveCount() const noexcept
+    {
+        return stickyF5SysexPreserveCount_;
+    }
+    void ClearSysexF5DiagCounts() noexcept
+    {
+        sysexF5StripCount_ = 0;
+        stickyF5SysexPreserveCount_ = 0;
+    }
+
 private:
     bool appendPortSwitch(uint8_t cableIndex, EncodeBuffer& buffer, std::string& errorOut);
     bool appendMidiBytes(const EncodeRequest& request, EncodeBuffer& buffer, std::string& errorOut);
     void appendTrailingPad(EncodeBuffer& buffer) noexcept;
     void hintInCableFromOut(uint8_t outCableIndex) noexcept;
-    bool consumePendingPortSwitch(const uint8_t*& cursor, std::size_t& remaining) noexcept;
+    void noteDeliveredMidiSysexState(const uint8_t* midi, std::size_t n) noexcept;
+    bool consumePendingPortSwitch(
+        const uint8_t*& cursor,
+        std::size_t& remaining,
+        bool crossBufferSticky) noexcept;
     bool demuxUntilPortSwitch(
         const uint8_t*& cursor,
         std::size_t& remaining,
@@ -96,4 +113,9 @@ private:
     uint8_t currentOutCable_ = 0xFF;
     uint8_t currentInCable_ = 0;
     bool seenF5_ = false;
+    // Demux-side SysEx open (F0…F7). Used so a cross-buffer sticky F5 cannot steal
+    // product IN port-looking data bytes (0x01/0x02 on MT4) mid-SysEx.
+    bool inSysex_ = false;
+    std::uint64_t sysexF5StripCount_ = 0;
+    std::uint64_t stickyF5SysexPreserveCount_ = 0;
 };

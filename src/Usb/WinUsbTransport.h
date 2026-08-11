@@ -21,9 +21,11 @@ inline constexpr const char* kMt4WinUsbDeviceInterfaceGuid =
 // Linux snd-usb-midi INPUT_URBS — keep this many bulk IN transfers always pending.
 // Lab bank mid-burst / soak: correct F0…F7 at 275−N×32 (243/211/…) → size-reject
 // exhaust → TIMEOUT last=none. Depth 16 then 32 still dropped mid-SysEx URBs under
-// sustained Matrix rates (soak Palier A: triple-short storms); 48 keeps more
-// completions in flight (still under WaitForMultipleObjects 64 limit).
-inline constexpr std::size_t kBulkInAsyncSlotCount = 48;
+// sustained Matrix rates (soak Palier A: triple-short storms).
+// Long DIN loopback (−32 B): re-harvest-before-pop at 48 still hit gap_min_armed=0
+// once per preflight (14708→14676 + gap_armed_starved). Use max depth under the
+// completion WaitForMultipleObjects budget (slots + stop handle ≤ 64). No seq-skip.
+inline constexpr std::size_t kBulkInAsyncSlotCount = 63;
 static_assert(
     kBulkInAsyncSlotCount >= 32 && kBulkInAsyncSlotCount + 1 <= 64,
     "bulk IN ring must stay deep enough for Matrix bursts and under WFMO limit");
@@ -126,7 +128,12 @@ public:
     void StopBulkInAsyncRing() noexcept;
     bool IsBulkInAsyncRingActive() const noexcept;
     // How many ring slots currently have a bulk IN transfer pending (0 when inactive).
+    // Includes completed-but-not-yet-harvested slots (event signaled) — can read "full"
+    // while the host controller has no armed IN URB left.
     std::size_t CountPendingBulkInSlots() noexcept;
+    // Slots with an in-flight WinUSB read (pending and event not signaled). Lab probe
+    // for INPUT_URBS starvation during deliver storms (see −32 B long SysEx holes).
+    std::size_t CountArmedBulkInSlots() noexcept;
     // AbortPipe to wake WaitBulkInReaderTick / completion waits during session Stop.
     void AbortBulkInAsyncRing() noexcept;
     // Optional: demux on the completion thread (set before StartBulkInAsyncRing).
@@ -166,6 +173,12 @@ private:
     bool armBulkInCompletionWait(void* waitHandlesOut) noexcept;
     bool harvestBulkInCompletionOnce() noexcept;
     bool deliverOrderedBulkInPackets() noexcept;
+    bool harvestSignaledUnderLock(std::string& errorOut) noexcept;
+    bool popOneOrderedBulkInForHandler(
+        uint8_t* copy,
+        std::size_t copyCapacity,
+        std::size_t& sizeOut,
+        std::string& errorOut) noexcept;
     bool popOrderedPacketCopy(
         uint8_t* copy,
         std::size_t copyCapacity,

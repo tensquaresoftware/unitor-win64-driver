@@ -8,6 +8,7 @@
 #include "Protocol/EmagicCableMapper.h"
 #include "Protocol/MidiMessageFramer.h"
 #include "Device/DeviceHostCounters.h"
+#include "Device/DeviceSessionSupport.h"
 #include "Device/HostOutboundQueue.h"
 #include "Usb/WinUsbTransport.h"
 
@@ -185,6 +186,15 @@ private:
     void noteHostOutboundCounters(
         const HostOutboundItem& item,
         std::size_t encodedBytes) noexcept;
+    void resetLongSysexGapProbe() noexcept;
+    void noteGapProbeEnqueue(std::size_t usbBytes) noexcept;
+    void noteGapProbeDrain(std::size_t usbBytes) noexcept;
+    void noteGapProbeHoldPush(std::size_t midiBytes) noexcept;
+    void noteGapProbeDeliverDepth(std::size_t depth) noexcept;
+    void maybeNoteGapProbeHoldPush(std::size_t inPortIndex, const MidiPushView& push) noexcept;
+    void noteGapProbeMinArmed() noexcept;
+    LongSysexGapProbeSnapshot snapshotLongSysexGapProbe() const noexcept;
+    bool tryPushBulkInPacket(const uint8_t* data, std::size_t size, std::size_t& depthOut);
     void recordPumpFailure(const std::string& message);
     std::size_t findInPortIndex(uint8_t cableIndex) const noexcept;
     void resetInFramers() noexcept;
@@ -277,4 +287,17 @@ private:
     static constexpr std::size_t kMaxDeferredHostSends = 64;
     std::vector<DeferredHostSend> deferredHostSends_;
     void flushDeferredHostSends();
+
+    // Armed across long host→device SysEx OUT (and lingering hold) for −32 B lab.
+    std::atomic<bool> longSysexGapProbeActive_{false};
+    std::atomic<std::uint64_t> gapEnqueuedPackets_{0};
+    std::atomic<std::uint64_t> gapEnqueuedBytes_{0};
+    std::atomic<std::uint64_t> gapEnqueuedExact32_{0};
+    std::atomic<std::uint64_t> gapEnqueuedSize0_{0};
+    std::atomic<std::uint64_t> gapDrainedPackets_{0};
+    std::atomic<std::uint64_t> gapDrainedUsbBytes_{0};
+    std::atomic<std::uint64_t> gapHoldPushMidiBytes_{0};
+    std::atomic<std::size_t> gapMinArmedUrbs_{0};
+    std::atomic<std::size_t> gapMaxDeliverDepth_{0};
+    std::atomic<std::size_t> gapRejectEnqueue_{0};
 };

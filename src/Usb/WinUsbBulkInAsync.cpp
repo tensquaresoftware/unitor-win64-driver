@@ -397,6 +397,11 @@ std::size_t WinUsbTransport::CountPendingBulkInSlots() noexcept
     return 0;
 }
 
+std::size_t WinUsbTransport::CountArmedBulkInSlots() noexcept
+{
+    return 0;
+}
+
 void WinUsbTransport::AbortBulkInAsyncRing() noexcept {}
 
 void WinUsbTransport::SetBulkInPacketHandler(

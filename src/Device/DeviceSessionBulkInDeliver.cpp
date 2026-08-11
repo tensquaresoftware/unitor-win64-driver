@@ -4,6 +4,7 @@
 #include "Device/DeviceSessionSupport.h"
 
 #include <chrono>
+#include <cstring>
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -21,6 +22,184 @@ void appendDiscardedSuffix(std::string& detail, std::size_t discarded)
     detail += "; discarded " + std::to_string(discarded) + " queued message(s)";
 }
 } // namespace
+
+void DeviceSession::resetLongSysexGapProbe() noexcept
+{
+    gapEnqueuedPackets_.store(0, std::memory_order_relaxed);
+    gapEnqueuedBytes_.store(0, std::memory_order_relaxed);
+    gapEnqueuedExact32_.store(0, std::memory_order_relaxed);
+    gapEnqueuedSize0_.store(0, std::memory_order_relaxed);
+    gapDrainedPackets_.store(0, std::memory_order_relaxed);
+    gapDrainedUsbBytes_.store(0, std::memory_order_relaxed);
+    gapHoldPushMidiBytes_.store(0, std::memory_order_relaxed);
+    gapMinArmedUrbs_.store(kBulkInAsyncSlotCount, std::memory_order_relaxed);
+    gapMaxDeliverDepth_.store(0, std::memory_order_relaxed);
+    gapRejectEnqueue_.store(0, std::memory_order_relaxed);
+    if (mapper_ != nullptr)
+    {
+        mapper_->ClearSysexF5DiagCounts();
+    }
+    longSysexGapProbeActive_.store(true, std::memory_order_release);
+}
+
+void DeviceSession::noteGapProbeMinArmed() noexcept
+{
+    if (!longSysexGapProbeActive_.load(std::memory_order_acquire))
+    {
+        return;
+    }
+    const std::size_t armed = transport_.CountArmedBulkInSlots();
+    std::size_t minArmed = gapMinArmedUrbs_.load(std::memory_order_relaxed);
+    while (armed < minArmed
+        && !gapMinArmedUrbs_.compare_exchange_weak(
+            minArmed, armed, std::memory_order_relaxed))
+    {
+    }
+}
+
+void DeviceSession::noteGapProbeEnqueue(std::size_t usbBytes) noexcept
+{
+    if (!longSysexGapProbeActive_.load(std::memory_order_acquire))
+    {
+        return;
+    }
+    gapEnqueuedPackets_.fetch_add(1, std::memory_order_relaxed);
+    gapEnqueuedBytes_.fetch_add(usbBytes, std::memory_order_relaxed);
+    if (usbBytes == 32)
+    {
+        gapEnqueuedExact32_.fetch_add(1, std::memory_order_relaxed);
+    }
+    else if (usbBytes == 0)
+    {
+        gapEnqueuedSize0_.fetch_add(1, std::memory_order_relaxed);
+    }
+    noteGapProbeMinArmed();
+}
+
+void DeviceSession::noteGapProbeDrain(std::size_t usbBytes) noexcept
+{
+    if (!longSysexGapProbeActive_.load(std::memory_order_acquire))
+    {
+        return;
+    }
+    gapDrainedPackets_.fetch_add(1, std::memory_order_relaxed);
+    gapDrainedUsbBytes_.fetch_add(usbBytes, std::memory_order_relaxed);
+    noteGapProbeMinArmed();
+}
+
+void DeviceSession::noteGapProbeHoldPush(std::size_t midiBytes) noexcept
+{
+    if (!longSysexGapProbeActive_.load(std::memory_order_acquire) || midiBytes == 0)
+    {
+        return;
+    }
+    gapHoldPushMidiBytes_.fetch_add(midiBytes, std::memory_order_relaxed);
+}
+
+void DeviceSession::maybeNoteGapProbeHoldPush(
+    std::size_t inPortIndex,
+    const MidiPushView& push) noexcept
+{
+    const bool openHold = inFramers_[inPortIndex].IsHoldingSysEx();
+    const bool startsSysex = push.count > 0 && push.bytes != nullptr && push.bytes[0] == 0xF0;
+    if (openHold || startsSysex)
+    {
+        noteGapProbeHoldPush(push.count);
+    }
+}
+
+void DeviceSession::noteGapProbeDeliverDepth(std::size_t depth) noexcept
+{
+    if (!longSysexGapProbeActive_.load(std::memory_order_acquire))
+    {
+        return;
+    }
+    std::size_t maxDepth = gapMaxDeliverDepth_.load(std::memory_order_relaxed);
+    while (depth > maxDepth
+        && !gapMaxDeliverDepth_.compare_exchange_weak(
+            maxDepth, depth, std::memory_order_relaxed))
+    {
+    }
+}
+
+LongSysexGapProbeSnapshot DeviceSession::snapshotLongSysexGapProbe() const noexcept
+{
+    LongSysexGapProbeSnapshot snap;
+    snap.enqueuedPackets = gapEnqueuedPackets_.load(std::memory_order_relaxed);
+    snap.enqueuedBytes = gapEnqueuedBytes_.load(std::memory_order_relaxed);
+    snap.enqueuedExact32 = gapEnqueuedExact32_.load(std::memory_order_relaxed);
+    snap.enqueuedSize0 = gapEnqueuedSize0_.load(std::memory_order_relaxed);
+    snap.drainedPackets = gapDrainedPackets_.load(std::memory_order_relaxed);
+    snap.drainedUsbBytes = gapDrainedUsbBytes_.load(std::memory_order_relaxed);
+    snap.holdPushMidiBytes = gapHoldPushMidiBytes_.load(std::memory_order_relaxed);
+    snap.minArmedUrbs = gapMinArmedUrbs_.load(std::memory_order_relaxed);
+    snap.maxDeliverDepth = gapMaxDeliverDepth_.load(std::memory_order_relaxed);
+    snap.rejectEnqueue = gapRejectEnqueue_.load(std::memory_order_relaxed);
+    if (mapper_ != nullptr)
+    {
+        snap.sysexF5Strips = mapper_->SysexF5StripCount();
+        snap.stickyF5SysexPreserves = mapper_->StickyF5SysexPreserveCount();
+    }
+    return snap;
+}
+
+bool DeviceSession::tryPushBulkInPacket(
+    const uint8_t* data,
+    std::size_t size,
+    std::size_t& depthOut)
+{
+    std::lock_guard<std::mutex> lock(bulkInDeliverMutex_);
+    if (bulkInDeliverQueue_.size() >= kMaxQueuedBulkInPackets)
+    {
+        return false;
+    }
+    QueuedBulkInPacket packet;
+    packet.size = size;
+    if (size > 0 && data != nullptr)
+    {
+        std::memcpy(packet.data.data(), data, size);
+    }
+    bulkInDeliverQueue_.push_back(packet);
+    depthOut = bulkInDeliverQueue_.size();
+    std::size_t high = bulkInDeliverHighWater_.load(std::memory_order_relaxed);
+    while (depthOut > high
+        && !bulkInDeliverHighWater_.compare_exchange_weak(
+            high, depthOut, std::memory_order_relaxed))
+    {
+    }
+    return true;
+}
+
+bool DeviceSession::enqueueBulkInPacket(const uint8_t* data, std::size_t size)
+{
+    if (size > 512)
+    {
+        if (longSysexGapProbeActive_.load(std::memory_order_acquire))
+        {
+            gapRejectEnqueue_.fetch_add(1, std::memory_order_relaxed);
+        }
+        recordPumpFailure(
+            "Device→host bulk IN enqueue rejected: packet size "
+            + std::to_string(size) + " exceeds 512");
+        return false;
+    }
+    std::size_t depth = 0;
+    if (!tryPushBulkInPacket(data, size, depth))
+    {
+        if (longSysexGapProbeActive_.load(std::memory_order_acquire))
+        {
+            gapRejectEnqueue_.fetch_add(1, std::memory_order_relaxed);
+        }
+        recordPumpFailure(
+            "Device→host bulk IN enqueue rejected: deliver queue full ("
+            + std::to_string(kMaxQueuedBulkInPackets)
+            + ") during host→device WriteBurst");
+        return false;
+    }
+    noteGapProbeEnqueue(size);
+    noteGapProbeDeliverDepth(depth);
+    return true;
+}
 
 bool DeviceSession::failHostOutboundBetweenChunkDemux(
     std::size_t outPortIndex,
@@ -51,14 +230,26 @@ void DeviceSession::logLongSysexHostOutWrite(
     {
         return;
     }
+    const LongSysexGapProbeSnapshot gap = snapshotLongSysexGapProbe();
     std::cerr << "host→device: long SysEx WriteBulk ok (out_port=" << (item.outPortIndex + 1)
               << " midi_bytes=" << item.midi.size() << " encoded_bytes=" << encodedBytes
               << " out_ms=" << outMs.count()
               << " deliver_q=" << deliverDepthAtStart << "->" << bulkInDeliverQueueDepth()
               << " deliver_hw=" << bulkInDeliverHighWater_.load()
               << " pending_urbs=" << transport_.CountPendingBulkInSlots() << "/"
-              << kBulkInAsyncSlotCount << ")\n"
-              << std::flush;
+              << kBulkInAsyncSlotCount
+              << " armed_urbs=" << transport_.CountArmedBulkInSlots() << "/"
+              << kBulkInAsyncSlotCount
+              << " gap_min_armed=" << gap.minArmedUrbs;
+    if (gap.minArmedUrbs == 0)
+    {
+        std::cerr << " gap_armed_starved=yes";
+    }
+    if (gap.rejectEnqueue != 0)
+    {
+        std::cerr << " gap_reject_enq=" << gap.rejectEnqueue;
+    }
+    std::cerr << ")\n" << std::flush;
 }
 
 void DeviceSession::betweenOutChunksDrainIn(void* context)
@@ -113,8 +304,10 @@ bool DeviceSession::drainQueuedBulkInPacketsHoldingUsbIo()
         }
         if (queued.size == 0)
         {
+            noteGapProbeDrain(0);
             continue;
         }
+        noteGapProbeDrain(queued.size);
         std::string error;
         if (!processBulkReadLocked(queued.data.data(), queued.size, error))
         {

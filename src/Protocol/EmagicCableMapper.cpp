@@ -58,6 +58,29 @@ void EmagicCableMapper::ResetInputState() noexcept
 {
     currentInCable_ = 0;
     seenF5_ = false;
+    inSysex_ = false;
+}
+
+void EmagicCableMapper::noteDeliveredMidiSysexState(
+    const uint8_t* midi,
+    std::size_t n) noexcept
+{
+    if (midi == nullptr || n == 0)
+    {
+        return;
+    }
+    for (std::size_t index = 0; index < n; ++index)
+    {
+        const uint8_t value = midi[index];
+        if (value == 0xF0)
+        {
+            inSysex_ = true;
+        }
+        else if (value == 0xF7)
+        {
+            inSysex_ = false;
+        }
+    }
 }
 
 bool EmagicCableMapper::appendPortSwitch(
@@ -166,7 +189,8 @@ bool EmagicCableMapper::EncodeToDevice(
 
 bool EmagicCableMapper::consumePendingPortSwitch(
     const uint8_t*& cursor,
-    std::size_t& remaining) noexcept
+    std::size_t& remaining,
+    bool crossBufferSticky) noexcept
 {
     // Split F5: wait for the cable byte on a later URB (do not clear seenF5_).
     if (remaining == 0)
@@ -178,15 +202,24 @@ bool EmagicCableMapper::consumePendingPortSwitch(
     {
         // Emagic port switch is 1..16 → cable 0..15. Accept only product IN cables so
         // mid-SysEx data (e.g. 0x10) after a sticky F5 is not stolen as a port index.
+        // Cross-buffer sticky + open SysEx: also refuse 0x01/0x02 (MT4 In1/In2) — those
+        // are valid SysEx data and the 0c85e20 product-IN gate still stole them (−1 B).
         const uint8_t portOneBased = cursor[0];
         if (portOneBased >= 1 && portOneBased <= 16)
         {
             const uint8_t cable = static_cast<uint8_t>((portOneBased - 1) & 15);
             if (IsProductInCable(cable))
             {
-                currentInCable_ = cable;
-                ++cursor;
-                --remaining;
+                if (crossBufferSticky && inSysex_)
+                {
+                    ++stickyF5SysexPreserveCount_;
+                }
+                else
+                {
+                    currentInCable_ = cable;
+                    ++cursor;
+                    --remaining;
+                }
             }
         }
     }
@@ -201,9 +234,13 @@ bool EmagicCableMapper::demuxUntilPortSwitch(
     const MidiCableSink& sink)
 {
     const std::size_t midiLength = findPortSwitchOffset(cursor, remaining);
-    if (midiLength > 0 && sink && IsProductInCable(currentInCable_))
+    if (midiLength > 0 && IsProductInCable(currentInCable_))
     {
-        sink(currentInCable_, cursor, midiLength);
+        noteDeliveredMidiSysexState(cursor, midiLength);
+        if (sink)
+        {
+            sink(currentInCable_, cursor, midiLength);
+        }
     }
 
     cursor += midiLength;
@@ -214,10 +251,15 @@ bool EmagicCableMapper::demuxUntilPortSwitch(
     }
 
     // cursor[0] == F5
+    if (inSysex_)
+    {
+        ++sysexF5StripCount_;
+    }
     seenF5_ = true;
     ++cursor;
     --remaining;
-    return consumePendingPortSwitch(cursor, remaining);
+    // Same URB as F5: real Emagic retag (including mid-SysEx) still consumes the port.
+    return consumePendingPortSwitch(cursor, remaining, false);
 }
 
 bool EmagicCableMapper::DecodeFromDevice(
@@ -237,7 +279,7 @@ bool EmagicCableMapper::DecodeFromDevice(
 
     if (seenF5_)
     {
-        if (!consumePendingPortSwitch(cursor, remaining))
+        if (!consumePendingPortSwitch(cursor, remaining, true))
         {
             errorOut = "Failed to complete split F5 port switch";
             return false;

@@ -51,6 +51,33 @@ void WinUsbTransport::signalBulkInDataReady() noexcept
     }
 }
 
+std::size_t WinUsbTransport::CountArmedBulkInSlots() noexcept
+{
+    std::lock_guard lock(bulkInRingMutex_);
+    const auto* ring = bulkInAsRing(bulkInAsyncRing_);
+    if (ring == nullptr || !ring->active)
+    {
+        return 0;
+    }
+    std::size_t armed = 0;
+    for (std::size_t index = 0; index < kBulkInAsyncSlotCount; ++index)
+    {
+        const BulkInAsyncSlotState& slot = ring->slots[index];
+        if (!slot.pending || slot.event == nullptr)
+        {
+            continue;
+        }
+        // Signaled ⇒ completed at HC; not an armed inbound buffer anymore.
+        // WAIT_FAILED must not count as armed (would hide starvation).
+        const DWORD wait = WaitForSingleObject(slot.event, 0);
+        if (wait == WAIT_TIMEOUT)
+        {
+            ++armed;
+        }
+    }
+    return armed;
+}
+
 void WinUsbTransport::failBulkInCompletion(std::string error) noexcept
 {
     bulkInCompletionFailed_.store(true);
@@ -106,6 +133,34 @@ bool WinUsbTransport::popOrderedPacketCopy(
     return true;
 }
 
+bool WinUsbTransport::harvestSignaledUnderLock(std::string& errorOut) noexcept
+{
+    // Caller holds bulkInRingMutex_. Resubmit before pop so deliver storms cannot
+    // leave the HC with 0 armed IN URBs (lab −32 B SysEx / deliver_hw spikes).
+    auto* ring = bulkInAsRing(bulkInAsyncRing_);
+    if (ring == nullptr || !ring->active)
+    {
+        return true;
+    }
+    return harvestSignaledOnly(
+               static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_), this, *ring, errorOut)
+        >= 0;
+}
+
+bool WinUsbTransport::popOneOrderedBulkInForHandler(
+    uint8_t* copy,
+    std::size_t copyCapacity,
+    std::size_t& sizeOut,
+    std::string& errorOut) noexcept
+{
+    std::lock_guard lock(bulkInRingMutex_);
+    if (!harvestSignaledUnderLock(errorOut))
+    {
+        return false;
+    }
+    return popOrderedPacketCopy(copy, copyCapacity, sizeOut, errorOut);
+}
+
 bool WinUsbTransport::deliverOrderedBulkInPackets() noexcept
 {
     BulkInPacketHandler handler = nullptr;
@@ -114,16 +169,16 @@ bool WinUsbTransport::deliverOrderedBulkInPackets() noexcept
         std::lock_guard lock(bulkInRingMutex_);
         handler = bulkInPacketHandler_;
         handlerCtx = bulkInPacketHandlerCtx_;
-    }
-    if (handler == nullptr)
-    {
-        std::lock_guard lock(bulkInRingMutex_);
-        auto* ring = bulkInAsRing(bulkInAsyncRing_);
-        if (ring != nullptr && bulkInFindReorderBySeq(*ring, ring->nextCompleteSeq) != nullptr)
+        if (handler == nullptr)
         {
-            signalBulkInDataReady();
+            auto* ring = bulkInAsRing(bulkInAsyncRing_);
+            if (ring != nullptr
+                && bulkInFindReorderBySeq(*ring, ring->nextCompleteSeq) != nullptr)
+            {
+                signalBulkInDataReady();
+            }
+            return true;
         }
-        return true;
     }
 
     for (;;)
@@ -131,12 +186,7 @@ bool WinUsbTransport::deliverOrderedBulkInPackets() noexcept
         uint8_t copy[512] = {};
         std::size_t size = 0;
         std::string popError;
-        bool ok = false;
-        {
-            std::lock_guard lock(bulkInRingMutex_);
-            ok = popOrderedPacketCopy(copy, sizeof(copy), size, popError);
-        }
-        if (!ok)
+        if (!popOneOrderedBulkInForHandler(copy, sizeof(copy), size, popError))
         {
             failBulkInCompletion(std::move(popError));
             return false;
@@ -150,29 +200,49 @@ bool WinUsbTransport::deliverOrderedBulkInPackets() noexcept
             failBulkInCompletion("WinUSB bulk IN packet handler failed");
             return false;
         }
+        // Handler (enqueue) can outlast a full ring of completions; re-arm before
+        // the next pop so gap_min_armed does not sit at 0 across the handler gap.
+        {
+            std::lock_guard lock(bulkInRingMutex_);
+            std::string harvestError;
+            if (!harvestSignaledUnderLock(harvestError))
+            {
+                failBulkInCompletion(std::move(harvestError));
+                return false;
+            }
+        }
         signalBulkInDataReady();
     }
 }
 
 bool WinUsbTransport::harvestBulkInCompletionOnce() noexcept
 {
+    // Harvest → deliver (which re-harvests) → one trailing harvest so slots that
+    // completed during the last handler call are armed again before Wait.
+    for (int pass = 0; pass < 2; ++pass)
     {
-        std::lock_guard lock(bulkInRingMutex_);
-        auto* ring = bulkInAsRing(bulkInAsyncRing_);
-        if (ring == nullptr || !ring->active)
         {
-            return false;
+            std::lock_guard lock(bulkInRingMutex_);
+            auto* ring = bulkInAsRing(bulkInAsyncRing_);
+            if (ring == nullptr || !ring->active)
+            {
+                return false;
+            }
+            std::string error;
+            if (harvestSignaledOnly(
+                    static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_), this, *ring, error)
+                < 0)
+            {
+                failBulkInCompletion(std::move(error));
+                return false;
+            }
         }
-        std::string error;
-        if (harvestSignaledOnly(
-                static_cast<WINUSB_INTERFACE_HANDLE>(winUsbHandle_), this, *ring, error)
-            < 0)
+        if (pass == 0 && !deliverOrderedBulkInPackets())
         {
-            failBulkInCompletion(std::move(error));
             return false;
         }
     }
-    return deliverOrderedBulkInPackets();
+    return true;
 }
 
 void WinUsbTransport::bulkInCompletionLoop()

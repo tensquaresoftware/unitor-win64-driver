@@ -22,11 +22,35 @@ bool isIdentityReply(const uint8_t* midiBytes, std::size_t byteCount) noexcept;
 // Compact uppercase hex for lab dumps (e.g. "F0 7E 00"); empty if no bytes.
 std::string formatMidiBytesHex(const uint8_t* midiBytes, std::size_t byteCount);
 
-void logLongSysexSendToHost(
-    std::size_t inPortIndex,
-    const uint8_t* midiBytes,
-    std::size_t byteCount,
-    std::size_t deliverHighWater);
+// High-signal probe fields for intermittent −32 B / −1 B long SysEx (DIN loopback).
+// Collected across one long OUT; logged compactly (alerts only when anomalous).
+struct LongSysexGapProbeSnapshot
+{
+    std::uint64_t enqueuedPackets = 0;
+    std::uint64_t enqueuedBytes = 0;
+    std::uint64_t enqueuedExact32 = 0;
+    std::uint64_t enqueuedSize0 = 0;
+    std::uint64_t drainedPackets = 0;
+    std::uint64_t drainedUsbBytes = 0;
+    std::uint64_t holdPushMidiBytes = 0;
+    std::size_t minArmedUrbs = 0;
+    std::size_t maxDeliverDepth = 0;
+    std::size_t rejectEnqueue = 0;
+    // Emagic demux: F5 while SysEx open; cross-buffer sticky F5 that kept SysEx data.
+    std::uint64_t sysexF5Strips = 0;
+    std::uint64_t stickyF5SysexPreserves = 0;
+};
+
+struct LongSysexSendToHostLog
+{
+    std::size_t inPortIndex = 0;
+    const uint8_t* midiBytes = nullptr;
+    std::size_t byteCount = 0;
+    std::size_t deliverHighWater = 0;
+    const LongSysexGapProbeSnapshot* gapProbe = nullptr;
+};
+
+void logLongSysexSendToHost(const LongSysexSendToHostLog& log);
 
 struct DeviceInquiryHostOutDiag
 {

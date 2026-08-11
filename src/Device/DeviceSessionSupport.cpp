@@ -73,23 +73,58 @@ std::string formatMidiBytesHex(const uint8_t* midiBytes, std::size_t byteCount)
     return out;
 }
 
-void logLongSysexSendToHost(
-    std::size_t inPortIndex,
-    const uint8_t* midiBytes,
-    std::size_t byteCount,
-    std::size_t deliverHighWater)
+namespace
 {
-    if (byteCount < 512 || midiBytes == nullptr || midiBytes[0] != 0xF0
-        || midiBytes[byteCount - 1] != 0xF7)
+void appendLongSysexGapProbeFields(
+    std::ostream& out,
+    const LongSysexGapProbeSnapshot& gap,
+    std::size_t framedByteCount)
+{
+    // Steady path: min armed only. Extra fields when the probe saw trouble.
+    out << " gap_min_armed=" << gap.minArmedUrbs;
+    if (gap.minArmedUrbs == 0)
+    {
+        out << " gap_armed_starved=yes";
+    }
+    if (gap.rejectEnqueue != 0)
+    {
+        out << " gap_reject_enq=" << gap.rejectEnqueue;
+    }
+    if (gap.enqueuedSize0 != 0)
+    {
+        out << " gap_enq0=" << gap.enqueuedSize0;
+    }
+    if (gap.sysexF5Strips != 0 || gap.stickyF5SysexPreserves != 0)
+    {
+        out << " gap_f5_sysex=" << gap.sysexF5Strips
+            << " gap_f5_preserve=" << gap.stickyF5SysexPreserves;
+    }
+    if (gap.holdPushMidiBytes != 0 && gap.holdPushMidiBytes != framedByteCount)
+    {
+        out << " gap_hold_push=" << gap.holdPushMidiBytes << " gap_push_vs_send=mismatch";
+    }
+}
+} // namespace
+
+void logLongSysexSendToHost(const LongSysexSendToHostLog& log)
+{
+    if (log.byteCount < 512 || log.midiBytes == nullptr || log.midiBytes[0] != 0xF0
+        || log.midiBytes[log.byteCount - 1] != 0xF7)
     {
         return;
     }
-    const std::size_t edge = (byteCount < 4) ? byteCount : 4;
-    std::cerr << "device→host: long SysEx SendToHost ok (in_port=" << (inPortIndex + 1)
-              << " bytes=" << byteCount << " head=" << formatMidiBytesHex(midiBytes, edge)
-              << " tail=" << formatMidiBytesHex(midiBytes + byteCount - edge, edge)
-              << " deliver_hw=" << deliverHighWater << ")\n"
-              << std::flush;
+    const std::size_t edge = (log.byteCount < 4) ? log.byteCount : 4;
+    std::cerr << "device→host: long SysEx SendToHost ok (in_port=" << (log.inPortIndex + 1)
+              << " bytes=" << log.byteCount
+              << " head=" << formatMidiBytesHex(log.midiBytes, edge)
+              << " tail="
+              << formatMidiBytesHex(log.midiBytes + log.byteCount - edge, edge)
+              << " deliver_hw=" << log.deliverHighWater;
+    if (log.gapProbe != nullptr)
+    {
+        appendLongSysexGapProbeFields(std::cerr, *log.gapProbe, log.byteCount);
+    }
+    std::cerr << ")\n" << std::flush;
 }
 
 void logDeviceInquiryHostOut(const DeviceInquiryHostOutDiag& diag)
