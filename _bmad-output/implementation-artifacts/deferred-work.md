@@ -383,3 +383,17 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-mid-loop.md`
   summary: SystemExit from Bridge start/wait_until_ready skips parent finish footer (finished_utc / overall_pass).
   evidence: Blind Hunter BH-10; pre-existing control-flow gap; rewrite preserved behavior.
+
+## Deferred from: quick-dev spec-scripts-quality-sysex-matrix-bank-loop.md (2026-08-12)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-bank-loop.md`
+  summary: Overnight preflights still require only the hyphenated bank-loop entry script, not the companion lib / lab_midi_common.
+  evidence: Blind Hunter; same partial-sync gap as mid-loop split; out of this ticket's single-file scope.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-bank-loop.md`
+  summary: SystemExit from Bridge start/wait_until_ready skips parent finish footer (finished_utc / overall_pass).
+  evidence: Blind/Edge; pre-existing control-flow gap; rewrite preserved behavior.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-bank-loop.md`
+  summary: Bank-burst match accepts any 275 B patch dump, so a late prior-slot reply after 0x7F wrap can count as Pass.
+  evidence: Edge Case Hunter; pre-existing predicate; not introduced by the structural split.
