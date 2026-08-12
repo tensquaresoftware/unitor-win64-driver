@@ -134,7 +134,7 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 - [x] `scripts/lab/device-inquiry-loop.py`  
   Snapshot : ~2 findings · score ~16 · nesting / params `_run_inquiry_loop`  
-  Notes : pending commit — cleared under `--all` via InquiryLoopOpts/InquiryCycle + late-reply helpers (CLI preserved; no companion)
+  Notes : `6d3635b` — cleared under `--all` via InquiryLoopOpts/InquiryCycle + late-reply helpers (CLI preserved; no companion)
 
 ### Déjà OK au snapshot (ne pas ouvrir de conversation « cleanup » sauf régression)
 
