@@ -114,7 +114,7 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 - [x] `scripts/lab/midi-clock-loopback-lab.py`  
   Snapshot : ~4 findings · score ~119 · `main` ccn · `_run_lab` nloc/params · `_send_status` params  
-  Notes : pending commit — cleared under `--all` via LabRun/StatusSend/ClockBatch + phase split (CLI preserved; no companion; local fail needles kept)
+  Notes : `20a4e6d` — cleared under `--all` via LabRun/StatusSend/ClockBatch + phase split (CLI preserved; no companion; local fail needles kept)
 
 - [ ] `scripts/lab/mtc-loopback-lab.py`  
   Snapshot : ~2 findings · score ~119 · `main` ccn · `_run_lab` params  
