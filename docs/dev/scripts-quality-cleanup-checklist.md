@@ -112,9 +112,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
   Snapshot : ~3 findings · score ~249 · `run_overnight` · `_run_child` params  
   Notes : `d621d85` — cleared under `--all` via ChildRun/OvernightContext split (CLI preserved; no companion)
 
-- [ ] `scripts/lab/midi-clock-loopback-lab.py`  
+- [x] `scripts/lab/midi-clock-loopback-lab.py`  
   Snapshot : ~4 findings · score ~119 · `main` ccn · `_run_lab` nloc/params · `_send_status` params  
-  Notes :
+  Notes : pending commit — cleared under `--all` via LabRun/StatusSend/ClockBatch + phase split (CLI preserved; no companion; local fail needles kept)
 
 - [ ] `scripts/lab/mtc-loopback-lab.py`  
   Snapshot : ~2 findings · score ~119 · `main` ccn · `_run_lab` params  

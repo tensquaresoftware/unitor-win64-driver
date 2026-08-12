@@ -18,8 +18,10 @@ import subprocess
 import sys
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 READY_MARKERS = (
     "Device Inquiry lab:",
@@ -27,6 +29,7 @@ READY_MARKERS = (
     "DeviceSession started for MT4",
 )
 
+# Local subset — do not expand to lab_midi_common needles (behavior lock).
 BRIDGE_FAIL_NEEDLES = (
     "MIDI I/O pump failed",
     "WriteBulk failed",
@@ -259,6 +262,48 @@ class BridgeSession:
         print(f"Bridge stopped (code={self.proc.returncode})")
 
 
+@dataclass(frozen=True)
+class LabRun:
+    mido: Any
+    out_name: str
+    in_name: str
+    clock_count: int
+    clock_interval_s: float
+    settle_s: float
+
+
+@dataclass(frozen=True)
+class StatusSend:
+    outport: Any
+    mido: Any
+    status: int
+    label: str
+
+
+@dataclass
+class RecvState:
+    got: dict[str, int]
+    samples: list[str]
+    lines: list[str]
+
+
+@dataclass(frozen=True)
+class ClockBatch:
+    outport: Any
+    inport: Any
+    mido: Any
+    count: int
+    interval_s: float
+    label: str
+    log_mid: bool
+
+
+@dataclass(frozen=True)
+class OpenPorts:
+    inport: Any
+    outport: Any
+
+
 def _hex(data: bytes) -> str:
     return " ".join(f"{b:02X}" for b in data)
 
@@ -273,107 +318,97 @@ def _classify_msg(msg) -> str:
     return "other"
 
 
-def _drain_pending(inport, got: dict[str, int], samples: list[str]) -> None:
-    for msg in inport.iter_pending():
-        kind = _classify_msg(msg)
-        got[kind] = got.get(kind, 0) + 1
-        # Keep enough samples to retain Start/Continue/Stop after the clock flood.
-        if len(samples) < 48:
-            samples.append(f"RECV {kind} {_hex(bytes(msg.bytes()))}")
-
-
-def _send_status(outport, mido, status: int, label: str, lines: list[str]) -> None:
-    msg = mido.Message.from_bytes(bytes([status]))
-    outport.send(msg)
-    lines.append(f"SEND {label} {_hex(bytes([status]))}")
-
-
-def _run_lab(
-    mido,
-    out_name: str,
-    in_name: str,
-    clock_count: int,
-    clock_interval_s: float,
-    settle_s: float,
-    lines: list[str],
-) -> bool:
-    expected_clock = clock_count
-    got: dict[str, int] = {
+def _empty_got() -> dict[str, int]:
+    return {
         "clock": 0,
         "start": 0,
         "continue": 0,
         "stop": 0,
         "other": 0,
     }
-    samples: list[str] = []
 
-    lines.append(f"ports out={out_name!r} in={in_name!r}")
-    lines.append(
-        f"plan clocks={expected_clock} start=1 continue=1 stop=2 "
-        f"interval_s={clock_interval_s} settle_s={settle_s}"
+
+def _drain_pending(inport, state: RecvState) -> None:
+    for msg in inport.iter_pending():
+        kind = _classify_msg(msg)
+        state.got[kind] = state.got.get(kind, 0) + 1
+        # Keep enough samples to retain Start/Continue/Stop after the clock flood.
+        if len(state.samples) < 48:
+            state.samples.append(f"RECV {kind} {_hex(bytes(msg.bytes()))}")
+
+
+def _send_status(send: StatusSend, lines: list[str]) -> None:
+    msg = send.mido.Message.from_bytes(bytes([send.status]))
+    send.outport.send(msg)
+    lines.append(f"SEND {send.label} {_hex(bytes([send.status]))}")
+
+
+def _send_clock_batch(batch: ClockBatch, state: RecvState) -> None:
+    mid = max(1, batch.count // 2)
+    for index in range(1, batch.count + 1):
+        batch.outport.send(batch.mido.Message("clock"))
+        if index == 1 or index == batch.count or (batch.log_mid and index == mid):
+            state.lines.append(f"SEND {batch.label} {index}/{batch.count} F8")
+        _drain_pending(batch.inport, state)
+        time.sleep(batch.interval_s)
+
+
+def _sanity_note_on(cfg: LabRun, ports: OpenPorts, state: RecvState) -> None:
+    probe = RecvState(got=_empty_got(), samples=state.samples, lines=state.lines)
+    note = cfg.mido.Message("note_on", note=60, velocity=64, channel=0)
+    ports.outport.send(note)
+    time.sleep(0.15)
+    _drain_pending(ports.inport, probe)
+    state.lines.append(f"sanity_note_on other_recv={probe.got.get('other', 0)}")
+
+
+def _run_transport_sequence(cfg: LabRun, ports: OpenPorts, state: RecvState) -> int:
+    """Start → clocks → Stop → Continue → clock tail → Stop. Returns expected clock total."""
+    expected_clock = cfg.clock_count
+    interval = cfg.clock_interval_s
+    mido = cfg.mido
+    outport = ports.outport
+    inport = ports.inport
+
+    _send_status(StatusSend(outport, mido, 0xFA, "start"), state.lines)
+    _drain_pending(inport, state)
+    time.sleep(interval)
+
+    _send_clock_batch(
+        ClockBatch(outport, inport, mido, expected_clock, interval, "clock", True),
+        state,
     )
 
-    with mido.open_input(in_name) as inport, mido.open_output(out_name) as outport:
-        time.sleep(0.5)
-        # Sanity: note-on loopback proves DIN before realtime scoring.
-        note = mido.Message("note_on", note=60, velocity=64, channel=0)
-        outport.send(note)
-        time.sleep(0.15)
-        _drain_pending(inport, got, samples)
-        note_hits = got.get("other", 0)
-        lines.append(f"sanity_note_on other_recv={note_hits}")
-        got = {
-            "clock": 0,
-            "start": 0,
-            "continue": 0,
-            "stop": 0,
-            "other": 0,
-        }
+    _send_status(StatusSend(outport, mido, 0xFC, "stop"), state.lines)
+    _drain_pending(inport, state)
+    time.sleep(interval)
 
-        t0 = time.monotonic()
-        # Start → clock stream → Stop → Continue → short clock tail → Stop
-        _send_status(outport, mido, 0xFA, "start", lines)
-        _drain_pending(inport, got, samples)
-        time.sleep(clock_interval_s)
+    _send_status(StatusSend(outport, mido, 0xFB, "continue"), state.lines)
+    _drain_pending(inport, state)
+    time.sleep(interval)
 
-        mid = max(1, expected_clock // 2)
-        for index in range(1, expected_clock + 1):
-            outport.send(mido.Message("clock"))
-            if index == 1 or index == expected_clock or index == mid:
-                lines.append(f"SEND clock {index}/{expected_clock} F8")
-            _drain_pending(inport, got, samples)
-            time.sleep(clock_interval_s)
+    tail = min(24, max(8, expected_clock // 8))
+    _send_clock_batch(
+        ClockBatch(outport, inport, mido, tail, interval, "clock_tail", False),
+        state,
+    )
+    expected_clock += tail
+    state.lines.append(f"SEND clock_tail count=+{tail}")
 
-        _send_status(outport, mido, 0xFC, "stop", lines)
-        _drain_pending(inport, got, samples)
-        time.sleep(clock_interval_s)
+    _send_status(StatusSend(outport, mido, 0xFC, "stop"), state.lines)
+    _drain_pending(inport, state)
+    return expected_clock
 
-        _send_status(outport, mido, 0xFB, "continue", lines)
-        _drain_pending(inport, got, samples)
-        time.sleep(clock_interval_s)
 
-        tail = min(24, max(8, expected_clock // 8))
-        for index in range(1, tail + 1):
-            outport.send(mido.Message("clock"))
-            if index == 1 or index == tail:
-                lines.append(f"SEND clock_tail {index}/{tail} F8")
-            _drain_pending(inport, got, samples)
-            time.sleep(clock_interval_s)
-        expected_clock += tail
-        lines.append(f"SEND clock_tail count=+{tail}")
+def _settle_recv(inport, state: RecvState, settle_s: float) -> None:
+    deadline = time.monotonic() + settle_s
+    while time.monotonic() < deadline:
+        _drain_pending(inport, state)
+        time.sleep(0.02)
 
-        _send_status(outport, mido, 0xFC, "stop", lines)
-        _drain_pending(inport, got, samples)
 
-        deadline = time.monotonic() + settle_s
-        while time.monotonic() < deadline:
-            _drain_pending(inport, got, samples)
-            time.sleep(0.02)
-        elapsed = time.monotonic() - t0
-
-    for sample in samples:
-        lines.append(sample)
-
+def _score_pass(state: RecvState, expected_clock: int, elapsed: float) -> bool:
+    got = state.got
     clock_ok = got["clock"]
     start_ok = got["start"]
     cont_ok = got["continue"]
@@ -389,12 +424,12 @@ def _run_lab(
     stop_pass = stop_ok >= stop_need
     passed = clock_pass and start_pass and cont_pass and stop_pass
 
-    lines.append(
+    state.lines.append(
         f"recv clock={clock_ok}/{expected_clock} (need>={clock_need}) "
         f"start={start_ok} continue={cont_ok} stop={stop_ok} (need>={stop_need}) "
         f"other={other_n} elapsed_s={elapsed:.2f}"
     )
-    lines.append(
+    state.lines.append(
         f"summary: clock_pass={str(clock_pass).lower()} "
         f"start_pass={str(start_pass).lower()} "
         f"continue_pass={str(cont_pass).lower()} "
@@ -402,6 +437,36 @@ def _run_lab(
         f"overall_pass={str(passed).lower()}"
     )
     return passed
+
+
+def _run_lab(cfg: LabRun, lines: list[str]) -> bool:
+    expected_clock = cfg.clock_count
+    samples: list[str] = []
+    state = RecvState(got=_empty_got(), samples=samples, lines=lines)
+
+    lines.append(f"ports out={cfg.out_name!r} in={cfg.in_name!r}")
+    lines.append(
+        f"plan clocks={expected_clock} start=1 continue=1 stop=2 "
+        f"interval_s={cfg.clock_interval_s} settle_s={cfg.settle_s}"
+    )
+
+    with cfg.mido.open_input(cfg.in_name) as inport, cfg.mido.open_output(
+        cfg.out_name
+    ) as outport:
+        ports = OpenPorts(inport=inport, outport=outport)
+        time.sleep(0.5)
+        # Sanity: note-on loopback proves DIN before realtime scoring.
+        _sanity_note_on(cfg, ports, state)
+        state.got = _empty_got()
+
+        t0 = time.monotonic()
+        expected_clock = _run_transport_sequence(cfg, ports, state)
+        _settle_recv(inport, state, cfg.settle_s)
+        elapsed = time.monotonic() - t0
+
+    for sample in samples:
+        lines.append(sample)
+    return _score_pass(state, expected_clock, elapsed)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -453,22 +518,18 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    mido = _require_mido()
-    if args.list_ports:
-        outs, inns = _fresh_midi_port_names()
-        print("OUT:")
-        for name in outs:
-            print(f"  {name}")
-        print("IN:")
-        for name in inns:
-            print(f"  {name}")
-        return 0
+def _list_ports_exit() -> int:
+    outs, inns = _fresh_midi_port_names()
+    print("OUT:")
+    for name in outs:
+        print(f"  {name}")
+    print("IN:")
+    for name in inns:
+        print(f"  {name}")
+    return 0
 
-    if args.clock_count < 1:
-        raise SystemExit("--clock-count must be >= 1")
 
+def _prepare_log_dir(args: argparse.Namespace) -> tuple[Path, str, Path, list[str]]:
     log_dir = Path(args.log_dir)
     if not log_dir.is_absolute():
         log_dir = _repo_root() / log_dir
@@ -480,65 +541,99 @@ def main(argv: list[str] | None = None) -> int:
         f"# out_port={args.out_port!r} in_port={args.in_port!r}",
         "# topo expect: DIN loopback Out2->In2; Matrix may stay on Out1/In1",
     ]
+    return log_dir, stamp, lab_log, lines
 
-    bridge: BridgeSession | None = None
-    try:
-        if args.with_bridge:
-            exe = (
-                Path(args.bridge_exe)
-                if args.bridge_exe
-                else _default_bridge_exe()
-            )
-            if not exe.is_absolute():
-                exe = _repo_root() / exe
-            bridge = BridgeSession(
-                exe,
-                log_dir / f"bridge-{stamp}.log",
-                ["--dev-zadig"],
-            )
+
+def _resolve_ports(
+    args: argparse.Namespace, log_dir: Path, stamp: str
+) -> tuple[str, str, BridgeSession | None]:
+    if args.with_bridge:
+        exe = Path(args.bridge_exe) if args.bridge_exe else _default_bridge_exe()
+        if not exe.is_absolute():
+            exe = _repo_root() / exe
+        bridge = BridgeSession(
+            exe,
+            log_dir / f"bridge-{stamp}.log",
+            ["--dev-zadig"],
+        )
+        try:
             bridge.start()
             out_name, in_name = bridge.wait_until_ready(
                 args.out_port, args.in_port, timeout_s=45.0
             )
+        except BaseException:
+            # Match pre-refactor: stop even if wait_until_ready fails after start.
+            bridge.stop()
+            raise
+        return out_name, in_name, bridge
+
+    outs, inns = _fresh_midi_port_names()
+    out_name = _find_port(outs, args.out_port)
+    in_name = _find_port(inns, args.in_port)
+    if not out_name or not in_name:
+        raise SystemExit(
+            f"Ports not found: out={args.out_port!r} in={args.in_port!r}. "
+            "Use --list-ports / --with-bridge."
+        )
+    return out_name, in_name, None
+
+
+def _apply_bridge_fail_needles(bridge: BridgeSession | None, lines: list[str], passed: bool) -> bool:
+    if bridge is None:
+        return passed
+    # Full-text substring match (local semantics — not line-based common helper).
+    text = bridge.captured_text()
+    hits = [n for n in BRIDGE_FAIL_NEEDLES if n in text]
+    if hits:
+        lines.append(f"bridge_fail_needles: {hits}")
+        return False
+    lines.append("bridge_fail_needles: none")
+    return passed
+
+
+def _write_and_print_log(lab_log: Path, lines: list[str]) -> None:
+    lab_log.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"Wrote {lab_log}")
+    for line in lines:
+        safe = line.encode("ascii", "replace").decode("ascii")
+        print(safe)
+
+
+def run_lab(args: argparse.Namespace) -> int:
+    mido = _require_mido()
+    if args.list_ports:
+        return _list_ports_exit()
+    if args.clock_count < 1:
+        raise SystemExit("--clock-count must be >= 1")
+
+    log_dir, stamp, lab_log, lines = _prepare_log_dir(args)
+    bridge: BridgeSession | None = None
+    try:
+        out_name, in_name, bridge = _resolve_ports(args, log_dir, stamp)
+        if bridge is not None:
             lines.append(f"bridge_ready out={out_name!r} in={in_name!r}")
-        else:
-            outs, inns = _fresh_midi_port_names()
-            out_name = _find_port(outs, args.out_port)
-            in_name = _find_port(inns, args.in_port)
-            if not out_name or not in_name:
-                raise SystemExit(
-                    f"Ports not found: out={args.out_port!r} in={args.in_port!r}. "
-                    "Use --list-ports / --with-bridge."
-                )
 
         passed = _run_lab(
-            mido,
-            out_name,
-            in_name,
-            clock_count=args.clock_count,
-            clock_interval_s=args.clock_interval_ms / 1000.0,
-            settle_s=args.settle_s,
-            lines=lines,
+            LabRun(
+                mido=mido,
+                out_name=out_name,
+                in_name=in_name,
+                clock_count=args.clock_count,
+                clock_interval_s=args.clock_interval_ms / 1000.0,
+                settle_s=args.settle_s,
+            ),
+            lines,
         )
-
-        if bridge is not None:
-            text = bridge.captured_text()
-            hits = [n for n in BRIDGE_FAIL_NEEDLES if n in text]
-            if hits:
-                lines.append(f"bridge_fail_needles: {hits}")
-                passed = False
-            else:
-                lines.append("bridge_fail_needles: none")
-
-        lab_log.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        print(f"Wrote {lab_log}")
-        for line in lines:
-            safe = line.encode("ascii", "replace").decode("ascii")
-            print(safe)
+        passed = _apply_bridge_fail_needles(bridge, lines, passed)
+        _write_and_print_log(lab_log, lines)
         return 0 if passed else 2
     finally:
         if bridge is not None:
             bridge.stop()
+
+
+def main(argv: list[str] | None = None) -> int:
+    return run_lab(build_parser().parse_args(argv))
 
 
 if __name__ == "__main__":
