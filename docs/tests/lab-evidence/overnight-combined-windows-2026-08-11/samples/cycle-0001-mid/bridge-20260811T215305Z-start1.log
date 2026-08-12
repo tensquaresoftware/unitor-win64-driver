@@ -1,0 +1,77 @@
+# Bridge console capture started_utc=2026-08-11T21:53:05.364737+00:00
+Unitor MT4 Bridge 0.1.0
+Emagic init/computer-mode: drained 1024 bulk IN byte(s); post-kick drain=256; read capacity=32; channel CC kick sent (manual Computer Mode)
+Bulk IN async ring armed (63 slots) before host MIDI sink
+Host MIDI sink live (bulk IN ring already active; librarian OUT gated)
+Post-start pipe prime queued (quiet CC on Out1)
+Post-start IN calm ready (pending=63/63 queued=0)
+Unit K=1 identity=topology key="USB\VID_086A&PID_0003\5&330350CB&0&5"
+Expected Virtual Ports: 2 IN / 4 OUT
+  IN  MT4 In 1
+  IN  MT4 In 2
+  OUT MT4 Out 1
+  OUT MT4 Out 2
+  OUT MT4 Out 3
+  OUT MT4 Out 4
+first-burst IN: cable=0 span_len=17 head=B0 01 00 B0 40 00 D0 00 B1 7B 00 B1 78 00 E1 00 40 has_f0=no holding=no held=0 pending_urbs=63
+DeviceSession started for 1 MT4 unit(s) with Virtual Ports
+MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)
+device-host counters will print in this window on USB IN activity (same thread as this message)
+Device Inquiry lab: watch inquiry_out vs identity_reply_in (expect them to stay close)
+[K=1] device-host counters: bulk_in_bytes=32 demux_spans=1 send_ok_msgs=6 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+first-burst IN: cable=0 span_len=3 head=B1 01 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B1 40 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=2 head=D1 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B2 7B 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B2 78 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=E2 00 40 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B2 01 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B2 40 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=2 head=D2 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B3 7B 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B3 78 00 has_f0=no holding=no held=0 pending_urbs=63
+[K=1] device-host counters: bulk_in_bytes=640 demux_spans=20 send_ok_msgs=25 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=1472 demux_spans=46 send_ok_msgs=51 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=2368 demux_spans=74 send_ok_msgs=79 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=2816 demux_spans=88 send_ok_msgs=93 send_fail_msgs=0 host_out_ok=2 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=11616 demux_spans=363 send_ok_msgs=94 send_fail_msgs=0 host_out_ok=3 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=20416 demux_spans=638 send_ok_msgs=95 send_fail_msgs=0 host_out_ok=4 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=29216 demux_spans=913 send_ok_msgs=96 send_fail_msgs=0 host_out_ok=5 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=38816 demux_spans=1213 send_ok_msgs=97 send_fail_msgs=0 host_out_ok=6 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=46816 demux_spans=1463 send_ok_msgs=98 send_fail_msgs=0 host_out_ok=7 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=55616 demux_spans=1738 send_ok_msgs=99 send_fail_msgs=0 host_out_ok=8 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=64416 demux_spans=2013 send_ok_msgs=100 send_fail_msgs=0 host_out_ok=8 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=64416 demux_spans=2013 send_ok_msgs=100 send_fail_msgs=0 host_out_ok=9 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=73216 demux_spans=2288 send_ok_msgs=101 send_fail_msgs=0 host_out_ok=10 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=82208 demux_spans=2569 send_ok_msgs=102 send_fail_msgs=0 host_out_ok=11 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=90816 demux_spans=2838 send_ok_msgs=103 send_fail_msgs=0 host_out_ok=12 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=102528 demux_spans=3204 send_ok_msgs=104 send_fail_msgs=0 host_out_ok=13 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=113280 demux_spans=3540 send_ok_msgs=105 send_fail_msgs=0 host_out_ok=14 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=124512 demux_spans=3891 send_ok_msgs=106 send_fail_msgs=0 host_out_ok=15 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=135744 demux_spans=4242 send_ok_msgs=107 send_fail_msgs=0 host_out_ok=16 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=146976 demux_spans=4593 send_ok_msgs=108 send_fail_msgs=0 host_out_ok=17 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=158208 demux_spans=4944 send_ok_msgs=109 send_fail_msgs=0 host_out_ok=18 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=169664 demux_spans=5302 send_ok_msgs=110 send_fail_msgs=0 host_out_ok=19 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=181568 demux_spans=5674 send_ok_msgs=111 send_fail_msgs=0 host_out_ok=20 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=192608 demux_spans=6019 send_ok_msgs=112 send_fail_msgs=0 host_out_ok=21 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=22 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=23 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=24 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=25 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=26 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=27 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=28 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=29 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=30 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=31 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=32 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=33 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=34 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=35 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=36 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=37 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=38 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=39 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=40 inquiry_out=0 identity_reply_in=0
+device-host counters: bulk_in_bytes=203136 demux_spans=6348 send_ok_msgs=113 send_fail_msgs=0 host_out_ok=40 inquiry_out=0 identity_reply_in=0
+MIDI I/O stopped

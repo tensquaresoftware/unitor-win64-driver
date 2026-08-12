@@ -1,0 +1,136 @@
+# Bridge console capture started_utc=2026-08-11T21:53:59.856765+00:00
+Unitor MT4 Bridge 0.1.0
+Emagic init/computer-mode: drained 1024 bulk IN byte(s); post-kick drain=256; read capacity=32; channel CC kick sent (manual Computer Mode)
+Bulk IN async ring armed (63 slots) before host MIDI sink
+Host MIDI sink live (bulk IN ring already active; librarian OUT gated)
+Post-start pipe prime queued (quiet CC on Out1)
+Post-start IN calm ready (pending=63/63 queued=0)
+Unit K=1 identity=topology key="USB\VID_086A&PID_0003\5&330350CB&0&5"
+Expected Virtual Ports: 2 IN / 4 OUT
+  IN  MT4 In 1
+  IN  MT4 In 2
+  OUT MT4 Out 1
+  OUT MT4 Out 2
+  OUT MT4 Out 3
+  OUT MT4 Out 4
+first-burst IN: cable=0 span_len=11 head=B2 40 00 D2 00 B3 7B 00 B3 78 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=E3 00 40 has_f0=no holding=no held=0 pending_urbs=63
+DeviceSession started for 1 MT4 unit(s) with Virtual Ports
+MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)
+device-host counters will print in this window on USB IN activity (same thread as this message)
+Device Inquiry lab: watch inquiry_out vs identity_reply_in (expect them to stay close)
+[K=1] device-host counters: bulk_in_bytes=64 demux_spans=2 send_ok_msgs=5 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+first-burst IN: cable=0 span_len=3 head=B3 01 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B3 40 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=2 head=D3 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B4 7B 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B4 78 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=E4 00 40 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B4 01 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B4 40 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=2 head=D4 00 has_f0=no holding=no held=0 pending_urbs=63
+first-burst IN: cable=0 span_len=3 head=B5 7B 00 has_f0=no holding=no held=0 pending_urbs=63
+[K=1] device-host counters: bulk_in_bytes=864 demux_spans=27 send_ok_msgs=30 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=1504 demux_spans=47 send_ok_msgs=50 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=2368 demux_spans=74 send_ok_msgs=77 send_fail_msgs=0 host_out_ok=1 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1027 out_ms=345 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=60)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=35232 demux_spans=1101 send_ok_msgs=81 send_fail_msgs=0 host_out_ok=2 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=328 deliver_q=0->0 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57 gap_min_armed=62)
+[K=1] device-host counters: bulk_in_bytes=68864 demux_spans=2152 send_ok_msgs=82 send_fail_msgs=0 host_out_ok=3 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=325 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=102496 demux_spans=3203 send_ok_msgs=83 send_fail_msgs=0 host_out_ok=4 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=325 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=136704 demux_spans=4272 send_ok_msgs=84 send_fail_msgs=0 host_out_ok=5 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=325 deliver_q=0->0 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=166304 demux_spans=5197 send_ok_msgs=85 send_fail_msgs=0 host_out_ok=6 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=326 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=199712 demux_spans=6241 send_ok_msgs=86 send_fail_msgs=0 host_out_ok=7 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=327 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=233760 demux_spans=7305 send_ok_msgs=87 send_fail_msgs=0 host_out_ok=8 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=328 deliver_q=0->0 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57 gap_min_armed=62)
+[K=1] device-host counters: bulk_in_bytes=267520 demux_spans=8360 send_ok_msgs=88 send_fail_msgs=0 host_out_ok=9 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=326 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=297376 demux_spans=9293 send_ok_msgs=89 send_fail_msgs=0 host_out_ok=10 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=1024 encoded_bytes=1025 out_ms=325 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=1024 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=330144 demux_spans=10317 send_ok_msgs=90 send_fail_msgs=0 host_out_ok=11 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1307 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=461216 demux_spans=14413 send_ok_msgs=91 send_fail_msgs=0 host_out_ok=12 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1308 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=62/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=592288 demux_spans=18509 send_ok_msgs=92 send_fail_msgs=0 host_out_ok=13 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1308 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=726144 demux_spans=22692 send_ok_msgs=93 send_fail_msgs=0 host_out_ok=14 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1309 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=856032 demux_spans=26751 send_ok_msgs=94 send_fail_msgs=0 host_out_ok=15 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1307 deliver_q=0->0 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=987072 demux_spans=30846 send_ok_msgs=95 send_fail_msgs=0 host_out_ok=16 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1307 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=62/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=1117280 demux_spans=34915 send_ok_msgs=96 send_fail_msgs=0 host_out_ok=17 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1310 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=62/63 gap_min_armed=61)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=1247872 demux_spans=38996 send_ok_msgs=97 send_fail_msgs=0 host_out_ok=18 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1311 deliver_q=0->0 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57 gap_min_armed=62)
+[K=1] device-host counters: bulk_in_bytes=1378720 demux_spans=43085 send_ok_msgs=98 send_fail_msgs=0 host_out_ok=19 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1307 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=1509792 demux_spans=47181 send_ok_msgs=99 send_fail_msgs=0 host_out_ok=20 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=4096 encoded_bytes=4097 out_ms=1307 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=4096 head=F0 7D 4C 42 tail=76 77 78 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=1642656 demux_spans=51333 send_ok_msgs=100 send_fail_msgs=0 host_out_ok=21 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=1947584 demux_spans=60862 send_ok_msgs=100 send_fail_msgs=0 host_out_ok=21 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4702 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=2111520 demux_spans=65985 send_ok_msgs=101 send_fail_msgs=0 host_out_ok=22 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=2416512 demux_spans=75516 send_ok_msgs=101 send_fail_msgs=0 host_out_ok=22 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4699 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=2582176 demux_spans=80693 send_ok_msgs=102 send_fail_msgs=0 host_out_ok=23 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=2884608 demux_spans=90144 send_ok_msgs=102 send_fail_msgs=0 host_out_ok=23 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4699 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=62/63 gap_min_armed=62)
+[K=1] device-host counters: bulk_in_bytes=3052320 demux_spans=95385 send_ok_msgs=102 send_fail_msgs=0 host_out_ok=24 inquiry_out=0 identity_reply_in=0
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=3345888 demux_spans=104559 send_ok_msgs=103 send_fail_msgs=0 host_out_ok=24 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4699 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=62/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=3523488 demux_spans=110109 send_ok_msgs=104 send_fail_msgs=0 host_out_ok=25 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=3822336 demux_spans=119448 send_ok_msgs=104 send_fail_msgs=0 host_out_ok=25 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4701 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=3994144 demux_spans=124817 send_ok_msgs=105 send_fail_msgs=0 host_out_ok=26 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=4291456 demux_spans=134108 send_ok_msgs=105 send_fail_msgs=0 host_out_ok=26 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4699 deliver_q=0->0 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+[K=1] device-host counters: bulk_in_bytes=4464320 demux_spans=139510 send_ok_msgs=105 send_fail_msgs=0 host_out_ok=27 inquiry_out=0 identity_reply_in=0
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=4764576 demux_spans=148893 send_ok_msgs=106 send_fail_msgs=0 host_out_ok=27 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4701 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=62/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=4935456 demux_spans=154233 send_ok_msgs=107 send_fail_msgs=0 host_out_ok=28 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=5237376 demux_spans=163668 send_ok_msgs=107 send_fail_msgs=0 host_out_ok=28 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4701 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=5406272 demux_spans=168946 send_ok_msgs=108 send_fail_msgs=0 host_out_ok=29 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=5711296 demux_spans=178478 send_ok_msgs=108 send_fail_msgs=0 host_out_ok=29 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4699 deliver_q=0->0 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+[K=1] device-host counters: bulk_in_bytes=5876768 demux_spans=183649 send_ok_msgs=109 send_fail_msgs=0 host_out_ok=30 inquiry_out=0 identity_reply_in=0
+[K=1] device-host counters: bulk_in_bytes=6172992 demux_spans=192906 send_ok_msgs=109 send_fail_msgs=0 host_out_ok=30 inquiry_out=0 identity_reply_in=0
+host→device: long SysEx WriteBulk ok (out_port=2 midi_bytes=14708 encoded_bytes=14709 out_ms=4702 deliver_q=0->1 deliver_hw=57 pending_urbs=63/63 armed_urbs=63/63 gap_min_armed=62)
+device→host: long SysEx SendToHost ok (in_port=2 bytes=14708 head=F0 00 00 0E tail=00 00 00 F7 deliver_hw=57)
+device-host counters: bulk_in_bytes=6347424 demux_spans=198357 send_ok_msgs=110 send_fail_msgs=0 host_out_ok=31 inquiry_out=0 identity_reply_in=0
+MIDI I/O stopped

@@ -1,0 +1,95 @@
+# SysEx long DIN loopback lab log
+# started_utc: 2026-08-12T01:51:14.877598+00:00
+# with_bridge: true
+# fresh_starts: 1
+# count_per_payload: 10
+# sizes: 1024,4096
+# fixture: C:\Users\Guillaume\Dev\Projects\unitor-win64-driver\tests\fixtures\sysex\long-loopback-14708.syx
+# skip_fixture: false
+# interval_s: 0.05
+# reply_timeout_s: 8.0
+# pass_percent: 100.0
+# abort_after_timeouts: 3
+# max_wall_seconds: 186.2
+# stamp: 20260812T015114Z
+---
+# session_index: 1
+# start_index: 1
+# out_port: MT4 Out 2 2
+# in_port: MT4 In 2 1
+# count_per_payload: 10
+# interval_s: 0.05
+# reply_timeout_s: 8.0
+# abort_after_timeouts: 3
+# max_wall_seconds: 184.6
+# payloads: synth_1024=1024B, synth_4096=4096B, fixture_14708=14708B
+---
+0001 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94457.531
+0001 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=344.0
+0002 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94457.890
+0002 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0003 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94458.234
+0003 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0004 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94458.578
+0004 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0005 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94458.921
+0005 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0006 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94459.265
+0006 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0007 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94459.609
+0007 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0008 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94459.953
+0008 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0009 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94460.296
+0009 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+0010 SEND synth_1024 head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 t_mono=94460.640
+0010 RECV synth_1024 match head=F0 7D 4C 42 tail=76 77 78 F7 len=1024 dt_ms=328.0
+summary[synth_1024]: sent=10 ok=10 rate=100.0% elapsed_s=3.45 pass=true (need>=100%)
+0001 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94460.984
+0001 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1312.0
+0002 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94462.312
+0002 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1312.0
+0003 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94463.640
+0003 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1312.0
+0004 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94464.968
+0004 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1312.0
+0005 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94466.296
+0005 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.0
+0006 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94467.625
+0006 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.0
+0007 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94468.953
+0007 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.0
+0008 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94470.281
+0008 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1313.0
+0009 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94471.609
+0009 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1312.0
+0010 SEND synth_4096 head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 t_mono=94472.937
+0010 RECV synth_4096 match head=F0 7D 4C 42 tail=76 77 78 F7 len=4096 dt_ms=1312.0
+summary[synth_4096]: sent=10 ok=10 rate=100.0% elapsed_s=13.28 pass=true (need>=100%)
+0001 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94474.265
+0001 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4719.0
+0002 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94479.000
+0002 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4719.0
+0003 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94483.750
+0003 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4719.0
+0004 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94488.515
+0004 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4719.0
+0005 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94493.250
+0005 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4719.0
+0006 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94497.984
+0006 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4719.0
+0007 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94502.734
+0007 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4734.0
+0008 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94507.484
+0008 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4734.0
+0009 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94512.234
+0009 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4734.0
+0010 SEND fixture_14708 head=F0 00 00 0E tail=00 00 00 F7 len=14708 t_mono=94516.984
+0010 RECV fixture_14708 match head=F0 00 00 0E tail=00 00 00 F7 len=14708 dt_ms=4718.0
+summary[fixture_14708]: sent=10 ok=10 rate=100.0% elapsed_s=47.45 pass=true (need>=100%)
+# finished_utc: 2026-08-12T01:52:21.707129+00:00
+# start_pass: true
+# bridge_log_start1: C:\Users\Guillaume\Dev\Projects\unitor-win64-driver\tests\lab-logs\overnight-combined\cycle-0113-long\bridge-20260812T015114Z-start1.log
+# bridge_fail_start1: count=0
+# finished_utc: 2026-08-12T01:52:21.774981+00:00
+# overall_pass: true
