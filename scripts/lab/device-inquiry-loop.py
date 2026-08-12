@@ -21,8 +21,10 @@ import subprocess
 import sys
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 
 INQUIRY = bytes([0xF0, 0x7E, 0x7F, 0x06, 0x01, 0xF7])
@@ -352,72 +354,118 @@ class BridgeSession:
         print(f"Bridge stopped (code={self.proc.returncode})")
 
 
+@dataclass(frozen=True)
+class InquiryLoopOpts:
+    out_name: str
+    in_name: str
+    count: int
+    interval: float
+    reply_timeout: float
+    pass_percent: float
+
+
+@dataclass(frozen=True)
+class InquiryCycle:
+    mido: Any
+    outport: Any
+    inport: Any
+    opts: InquiryLoopOpts
+    lines: list[str]
+
+
+@dataclass(frozen=True)
+class PendingReply:
+    index: int
+    cycle_started: float
+    first_dt_ms: float
+    first_reply: bytes | None
+
+
+def _append_lab_line(lines: list[str], text: str) -> None:
+    lines.append(text)
+    print(text)
+
+
+def _resolve_inquiry_outcome(cycle: InquiryCycle, pending: PendingReply) -> tuple[bool, bool]:
+    """Return (got_reply, was_late).
+
+    Keep listening until the next send so late VirtualMIDI delivery is not
+    counted as a hard miss when Bridge already SendToHost'ed.
+    """
+    if pending.first_reply is not None:
+        _append_lab_line(
+            cycle.lines,
+            f"{pending.index:04d} RECV identity {_hex_bytes(pending.first_reply)} "
+            f"dt_ms={pending.first_dt_ms:.1f}",
+        )
+        return True, False
+
+    remaining = cycle.opts.interval - (time.monotonic() - pending.cycle_started)
+    late_timeout = max(0.0, remaining)
+    late_reply, late_ms = _wait_identity(cycle.inport, late_timeout)
+    if late_reply is None:
+        _append_lab_line(
+            cycle.lines,
+            f"{pending.index:04d} TIMEOUT no identity within "
+            f"{cycle.opts.reply_timeout:.1f}s (+{late_timeout:.1f}s slack) "
+            f"waited_ms={pending.first_dt_ms + late_ms:.1f}",
+        )
+        return False, False
+
+    _append_lab_line(
+        cycle.lines,
+        f"{pending.index:04d} LATE identity {_hex_bytes(late_reply)} "
+        f"dt_ms={pending.first_dt_ms + late_ms:.1f}",
+    )
+    return True, True
+
+
+def _run_one_inquiry(cycle: InquiryCycle, index: int) -> tuple[bool, bool]:
+    cycle_started = time.monotonic()
+    _drain_input(cycle.inport, settle_s=0.02)
+    cycle.outport.send(cycle.mido.Message("sysex", data=list(INQUIRY[1:-1])))
+    _append_lab_line(
+        cycle.lines,
+        f"{index:04d} SEND inquiry {_hex_bytes(INQUIRY)} t_mono={cycle_started:.3f}",
+    )
+    reply, dt_ms = _wait_identity(cycle.inport, cycle.opts.reply_timeout)
+    got, late = _resolve_inquiry_outcome(
+        cycle,
+        PendingReply(index, cycle_started, dt_ms, reply),
+    )
+    if index < cycle.opts.count:
+        remaining = cycle.opts.interval - (time.monotonic() - cycle_started)
+        if remaining > 0:
+            time.sleep(remaining)
+    return got, late
+
+
 def _run_inquiry_loop(
     mido,
-    out_name: str,
-    in_name: str,
-    args: argparse.Namespace,
+    opts: InquiryLoopOpts,
     lines: list[str],
 ) -> tuple[int, bool, str]:
     replies = 0
     late_replies = 0
-    with mido.open_input(in_name) as inport, mido.open_output(out_name) as outport:
+    with (
+        mido.open_input(opts.in_name) as inport,
+        mido.open_output(opts.out_name) as outport,
+    ):
         _drain_input(inport)
-        for index in range(1, args.count + 1):
-            cycle_started = time.monotonic()
-            _drain_input(inport, settle_s=0.02)
-            outport.send(mido.Message("sysex", data=list(INQUIRY[1:-1])))
-            send_line = (
-                f"{index:04d} SEND inquiry {_hex_bytes(INQUIRY)} "
-                f"t_mono={cycle_started:.3f}"
-            )
-            lines.append(send_line)
-            print(send_line)
-
-            reply, dt_ms = _wait_identity(inport, args.reply_timeout)
-            if reply is not None:
+        cycle = InquiryCycle(mido, outport, inport, opts, lines)
+        for index in range(1, opts.count + 1):
+            got, late = _run_one_inquiry(cycle, index)
+            if got:
                 replies += 1
-                result = (
-                    f"{index:04d} RECV identity {_hex_bytes(reply)} "
-                    f"dt_ms={dt_ms:.1f}"
-                )
-                lines.append(result)
-                print(result)
-            else:
-                # Keep listening until the next send so late VirtualMIDI delivery
-                # is not counted as a hard miss when Bridge already SendToHost'ed.
-                remaining = args.interval - (time.monotonic() - cycle_started)
-                late_timeout = max(0.0, remaining)
-                late_reply, late_ms = _wait_identity(inport, late_timeout)
-                if late_reply is None:
-                    result = (
-                        f"{index:04d} TIMEOUT no identity within "
-                        f"{args.reply_timeout:.1f}s (+{late_timeout:.1f}s slack) "
-                        f"waited_ms={dt_ms + late_ms:.1f}"
-                    )
-                    lines.append(result)
-                    print(result)
-                else:
-                    replies += 1
+                if late:
                     late_replies += 1
-                    result = (
-                        f"{index:04d} LATE identity {_hex_bytes(late_reply)} "
-                        f"dt_ms={dt_ms + late_ms:.1f}"
-                    )
-                    lines.append(result)
-                    print(result)
 
-            if index < args.count:
-                remaining = args.interval - (time.monotonic() - cycle_started)
-                if remaining > 0:
-                    time.sleep(remaining)
-
-    rate = (100.0 * replies / args.count) if args.count else 0.0
-    passed = rate >= args.pass_percent
+    rate = (100.0 * replies / opts.count) if opts.count else 0.0
+    passed = rate >= opts.pass_percent
     summary = (
-        f"summary: sent={args.count} recv={replies} late={late_replies} "
+        f"summary: sent={opts.count} recv={replies} late={late_replies} "
         f"rate={rate:.1f}% pass={str(passed).lower()} "
-        f"(need>={args.pass_percent:.0f}%)"
+        f"(need>={opts.pass_percent:.0f}%)"
     )
     return replies, passed, summary
 
@@ -478,7 +526,15 @@ def run_lab(args: argparse.Namespace) -> int:
         f"(reply timeout {args.reply_timeout}s)."
     )
 
-    _, passed, summary = _run_inquiry_loop(mido, out_name, in_name, args, lines)
+    opts = InquiryLoopOpts(
+        out_name=out_name,
+        in_name=in_name,
+        count=args.count,
+        interval=args.interval,
+        reply_timeout=args.reply_timeout,
+        pass_percent=args.pass_percent,
+    )
+    _, passed, summary = _run_inquiry_loop(mido, opts, lines)
     lines.append("---")
     lines.append(summary)
     lines.append(f"# finished_utc: {datetime.now(timezone.utc).isoformat()}")
