@@ -130,7 +130,7 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 - [x] `scripts/lab/overnight-long-loopback-stress.py`  
   Snapshot : ~1 finding · score ~107 · `_run_child` params  
-  Notes : pending commit — cleared under `--all` via ChildRun/OvernightContext cycle split (CLI preserved; no companion)
+  Notes : `caa1a7f` — cleared under `--all` via ChildRun/OvernightContext cycle split (CLI preserved; no companion)
 
 - [ ] `scripts/lab/device-inquiry-loop.py`  
   Snapshot : ~2 findings · score ~16 · nesting / params `_run_inquiry_loop`  
