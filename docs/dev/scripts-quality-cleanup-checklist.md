@@ -128,9 +128,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
   Snapshot : ~2 findings · score ~108 · nesting `_run_stress`  
   Notes : `396ea57` — cleared under `--all` via listen/SysEx helpers + ListenTarget (CLI preserved; no companion)
 
-- [ ] `scripts/lab/overnight-long-loopback-stress.py`  
+- [x] `scripts/lab/overnight-long-loopback-stress.py`  
   Snapshot : ~1 finding · score ~107 · `_run_child` params  
-  Notes :
+  Notes : pending commit — cleared under `--all` via ChildRun/OvernightContext cycle split (CLI preserved; no companion)
 
 - [ ] `scripts/lab/device-inquiry-loop.py`  
   Snapshot : ~2 findings · score ~16 · nesting / params `_run_inquiry_loop`  
