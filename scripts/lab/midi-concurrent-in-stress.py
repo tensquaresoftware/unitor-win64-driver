@@ -21,6 +21,7 @@ import subprocess
 import sys
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -247,88 +248,82 @@ class Counters:
                 self.in2_other += 1
 
 
-def _run_stress(
-    mido,
-    ports: dict[str, str],
-    rounds: int,
-    lines: list[str],
-) -> bool:
-    counters = Counters()
-    # Marker notes: Out1 uses note 60, Out2 uses note 72 — detect cross-talk.
-    stop = threading.Event()
+def _score_sysex_frame(frame: bytes, counters: Counters, which: str) -> None:
+    if len(frame) == PATCH_SIZE and frame.startswith(PATCH_PREFIX):
+        counters.patch(which)
+    else:
+        counters.other(which)
 
-    def listen(in_name: str, which: str) -> None:
-        with mido.open_input(in_name) as inport:
-            hold: bytearray = bytearray()
-            while not stop.is_set():
-                for msg in inport.iter_pending():
-                    if msg.type == "note_on" and msg.velocity > 0:
-                        counters.note(which, msg.note)
-                    elif msg.type == "sysex":
-                        raw = bytes([0xF0]) + bytes(msg.data) + bytes([0xF7])
-                        hold.extend(raw)
-                        # Score complete Matrix patch dumps.
-                        while True:
-                            if 0xF0 not in hold:
-                                hold.clear()
-                                break
-                            start = hold.index(0xF0)
-                            if start:
-                                del hold[:start]
-                            if 0xF7 not in hold:
-                                break
-                            end = hold.index(0xF7)
-                            frame = bytes(hold[: end + 1])
-                            del hold[: end + 1]
-                            if (
-                                len(frame) == PATCH_SIZE
-                                and frame.startswith(PATCH_PREFIX)
-                            ):
-                                counters.patch(which)
-                            else:
-                                counters.other(which)
-                    else:
-                        counters.other(which)
-                time.sleep(0.002)
 
-    t1 = threading.Thread(
-        target=listen, args=(ports["MT4 In 1"], "in1"), daemon=True
-    )
-    t2 = threading.Thread(
-        target=listen, args=(ports["MT4 In 2"], "in2"), daemon=True
-    )
-    t1.start()
-    t2.start()
-    time.sleep(0.3)
+def _drain_sysex_hold(hold: bytearray, counters: Counters, which: str) -> None:
+    """Score complete Matrix patch dumps from a reassembly buffer."""
+    while True:
+        if 0xF0 not in hold:
+            hold.clear()
+            return
+        start = hold.index(0xF0)
+        if start:
+            del hold[:start]
+        if 0xF7 not in hold:
+            return
+        end = hold.index(0xF7)
+        frame = bytes(hold[: end + 1])
+        del hold[: end + 1]
+        _score_sysex_frame(frame, counters, which)
 
-    dumps_ok = 0
-    notes2_ok = 0
+
+def _dispatch_midi_msg(msg, hold: bytearray, counters: Counters, which: str) -> None:
+    if msg.type == "note_on" and msg.velocity > 0:
+        counters.note(which, msg.note)
+        return
+    if msg.type == "sysex":
+        hold.extend(bytes([0xF0]) + bytes(msg.data) + bytes([0xF7]))
+        _drain_sysex_hold(hold, counters, which)
+        return
+    counters.other(which)
+
+
+@dataclass
+class ListenTarget:
+    in_name: str
+    which: str
+    counters: Counters
+    stop: threading.Event
+
+
+def _listen_port(mido, target: ListenTarget) -> None:
+    with mido.open_input(target.in_name) as inport:
+        hold: bytearray = bytearray()
+        while not target.stop.is_set():
+            for msg in inport.iter_pending():
+                _dispatch_midi_msg(msg, hold, target.counters, target.which)
+            time.sleep(0.002)
+
+
+def _send_out2_note_burst(mido, out2) -> None:
+    for _ in range(8):
+        out2.send(mido.Message("note_on", note=72, velocity=64, channel=0))
+        time.sleep(0.01)
+        out2.send(mido.Message("note_off", note=72, velocity=0, channel=0))
+        time.sleep(0.01)
+
+
+def _send_interleaved_rounds(mido, ports: dict[str, str], rounds: int, lines: list[str]) -> None:
+    # Interleave: Out2 note burst (loopback -> In2) then Out1 dump (Matrix -> In1).
     with mido.open_output(ports["MT4 Out 1"]) as out1, mido.open_output(
         ports["MT4 Out 2"]
     ) as out2:
         for round_i in range(1, rounds + 1):
-            # Interleave: Out2 note burst (loopback -> In2) then Out1 dump (Matrix -> In1).
-            for _ in range(8):
-                out2.send(
-                    mido.Message("note_on", note=72, velocity=64, channel=0)
-                )
-                time.sleep(0.01)
-                out2.send(
-                    mido.Message("note_off", note=72, velocity=0, channel=0)
-                )
-                time.sleep(0.01)
+            _send_out2_note_burst(mido, out2)
             out1.send(mido.Message("sysex", data=list(PATCH_DUMP_REQUEST[1:-1])))
             time.sleep(0.35)
-            # Also send a note on Out1 (Matrix may ignore; must NOT appear on In2 as marker 72).
+            # Out1 note (Matrix may ignore; must NOT appear on In2 as marker 72).
             out1.send(mido.Message("note_on", note=60, velocity=40, channel=0))
             time.sleep(0.05)
             lines.append(f"ROUND {round_i}/{rounds} interleaved send done")
 
-    time.sleep(1.0)
-    stop.set()
-    t1.join(timeout=2)
-    t2.join(timeout=2)
 
+def _score_stress(counters: Counters, rounds: int, lines: list[str]) -> bool:
     with counters.lock:
         notes2_ok = counters.in2_notes
         dumps_ok = counters.in1_patch
@@ -352,6 +347,42 @@ def _run_stress(
         f"cross_pass={cross_pass} overall_pass={passed}"
     )
     return passed
+
+
+def _run_stress(
+    mido,
+    ports: dict[str, str],
+    rounds: int,
+    lines: list[str],
+) -> bool:
+    # Marker notes: Out1 uses note 60, Out2 uses note 72 — detect cross-talk.
+    counters = Counters()
+    stop = threading.Event()
+    t1 = threading.Thread(
+        target=_listen_port,
+        args=(
+            mido,
+            ListenTarget(ports["MT4 In 1"], "in1", counters, stop),
+        ),
+        daemon=True,
+    )
+    t2 = threading.Thread(
+        target=_listen_port,
+        args=(
+            mido,
+            ListenTarget(ports["MT4 In 2"], "in2", counters, stop),
+        ),
+        daemon=True,
+    )
+    t1.start()
+    t2.start()
+    time.sleep(0.3)
+    _send_interleaved_rounds(mido, ports, rounds, lines)
+    time.sleep(1.0)
+    stop.set()
+    t1.join(timeout=2)
+    t2.join(timeout=2)
+    return _score_stress(counters, rounds, lines)
 
 
 def build_parser() -> argparse.ArgumentParser:
