@@ -116,9 +116,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
   Snapshot : ~4 findings · score ~119 · `main` ccn · `_run_lab` nloc/params · `_send_status` params  
   Notes : `20a4e6d` — cleared under `--all` via LabRun/StatusSend/ClockBatch + phase split (CLI preserved; no companion; local fail needles kept)
 
-- [ ] `scripts/lab/mtc-loopback-lab.py`  
+- [x] `scripts/lab/mtc-loopback-lab.py`  
   Snapshot : ~2 findings · score ~119 · `main` ccn · `_run_lab` params  
-  Notes :
+  Notes : pending commit — cleared under `--all` via LabRun/QfBatch + phase split (CLI preserved; no companion; local fail needles kept)
 
 - [ ] `scripts/lab/overnight-matrix-stress.py`  
   Snapshot : ~3 findings · score ~118 · `run_overnight` · `_run_child` params  

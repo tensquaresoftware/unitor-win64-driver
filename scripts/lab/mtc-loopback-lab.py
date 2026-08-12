@@ -19,8 +19,10 @@ import subprocess
 import sys
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 READY_MARKERS = (
     "Device Inquiry lab:",
@@ -281,6 +283,48 @@ class BridgeSession:
         print(f"Bridge stopped (code={self.proc.returncode})")
 
 
+@dataclass(frozen=True)
+class LabRun:
+    mido: Any
+    out_name: str
+    in_name: str
+    time_frames: int
+    qf_interval_s: float
+    settle_s: float
+
+
+@dataclass
+class RecvState:
+    got: dict[str, int]
+    samples: list[str]
+    lines: list[str]
+
+
+@dataclass(frozen=True)
+class OpenPorts:
+    inport: Any
+    outport: Any
+
+
+@dataclass(frozen=True)
+class QfBatch:
+    outport: Any
+    inport: Any
+    mido: Any
+    frames: list[bytes]
+    interval_s: float
+    label: str
+    log_milestones: bool
+
+
+def _hex(data: bytes) -> str:
+    return " ".join(f"{b:02X}" for b in data)
+
+
+def _empty_got() -> dict[str, int]:
+    return {"qf": 0, "full": 0, "other": 0}
+
+
 def _classify_msg(msg) -> str:
     raw = bytes(msg.bytes())
     if msg.type == "quarter_frame" or (len(raw) == 2 and raw[0] == 0xF1):
@@ -292,75 +336,90 @@ def _classify_msg(msg) -> str:
     return "other"
 
 
-def _drain_pending(inport, got: dict[str, int], samples: list[str]) -> None:
+def _drain_pending(inport, state: RecvState) -> None:
     for msg in inport.iter_pending():
         kind = _classify_msg(msg)
-        got[kind] = got.get(kind, 0) + 1
-        if len(samples) < 12:
-            samples.append(f"RECV {kind} {_hex(bytes(msg.bytes()))}")
+        state.got[kind] = state.got.get(kind, 0) + 1
+        if len(state.samples) < 12:
+            state.samples.append(f"RECV {kind} {_hex(bytes(msg.bytes()))}")
 
 
-def _run_lab(
-    mido,
-    out_name: str,
-    in_name: str,
-    time_frames: int,
-    qf_interval_s: float,
-    settle_s: float,
-    lines: list[str],
-) -> bool:
-    qf_send = _build_time_frames(time_frames)
+def _send_qf_batch(batch: QfBatch, state: RecvState) -> None:
+    total = len(batch.frames)
+    for index, frame in enumerate(batch.frames, start=1):
+        batch.outport.send(batch.mido.Message.from_bytes(frame))
+        if batch.log_milestones and (
+            index == 1 or index == total or index % 8 == 0
+        ):
+            state.lines.append(f"SEND {batch.label} {index}/{total} {_hex(frame)}")
+        _drain_pending(batch.inport, state)
+        time.sleep(batch.interval_s)
+
+
+def _sanity_note_on(cfg: LabRun, ports: OpenPorts, state: RecvState) -> None:
+    probe = RecvState(got=_empty_got(), samples=state.samples, lines=state.lines)
+    note = cfg.mido.Message("note_on", note=60, velocity=64, channel=0)
+    ports.outport.send(note)
+    time.sleep(0.15)
+    _drain_pending(ports.inport, probe)
+    state.lines.append(f"sanity_note_on other_recv={probe.got.get('other', 0)}")
+
+
+def _send_full_frame(cfg: LabRun, ports: OpenPorts, state: RecvState) -> None:
+    state.lines.append(f"SEND full_frame {_hex(FULL_FRAME)}")
+    ports.outport.send(cfg.mido.Message("sysex", data=list(FULL_FRAME_INNER)))
+    _drain_pending(ports.inport, state)
+
+
+def _run_mtc_sequence(cfg: LabRun, ports: OpenPorts, state: RecvState) -> int:
+    """QF flood → full-frame → dense QF tail. Returns expected quarter-frame total."""
+    qf_send = _build_time_frames(cfg.time_frames)
     expected_qf = len(qf_send)
-    got: dict[str, int] = {"qf": 0, "full": 0, "other": 0}
-    samples: list[str] = []
+    interval = cfg.qf_interval_s
+    mido = cfg.mido
 
-    lines.append(f"ports out={out_name!r} in={in_name!r}")
-    lines.append(
-        f"plan qf_count={expected_qf} full_frame=1 "
-        f"interval_s={qf_interval_s} settle_s={settle_s}"
+    _send_qf_batch(
+        QfBatch(
+            ports.outport,
+            ports.inport,
+            mido,
+            qf_send,
+            interval,
+            "qf",
+            True,
+        ),
+        state,
     )
 
-    with mido.open_input(in_name) as inport, mido.open_output(out_name) as outport:
-        time.sleep(0.5)
-        # Sanity: note-on loopback proves DIN Out2<->In2 before MTC scoring.
-        note = mido.Message("note_on", note=60, velocity=64, channel=0)
-        outport.send(note)
-        time.sleep(0.15)
-        _drain_pending(inport, got, samples)
-        note_hits = got.get("other", 0)
-        lines.append(f"sanity_note_on other_recv={note_hits}")
-        # Reset counters for MTC scoring (keep samples).
-        got = {"qf": 0, "full": 0, "other": 0}
+    _send_full_frame(cfg, ports, state)
 
-        t0 = time.monotonic()
-        for index, frame in enumerate(qf_send, start=1):
-            outport.send(mido.Message.from_bytes(frame))
-            if index == 1 or index == expected_qf or index % 8 == 0:
-                lines.append(f"SEND qf {index}/{expected_qf} {_hex(frame)}")
-            _drain_pending(inport, got, samples)
-            time.sleep(qf_interval_s)
+    dense = _build_time_frames(1)
+    _send_qf_batch(
+        QfBatch(
+            ports.outport,
+            ports.inport,
+            mido,
+            dense,
+            interval,
+            "dense_tail",
+            False,
+        ),
+        state,
+    )
+    expected_qf += len(dense)
+    state.lines.append(f"SEND dense_tail qf=+{len(dense)}")
+    return expected_qf
 
-        lines.append(f"SEND full_frame {_hex(FULL_FRAME)}")
-        outport.send(mido.Message("sysex", data=list(FULL_FRAME_INNER)))
-        _drain_pending(inport, got, samples)
 
-        dense = _build_time_frames(1)
-        for frame in dense:
-            outport.send(mido.Message.from_bytes(frame))
-            _drain_pending(inport, got, samples)
-            time.sleep(qf_interval_s)
-        expected_qf += len(dense)
-        lines.append(f"SEND dense_tail qf=+{len(dense)}")
+def _settle_recv(inport, state: RecvState, settle_s: float) -> None:
+    deadline = time.monotonic() + settle_s
+    while time.monotonic() < deadline:
+        _drain_pending(inport, state)
+        time.sleep(0.02)
 
-        deadline = time.monotonic() + settle_s
-        while time.monotonic() < deadline:
-            _drain_pending(inport, got, samples)
-            time.sleep(0.02)
-        elapsed = time.monotonic() - t0
 
-    for sample in samples:
-        lines.append(sample)
-
+def _score_pass(state: RecvState, expected_qf: int, elapsed: float) -> bool:
+    got = state.got
     qf_ok = got["qf"]
     full_ok = got["full"]
     other_n = got["other"]
@@ -369,19 +428,45 @@ def _run_lab(
     full_pass = full_ok >= 1
     passed = qf_pass and full_pass
 
-    lines.append(
-        f"RECV qf={qf_ok}/{expected_qf} (need>={qf_need}) "
+    state.lines.append(
+        f"recv qf={qf_ok}/{expected_qf} (need>={qf_need}) "
         f"full_frame={full_ok} other={other_n} elapsed_s={elapsed:.2f}"
     )
-    lines.append(
+    state.lines.append(
         f"summary: qf_pass={str(qf_pass).lower()} "
         f"full_pass={str(full_pass).lower()} overall_pass={str(passed).lower()}"
     )
     return passed
 
 
-def _hex(data: bytes) -> str:
-    return " ".join(f"{b:02X}" for b in data)
+def _run_lab(cfg: LabRun, lines: list[str]) -> bool:
+    expected_qf = cfg.time_frames * 8
+    samples: list[str] = []
+    state = RecvState(got=_empty_got(), samples=samples, lines=lines)
+
+    lines.append(f"ports out={cfg.out_name!r} in={cfg.in_name!r}")
+    lines.append(
+        f"plan qf_count={expected_qf} full_frame=1 "
+        f"interval_s={cfg.qf_interval_s} settle_s={cfg.settle_s}"
+    )
+
+    with cfg.mido.open_input(cfg.in_name) as inport, cfg.mido.open_output(
+        cfg.out_name
+    ) as outport:
+        ports = OpenPorts(inport=inport, outport=outport)
+        time.sleep(0.5)
+        # Sanity: note-on loopback proves DIN Out2<->In2 before MTC scoring.
+        _sanity_note_on(cfg, ports, state)
+        state.got = _empty_got()
+
+        t0 = time.monotonic()
+        expected_qf = _run_mtc_sequence(cfg, ports, state)
+        _settle_recv(inport, state, cfg.settle_s)
+        elapsed = time.monotonic() - t0
+
+    for sample in samples:
+        lines.append(sample)
+    return _score_pass(state, expected_qf, elapsed)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -433,22 +518,18 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    mido = _require_mido()
-    if args.list_ports:
-        outs, inns = _fresh_midi_port_names()
-        print("OUT:")
-        for name in outs:
-            print(f"  {name}")
-        print("IN:")
-        for name in inns:
-            print(f"  {name}")
-        return 0
+def _list_ports_exit() -> int:
+    outs, inns = _fresh_midi_port_names()
+    print("OUT:")
+    for name in outs:
+        print(f"  {name}")
+    print("IN:")
+    for name in inns:
+        print(f"  {name}")
+    return 0
 
-    if args.time_frames < 1:
-        raise SystemExit("--time-frames must be >= 1")
 
+def _prepare_log_dir(args: argparse.Namespace) -> tuple[Path, str, Path, list[str]]:
     log_dir = Path(args.log_dir)
     if not log_dir.is_absolute():
         log_dir = _repo_root() / log_dir
@@ -460,65 +541,101 @@ def main(argv: list[str] | None = None) -> int:
         f"# out_port={args.out_port!r} in_port={args.in_port!r}",
         "# topo expect: DIN loopback Out2->In2; Matrix may stay on Out1/In1 powered off",
     ]
+    return log_dir, stamp, lab_log, lines
 
-    bridge: BridgeSession | None = None
-    try:
-        if args.with_bridge:
-            exe = (
-                Path(args.bridge_exe)
-                if args.bridge_exe
-                else _default_bridge_exe()
-            )
-            if not exe.is_absolute():
-                exe = _repo_root() / exe
-            bridge = BridgeSession(
-                exe,
-                log_dir / f"bridge-{stamp}.log",
-                ["--dev-zadig"],
-            )
+
+def _resolve_ports(
+    args: argparse.Namespace, log_dir: Path, stamp: str
+) -> tuple[str, str, BridgeSession | None]:
+    if args.with_bridge:
+        exe = Path(args.bridge_exe) if args.bridge_exe else _default_bridge_exe()
+        if not exe.is_absolute():
+            exe = _repo_root() / exe
+        bridge = BridgeSession(
+            exe,
+            log_dir / f"bridge-{stamp}.log",
+            ["--dev-zadig"],
+        )
+        try:
             bridge.start()
             out_name, in_name = bridge.wait_until_ready(
                 args.out_port, args.in_port, timeout_s=45.0
             )
+        except BaseException:
+            # Match pre-refactor: stop even if wait_until_ready fails after start.
+            bridge.stop()
+            raise
+        return out_name, in_name, bridge
+
+    outs, inns = _fresh_midi_port_names()
+    out_name = _find_port(outs, args.out_port)
+    in_name = _find_port(inns, args.in_port)
+    if not out_name or not in_name:
+        raise SystemExit(
+            f"Ports not found: out={args.out_port!r} in={args.in_port!r}. "
+            "Use --list-ports / --with-bridge."
+        )
+    return out_name, in_name, None
+
+
+def _apply_bridge_fail_needles(
+    bridge: BridgeSession | None, lines: list[str], passed: bool
+) -> bool:
+    if bridge is None:
+        return passed
+    # Full-text substring match (local semantics — not line-based common helper).
+    text = bridge.captured_text()
+    hits = [n for n in BRIDGE_FAIL_NEEDLES if n in text]
+    if hits:
+        lines.append(f"bridge_fail_needles: {hits}")
+        return False
+    lines.append("bridge_fail_needles: none")
+    return passed
+
+
+def _write_and_print_log(lab_log: Path, lines: list[str]) -> None:
+    lab_log.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"Wrote {lab_log}")
+    for line in lines:
+        safe = line.encode("ascii", "replace").decode("ascii")
+        print(safe)
+
+
+def run_lab(args: argparse.Namespace) -> int:
+    mido = _require_mido()
+    if args.list_ports:
+        return _list_ports_exit()
+    if args.time_frames < 1:
+        raise SystemExit("--time-frames must be >= 1")
+
+    log_dir, stamp, lab_log, lines = _prepare_log_dir(args)
+    bridge: BridgeSession | None = None
+    try:
+        out_name, in_name, bridge = _resolve_ports(args, log_dir, stamp)
+        if bridge is not None:
             lines.append(f"bridge_ready out={out_name!r} in={in_name!r}")
-        else:
-            outs, inns = _fresh_midi_port_names()
-            out_name = _find_port(outs, args.out_port)
-            in_name = _find_port(inns, args.in_port)
-            if not out_name or not in_name:
-                raise SystemExit(
-                    f"Ports not found: out={args.out_port!r} in={args.in_port!r}. "
-                    "Use --list-ports / --with-bridge."
-                )
 
         passed = _run_lab(
-            mido,
-            out_name,
-            in_name,
-            time_frames=args.time_frames,
-            qf_interval_s=args.qf_interval_ms / 1000.0,
-            settle_s=args.settle_s,
-            lines=lines,
+            LabRun(
+                mido=mido,
+                out_name=out_name,
+                in_name=in_name,
+                time_frames=args.time_frames,
+                qf_interval_s=args.qf_interval_ms / 1000.0,
+                settle_s=args.settle_s,
+            ),
+            lines,
         )
-
-        if bridge is not None:
-            text = bridge.captured_text()
-            hits = [n for n in BRIDGE_FAIL_NEEDLES if n in text]
-            if hits:
-                lines.append(f"bridge_fail_needles: {hits}")
-                passed = False
-            else:
-                lines.append("bridge_fail_needles: none")
-
-        lab_log.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        print(f"Wrote {lab_log}")
-        for line in lines:
-            safe = line.encode("ascii", "replace").decode("ascii")
-            print(safe)
+        passed = _apply_bridge_fail_needles(bridge, lines, passed)
+        _write_and_print_log(lab_log, lines)
         return 0 if passed else 2
     finally:
         if bridge is not None:
             bridge.stop()
+
+
+def main(argv: list[str] | None = None) -> int:
+    return run_lab(build_parser().parse_args(argv))
 
 
 if __name__ == "__main__":
