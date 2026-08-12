@@ -21,591 +21,88 @@ Windows Bridge (later):
 from __future__ import annotations
 
 import argparse
-import signal
 import subprocess
 import sys
-import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-MIN_INTERVAL_S = 0.05
-DEFAULT_SIZES = (1024, 4096)
-# Stop a stuck run after this many consecutive TIMEOUT/FAIL trials (per payload).
-DEFAULT_ABORT_AFTER_TIMEOUTS = 3
-# Exit when the lab aborts early (stuck / wall clock), distinct from fail (2).
+_LAB_DIR = Path(__file__).resolve().parent
+if str(_LAB_DIR) not in sys.path:
+    sys.path.insert(0, str(_LAB_DIR))
+
+import lab_midi_common as lab_midi  # noqa: E402
+import sysex_long_loopback_lib as sx  # noqa: E402
+
 EXIT_ABORTED = 3
-# Non-commercial / lab manufacturer id (0x7D) + 'L''B' tag — synthetic frames only.
-SYNTH_MARK = bytes([0x7D, 0x4C, 0x42])
-
-READY_MARKERS = (
-    "Device Inquiry lab:",
-    "MIDI I/O running",
-    "DeviceSession started for MT4",
-)
-
-BRIDGE_FAIL_NEEDLES = (
-    "MIDI I/O pump failed",
-    "WriteBulk failed",
-    "WriteBulk skipped",
-    "Host→device WriteBulk",
-    "Host->device WriteBulk",
-    "deliver queue full",
-    "IN demux failed during host",
-    "Device→host DecodeFromDevice failed",
-    "Device→host SendToHost",
-)
-
-
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
-
-
-def _default_bridge_exe() -> Path:
-    return _repo_root() / "builds" / "debug" / "Debug" / "Bridge.exe"
-
-
-def _default_fixture() -> Path:
-    return _repo_root() / "tests" / "fixtures" / "sysex" / "long-loopback-14708.syx"
-
-
-def _lab_stamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _default_log_dir() -> Path:
-    return _repo_root() / "tests" / "lab-logs" / "sysex-long-loopback"
+    return lab_midi.repo_root() / "tests" / "lab-logs" / "sysex-long-loopback"
 
 
 def _resolve_log_dir(args: argparse.Namespace) -> Path:
     if args.log_dir:
         out_dir = Path(args.log_dir)
         if not out_dir.is_absolute():
-            out_dir = _repo_root() / out_dir
+            out_dir = lab_midi.repo_root() / out_dir
     else:
         out_dir = _default_log_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir
 
 
-def _hex_bytes(data: bytes, limit: int | None = None) -> str:
-    if limit is not None and len(data) > limit:
-        head = " ".join(f"{byte:02X}" for byte in data[:limit])
-        return f"{head} … ({len(data)} B)"
-    return " ".join(f"{byte:02X}" for byte in data)
-
-
-def _require_mido():
-    try:
-        import mido  # noqa: F401
-    except ImportError as exc:
-        raise SystemExit(
-            "Missing dependency: mido / python-rtmidi.\n"
-            "Install with:\n"
-            "  python -m pip install -r scripts/lab/requirements-device-inquiry.txt\n"
-        ) from exc
-    import mido
-
-    _patch_rtmidi_input_queue()
-    return mido
-
-
-def _patch_rtmidi_input_queue() -> None:
-    """Raise python-rtmidi MidiIn queue + WinMM SysEx buffers for long loopback.
-
-    Stock 1.5.8 on Windows discards SysEx > ~1024 B (RtMidi WinMM MIDIHDR size).
-    Need python-rtmidi >= 1.6 with MidiIn.set_buffer_size (GitHub main / newer wheels).
-    """
-    try:
-        import rtmidi
-    except ImportError:
-        return
-    if getattr(rtmidi, "_unitor_queue_patched", False):
-        return
-    _orig = rtmidi.MidiIn
-
-    def _MidiIn(*args, **kwargs):
-        kwargs.setdefault("queue_size_limit", 65536)
-        inst = _orig(*args, **kwargs)
-        # Must run before open_port — WinMM MIDIHDR size is fixed at open.
-        if hasattr(inst, "set_buffer_size"):
-            inst.set_buffer_size(65535, 16)
-
-        return inst
-
-    rtmidi.MidiIn = _MidiIn  # type: ignore[misc,assignment]
-    rtmidi._unitor_queue_patched = True  # type: ignore[attr-defined]
-
-
-def _prepare_mido_input(inport) -> None:
-    """Prepare MidiIn for long SysEx; require WinMM buffer enlarge only on Windows."""
-    rt = getattr(inport, "_rt", None)
-    # Stock 1.5.8 WinMM drops SysEx > ~1024 B unless set_buffer_size ran before open.
-    # CoreMIDI (macOS) does not need that API — do not hard-fail Darwin labs on 1.5.8.
-    if sys.platform == "win32" and (
-        rt is None or not hasattr(rt, "set_buffer_size")
-    ):
-        raise SystemExit(
-            "This lab needs python-rtmidi >= 1.6 with MidiIn.set_buffer_size "
-            "(Windows WinMM otherwise drops SysEx above ~1024 bytes).\n"
-            "Install with:\n"
-            "  python -m pip install -U \"git+https://github.com/SpotlightKid/python-rtmidi.git\"\n"
-        )
-    # Belt-and-suspenders: mido already enables SysEx in Input._open.
-    if rt is not None and hasattr(rt, "ignore_types"):
-        rt.ignore_types(False, False, True)
-
-
-def _fresh_midi_port_names() -> tuple[list[str], list[str]]:
-    code = (
-        "import mido\n"
-        "print('OUT')\n"
-        "print('\\n'.join(mido.get_output_names()))\n"
-        "print('IN')\n"
-        "print('\\n'.join(mido.get_input_names()))\n"
-    )
-    completed = subprocess.run(
-        [sys.executable, "-c", code],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=20,
-        check=False,
-    )
-    if completed.returncode != 0:
-        raise SystemExit(
-            "Failed to enumerate MIDI ports in a fresh process:\n"
-            + (completed.stderr or completed.stdout or "(no output)")
-        )
-    lines = completed.stdout.splitlines()
-    try:
-        out_idx = lines.index("OUT")
-        in_idx = lines.index("IN")
-    except ValueError as exc:
-        raise SystemExit(
-            "Unexpected MIDI port enumeration output:\n" + completed.stdout
-        ) from exc
-    outputs = [line for line in lines[out_idx + 1 : in_idx] if line.strip()]
-    inputs = [line for line in lines[in_idx + 1 :] if line.strip()]
-    return outputs, inputs
-
-
-def _normalize_port_label(name: str) -> str:
-    parts = name.rsplit(" ", 1)
-    if len(parts) == 2 and parts[1].isdigit():
-        return parts[0]
-    return name
-
-
-def _port_match_rank(name: str, needle: str) -> int | None:
-    if name == needle:
-        return 0
-    if _normalize_port_label(name) == needle:
-        return 1
-    if not name.lower().startswith(needle.lower()):
-        return None
-    rest = name[len(needle) :]
-    if rest == "":
-        return 0
-    if rest[0] == " " and rest[1:].replace(" ", "").isdigit():
-        return 2
-    return None
-
-
-def _select_port(names: list[str], needle: str, kind: str) -> str:
-    ranked: list[tuple[int, str]] = []
-    for name in names:
-        rank = _port_match_rank(name, needle)
-        if rank is not None:
-            ranked.append((rank, name))
-    if not ranked:
-        raise SystemExit(
-            f"No MIDI {kind} port matching {needle!r}. Available:\n"
-            + "\n".join(f"  - {name}" for name in names)
-        )
-    ranked.sort(key=lambda item: (item[0], item[1]))
-    best_rank = ranked[0][0]
-    best = [name for rank, name in ranked if rank == best_rank]
-    if len(best) > 1:
-        raise SystemExit(
-            f"Ambiguous MIDI {kind} port {needle!r}. Matches:\n"
-            + "\n".join(f"  - {name}" for name in best)
-        )
-    return best[0]
-
-
-def _find_port(names: list[str], needle: str) -> str | None:
-    try:
-        return _select_port(names, needle, "port")
-    except SystemExit:
-        return None
-
-
-def _list_ports(mido) -> int:
-    print("MIDI outputs:")
-    for name in mido.get_output_names():
-        print(f"  - {name}")
-    print("MIDI inputs:")
-    for name in mido.get_input_names():
-        print(f"  - {name}")
-    return 0
-
-
-def _drain_input(inport, settle_s: float = 0.05) -> None:
-    deadline = time.monotonic() + settle_s
-    while time.monotonic() < deadline:
-        for _ in inport.iter_pending():
-            pass
-        time.sleep(0.005)
-
-
-class SysexAssembler:
-    """Reassemble SysEx until F7. Never treat an open buffer as Pass."""
-
-    def __init__(self) -> None:
-        self._buf = bytearray()
-
-    def push_mido_sysex_data(self, data: bytes | list[int]) -> list[bytes]:
-        if not self._buf:
-            self._buf.append(0xF0)
-        self._buf.extend(bytes(data))
-        self._buf.append(0xF7)
-        frame = bytes(self._buf)
-        self._buf.clear()
-        return [frame]
-
-
-def _iter_completed_sysex(inport, assembler: SysexAssembler) -> list[bytes]:
-    frames: list[bytes] = []
-    for message in inport.iter_pending():
-        if message.type != "sysex":
-            continue
-        frames.extend(assembler.push_mido_sysex_data(message.data))
-    return frames
-
-
-def _frame_head_tail(data: bytes) -> str:
-    if len(data) <= 8:
-        return _hex_bytes(data)
-    return (
-        f"head={_hex_bytes(data[:4])} tail={_hex_bytes(data[-4:])} "
-        f"len={len(data)}"
-    )
-
-
-def _first_diff_offset(got: bytes, expected: bytes) -> int:
-    limit = min(len(got), len(expected))
-    for index in range(limit):
-        if got[index] != expected[index]:
-            return index
-    if len(got) != len(expected):
-        return limit
-    return -1
-
-
-def _mismatch_note(frame: bytes, expected: bytes, data_len: int) -> str:
-    offset = _first_diff_offset(frame, expected)
-    return (
-        f"mismatch {_frame_head_tail(frame)} "
-        f"(expected_len={len(expected)}; mido_data_len={data_len}; "
-        f"first_diff_offset={offset}; missing_bytes={len(expected) - len(frame)})"
-    )
-
-
-def _wait_exact_sysex(
-    inport,
-    expected: bytes,
-    timeout_s: float,
-) -> tuple[bytes | None, float, str]:
-    assembler = SysexAssembler()
-    started = time.monotonic()
-    deadline = started + timeout_s
-    last_note = "none"
-    saw_types: dict[str, int] = {}
-    while time.monotonic() < deadline:
-        for message in inport.iter_pending():
-            saw_types[message.type] = saw_types.get(message.type, 0) + 1
-            if message.type != "sysex":
-                continue
-            data_len = len(message.data)
-            for frame in assembler.push_mido_sysex_data(message.data):
-                if frame == expected:
-                    return frame, (time.monotonic() - started) * 1000.0, "match"
-                last_note = _mismatch_note(frame, expected, data_len)
-        time.sleep(0.005)
-    if saw_types and last_note == "none":
-        last_note = "none types=" + ",".join(f"{k}:{v}" for k, v in sorted(saw_types.items()))
-    return None, (time.monotonic() - started) * 1000.0, last_note
-
-
-def _bridge_fail_lines(text: str) -> list[str]:
-    hits: list[str] = []
-    for line in text.splitlines():
-        for needle in BRIDGE_FAIL_NEEDLES:
-            if needle in line:
-                hits.append(line.rstrip())
-                break
-    return hits
-
-
-def build_synthetic_sysex(size: int) -> bytes:
-    """Build a valid MIDI SysEx of exactly `size` bytes (includes F0 and F7)."""
-    if size < 8:
-        raise ValueError("synthetic SysEx size must be >= 8")
-    body_len = size - 2
-    if body_len < len(SYNTH_MARK) + 2:
-        raise ValueError("synthetic SysEx size too small for lab mark")
-    body = bytearray(SYNTH_MARK)
-    body.append((size >> 7) & 0x7F)
-    body.append(size & 0x7F)
-    fill_needed = body_len - len(body)
-    for index in range(fill_needed):
-        body.append(index & 0x7F)
-    frame = bytes([0xF0]) + bytes(body) + bytes([0xF7])
-    if len(frame) != size:
-        raise RuntimeError(f"synthetic size mismatch {len(frame)} != {size}")
-    if any(byte >= 0x80 for byte in frame[1:-1]):
-        raise RuntimeError("synthetic body contains non-data MIDI bytes")
-    return frame
-
-
-def _load_fixture(path: Path) -> bytes:
-    if not path.is_file():
-        raise SystemExit(f"Fixture not found: {path}")
-    data = path.read_bytes()
-    if len(data) < 3 or data[0] != 0xF0 or data[-1] != 0xF7:
-        raise SystemExit(f"Fixture {path} is not a SysEx frame (F0…F7)")
-    if any(byte >= 0x80 for byte in data[1:-1]):
-        raise SystemExit(f"Fixture {path} has non-data bytes in SysEx body")
-    return data
-
-
-def _parse_sizes(raw: str) -> list[int]:
-    if not raw.strip():
-        return list(DEFAULT_SIZES)
-    sizes: list[int] = []
-    for part in raw.split(","):
-        part = part.strip()
-        if not part:
-            continue
-        value = int(part)
-        if value < 8:
-            raise SystemExit(f"size {value} must be >= 8")
-        sizes.append(value)
-    if not sizes:
-        raise SystemExit("--sizes must list at least one size")
-    return sizes
+def _resolve_log_path(args: argparse.Namespace, stamp: str, log_dir: Path) -> Path:
+    if args.log:
+        log_path = Path(args.log)
+        if not log_path.is_absolute():
+            log_path = log_dir / log_path
+    else:
+        log_path = log_dir / f"sysex-long-loopback-{stamp}.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    return log_path
 
 
 @dataclass
-class ScenarioStats:
+class LoopbackSession:
+    mido: object
+    out_name: str
+    in_name: str
+    args: argparse.Namespace
+    lines: list[str]
+    start_index: int
+    deadline_mono: float | None = None
+
+
+@dataclass
+class OpenPorts:
+    inport: object
+    outport: object
+
+
+@dataclass
+class PayloadWork:
     name: str
-    sent: int = 0
-    ok: int = 0
-    fail_lines: list[str] = field(default_factory=list)
-    elapsed_s: float = 0.0
-    aborted: bool = False
-    abort_reason: str = ""
-
-    @property
-    def rate(self) -> float:
-        return (100.0 * self.ok / self.sent) if self.sent else 0.0
-
-    def summary(self, pass_percent: float) -> str:
-        passed = (not self.aborted) and self.rate >= pass_percent and self.sent > 0
-        extra = f" abort={self.abort_reason}" if self.aborted else ""
-        return (
-            f"summary[{self.name}]: sent={self.sent} ok={self.ok} "
-            f"rate={self.rate:.1f}% elapsed_s={self.elapsed_s:.2f} "
-            f"pass={str(passed).lower()} (need>={pass_percent:.0f}%){extra}"
-        )
+    payload: bytes
+    stats: sx.ScenarioStats
 
 
-class LabAbort(RuntimeError):
-    """Raised when wall-clock or consecutive-timeout guard fires."""
+@dataclass
+class LabPaths:
+    log_path: Path
+    log_dir: Path
+    stamp: str
 
 
-def _payload_count(args: argparse.Namespace) -> int:
-    return len(args.sizes) + (0 if args.skip_fixture else 1)
-
-
-def _session_count(args: argparse.Namespace) -> int:
-    if args.with_bridge:
-        return args.fresh_starts
-    return args.fresh_sessions
-
-
-def _auto_max_wall_seconds(args: argparse.Namespace) -> float:
-    """Healthy-ish budget plus a few timeouts — not a full timeout storm.
-
-    Consecutive-timeout abort stops pure hangs; wall clock is the hard backstop.
-    """
-    sessions = _session_count(args)
-    payloads = _payload_count(args)
-    abort_n = max(1, int(args.abort_after_timeouts))
-    slow_per_payload = abort_n * args.reply_timeout
-    fast_per_payload = max(0, args.count - abort_n) * max(args.interval, 0.2)
-    per_session = payloads * (slow_per_payload + fast_per_payload + 5.0)
-    if args.with_bridge:
-        bridge_overhead = sessions * (args.bridge_ready_timeout + 20.0)
-    else:
-        bridge_overhead = sessions * 10.0
-    return bridge_overhead + sessions * per_session + 30.0
-
-
-def _check_wall_deadline(deadline_mono: float | None, where: str) -> None:
-    if deadline_mono is None:
-        return
-    if time.monotonic() >= deadline_mono:
-        raise LabAbort(f"max-wall-seconds exceeded at {where}")
-
-
-class BridgeSession:
-    """Owns a Bridge.exe --start-session child and its console log."""
-
-    def __init__(self, exe: Path, bridge_log: Path, extra_args: list[str]):
-        self.exe = exe
-        self.bridge_log = bridge_log
-        self.extra_args = extra_args
-        self.proc: subprocess.Popen[str] | None = None
-        self._reader: threading.Thread | None = None
-        self._lock = threading.Lock()
-        self._lines: list[str] = []
-
-    def start(self) -> None:
-        if not self.exe.is_file():
-            raise SystemExit(f"Bridge executable not found: {self.exe}")
-        self.bridge_log.parent.mkdir(parents=True, exist_ok=True)
-        cmd = [str(self.exe), "--start-session", *self.extra_args]
-        creationflags = 0
-        if sys.platform == "win32":
-            creationflags = subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
-        self.proc = subprocess.Popen(
-            cmd,
-            cwd=str(_repo_root()),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            bufsize=1,
-            creationflags=creationflags,
-        )
-        self._reader = threading.Thread(target=self._pump_stdout, daemon=True)
-        self._reader.start()
-        print(f"Started Bridge pid={self.proc.pid}: {' '.join(cmd)}")
-        print(f"Bridge log: {self.bridge_log}")
-
-    def _pump_stdout(self) -> None:
-        assert self.proc is not None and self.proc.stdout is not None
-        with self.bridge_log.open("w", encoding="utf-8") as handle:
-            handle.write(
-                f"# Bridge console capture started_utc="
-                f"{datetime.now(timezone.utc).isoformat()}\n"
-            )
-            handle.flush()
-            for line in self.proc.stdout:
-                handle.write(line)
-                handle.flush()
-                with self._lock:
-                    self._lines.append(line.rstrip("\n"))
-                printable = (
-                    line.rstrip()
-                    .replace("\u2192", "->")
-                    .replace("\u2190", "<-")
-                    .encode("ascii", "replace")
-                    .decode("ascii")
-                )
-                print(f"[bridge] {printable}", flush=True)
-
-    def captured_text(self) -> str:
-        with self._lock:
-            return "\n".join(self._lines)
-
-    def wait_until_ready(
-        self,
-        out_needle: str,
-        in_needle: str,
-        timeout_s: float,
-    ) -> tuple[str, str]:
-        deadline = time.monotonic() + timeout_s
-        while time.monotonic() < deadline:
-            if self.proc is not None and self.proc.poll() is not None:
-                raise SystemExit(
-                    f"Bridge exited early with code {self.proc.returncode}. "
-                    f"See {self.bridge_log}"
-                )
-            outs, inns = _fresh_midi_port_names()
-            out_name = _find_port(outs, out_needle)
-            in_name = _find_port(inns, in_needle)
-            if out_name and in_name:
-                _ = READY_MARKERS
-                time.sleep(0.4)
-                return out_name, in_name
-            time.sleep(0.25)
-        raise SystemExit(
-            "Timed out waiting for Bridge MIDI ports "
-            f"{out_needle!r} / {in_needle!r}. See {self.bridge_log}"
-        )
-
-    def stop(self, grace_s: float = 8.0) -> None:
-        if self.proc is None:
-            return
-        if self.proc.poll() is not None:
-            return
-        print(f"Stopping Bridge pid={self.proc.pid} ...")
-        try:
-            if sys.platform == "win32":
-                self.proc.send_signal(signal.CTRL_BREAK_EVENT)  # type: ignore[attr-defined]
-            else:
-                self.proc.send_signal(signal.SIGINT)
-        except OSError:
-            self.proc.terminate()
-        try:
-            self.proc.wait(timeout=grace_s)
-        except subprocess.TimeoutExpired:
-            print("Bridge did not exit after signal; terminating.")
-            self.proc.terminate()
-            try:
-                self.proc.wait(timeout=3)
-            except subprocess.TimeoutExpired:
-                self.proc.kill()
-        if self._reader is not None:
-            self._reader.join(timeout=2)
-        print(f"Bridge stopped (code={self.proc.returncode})")
-
-
-def _send_sysex(outport, mido, payload: bytes) -> None:
-    if len(payload) < 2 or payload[0] != 0xF0 or payload[-1] != 0xF7:
-        raise ValueError("payload must be a complete F0…F7 SysEx frame")
-    outport.send(mido.Message("sysex", data=list(payload[1:-1])))
-
-
-def _payload_plan(args: argparse.Namespace) -> list[tuple[str, bytes]]:
-    plan: list[tuple[str, bytes]] = []
-    for size in args.sizes:
-        plan.append((f"synth_{size}", build_synthetic_sysex(size)))
-    if not args.skip_fixture:
-        fixture = _load_fixture(Path(args.fixture))
-        plan.append((f"fixture_{len(fixture)}", fixture))
-    return plan
-
-
-def _run_loopback_session(
-    mido,
-    out_name: str,
-    in_name: str,
-    args: argparse.Namespace,
-    lines: list[str],
-    start_index: int,
-    deadline_mono: float | None = None,
-) -> bool:
-    plan = _payload_plan(args)
-    lines.append(f"# start_index: {start_index}")
-    lines.append(f"# out_port: {out_name}")
-    lines.append(f"# in_port: {in_name}")
+def _append_session_header(
+    session: LoopbackSession, plan: list[tuple[str, bytes]]
+) -> None:
+    args = session.args
+    lines = session.lines
+    lines.append(f"# start_index: {session.start_index}")
+    lines.append(f"# out_port: {session.out_name}")
+    lines.append(f"# in_port: {session.in_name}")
     lines.append(f"# count_per_payload: {args.count}")
     lines.append(f"# interval_s: {args.interval}")
     lines.append(f"# reply_timeout_s: {args.reply_timeout}")
@@ -618,98 +115,121 @@ def _run_loopback_session(
     )
     lines.append("---")
 
+
+def _emit_line(session: LoopbackSession, line: str) -> None:
+    session.lines.append(line)
+    print(line)
+
+
+def _run_one_trial(
+    session: LoopbackSession,
+    ports: OpenPorts,
+    work: PayloadWork,
+    index: int,
+) -> bool:
+    """Run one send/recv trial. Returns True on match, False on fail/timeout."""
+    args = session.args
+    sx.check_wall_deadline(
+        session.deadline_mono,
+        f"start={session.start_index} payload={work.name} before={index}",
+    )
+    cycle_started = time.monotonic()
+    lab_midi.drain_input(ports.inport, settle_s=0.01)
+    work.stats.sent += 1
+    try:
+        sx.send_sysex(ports.outport, session.mido, work.payload)
+    except Exception as exc:  # noqa: BLE001 — lab must record send fails
+        fail = (
+            f"{index:04d} FAIL {work.name} send_error={exc!r} "
+            f"{sx.frame_head_tail(work.payload)}"
+        )
+        work.stats.fail_lines.append(fail)
+        _emit_line(session, fail)
+        return False
+
+    _emit_line(
+        session,
+        f"{index:04d} SEND {work.name} {sx.frame_head_tail(work.payload)} "
+        f"t_mono={cycle_started:.3f}",
+    )
+    reply, dt_ms, note = sx.wait_exact_sysex(
+        ports.inport, work.payload, args.reply_timeout
+    )
+    if reply is not None:
+        work.stats.ok += 1
+        _emit_line(
+            session,
+            f"{index:04d} RECV {work.name} match {sx.frame_head_tail(reply)} "
+            f"dt_ms={dt_ms:.1f}",
+        )
+        return True
+
+    result = (
+        f"{index:04d} TIMEOUT {work.name} expected_len={len(work.payload)} "
+        f"waited_ms={dt_ms:.1f} last={note}"
+    )
+    work.stats.fail_lines.append(result)
+    _emit_line(session, result)
+    return False
+
+
+def _run_payload_trials(
+    session: LoopbackSession,
+    ports: OpenPorts,
+    work: PayloadWork,
+) -> sx.ScenarioStats:
+    args = session.args
+    started = time.monotonic()
+    consecutive_timeouts = 0
+    try:
+        for index in range(1, args.count + 1):
+            cycle_started = time.monotonic()
+            matched = _run_one_trial(session, ports, work, index)
+            consecutive_timeouts = 0 if matched else consecutive_timeouts + 1
+            if (
+                args.abort_after_timeouts > 0
+                and consecutive_timeouts >= args.abort_after_timeouts
+            ):
+                raise sx.LabAbort(
+                    f"{consecutive_timeouts} consecutive timeouts/fails "
+                    f"on {work.name} (abort-after-timeouts="
+                    f"{args.abort_after_timeouts})"
+                )
+            if index < args.count:
+                remaining = args.interval - (time.monotonic() - cycle_started)
+                if remaining > 0:
+                    time.sleep(remaining)
+    except sx.LabAbort as abort:
+        work.stats.aborted = True
+        work.stats.abort_reason = str(abort)
+        _emit_line(session, f"ABORT {work.name}: {abort}")
+        work.stats.elapsed_s = time.monotonic() - started
+        _emit_line(session, work.stats.summary(args.pass_percent))
+        raise
+
+    work.stats.elapsed_s = time.monotonic() - started
+    _emit_line(session, work.stats.summary(args.pass_percent))
+    return work.stats
+
+
+def _run_loopback_session(session: LoopbackSession) -> bool:
+    plan = sx.payload_plan(session.args)
+    _append_session_header(session, plan)
     all_ok = True
-    with mido.open_input(in_name) as inport, mido.open_output(out_name) as outport:
-        _prepare_mido_input(inport)
-        _drain_input(inport, settle_s=0.2)
-        # Brief settle so CoreMIDI / DIN loopback is live before the first large send.
+    with session.mido.open_input(session.in_name) as inport, session.mido.open_output(
+        session.out_name
+    ) as outport:
+        sx.prepare_mido_input(inport)
+        lab_midi.drain_input(inport, settle_s=0.2)
         time.sleep(0.5)
-        _drain_input(inport, settle_s=0.1)
+        lab_midi.drain_input(inport, settle_s=0.1)
+        ports = OpenPorts(inport=inport, outport=outport)
         for name, payload in plan:
-            stats = ScenarioStats(name=name)
-            started = time.monotonic()
-            consecutive_timeouts = 0
-            try:
-                for index in range(1, args.count + 1):
-                    _check_wall_deadline(
-                        deadline_mono, f"start={start_index} payload={name} before={index}"
-                    )
-                    cycle_started = time.monotonic()
-                    _drain_input(inport, settle_s=0.01)
-                    stats.sent += 1
-                    try:
-                        _send_sysex(outport, mido, payload)
-                    except Exception as exc:  # noqa: BLE001 — lab must record send fails
-                        fail = (
-                            f"{index:04d} FAIL {name} send_error={exc!r} "
-                            f"{_frame_head_tail(payload)}"
-                        )
-                        stats.fail_lines.append(fail)
-                        lines.append(fail)
-                        print(fail)
-                        consecutive_timeouts += 1
-                    else:
-                        send_line = (
-                            f"{index:04d} SEND {name} {_frame_head_tail(payload)} "
-                            f"t_mono={cycle_started:.3f}"
-                        )
-                        lines.append(send_line)
-                        print(send_line)
-                        reply, dt_ms, note = _wait_exact_sysex(
-                            inport, payload, args.reply_timeout
-                        )
-                        if reply is not None:
-                            stats.ok += 1
-                            consecutive_timeouts = 0
-                            result = (
-                                f"{index:04d} RECV {name} match "
-                                f"{_frame_head_tail(reply)} dt_ms={dt_ms:.1f}"
-                            )
-                            lines.append(result)
-                            print(result)
-                        else:
-                            consecutive_timeouts += 1
-                            result = (
-                                f"{index:04d} TIMEOUT {name} "
-                                f"expected_len={len(payload)} waited_ms={dt_ms:.1f} "
-                                f"last={note}"
-                            )
-                            stats.fail_lines.append(result)
-                            lines.append(result)
-                            print(result)
-
-                    if (
-                        args.abort_after_timeouts > 0
-                        and consecutive_timeouts >= args.abort_after_timeouts
-                    ):
-                        raise LabAbort(
-                            f"{consecutive_timeouts} consecutive timeouts/fails "
-                            f"on {name} (abort-after-timeouts="
-                            f"{args.abort_after_timeouts})"
-                        )
-
-                    if index < args.count:
-                        remaining = args.interval - (time.monotonic() - cycle_started)
-                        if remaining > 0:
-                            time.sleep(remaining)
-            except LabAbort as abort:
-                stats.aborted = True
-                stats.abort_reason = str(abort)
-                abort_line = f"ABORT {name}: {abort}"
-                lines.append(abort_line)
-                print(abort_line)
-                all_ok = False
-                stats.elapsed_s = time.monotonic() - started
-                summary = stats.summary(args.pass_percent)
-                lines.append(summary)
-                print(summary)
-                raise
-
-            stats.elapsed_s = time.monotonic() - started
-            summary = stats.summary(args.pass_percent)
-            lines.append(summary)
-            print(summary)
-            if stats.rate < args.pass_percent or stats.sent == 0:
+            work = PayloadWork(
+                name=name, payload=payload, stats=sx.ScenarioStats(name=name)
+            )
+            stats = _run_payload_trials(session, ports, work)
+            if stats.rate < session.args.pass_percent or stats.sent == 0:
                 all_ok = False
     return all_ok
 
@@ -764,7 +284,7 @@ def _run_midi_lab_in_fresh_process(
         popen_timeout = max(1.0, deadline_mono - time.monotonic())
     try:
         completed = subprocess.run(
-            cmd, cwd=str(_repo_root()), timeout=popen_timeout
+            cmd, cwd=str(lab_midi.repo_root()), timeout=popen_timeout
         )
     except subprocess.TimeoutExpired:
         print(
@@ -775,11 +295,7 @@ def _run_midi_lab_in_fresh_process(
     return int(completed.returncode)
 
 
-def run_lab(args: argparse.Namespace) -> int:
-    mido = _require_mido()
-    if args.list_ports:
-        return _list_ports(mido)
-
+def _validate_lab_mode(args: argparse.Namespace) -> None:
     if args.with_bridge and args.fresh_sessions > 1:
         raise SystemExit(
             "Use --fresh-starts with --with-bridge; "
@@ -790,201 +306,219 @@ def run_lab(args: argparse.Namespace) -> int:
             "--append-log cannot be combined with --fresh-sessions > 1 "
             "(append-log is reserved for child session processes)."
         )
-
     if args.max_wall_seconds < 0:
         raise SystemExit("--max-wall-seconds must be >= 0 (0 = auto)")
+
+
+def _apply_auto_wall(args: argparse.Namespace) -> float | None:
     if args.max_wall_seconds == 0 and not args.list_ports:
-        args.max_wall_seconds = _auto_max_wall_seconds(args)
+        args.max_wall_seconds = sx.auto_max_wall_seconds(args)
         print(f"auto max-wall-seconds={args.max_wall_seconds:.1f}")
+    if args.max_wall_seconds > 0:
+        return time.monotonic() + args.max_wall_seconds
+    return None
 
-    deadline_mono = (
-        time.monotonic() + args.max_wall_seconds if args.max_wall_seconds > 0 else None
-    )
 
-    stamp = _lab_stamp()
-    log_dir = _resolve_log_dir(args)
-    if args.log:
-        log_path = Path(args.log)
-        if not log_path.is_absolute():
-            log_path = log_dir / log_path
-    else:
-        log_path = log_dir / f"sysex-long-loopback-{stamp}.log"
-    log_path.parent.mkdir(parents=True, exist_ok=True)
+def _common_header_fields(args: argparse.Namespace) -> list[str]:
+    return [
+        f"# count_per_payload: {args.count}",
+        f"# sizes: {','.join(str(s) for s in args.sizes)}",
+        f"# fixture: {args.fixture}",
+        f"# skip_fixture: {str(args.skip_fixture).lower()}",
+        f"# interval_s: {args.interval}",
+        f"# reply_timeout_s: {args.reply_timeout}",
+        f"# pass_percent: {args.pass_percent}",
+        f"# abort_after_timeouts: {args.abort_after_timeouts}",
+        f"# max_wall_seconds: {args.max_wall_seconds}",
+    ]
 
-    if args.with_bridge:
-        overall_ok = True
-        aborted = False
-        header_lines = [
-            "# SysEx long DIN loopback lab log",
-            f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
-            "# with_bridge: true",
-            f"# fresh_starts: {args.fresh_starts}",
-            f"# count_per_payload: {args.count}",
-            f"# sizes: {','.join(str(s) for s in args.sizes)}",
-            f"# fixture: {args.fixture}",
-            f"# skip_fixture: {str(args.skip_fixture).lower()}",
-            f"# interval_s: {args.interval}",
-            f"# reply_timeout_s: {args.reply_timeout}",
-            f"# pass_percent: {args.pass_percent}",
-            f"# abort_after_timeouts: {args.abort_after_timeouts}",
-            f"# max_wall_seconds: {args.max_wall_seconds}",
-            f"# stamp: {stamp}",
-            "---",
-        ]
-        log_path.write_text("\n".join(header_lines) + "\n", encoding="utf-8")
 
-        for start_index in range(1, args.fresh_starts + 1):
-            try:
-                _check_wall_deadline(deadline_mono, f"before Bridge start {start_index}")
-            except LabAbort as abort:
-                aborted = True
-                overall_ok = False
-                with log_path.open("a", encoding="utf-8") as handle:
-                    handle.write(f"# ABORT: {abort}\n")
-                print(f"ABORT: {abort}")
-                break
-
-            bridge_log = (
-                Path(args.bridge_log)
-                if args.bridge_log and args.fresh_starts == 1
-                else log_dir / f"bridge-{stamp}-start{start_index}.log"
-            )
-            bridge = BridgeSession(
-                Path(args.bridge_exe),
-                bridge_log,
-                ["--dev-zadig"] if args.dev_zadig else [],
-            )
-            try:
-                bridge.start()
-                out_name, in_name = bridge.wait_until_ready(
-                    args.out_port,
-                    args.in_port,
-                    args.bridge_ready_timeout,
-                )
-                print(
-                    f"Bridge start {start_index}/{args.fresh_starts} ports ready: "
-                    f"OUT={out_name} IN={in_name}"
-                )
-                rc = _run_midi_lab_in_fresh_process(
-                    args, log_path, start_index, deadline_mono
-                )
-                if rc == EXIT_ABORTED:
-                    aborted = True
-                    overall_ok = False
-                elif rc != 0:
-                    overall_ok = False
-                fail_hits = _bridge_fail_lines(bridge.captured_text())
-                with log_path.open("a", encoding="utf-8") as handle:
-                    handle.write(f"# bridge_log_start{start_index}: {bridge_log}\n")
-                    if fail_hits:
-                        overall_ok = False
-                        handle.write(
-                            f"# bridge_fail_start{start_index}: "
-                            f"count={len(fail_hits)}\n"
-                        )
-                        for hit in fail_hits:
-                            handle.write(f"# bridge_fail: {hit}\n")
-                            print(
-                                "BRIDGE_FAIL: "
-                                + hit.replace("\u2192", "->").replace("\u2190", "<-")
-                            )
-                    else:
-                        handle.write(f"# bridge_fail_start{start_index}: count=0\n")
-            finally:
-                bridge.stop()
-                print(f"Wrote {bridge_log}")
-            if aborted:
-                break
-
-        with log_path.open("a", encoding="utf-8") as handle:
-            handle.write(
-                f"# finished_utc: {datetime.now(timezone.utc).isoformat()}\n"
-            )
-            handle.write(f"# overall_pass: {str(overall_ok).lower()}\n")
-            if aborted:
-                handle.write("# aborted: true\n")
-        print(f"Wrote {log_path}")
-        print(f"overall_pass={str(overall_ok).lower()}")
+def _write_finish_footer(log_path: Path, overall_ok: bool, aborted: bool) -> int:
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(f"# finished_utc: {datetime.now(timezone.utc).isoformat()}\n")
+        handle.write(f"# overall_pass: {str(overall_ok).lower()}\n")
         if aborted:
-            print("aborted=true")
-            return EXIT_ABORTED
-        return 0 if overall_ok else 2
+            handle.write("# aborted: true\n")
+    print(f"Wrote {log_path}")
+    print(f"overall_pass={str(overall_ok).lower()}")
+    if aborted:
+        print("aborted=true")
+        return EXIT_ABORTED
+    return 0 if overall_ok else 2
 
-    if args.fresh_sessions > 1 and not args.append_log:
-        overall_ok = True
-        aborted = False
-        header_lines = [
-            "# SysEx long DIN loopback lab log",
-            f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
-            "# with_bridge: false",
-            f"# fresh_sessions: {args.fresh_sessions}",
-            f"# session_gap_s: {args.session_gap}",
-            f"# count_per_payload: {args.count}",
-            f"# sizes: {','.join(str(s) for s in args.sizes)}",
-            f"# fixture: {args.fixture}",
-            f"# skip_fixture: {str(args.skip_fixture).lower()}",
-            f"# interval_s: {args.interval}",
-            f"# reply_timeout_s: {args.reply_timeout}",
-            f"# pass_percent: {args.pass_percent}",
-            f"# abort_after_timeouts: {args.abort_after_timeouts}",
-            f"# max_wall_seconds: {args.max_wall_seconds}",
-            f"# out_port_needle: {args.out_port}",
-            f"# in_port_needle: {args.in_port}",
-            f"# stamp: {stamp}",
-            "---",
-        ]
-        log_path.write_text("\n".join(header_lines) + "\n", encoding="utf-8")
 
-        for start_index in range(1, args.fresh_sessions + 1):
-            try:
-                _check_wall_deadline(
-                    deadline_mono, f"before MIDI session {start_index}"
-                )
-            except LabAbort as abort:
-                aborted = True
-                overall_ok = False
-                with log_path.open("a", encoding="utf-8") as handle:
-                    handle.write(f"# ABORT: {abort}\n")
-                print(f"ABORT: {abort}")
-                break
-            if start_index > 1 and args.session_gap > 0:
-                print(
-                    f"Fresh session gap {args.session_gap:.1f}s "
-                    f"before session {start_index}/{args.fresh_sessions} ..."
-                )
-                time.sleep(args.session_gap)
+def _record_bridge_fail_hits(
+    paths: LabPaths,
+    start_index: int,
+    bridge_log: Path,
+    fail_hits: list[str],
+) -> bool:
+    """Append bridge fail notes. Returns True if any fail hits."""
+    with paths.log_path.open("a", encoding="utf-8") as handle:
+        handle.write(f"# bridge_log_start{start_index}: {bridge_log}\n")
+        if not fail_hits:
+            handle.write(f"# bridge_fail_start{start_index}: count=0\n")
+            return False
+        handle.write(f"# bridge_fail_start{start_index}: count={len(fail_hits)}\n")
+        for hit in fail_hits:
+            handle.write(f"# bridge_fail: {hit}\n")
             print(
-                f"MIDI-only fresh session {start_index}/{args.fresh_sessions} "
-                f"(new process; ports reopen)"
+                "BRIDGE_FAIL: "
+                + hit.replace("\u2192", "->").replace("\u2190", "<-")
             )
-            rc = _run_midi_lab_in_fresh_process(
-                args, log_path, start_index, deadline_mono
-            )
-            if rc == EXIT_ABORTED:
-                aborted = True
-                overall_ok = False
-                break
-            if rc != 0:
-                overall_ok = False
+    return True
 
-        with log_path.open("a", encoding="utf-8") as handle:
-            handle.write(
-                f"# finished_utc: {datetime.now(timezone.utc).isoformat()}\n"
+
+def _run_one_bridge_start(
+    args: argparse.Namespace,
+    paths: LabPaths,
+    start_index: int,
+    deadline_mono: float | None,
+) -> tuple[int, bool]:
+    """Returns (child_rc_or_zero, saw_bridge_fail)."""
+    bridge_log = (
+        Path(args.bridge_log)
+        if args.bridge_log and args.fresh_starts == 1
+        else paths.log_dir / f"bridge-{paths.stamp}-start{start_index}.log"
+    )
+    bridge = lab_midi.BridgeSession(
+        Path(args.bridge_exe),
+        bridge_log,
+        ["--dev-zadig"] if args.dev_zadig else [],
+    )
+    try:
+        bridge.start()
+        out_name, in_name = bridge.wait_until_ready(
+            args.out_port,
+            args.in_port,
+            args.bridge_ready_timeout,
+        )
+        print(
+            f"Bridge start {start_index}/{args.fresh_starts} ports ready: "
+            f"OUT={out_name} IN={in_name}"
+        )
+        rc = _run_midi_lab_in_fresh_process(
+            args, paths.log_path, start_index, deadline_mono
+        )
+        fail_hits = lab_midi.bridge_fail_lines(bridge.captured_text())
+        saw_fail = _record_bridge_fail_hits(paths, start_index, bridge_log, fail_hits)
+        return rc, saw_fail
+    finally:
+        bridge.stop()
+        print(f"Wrote {bridge_log}")
+
+
+def _run_with_bridge(
+    args: argparse.Namespace,
+    paths: LabPaths,
+    deadline_mono: float | None,
+) -> int:
+    overall_ok = True
+    aborted = False
+    header = [
+        "# SysEx long DIN loopback lab log",
+        f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
+        "# with_bridge: true",
+        f"# fresh_starts: {args.fresh_starts}",
+        *_common_header_fields(args),
+        f"# stamp: {paths.stamp}",
+        "---",
+    ]
+    paths.log_path.write_text("\n".join(header) + "\n", encoding="utf-8")
+
+    for start_index in range(1, args.fresh_starts + 1):
+        try:
+            sx.check_wall_deadline(
+                deadline_mono, f"before Bridge start {start_index}"
             )
-            handle.write(f"# overall_pass: {str(overall_ok).lower()}\n")
-            if aborted:
-                handle.write("# aborted: true\n")
-        print(f"Wrote {log_path}")
-        print(f"overall_pass={str(overall_ok).lower()}")
+        except sx.LabAbort as abort:
+            aborted = True
+            overall_ok = False
+            with paths.log_path.open("a", encoding="utf-8") as handle:
+                handle.write(f"# ABORT: {abort}\n")
+            print(f"ABORT: {abort}")
+            break
+
+        rc, saw_fail = _run_one_bridge_start(
+            args, paths, start_index, deadline_mono
+        )
+        if rc == EXIT_ABORTED:
+            aborted = True
+            overall_ok = False
+        elif rc != 0:
+            overall_ok = False
+        if saw_fail:
+            overall_ok = False
         if aborted:
-            print("aborted=true")
-            return EXIT_ABORTED
-        return 0 if overall_ok else 2
+            break
 
+    return _write_finish_footer(paths.log_path, overall_ok, aborted)
+
+
+def _run_fresh_midi_sessions(
+    args: argparse.Namespace,
+    paths: LabPaths,
+    deadline_mono: float | None,
+) -> int:
+    overall_ok = True
+    aborted = False
+    header = [
+        "# SysEx long DIN loopback lab log",
+        f"# started_utc: {datetime.now(timezone.utc).isoformat()}",
+        "# with_bridge: false",
+        f"# fresh_sessions: {args.fresh_sessions}",
+        f"# session_gap_s: {args.session_gap}",
+        *_common_header_fields(args),
+        f"# out_port_needle: {args.out_port}",
+        f"# in_port_needle: {args.in_port}",
+        f"# stamp: {paths.stamp}",
+        "---",
+    ]
+    paths.log_path.write_text("\n".join(header) + "\n", encoding="utf-8")
+
+    for start_index in range(1, args.fresh_sessions + 1):
+        try:
+            sx.check_wall_deadline(
+                deadline_mono, f"before MIDI session {start_index}"
+            )
+        except sx.LabAbort as abort:
+            aborted = True
+            overall_ok = False
+            with paths.log_path.open("a", encoding="utf-8") as handle:
+                handle.write(f"# ABORT: {abort}\n")
+            print(f"ABORT: {abort}")
+            break
+        if start_index > 1 and args.session_gap > 0:
+            print(
+                f"Fresh session gap {args.session_gap:.1f}s "
+                f"before session {start_index}/{args.fresh_sessions} ..."
+            )
+            time.sleep(args.session_gap)
+        print(
+            f"MIDI-only fresh session {start_index}/{args.fresh_sessions} "
+            f"(new process; ports reopen)"
+        )
+        rc = _run_midi_lab_in_fresh_process(
+            args, paths.log_path, start_index, deadline_mono
+        )
+        if rc == EXIT_ABORTED:
+            aborted = True
+            overall_ok = False
+            break
+        if rc != 0:
+            overall_ok = False
+
+    return _write_finish_footer(paths.log_path, overall_ok, aborted)
+
+
+def _run_single_midi_session(
+    args: argparse.Namespace,
+    mido,
+    paths: LabPaths,
+    deadline_mono: float | None,
+) -> int:
     lines: list[str] = []
-    if args.append_log and log_path.is_file():
-        pass
-    else:
+    if not (args.append_log and paths.log_path.is_file()):
         lines.extend(
             [
                 "# SysEx long DIN loopback lab log",
@@ -1003,25 +537,31 @@ def run_lab(args: argparse.Namespace) -> int:
             ]
         )
 
-    out_name = _select_port(list(mido.get_output_names()), args.out_port, "output")
-    in_name = _select_port(list(mido.get_input_names()), args.in_port, "input")
+    out_name = lab_midi.select_port(
+        list(mido.get_output_names()), args.out_port, "output"
+    )
+    in_name = lab_midi.select_port(
+        list(mido.get_input_names()), args.in_port, "input"
+    )
     print(f"OUT={out_name}")
     print(f"IN={in_name}")
-    print(f"log={log_path}")
+    print(f"log={paths.log_path}")
     lines.append(f"# session_index: {args.start_index}")
 
     aborted = False
     try:
         all_ok = _run_loopback_session(
-            mido,
-            out_name,
-            in_name,
-            args,
-            lines,
-            args.start_index,
-            deadline_mono,
+            LoopbackSession(
+                mido=mido,
+                out_name=out_name,
+                in_name=in_name,
+                args=args,
+                lines=lines,
+                start_index=args.start_index,
+                deadline_mono=deadline_mono,
+            )
         )
-    except LabAbort as abort:
+    except sx.LabAbort as abort:
         aborted = True
         all_ok = False
         lines.append(f"# ABORT: {abort}")
@@ -1035,9 +575,9 @@ def run_lab(args: argparse.Namespace) -> int:
         lines.append(f"# overall_pass: {str(all_ok).lower()}")
 
     mode = "a" if args.append_log else "w"
-    with log_path.open(mode, encoding="utf-8") as handle:
+    with paths.log_path.open(mode, encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")
-    print(f"Wrote {log_path}")
+    print(f"Wrote {paths.log_path}")
     if not args.append_log:
         print(f"overall_pass={str(all_ok).lower()}")
     if aborted:
@@ -1046,181 +586,36 @@ def run_lab(args: argparse.Namespace) -> int:
     return 0 if all_ok else 2
 
 
+def run_lab(args: argparse.Namespace) -> int:
+    mido = sx.require_mido()
+    if args.list_ports:
+        return lab_midi.list_ports(mido)
+
+    _validate_lab_mode(args)
+    deadline_mono = _apply_auto_wall(args)
+    stamp = lab_midi.lab_stamp()
+    log_dir = _resolve_log_dir(args)
+    paths = LabPaths(
+        log_path=_resolve_log_path(args, stamp, log_dir),
+        log_dir=log_dir,
+        stamp=stamp,
+    )
+
+    if args.with_bridge:
+        return _run_with_bridge(args, paths, deadline_mono)
+    if args.fresh_sessions > 1 and not args.append_log:
+        return _run_fresh_midi_sessions(args, paths, deadline_mono)
+    return _run_single_midi_session(args, mido, paths, deadline_mono)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Automate MT4 long SysEx DIN loopback lab "
-            "(exact byte match; optional Bridge)."
-        )
-    )
-    parser.add_argument(
-        "--list-ports",
-        action="store_true",
-        help="List MIDI input/output names and exit",
-    )
-    parser.add_argument(
-        "--with-bridge",
-        action="store_true",
-        help="Start Bridge before the lab and stop it afterward",
-    )
-    parser.add_argument(
-        "--bridge-exe",
-        default=str(_default_bridge_exe()),
-        help="Path to Bridge.exe (default: builds/debug/Debug/Bridge.exe)",
-    )
-    parser.add_argument(
-        "--dev-zadig",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Pass --dev-zadig to Bridge (default: true)",
-    )
-    parser.add_argument(
-        "--bridge-ready-timeout",
-        type=float,
-        default=45.0,
-        help="Seconds to wait for Bridge MIDI ports (default: 45)",
-    )
-    parser.add_argument(
-        "--bridge-log",
-        default="",
-        help="Bridge console log path (single-start override)",
-    )
-    parser.add_argument(
-        "--fresh-starts",
-        type=int,
-        default=2,
-        help="Fresh Bridge Starts when --with-bridge (default: 2)",
-    )
-    parser.add_argument(
-        "--fresh-sessions",
-        type=int,
-        default=1,
-        help=(
-            "Fresh MIDI-only sessions (new process / reopen ports; no Bridge). "
-            "Default: 1"
-        ),
-    )
-    parser.add_argument(
-        "--session-gap",
-        type=float,
-        default=2.0,
-        help="Seconds between MIDI-only fresh sessions (default: 2.0)",
-    )
-    parser.add_argument(
-        "--out-port",
-        default="MT4 Out 1",
-        help="MIDI output port name (default: MT4 Out 1)",
-    )
-    parser.add_argument(
-        "--in-port",
-        default="MT4 In 1",
-        help="MIDI input port name (default: MT4 In 1)",
-    )
-    parser.add_argument(
-        "--count",
-        type=int,
-        default=20,
-        help="Repetitions per payload size (default: 20)",
-    )
-    parser.add_argument(
-        "--sizes",
-        default="1024,4096",
-        help="Comma-separated synthetic SysEx sizes in bytes (default: 1024,4096)",
-    )
-    parser.add_argument(
-        "--fixture",
-        default=str(_default_fixture()),
-        help="Path to long SysEx fixture (default: long-loopback-14708.syx)",
-    )
-    parser.add_argument(
-        "--skip-fixture",
-        action="store_true",
-        help="Skip the on-disk fixture; run synthetic sizes only",
-    )
-    parser.add_argument(
-        "--interval",
-        type=float,
-        default=MIN_INTERVAL_S,
-        help="Seconds between trial starts (default: 0.05)",
-    )
-    parser.add_argument(
-        "--reply-timeout",
-        type=float,
-        default=8.0,
-        help="Seconds to wait for exact loopback reply (default: 8.0)",
-    )
-    parser.add_argument(
-        "--abort-after-timeouts",
-        type=int,
-        default=DEFAULT_ABORT_AFTER_TIMEOUTS,
-        help=(
-            "Abort the current session after N consecutive TIMEOUT/FAIL trials "
-            f"per payload (default: {DEFAULT_ABORT_AFTER_TIMEOUTS}; 0 disables)"
-        ),
-    )
-    parser.add_argument(
-        "--max-wall-seconds",
-        type=float,
-        default=0.0,
-        help=(
-            "Hard wall-clock budget for the whole lab (default: 0 = auto from "
-            "count/sizes/timeouts/starts). Child processes inherit the remaining budget."
-        ),
-    )
-    parser.add_argument(
-        "--pass-percent",
-        type=float,
-        default=100.0,
-        help="Pass threshold percentage (default: 100)",
-    )
-    parser.add_argument(
-        "--log-dir",
-        default="",
-        help=(
-            "Lab log directory (default: tests/lab-logs/sysex-long-loopback). "
-            "Use tests/lab-logs/sysex-long-loopback-macos on Apple-driver labs."
-        ),
-    )
-    parser.add_argument(
-        "--log",
-        default="",
-        help="Lab log path (default: <log-dir>/sysex-long-loopback-<utc>.log)",
-    )
-    parser.add_argument(
-        "--start-index",
-        type=int,
-        default=1,
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--append-log",
-        action="store_true",
-        help=argparse.SUPPRESS,
-    )
-    return parser
+    return sx.build_parser()
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    args.sizes = _parse_sizes(args.sizes)
-    if args.count < 1:
-        raise SystemExit("--count must be >= 1")
-    if args.interval < MIN_INTERVAL_S:
-        raise SystemExit(f"--interval must be >= {MIN_INTERVAL_S}")
-    if args.reply_timeout <= 0:
-        raise SystemExit("--reply-timeout must be > 0")
-    if args.abort_after_timeouts < 0:
-        raise SystemExit("--abort-after-timeouts must be >= 0")
-    if args.max_wall_seconds < 0:
-        raise SystemExit("--max-wall-seconds must be >= 0 (0 = auto)")
-    if args.bridge_ready_timeout <= 0:
-        raise SystemExit("--bridge-ready-timeout must be > 0")
-    if args.fresh_starts < 1:
-        raise SystemExit("--fresh-starts must be >= 1")
-    if args.fresh_sessions < 1:
-        raise SystemExit("--fresh-sessions must be >= 1")
-    if args.session_gap < 0:
-        raise SystemExit("--session-gap must be >= 0")
+    args.sizes = sx.parse_sizes(args.sizes)
+    sx.validate_cli_args(args)
     return run_lab(args)
 
 
