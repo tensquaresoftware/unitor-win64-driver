@@ -101,8 +101,8 @@ Use MCP `rename_chat` (`cursor-app-control`). Authoritative detail: `.cursor/rul
 
 ## 3. Quantifiable Limits (quality gate)
 
-> Realistic thresholds for a C++ usermode Windows MIDI/USB bridge.  
-> **Enforced on touched files** by `scripts/quality/lint-touched.py` (and `.clang-tidy` when used).  
+> Realistic thresholds for a C++ usermode Windows MIDI/USB bridge (§3.1) and for project Python under `scripts/` (§3.4).  
+> **Enforced on touched files** by `scripts/quality/lint-touched.py` (and `.clang-tidy` when used for C++).  
 > Historical debt outside the ticket diff is a **separate chore**.
 
 ### 3.1 Code metrics — MAXIMUM limits
@@ -141,6 +141,40 @@ If a §3 metric conflicts with timing safety or clarity of the critical path: **
 - Abstraction “for later” with no current need → YAGNI, remove
 - Cannot find a good function name → likely too many responsibilities
 - Comment like "// Part 1", "// Part 2" → each part = separate function
+
+### 3.4 Scripts quality gate (Python)
+
+> Anti-drift for **project Python** under `scripts/` (labs, packaging CLI, quality helpers).  
+> Same tool as C++: `python scripts/quality/lint-touched.py`.  
+> Historical oversized labs are a **separate chore** — `--all` reports them; it does **not** fail the process.
+
+#### Scope
+
+| Included | Excluded |
+|---|---|
+| `scripts/**/*.py` | `_bmad/`, `.agents/`, `tools/` (no project `.py` there today), third-party trees |
+
+#### Metrics — MAXIMUM limits (looser than §3.1 C++)
+
+| Metric | Maximum | Notes |
+|---|---|---|
+| Function (scripts core, e.g. `quality/`, `dev/`) | **~70** nloc | lizard |
+| Function (lab / packaging glue — argparse + I/O) | **~90** nloc | Paths with `/lab/` or `/packaging/` |
+| Function parameters | **4** | Prefer dataclass / `Namespace`; lizard `self`/`cls` are excluded |
+| Cyclomatic complexity | **12** (glue up to **14**) | Extract helpers when exceeded |
+| Nesting depth | **5** | Indent-based estimate (heuristic; not AST) |
+| Useful `.py` file | **~700** lines | Non-blank, non-`#` lines |
+
+WET→DRY for labs follows §3.1 duplication rules: duplicate once OK; factorize when the third stable copy appears (dedicated chore — not this gate’s job to rewrite the tree).
+
+#### Touched vs `--all` (same spirit as C++)
+
+- **Touched (default):** analyse changed hunks under `scripts/**/*.py`; **exit 1** on findings. File-size findings only if the file is **new**, or useful-line count **grew** vs `--base` while still over ~700.
+- **`--all`:** diagnostic scan of tracked `scripts/**/*.py`; print findings; **exit 0** (backlog / debt visibility).
+
+#### Finish criteria
+
+End of task: `python scripts/quality/lint-touched.py` must be green on the ticket diff (C++ **and** scripts). Do not mass-refactor untouched labs to green `--all`.
 
 ---
 

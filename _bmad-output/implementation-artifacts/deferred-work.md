@@ -327,3 +327,17 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-sysex-long-truncation-32.md`
   summary: Bulk IN ring sits at WFMO ceiling (63 slots + stop = 64) with no automated transport test for the re-harvest-during-deliver path.
   evidence: Blind/Edge hunters; Ask First only forbids going past 64; solo lab green is the gate, not CI URB simulation.
+
+## Deferred from: quick-dev spec-scripts-python-quality-gate.md (2026-08-12)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-python-quality-gate.md`
+  summary: Python indent nesting heuristic can mis-count multiline strings / docstrings.
+  evidence: Edge/Blind review; AST-aware nesting left for a later chore.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-python-quality-gate.md`
+  summary: No automated unit tests for scripts gate paths (self/cls, --all exit 0, lang tags).
+  evidence: Blind Hunter; ticket scoped to gate + conventions, not a test harness.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-python-quality-gate.md`
+  summary: With --all and --clang-tidy together, metric findings force exit 0 and can hide tidy failures.
+  evidence: Blind Hunter; pre-existing exit ordering; tidy remains optional.
