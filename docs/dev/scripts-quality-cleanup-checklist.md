@@ -120,9 +120,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
   Snapshot : ~2 findings · score ~119 · `main` ccn · `_run_lab` params  
   Notes : `6a185f3` — cleared under `--all` via LabRun/QfBatch + phase split (CLI preserved; no companion; local fail needles kept)
 
-- [ ] `scripts/lab/overnight-matrix-stress.py`  
+- [x] `scripts/lab/overnight-matrix-stress.py`  
   Snapshot : ~3 findings · score ~118 · `run_overnight` · `_run_child` params  
-  Notes :
+  Notes : pending commit — cleared under `--all` via ChildRun/OvernightContext split (CLI preserved; no companion)
 
 - [ ] `scripts/lab/midi-concurrent-in-stress.py`  
   Snapshot : ~2 findings · score ~108 · nesting `_run_stress`  

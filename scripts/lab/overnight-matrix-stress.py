@@ -68,16 +68,35 @@ class CycleStats:
         print(line, flush=True)
 
 
-def _run_child(
-    python: str,
-    script: Path,
-    args: list[str],
-    log_dir: Path,
-    stats: CycleStats,
-) -> int:
+@dataclass(frozen=True)
+class ChildRun:
+    python: str
+    script: Path
+    args: list[str]
+    log_dir: Path
+
+
+@dataclass(frozen=True)
+class OvernightPaths:
+    mid_script: Path
+    bank_script: Path
+    bridge: Path
+    out_root: Path
+    journal: Path
+
+
+@dataclass
+class OvernightContext:
+    args: argparse.Namespace
+    paths: OvernightPaths
+    stats: CycleStats
+    deadline: float
+
+
+def _run_child(run: ChildRun, stats: CycleStats) -> int:
     cmd = [
-        python,
-        str(script),
+        run.python,
+        str(run.script),
         "--with-bridge",
         "--out-port",
         "MT4 Out 1",
@@ -86,8 +105,8 @@ def _run_child(
         "--pass-percent",
         "100",
         "--log-dir",
-        str(log_dir),
-        *args,
+        str(run.log_dir),
+        *run.args,
     ]
     stats.note("RUN " + " ".join(cmd))
     try:
@@ -99,9 +118,33 @@ def _run_child(
     return int(completed.returncode)
 
 
-def run_overnight(args: argparse.Namespace) -> int:
+def _should_stop(ctx: OvernightContext) -> bool:
+    # Match pre-refactor `while monotonic < deadline` (NaN deadline ⇒ stop).
+    return (not time.monotonic() < ctx.deadline) or ctx.stats.stopped
+
+
+def _note_phase_result(stats: CycleStats, cycle: int, label: str, rc: int) -> None:
+    if rc == 0:
+        setattr(stats, f"{label}_ok", getattr(stats, f"{label}_ok") + 1)
+        stats.note(f"CYCLE {cycle} {label} exit=0 PASS")
+        return
+    setattr(stats, f"{label}_fail", getattr(stats, f"{label}_fail") + 1)
+    stats.note(f"CYCLE {cycle} {label} exit={rc} FAIL")
+
+
+def _child_extra_args(bridge: Path, fresh_starts: int, count: int) -> list[str]:
+    return [
+        "--bridge-exe",
+        str(bridge),
+        "--fresh-starts",
+        str(fresh_starts),
+        "--count",
+        str(count),
+    ]
+
+
+def _resolve_paths(args: argparse.Namespace) -> OvernightPaths:
     root = _repo_root()
-    python = sys.executable
     mid_script = root / "scripts" / "lab" / "sysex-matrix-mid-loop.py"
     bank_script = root / "scripts" / "lab" / "sysex-matrix-bank-loop.py"
     if not mid_script.is_file() or not bank_script.is_file():
@@ -115,93 +158,104 @@ def run_overnight(args: argparse.Namespace) -> int:
 
     out_root = root / "tests" / "lab-logs" / "overnight-matrix"
     out_root.mkdir(parents=True, exist_ok=True)
-    stamp = _utc_stamp()
-    journal = out_root / f"overnight-{stamp}.log"
+    journal = out_root / f"overnight-{_utc_stamp()}.log"
+    return OvernightPaths(
+        mid_script=mid_script,
+        bank_script=bank_script,
+        bridge=bridge,
+        out_root=out_root,
+        journal=journal,
+    )
 
-    deadline = time.monotonic() + args.hours * 3600.0
-    stats = CycleStats()
-    stats.note(
+
+def _log_start(ctx: OvernightContext) -> None:
+    args = ctx.args
+    ctx.stats.note(
         f"START overnight-matrix hours={args.hours} "
         f"fresh_starts={args.fresh_starts} mid_count={args.mid_count} "
         f"bank_count={args.bank_count} gap_s={args.cycle_gap} "
-        f"bridge={bridge}"
+        f"bridge={ctx.paths.bridge}"
     )
-    stats.note("TOPO expect: Matrix on MT4 In1/Out1; no red loop on those jacks")
+    ctx.stats.note("TOPO expect: Matrix on MT4 In1/Out1; no red loop on those jacks")
 
-    _hold_awake()
-    cycle = 0
-    try:
-        while time.monotonic() < deadline and not stats.stopped:
-            cycle += 1
-            remaining_h = max(0.0, (deadline - time.monotonic()) / 3600.0)
-            stats.note(f"CYCLE {cycle} remaining_h={remaining_h:.2f}")
 
-            mid_dir = out_root / f"cycle-{cycle:04d}-mid"
-            mid_dir.mkdir(parents=True, exist_ok=True)
-            mid_rc = _run_child(
-                python,
-                mid_script,
-                [
-                    "--bridge-exe",
-                    str(bridge),
-                    "--fresh-starts",
-                    str(args.fresh_starts),
-                    "--count",
-                    str(args.mid_count),
-                ],
-                mid_dir,
-                stats,
-            )
-            if stats.stopped:
-                break
-            if mid_rc == 0:
-                stats.mid_ok += 1
-                stats.note(f"CYCLE {cycle} mid exit=0 PASS")
-            else:
-                stats.mid_fail += 1
-                stats.note(f"CYCLE {cycle} mid exit={mid_rc} FAIL")
+def _run_labeled_child(
+    stats: CycleStats,
+    cycle: int,
+    label: str,
+    run: ChildRun,
+) -> None:
+    rc = _run_child(run, stats)
+    if stats.stopped:
+        return
+    _note_phase_result(stats, cycle, label, rc)
 
-            if time.monotonic() >= deadline or stats.stopped:
-                break
 
-            bank_dir = out_root / f"cycle-{cycle:04d}-bank"
-            bank_dir.mkdir(parents=True, exist_ok=True)
-            bank_rc = _run_child(
-                python,
-                bank_script,
-                [
-                    "--bridge-exe",
-                    str(bridge),
-                    "--fresh-starts",
-                    str(args.fresh_starts),
-                    "--count",
-                    str(args.bank_count),
-                ],
-                bank_dir,
-                stats,
-            )
-            if stats.stopped:
-                break
-            if bank_rc == 0:
-                stats.bank_ok += 1
-                stats.note(f"CYCLE {cycle} bank exit=0 PASS")
-            else:
-                stats.bank_fail += 1
-                stats.note(f"CYCLE {cycle} bank exit={bank_rc} FAIL")
+def _run_cycle_gap(stats: CycleStats, gap_s: float) -> None:
+    # Keep `> 0` (not `<= 0` early-return) so NaN skips the gap like pre-refactor.
+    if gap_s > 0:
+        stats.note(f"GAP sleep_s={gap_s}")
+        try:
+            time.sleep(gap_s)
+        except KeyboardInterrupt:
+            stats.stopped = True
+            stats.note("INTERRUPT gap")
 
-            if time.monotonic() >= deadline or stats.stopped:
-                break
-            if args.cycle_gap > 0:
-                stats.note(f"GAP sleep_s={args.cycle_gap}")
-                try:
-                    time.sleep(args.cycle_gap)
-                except KeyboardInterrupt:
-                    stats.stopped = True
-                    stats.note("INTERRUPT gap")
-                    break
-    finally:
-        _release_awake()
 
+def _phase_dir(ctx: OvernightContext, cycle: int, label: str) -> Path:
+    path = ctx.paths.out_root / f"cycle-{cycle:04d}-{label}"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _run_mid_phase(ctx: OvernightContext, cycle: int) -> None:
+    mid_dir = _phase_dir(ctx, cycle, "mid")
+    _run_labeled_child(
+        ctx.stats,
+        cycle,
+        "mid",
+        ChildRun(
+            sys.executable,
+            ctx.paths.mid_script,
+            _child_extra_args(
+                ctx.paths.bridge, ctx.args.fresh_starts, ctx.args.mid_count
+            ),
+            mid_dir,
+        ),
+    )
+
+
+def _run_bank_phase(ctx: OvernightContext, cycle: int) -> None:
+    bank_dir = _phase_dir(ctx, cycle, "bank")
+    _run_labeled_child(
+        ctx.stats,
+        cycle,
+        "bank",
+        ChildRun(
+            sys.executable,
+            ctx.paths.bank_script,
+            _child_extra_args(
+                ctx.paths.bridge, ctx.args.fresh_starts, ctx.args.bank_count
+            ),
+            bank_dir,
+        ),
+    )
+
+
+def _run_one_cycle(ctx: OvernightContext, cycle: int) -> None:
+    remaining_h = max(0.0, (ctx.deadline - time.monotonic()) / 3600.0)
+    ctx.stats.note(f"CYCLE {cycle} remaining_h={remaining_h:.2f}")
+
+    _run_mid_phase(ctx, cycle)
+    if _should_stop(ctx):
+        return
+    _run_bank_phase(ctx, cycle)
+    if _should_stop(ctx):
+        return
+    _run_cycle_gap(ctx.stats, ctx.args.cycle_gap)
+
+
+def _write_journal(stats: CycleStats, journal: Path, cycle: int) -> None:
     summary = (
         f"DONE cycles={cycle} "
         f"mid_ok={stats.mid_ok} mid_fail={stats.mid_fail} "
@@ -212,6 +266,27 @@ def run_overnight(args: argparse.Namespace) -> int:
     journal.write_text("\n".join(stats.lines) + "\n", encoding="utf-8")
     print(f"Wrote {journal}", flush=True)
 
+
+def run_overnight(args: argparse.Namespace) -> int:
+    paths = _resolve_paths(args)
+    ctx = OvernightContext(
+        args=args,
+        paths=paths,
+        stats=CycleStats(),
+        deadline=time.monotonic() + args.hours * 3600.0,
+    )
+    _log_start(ctx)
+
+    _hold_awake()
+    cycle = 0
+    try:
+        while not _should_stop(ctx):
+            cycle += 1
+            _run_one_cycle(ctx, cycle)
+    finally:
+        _release_awake()
+
+    _write_journal(ctx.stats, paths.journal, cycle)
     # Soft exit: overnight always "succeeds" as a harness; inspect FAIL counts.
     return 0
 

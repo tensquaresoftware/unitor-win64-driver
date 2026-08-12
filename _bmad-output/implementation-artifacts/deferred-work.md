@@ -413,3 +413,13 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-overnight-macos-sysex-stress.md`
   summary: `--hours` / `--cycle-gap` still accept NaN (and `--hours` accepts +inf) because validation uses `<= 0` / `< 0` only.
   evidence: Blind Hunter; pre-existing validation gap; overnight loop never starts for NaN hours.
+
+## Deferred from: quick-dev spec-scripts-quality-overnight-matrix-stress.md (2026-08-12)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-overnight-matrix-stress.md`
+  summary: Unexpected exception during a cycle still releases awake but skips the overnight journal write.
+  evidence: Blind Hunter; same structural gap as pre-refactor and overnight-combined; not introduced by the split.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-overnight-matrix-stress.md`
+  summary: Module docstring claims Ctrl+C terminates the current child; `_run_child` only catches KeyboardInterrupt and returns 130 without terminate/kill.
+  evidence: Blind Hunter; pre-existing overclaim; structural refactor did not change interrupt handling.
