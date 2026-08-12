@@ -341,3 +341,21 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-scripts-python-quality-gate.md`
   summary: With --all and --clang-tidy together, metric findings force exit 0 and can hide tidy failures.
   evidence: Blind Hunter; pre-existing exit ordering; tidy remains optional.
+
+## Deferred from: quick-dev spec-scripts-quality-sysex-long-loopback.md (2026-08-12)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-long-loopback.md`
+  summary: BridgeSession.wait_until_ready still ignores READY_MARKERS (underscore no-op) and only polls port names.
+  evidence: Blind Hunter; pre-existing in this harness and several sibling labs; not introduced by the quality refactor.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-long-loopback.md`
+  summary: BridgeSession.stop returns early when the process already exited without joining the stdout reader thread.
+  evidence: Edge/Blind; pre-existing race on early Bridge crash; outside structural-quality scope.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-long-loopback.md`
+  summary: SystemExit from Bridge start/wait_until_ready skips the parent finish footer (finished_utc / overall_pass).
+  evidence: Blind Hunter; pre-existing control-flow gap; rewrite preserved behavior.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-long-loopback.md`
+  summary: Hard wall is not polled inside wait_exact_sysex, interval sleep, or Bridge ready poll loops.
+  evidence: Edge Case Hunter; pre-existing; wall checks remain at trial/session boundaries only.

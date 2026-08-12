@@ -87,9 +87,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 ### Vague A — plus lourds (file-size et/ou complexité haute)
 
-- [ ] `scripts/lab/sysex-long-loopback.py`  
-  Snapshot : ~8 findings · score ~1253 · useful ~1087 · `run_lab` / `build_parser` / nesting / params  
-  Notes :
+- [x] `scripts/lab/sysex-long-loopback.py`
+  Snapshot : ~8 findings · score ~1253 · useful ~1087 · `run_lab` / `build_parser` / nesting / params
+  Notes : `7502f89` — cleared under `--all` via extract `lab_midi_common.py` + `sysex_long_loopback_lib.py` (structural only; CLI preserved)
 
 - [ ] `scripts/packaging/verify-installer-contract.py`  
   Snapshot : ~2 findings · score ~1183 · `main` nloc+ccn extrêmes  
