@@ -1,0 +1,155 @@
+# Scripts quality cleanup — checklist (un fichier par conversation)
+
+Snapshot findings : `python scripts/quality/lint-touched.py --all --report-worst 200`  
+Référence seuils : `conventions.md` §3.4  
+Outil : `scripts/quality/lint-touched.py`  
+Date snapshot : **2026-08-12**
+
+## Comment utiliser
+
+1. Prendre la **prochaine** case non cochée (ordre = priorité / score lizard).
+2. Ouvrir un **chat Cursor frais**.
+3. Copier le **prompt réutilisable** ci-dessous ; remplacer `CHEMIN_CIBLE` par le chemin du fichier choisi.
+4. À la fin de la conversation : cocher la case ici + noter le commit (si tu commits) / findings restants éventuels.
+5. Une conversation = **un** fichier primaire de la liste. Extraire un module partagé lab (`scripts/lab/…`) uniquement si c’est nécessaire pour faire passer **ce** fichier (WET→DRY), sans refactorer toute la liste d’un coup.
+
+Hors liste (déjà verts sous `--all` au snapshot) :  
+`scripts/dev/resolve-bmad-chat-title.py`, `scripts/quality/lint-touched.py`.
+
+---
+
+## Prompt réutilisable (copier-coller)
+
+```text
+/bmad-quick-dev
+
+## Objectif
+
+Assainir **un seul** script Python pour qu’il passe la porte qualité scripts (conventions.md §3.4), sans big-bang sur tout le dossier lab.
+
+## Fichier cible (remplacer)
+
+CHEMIN_CIBLE
+
+Exemples : `scripts/lab/sysex-long-loopback.py` · `scripts/packaging/verify-installer-contract.py`
+
+## Contexte (ne pas rediscuter)
+
+- Projet : unitor-win64-driver.
+- Porte unique C++ + scripts : `python scripts/quality/lint-touched.py`.
+- Seuils scripts (§3.4) : fonction ~70 nloc (core) / ~90 (lab|packaging) ; ≤4 params ; CCN ≤12 (glue ≤14) ; nesting ≤5 ; fichier utile ~700 lignes.
+- Mode touched : exit 1 sur dérive du diff. Mode `--all` : diagnostic dette, exit 0.
+- Checklist d’avancement : `docs/dev/scripts-quality-cleanup-checklist.md`.
+- Comportement lab (CLI, topo MIDI, Pass/Fail, logs) : **ne pas casser** — refactor structurel seulement.
+- Langue code / logs script / messages : anglais. Chat : français clair.
+- Pas de commit sans demande explicite de Guillaume.
+
+## Livrable de cette conversation
+
+1. Refactorer **uniquement** `CHEMIN_CIBLE` (et, si indispensable pour ce fichier, un petit module partagé neuf ou déjà extrait sous `scripts/lab/` / `scripts/packaging/` — Boy Scout limité).
+2. Faire disparaître **tous** les findings lizard `[scripts:…]` qui concernent ce fichier sous :
+   `python scripts/quality/lint-touched.py --all`
+   (filtre mental / grep sur le chemin cible ; les autres fichiers sales peuvent rester rouges).
+3. Sur le diff de ce ticket : `python scripts/quality/lint-touched.py` → **exit 0**.
+4. Spec Quick Dev EN courte sous `_bmad-output/implementation-artifacts/` (intent, ACs, Design Notes : avant/après findings pour ce fichier).
+5. Mettre à jour la checklist : cocher la case du fichier + une ligne de note (commit hash si fourni plus tard, ou « pending commit »).
+
+## Méthode
+
+1. Lire `conventions.md` §3.4 + le fichier cible.
+2. Lancer `--all`, lister les findings **de ce chemin seulement**.
+3. Extraire helpers / options struct / réduire nesting / découper `run_lab` / `build_parser` / `main` — KISS, noms intentionnels.
+4. Si duplication Bridge/MIDI déjà présente ≥3× et bloquante pour ce fichier : extraire un module partagé minimal (une fois), sans migrer tous les callers hors besoin.
+5. Revérifier `--all` (plus de findings sur la cible) + mode touched vert.
+6. Ne pas lancer de lab hardware sauf si le refactor change la CLI publique de façon risquée — alors smoke doc / `--help` minimum.
+
+## Hors scope
+
+- Traiter un deuxième fichier de la checklist dans la même conversation.
+- Changer les seuils §3.4 ou la logique de `lint-touched.py` (sauf bug évident découvert en chemin — alors HALT et demander).
+- Nouveau scénario SysEx (Request All `04H` type 0), overnight, épic 6, C++ Bridge.
+- Reformater tout `scripts/` « pour faire joli ».
+
+## Critères de fin
+
+- [ ] Findings `[scripts:…]` pour `CHEMIN_CIBLE` = 0 sous `--all`
+- [ ] `python scripts/quality/lint-touched.py` vert sur le diff
+- [ ] Comportement / CLI du script préservés (flags documentés inchangés sauf renommage justifié + note)
+- [ ] Spec EN + case cochée dans `docs/dev/scripts-quality-cleanup-checklist.md`
+```
+
+---
+
+## Liste à traiter (ordre recommandé)
+
+Coche `[x]` quand le fichier est **vert** sous `--all` pour ce chemin.  
+Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer après chaque passe).
+
+### Vague A — plus lourds (file-size et/ou complexité haute)
+
+- [ ] `scripts/lab/sysex-long-loopback.py`  
+  Snapshot : ~8 findings · score ~1253 · useful ~1087 · `run_lab` / `build_parser` / nesting / params  
+  Notes :
+
+- [ ] `scripts/packaging/verify-installer-contract.py`  
+  Snapshot : ~2 findings · score ~1183 · `main` nloc+ccn extrêmes  
+  Notes :
+
+- [ ] `scripts/lab/sysex-matrix-mid-loop.py`  
+  Snapshot : ~8 findings · score ~1035 · useful ~944 · `run_lab` / parser / params scénarios  
+  Notes :
+
+- [ ] `scripts/lab/sysex-matrix-bank-loop.py`  
+  Snapshot : ~6 findings · score ~1031 · useful ~767 · `run_lab` / parser / nesting / params  
+  Notes :
+
+- [ ] `scripts/lab/overnight-combined-stress.py`  
+  Snapshot : ~3 findings · score ~1022 · `run_overnight` nloc+ccn · `_run_child` params  
+  Notes :
+
+### Vague B — overnight / realtime labs
+
+- [ ] `scripts/lab/overnight-macos-sysex-stress.py`  
+  Snapshot : ~3 findings · score ~249 · `run_overnight` · `_run_child` params  
+  Notes :
+
+- [ ] `scripts/lab/midi-clock-loopback-lab.py`  
+  Snapshot : ~4 findings · score ~119 · `main` ccn · `_run_lab` nloc/params · `_send_status` params  
+  Notes :
+
+- [ ] `scripts/lab/mtc-loopback-lab.py`  
+  Snapshot : ~2 findings · score ~119 · `main` ccn · `_run_lab` params  
+  Notes :
+
+- [ ] `scripts/lab/overnight-matrix-stress.py`  
+  Snapshot : ~3 findings · score ~118 · `run_overnight` · `_run_child` params  
+  Notes :
+
+- [ ] `scripts/lab/midi-concurrent-in-stress.py`  
+  Snapshot : ~2 findings · score ~108 · nesting `_run_stress`  
+  Notes :
+
+- [ ] `scripts/lab/overnight-long-loopback-stress.py`  
+  Snapshot : ~1 finding · score ~107 · `_run_child` params  
+  Notes :
+
+- [ ] `scripts/lab/device-inquiry-loop.py`  
+  Snapshot : ~2 findings · score ~16 · nesting / params `_run_inquiry_loop`  
+  Notes :
+
+### Déjà OK au snapshot (ne pas ouvrir de conversation « cleanup » sauf régression)
+
+- [x] `scripts/dev/resolve-bmad-chat-title.py`
+- [x] `scripts/quality/lint-touched.py`
+
+---
+
+## Vérification globale (quand la liste A+B est toute cochée)
+
+```bat
+python scripts/quality/lint-touched.py --all --report-worst 50
+```
+
+Attendu : **plus aucun** finding `[scripts:…]` (ou seulement des fichiers hors checklist ajoutés plus tard — les traiter alors en fin de liste).
+
+Critère de fin de chantier dette : `--all` ne signale plus de scripts sales sous `scripts/`.
