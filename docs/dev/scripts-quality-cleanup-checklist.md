@@ -126,7 +126,7 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 - [x] `scripts/lab/midi-concurrent-in-stress.py`  
   Snapshot : ~2 findings · score ~108 · nesting `_run_stress`  
-  Notes : pending commit — cleared under `--all` via listen/SysEx helpers + ListenTarget (CLI preserved; no companion)
+  Notes : `396ea57` — cleared under `--all` via listen/SysEx helpers + ListenTarget (CLI preserved; no companion)
 
 - [ ] `scripts/lab/overnight-long-loopback-stress.py`  
   Snapshot : ~1 finding · score ~107 · `_run_child` params  
