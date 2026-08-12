@@ -108,9 +108,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 ### Vague B — overnight / realtime labs
 
-- [ ] `scripts/lab/overnight-macos-sysex-stress.py`  
+- [x] `scripts/lab/overnight-macos-sysex-stress.py`  
   Snapshot : ~3 findings · score ~249 · `run_overnight` · `_run_child` params  
-  Notes :
+  Notes : pending commit — cleared under `--all` via ChildRun/OvernightContext split (CLI preserved; no companion)
 
 - [ ] `scripts/lab/midi-clock-loopback-lab.py`  
   Snapshot : ~4 findings · score ~119 · `main` ccn · `_run_lab` nloc/params · `_send_status` params  
