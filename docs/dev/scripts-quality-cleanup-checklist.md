@@ -29,9 +29,7 @@ Assainir **un seul** script Python pour qu’il passe la porte qualité scripts 
 
 ## Fichier cible (remplacer)
 
-CHEMIN_CIBLE
-
-Exemples : `scripts/lab/sysex-long-loopback.py` · `scripts/packaging/verify-installer-contract.py`
+CHEMIN_CIBLE = XXX
 
 ## Contexte (ne pas rediscuter)
 
@@ -46,6 +44,7 @@ Exemples : `scripts/lab/sysex-long-loopback.py` · `scripts/packaging/verify-ins
 
 ## Livrable de cette conversation
 
+0. Renommer la conversation `Qualité — XXX`où `XXX` décrit le script en 3-4 mots maximum
 1. Refactorer **uniquement** `CHEMIN_CIBLE` (et, si indispensable pour ce fichier, un petit module partagé neuf ou déjà extrait sous `scripts/lab/` / `scripts/packaging/` — Boy Scout limité).
 2. Faire disparaître **tous** les findings lizard `[scripts:…]` qui concernent ce fichier sous :
    `python scripts/quality/lint-touched.py --all`
@@ -91,9 +90,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
   Snapshot : ~8 findings · score ~1253 · useful ~1087 · `run_lab` / `build_parser` / nesting / params
   Notes : `7502f89` — cleared under `--all` via extract `lab_midi_common.py` + `sysex_long_loopback_lib.py` (structural only; CLI preserved)
 
-- [ ] `scripts/packaging/verify-installer-contract.py`  
+- [x] `scripts/packaging/verify-installer-contract.py`  
   Snapshot : ~2 findings · score ~1183 · `main` nloc+ccn extrêmes  
-  Notes :
+  Notes : pending commit — cleared under `--all` via domain `check_*` helpers; Authenticode policy needles synced to hobby docs (`no certificate purchase` / `Not a hard packaging gate`); bare CLI / OK|FAIL exits preserved
 
 - [ ] `scripts/lab/sysex-matrix-mid-loop.py`  
   Snapshot : ~8 findings · score ~1035 · useful ~944 · `run_lab` / parser / params scénarios  

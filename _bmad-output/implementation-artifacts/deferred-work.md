@@ -359,3 +359,13 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-long-loopback.md`
   summary: Hard wall is not polled inside wait_exact_sysex, interval sleep, or Bridge ready poll loops.
   evidence: Edge Case Hunter; pre-existing; wall checks remain at trial/session boundaries only.
+
+## Deferred from: quick-dev spec-scripts-quality-verify-installer-contract.md (2026-08-12)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-verify-installer-contract.md`
+  summary: BridgeSource default check can IndexError (no clean FAIL) if debug path text exists but `#ifndef BridgeSource` is missing.
+  evidence: Blind/Edge review; same split logic as pre-refactor; not introduced by the quality split.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-verify-installer-contract.md`
+  summary: CMakeLists.txt / BridgeVersion.h.in are read without require_files, so missing files raise FileNotFoundError instead of FAIL.
+  evidence: Blind/Edge; pre-existing read pattern; Authenticode paths were already gated separately.
