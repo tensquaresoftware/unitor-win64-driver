@@ -44,7 +44,7 @@ CHEMIN_CIBLE = XXX
 
 ## Livrable de cette conversation
 
-0. Renommer la conversation `Qualité — XXX`où `XXX` décrit le script en 3-4 mots maximum
+0. Renommer la conversation `Qualité — XXX`(ex: scripts/lab/sysex-long-loopback.py donne "Qualité — SysEx Long Loopback")
 1. Refactorer **uniquement** `CHEMIN_CIBLE` (et, si indispensable pour ce fichier, un petit module partagé neuf ou déjà extrait sous `scripts/lab/` / `scripts/packaging/` — Boy Scout limité).
 2. Faire disparaître **tous** les findings lizard `[scripts:…]` qui concernent ce fichier sous :
    `python scripts/quality/lint-touched.py --all`
@@ -94,9 +94,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
   Snapshot : ~2 findings · score ~1183 · `main` nloc+ccn extrêmes  
   Notes : `5fb8464` — cleared under `--all` via domain `check_*` helpers; Authenticode policy needles synced to hobby docs (`no certificate purchase` / `Not a hard packaging gate`); bare CLI / OK|FAIL exits preserved
 
-- [ ] `scripts/lab/sysex-matrix-mid-loop.py`  
+- [x] `scripts/lab/sysex-matrix-mid-loop.py`  
   Snapshot : ~8 findings · score ~1035 · useful ~944 · `run_lab` / parser / params scénarios  
-  Notes :
+  Notes : pending commit — cleared under `--all` via `lab_midi_common` reuse + `sysex_matrix_mid_loop_lib.py` (local `BRIDGE_FAIL_NEEDLES` subset kept; CLI preserved)
 
 - [ ] `scripts/lab/sysex-matrix-bank-loop.py`  
   Snapshot : ~6 findings · score ~1031 · useful ~767 · `run_lab` / parser / nesting / params  

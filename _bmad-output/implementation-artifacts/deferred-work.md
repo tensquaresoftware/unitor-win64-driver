@@ -369,3 +369,17 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-verify-installer-contract.md`
   summary: CMakeLists.txt / BridgeVersion.h.in are read without require_files, so missing files raise FileNotFoundError instead of FAIL.
   evidence: Blind/Edge; pre-existing read pattern; Authenticode paths were already gated separately.
+
+## Deferred from: quick-dev spec-scripts-quality-sysex-matrix-mid-loop.md (2026-08-12)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-mid-loop.md`
+  summary: `--with-bridge --pushes-only` with default `--fresh-starts 2` makes later starts set both include flags false; child gets dumps-only+pushes-only and aborts in validate_cli_args.
+  evidence: Blind Hunter BH-01; pre-existing orchestration; fresh_sessions is guarded, fresh_starts is not.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-mid-loop.md`
+  summary: If both include_push and include_dump are false, run_all_scenarios returns overall pass with empty stats.
+  evidence: Blind Hunter BH-02; same latent path as BH-01; pre-existing.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-mid-loop.md`
+  summary: SystemExit from Bridge start/wait_until_ready skips parent finish footer (finished_utc / overall_pass).
+  evidence: Blind Hunter BH-10; pre-existing control-flow gap; rewrite preserved behavior.
