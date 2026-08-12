@@ -397,3 +397,9 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-sysex-matrix-bank-loop.md`
   summary: Bank-burst match accepts any 275 B patch dump, so a late prior-slot reply after 0x7F wrap can count as Pass.
   evidence: Edge Case Hunter; pre-existing predicate; not introduced by the structural split.
+
+## Deferred from: quick-dev spec-scripts-quality-overnight-combined-stress.md (2026-08-12)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-overnight-combined-stress.md`
+  summary: Unexpected KeyboardInterrupt outside child/gap catch still releases awake but skips journal write (soft exit path).
+  evidence: Blind Hunter; same structural gap as pre-refactor; not introduced by the split.

@@ -78,14 +78,34 @@ class CycleStats:
         print(line, flush=True)
 
 
-def _run_child(
-    python: str,
-    script: Path,
-    args: list[str],
-    log_dir: Path,
-    stats: CycleStats,
-) -> int:
-    cmd = [python, str(script), *args, "--log-dir", str(log_dir)]
+@dataclass(frozen=True)
+class ChildRun:
+    python: str
+    script: Path
+    args: list[str]
+    log_dir: Path
+
+
+@dataclass(frozen=True)
+class OvernightPaths:
+    mid_script: Path
+    bank_script: Path
+    long_script: Path
+    bridge: Path
+    out_root: Path
+    journal: Path
+
+
+@dataclass
+class OvernightContext:
+    args: argparse.Namespace
+    paths: OvernightPaths
+    stats: CycleStats
+    deadline: float
+
+
+def _run_child(run: ChildRun, stats: CycleStats) -> int:
+    cmd = [run.python, str(run.script), *run.args, "--log-dir", str(run.log_dir)]
     stats.note("RUN " + " ".join(cmd))
     try:
         completed = subprocess.run(cmd, cwd=str(_repo_root()))
@@ -96,9 +116,64 @@ def _run_child(
     return int(completed.returncode)
 
 
-def run_overnight(args: argparse.Namespace) -> int:
+def _should_stop(ctx: OvernightContext) -> bool:
+    # Match pre-refactor `while monotonic < deadline` (NaN deadline ⇒ stop).
+    return (not time.monotonic() < ctx.deadline) or ctx.stats.stopped
+
+
+def _note_phase_result(stats: CycleStats, cycle: int, label: str, rc: int) -> None:
+    if rc == 0:
+        setattr(stats, f"{label}_ok", getattr(stats, f"{label}_ok") + 1)
+        stats.note(f"CYCLE {cycle} {label} exit=0 PASS")
+        return
+    setattr(stats, f"{label}_fail", getattr(stats, f"{label}_fail") + 1)
+    stats.note(f"CYCLE {cycle} {label} exit={rc} FAIL")
+
+
+def _matrix_child_args(args: argparse.Namespace, bridge: Path, count: int) -> list[str]:
+    return [
+        "--with-bridge",
+        "--bridge-exe",
+        str(bridge),
+        "--out-port",
+        args.matrix_out,
+        "--in-port",
+        args.matrix_in,
+        "--pass-percent",
+        "100",
+        "--fresh-starts",
+        str(args.fresh_starts),
+        "--count",
+        str(count),
+    ]
+
+
+def _long_child_args(args: argparse.Namespace, bridge: Path) -> list[str]:
+    return [
+        "--with-bridge",
+        "--bridge-exe",
+        str(bridge),
+        "--out-port",
+        args.long_out,
+        "--in-port",
+        args.long_in,
+        "--pass-percent",
+        "100",
+        "--fresh-starts",
+        str(args.fresh_starts),
+        "--count",
+        str(args.long_count),
+        "--interval",
+        str(args.long_interval),
+        "--reply-timeout",
+        str(args.long_reply_timeout),
+        "--sizes",
+        args.long_sizes,
+    ]
+
+
+def _resolve_paths(args: argparse.Namespace) -> OvernightPaths:
     root = _repo_root()
-    python = sys.executable
     mid_script = root / "scripts" / "lab" / "sysex-matrix-mid-loop.py"
     bank_script = root / "scripts" / "lab" / "sysex-matrix-bank-loop.py"
     long_script = root / "scripts" / "lab" / "sysex-long-loopback.py"
@@ -114,152 +189,122 @@ def run_overnight(args: argparse.Namespace) -> int:
 
     out_root = root / "tests" / "lab-logs" / "overnight-combined"
     out_root.mkdir(parents=True, exist_ok=True)
-    stamp = _utc_stamp()
-    journal = out_root / f"overnight-{stamp}.log"
+    journal = out_root / f"overnight-{_utc_stamp()}.log"
+    return OvernightPaths(
+        mid_script=mid_script,
+        bank_script=bank_script,
+        long_script=long_script,
+        bridge=bridge,
+        out_root=out_root,
+        journal=journal,
+    )
 
-    deadline = time.monotonic() + args.hours * 3600.0
-    stats = CycleStats()
-    stats.note(
+
+def _log_start(ctx: OvernightContext) -> None:
+    args = ctx.args
+    paths = ctx.paths
+    ctx.stats.note(
         f"START overnight-combined hours={args.hours} "
         f"fresh_starts={args.fresh_starts} mid_count={args.mid_count} "
         f"bank_count={args.bank_count} long_count={args.long_count} "
         f"long_sizes={args.long_sizes!r} gap_s={args.cycle_gap} "
         f"matrix_ports={args.matrix_out!r}/{args.matrix_in!r} "
-        f"long_ports={args.long_out!r}/{args.long_in!r} bridge={bridge}"
+        f"long_ports={args.long_out!r}/{args.long_in!r} bridge={paths.bridge}"
     )
-    stats.note(
-        "TOPO expect: Matrix on Out1/In1; red DIN loop Out2->In2"
+    ctx.stats.note("TOPO expect: Matrix on Out1/In1; red DIN loop Out2->In2")
+
+
+def _run_labeled_child(
+    stats: CycleStats,
+    cycle: int,
+    label: str,
+    run: ChildRun,
+) -> None:
+    rc = _run_child(run, stats)
+    if stats.stopped:
+        return
+    _note_phase_result(stats, cycle, label, rc)
+
+
+def _run_cycle_gap(stats: CycleStats, gap_s: float) -> None:
+    # Keep `> 0` (not `<= 0` early-return) so NaN skips the gap like pre-refactor.
+    if gap_s > 0:
+        stats.note(f"GAP sleep_s={gap_s}")
+        try:
+            time.sleep(gap_s)
+        except KeyboardInterrupt:
+            stats.stopped = True
+            stats.note("INTERRUPT gap")
+
+
+def _phase_dir(ctx: OvernightContext, cycle: int, label: str) -> Path:
+    path = ctx.paths.out_root / f"cycle-{cycle:04d}-{label}"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _run_mid_phase(ctx: OvernightContext, cycle: int) -> None:
+    mid_dir = _phase_dir(ctx, cycle, "mid")
+    _run_labeled_child(
+        ctx.stats,
+        cycle,
+        "mid",
+        ChildRun(
+            sys.executable,
+            ctx.paths.mid_script,
+            _matrix_child_args(ctx.args, ctx.paths.bridge, ctx.args.mid_count),
+            mid_dir,
+        ),
     )
 
-    _hold_awake()
-    cycle = 0
-    try:
-        while time.monotonic() < deadline and not stats.stopped:
-            cycle += 1
-            remaining_h = max(0.0, (deadline - time.monotonic()) / 3600.0)
-            stats.note(f"CYCLE {cycle} remaining_h={remaining_h:.2f}")
 
-            mid_dir = out_root / f"cycle-{cycle:04d}-mid"
-            mid_dir.mkdir(parents=True, exist_ok=True)
-            mid_rc = _run_child(
-                python,
-                mid_script,
-                [
-                    "--with-bridge",
-                    "--bridge-exe",
-                    str(bridge),
-                    "--out-port",
-                    args.matrix_out,
-                    "--in-port",
-                    args.matrix_in,
-                    "--pass-percent",
-                    "100",
-                    "--fresh-starts",
-                    str(args.fresh_starts),
-                    "--count",
-                    str(args.mid_count),
-                ],
-                mid_dir,
-                stats,
-            )
-            if stats.stopped:
-                break
-            if mid_rc == 0:
-                stats.mid_ok += 1
-                stats.note(f"CYCLE {cycle} mid exit=0 PASS")
-            else:
-                stats.mid_fail += 1
-                stats.note(f"CYCLE {cycle} mid exit={mid_rc} FAIL")
+def _run_bank_phase(ctx: OvernightContext, cycle: int) -> None:
+    bank_dir = _phase_dir(ctx, cycle, "bank")
+    _run_labeled_child(
+        ctx.stats,
+        cycle,
+        "bank",
+        ChildRun(
+            sys.executable,
+            ctx.paths.bank_script,
+            _matrix_child_args(ctx.args, ctx.paths.bridge, ctx.args.bank_count),
+            bank_dir,
+        ),
+    )
 
-            if time.monotonic() >= deadline or stats.stopped:
-                break
 
-            bank_dir = out_root / f"cycle-{cycle:04d}-bank"
-            bank_dir.mkdir(parents=True, exist_ok=True)
-            bank_rc = _run_child(
-                python,
-                bank_script,
-                [
-                    "--with-bridge",
-                    "--bridge-exe",
-                    str(bridge),
-                    "--out-port",
-                    args.matrix_out,
-                    "--in-port",
-                    args.matrix_in,
-                    "--pass-percent",
-                    "100",
-                    "--fresh-starts",
-                    str(args.fresh_starts),
-                    "--count",
-                    str(args.bank_count),
-                ],
-                bank_dir,
-                stats,
-            )
-            if stats.stopped:
-                break
-            if bank_rc == 0:
-                stats.bank_ok += 1
-                stats.note(f"CYCLE {cycle} bank exit=0 PASS")
-            else:
-                stats.bank_fail += 1
-                stats.note(f"CYCLE {cycle} bank exit={bank_rc} FAIL")
+def _run_long_phase(ctx: OvernightContext, cycle: int) -> None:
+    long_dir = _phase_dir(ctx, cycle, "long")
+    _run_labeled_child(
+        ctx.stats,
+        cycle,
+        "long",
+        ChildRun(
+            sys.executable,
+            ctx.paths.long_script,
+            _long_child_args(ctx.args, ctx.paths.bridge),
+            long_dir,
+        ),
+    )
 
-            if time.monotonic() >= deadline or stats.stopped:
-                break
 
-            long_dir = out_root / f"cycle-{cycle:04d}-long"
-            long_dir.mkdir(parents=True, exist_ok=True)
-            long_rc = _run_child(
-                python,
-                long_script,
-                [
-                    "--with-bridge",
-                    "--bridge-exe",
-                    str(bridge),
-                    "--out-port",
-                    args.long_out,
-                    "--in-port",
-                    args.long_in,
-                    "--pass-percent",
-                    "100",
-                    "--fresh-starts",
-                    str(args.fresh_starts),
-                    "--count",
-                    str(args.long_count),
-                    "--interval",
-                    str(args.long_interval),
-                    "--reply-timeout",
-                    str(args.long_reply_timeout),
-                    "--sizes",
-                    args.long_sizes,
-                ],
-                long_dir,
-                stats,
-            )
-            if stats.stopped:
-                break
-            if long_rc == 0:
-                stats.long_ok += 1
-                stats.note(f"CYCLE {cycle} long exit=0 PASS")
-            else:
-                stats.long_fail += 1
-                stats.note(f"CYCLE {cycle} long exit={long_rc} FAIL")
+def _run_one_cycle(ctx: OvernightContext, cycle: int) -> None:
+    remaining_h = max(0.0, (ctx.deadline - time.monotonic()) / 3600.0)
+    ctx.stats.note(f"CYCLE {cycle} remaining_h={remaining_h:.2f}")
 
-            if time.monotonic() >= deadline or stats.stopped:
-                break
-            if args.cycle_gap > 0:
-                stats.note(f"GAP sleep_s={args.cycle_gap}")
-                try:
-                    time.sleep(args.cycle_gap)
-                except KeyboardInterrupt:
-                    stats.stopped = True
-                    stats.note("INTERRUPT gap")
-                    break
-    finally:
-        _release_awake()
+    _run_mid_phase(ctx, cycle)
+    if _should_stop(ctx):
+        return
+    _run_bank_phase(ctx, cycle)
+    if _should_stop(ctx):
+        return
+    _run_long_phase(ctx, cycle)
+    if _should_stop(ctx):
+        return
+    _run_cycle_gap(ctx.stats, ctx.args.cycle_gap)
 
+
+def _write_journal(stats: CycleStats, journal: Path, cycle: int) -> None:
     summary = (
         f"DONE cycles={cycle} "
         f"mid_ok={stats.mid_ok} mid_fail={stats.mid_fail} "
@@ -271,6 +316,27 @@ def run_overnight(args: argparse.Namespace) -> int:
     journal.write_text("\n".join(stats.lines) + "\n", encoding="utf-8")
     print(f"Wrote {journal}", flush=True)
 
+
+def run_overnight(args: argparse.Namespace) -> int:
+    paths = _resolve_paths(args)
+    ctx = OvernightContext(
+        args=args,
+        paths=paths,
+        stats=CycleStats(),
+        deadline=time.monotonic() + args.hours * 3600.0,
+    )
+    _log_start(ctx)
+
+    _hold_awake()
+    cycle = 0
+    try:
+        while not _should_stop(ctx):
+            cycle += 1
+            _run_one_cycle(ctx, cycle)
+    finally:
+        _release_awake()
+
+    _write_journal(ctx.stats, paths.journal, cycle)
     # Soft exit: overnight always "succeeds" as a harness; inspect FAIL counts.
     return 0
 

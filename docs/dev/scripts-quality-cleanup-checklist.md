@@ -102,9 +102,9 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
   Snapshot : ~6 findings · score ~1031 · useful ~767 · `run_lab` / parser / nesting / params  
   Notes : `1ef9e49` — cleared under `--all` via `lab_midi_common` reuse + `sysex_matrix_bank_loop_lib.py` (local `BRIDGE_FAIL_NEEDLES` subset kept; CLI preserved)
 
-- [ ] `scripts/lab/overnight-combined-stress.py`  
+- [x] `scripts/lab/overnight-combined-stress.py`  
   Snapshot : ~3 findings · score ~1022 · `run_overnight` nloc+ccn · `_run_child` params  
-  Notes :
+  Notes : pending commit — cleared under `--all` via ChildRun/OvernightContext split (CLI preserved; no companion)
 
 ### Vague B — overnight / realtime labs
 
