@@ -92,7 +92,7 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 - [x] `scripts/packaging/verify-installer-contract.py`  
   Snapshot : ~2 findings · score ~1183 · `main` nloc+ccn extrêmes  
-  Notes : pending commit — cleared under `--all` via domain `check_*` helpers; Authenticode policy needles synced to hobby docs (`no certificate purchase` / `Not a hard packaging gate`); bare CLI / OK|FAIL exits preserved
+  Notes : `5fb8464` — cleared under `--all` via domain `check_*` helpers; Authenticode policy needles synced to hobby docs (`no certificate purchase` / `Not a hard packaging gate`); bare CLI / OK|FAIL exits preserved
 
 - [ ] `scripts/lab/sysex-matrix-mid-loop.py`  
   Snapshot : ~8 findings · score ~1035 · useful ~944 · `run_lab` / parser / params scénarios  
