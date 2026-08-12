@@ -104,7 +104,7 @@ Colonnes *findings* / *score* = snapshot 2026-08-12 (indicatif ; re-mesurer apr�
 
 - [x] `scripts/lab/overnight-combined-stress.py`  
   Snapshot : ~3 findings · score ~1022 · `run_overnight` nloc+ccn · `_run_child` params  
-  Notes : pending commit — cleared under `--all` via ChildRun/OvernightContext split (CLI preserved; no companion)
+  Notes : `4dbf817` — cleared under `--all` via ChildRun/OvernightContext split (CLI preserved; no companion)
 
 ### Vague B — overnight / realtime labs
 
