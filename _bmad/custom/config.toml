@@ -7,4 +7,6 @@
 # description = "Prefers short, bulleted PRDs over narrative drafts."
 
 [core]
+user_name = "Guillaume"
+communication_language = "French"
 document_output_language = "English"
