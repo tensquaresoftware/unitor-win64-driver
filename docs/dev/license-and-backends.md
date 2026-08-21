@@ -1,10 +1,10 @@
----
+﻿---
 organization: Ten Square Software
 project: unitor-win64-driver
 title: License and MIDI backends — three-way honesty
 author: Guillaume DUPONT
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-21
 ---
 
 # License and MIDI backends
@@ -13,25 +13,25 @@ This page is the deep companion to the root [`README.md`](../../README.md) **Lic
 
 **Course correction (2026-08-10):** hobby / free GitHub posture — see [`sprint-change-proposal-2026-08-10.md`](../../_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-10.md).
 
+**Story 6.2 expansion:** dual community Releases — **Win11 + Windows MIDI Services** (comfort) and **Win10 + user-installed virtualMIDI** (parallel motivated path). Win10 is an assumed parallel offer, not the comfort promise.
+
 ## Three-way split
 
 | Layer | What it is | What it is not |
 |---|---|---|
 | **MIT (this repository)** | Unitor MT4 Bridge sources, installer scripts, and project docs listed under [`LICENSE`](../../LICENSE) — copyright Guillaume DUPONT / **Ten Square Software** | A license for Tobias Erichsen’s virtualMIDI SDK or driver |
-| **virtualMIDI (proprietary, separate)** | **Interim lab / personal** DAW-facing MIDI backend ([teVirtualMIDI / virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html)); any install that provides `teVirtualMIDI.dll` qualifies — **loopMIDI** / **rtpMIDI** are the usual eval examples | Covered by this repo’s MIT; freeware SDK; cleared for community binary redistribution |
-| **Windows MIDI Services (next community)** | Planned **Win11-only** `MidiBackend` (Epic 6) behind the same abstraction — intended path for public ready-to-run binaries | Already shipping; available as the community backend on Windows 10 |
+| **virtualMIDI (proprietary, separate)** | Community **Win10** path when the user **self-installs** the driver ([teVirtualMIDI / virtualMIDI](https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html)); also **lab / personal** on Win10/Win11. Any install that provides `teVirtualMIDI.dll` qualifies — **loopMIDI** / **rtpMIDI** are the usual examples | Covered by this repo’s MIT; freeware SDK; cleared for this project to **redistribute** Bridge/Setup binaries that embed the SDK/DLL/MSI |
+| **Windows MIDI Services (community Win11)** | Shipping **Win11** `MidiBackend` behind the same abstraction — comfort path for public ready-to-run binaries without a virtualMIDI prerequisite | Available as the community comfort backend on Windows 10; a reason to embed virtualMIDI |
 
-### virtualMIDI redistribution honesty (OQ-1 — out of community scope)
+### virtualMIDI redistribution honesty (OQ-1 — unchanged)
 
-The virtualMIDI SDK is **not** freeware. Software that links the SDK — including redistributing **Bridge** / **Setup** binaries built against it — must not be distributed without prior clearance from the author.
-
-**Product decision (Correct Course 2026-08-10):** this hobby project does **not** ship community Releases of VirtualMIDI-linked Bridge/Setup binaries. Community ready-to-run binaries are planned for the **Windows MIDI Services** backend (Epic 6, Win11-only) instead.
+The virtualMIDI SDK is **not** freeware. This hobby project does **not** embed or redistribute `teVirtualMIDI.dll`, a virtualMIDI MSI, or the SDK.
 
 Therefore:
 
-- **Lab / personal use:** virtualMIDI may remain installed via loopMIDI / rtpMIDI (or equivalent) so the current Bridge can run on Win10/Win11 lab machines through Epic 5.
-- **Community redistributable binaries:** wait for the **Windows MIDI Services** backend (Epic 6, Win11-only).
-- **MSI embed** of virtualMIDI in the Public Installer stays **out of scope** under this hobby posture.
+- **Community Win10 Setup:** requires the user to install virtualMIDI themselves and present `teVirtualMIDI.dll` before/during Setup; Bridge may load the DLL at runtime when present.
+- **Community Win11 Setup:** does **not** require virtualMIDI; uses Windows MIDI Services.
+- **Lab / personal:** virtualMIDI remains valid on Win10/Win11 via loopMIDI / rtpMIDI (or equivalent).
 
 Do not read “MIT repo” as permission to redistribute virtualMIDI.
 
@@ -40,11 +40,11 @@ https://www.tobias-erichsen.de/software/virtualmidi/virtualmidi-sdk.html
 
 ### Windows MIDI Services
 
-Microsoft’s Windows MIDI Services path is the **next community** Win11-only backend (Epic 6). Until then, end-user docs may still describe the interim virtualMIDI lab path honestly. See [What works / what does not](../user/unitor-mt4-bridge-user-guide.md#what-works--what-does-not) and the root README.
+Microsoft’s Windows MIDI Services path is the **Win11 community comfort** backend. Fail closed when the transport is unavailable — never present empty port lists as success. Musician docs: [`docs/user/unitor-mt4-bridge-win11-wms-user-guide.md`](../user/unitor-mt4-bridge-win11-wms-user-guide.md).
 
 ## Integration proof (not a fork base)
 
-[aaron1a12/virtual-midi](https://github.com/aaron1a12/virtual-midi) is cited as **existence proof** that virtualMIDI SDK integration can work on Windows. That repository is GPL-3.0 and vendors SDK materials. **Do not fork it** as this project’s base. This tree keeps an original MIT Bridge and loads `teVirtualMIDI.dll` at runtime when present (interim backend).
+[aaron1a12/virtual-midi](https://github.com/aaron1a12/virtual-midi) is cited as **existence proof** that virtualMIDI SDK integration can work on Windows. That repository is GPL-3.0 and vendors SDK materials. **Do not fork it** as this project’s base. This tree keeps an original MIT Bridge and loads `teVirtualMIDI.dll` at runtime when present (Win10 community + lab).
 
 ## Linux Emagic quirk sources — reference only
 
@@ -60,7 +60,8 @@ Public surfaces use **Ten Square Software** (README, LICENSE, installer branding
 
 ## Related
 
-- Install prerequisites for musicians: [`docs/user/README.md`](../user/README.md)
+- Install prerequisites / OS router: [`docs/user/README.md`](../user/README.md)
+- Release automation: [`release-guide.md`](release-guide.md)
 - Contributor dual-machine loop: [`contributor-dual-machine-loop.md`](contributor-dual-machine-loop.md)
 - Operator smoke for this honesty bar: [`docs/tests/smoke-epic4-license-honesty-mt4.md`](../tests/smoke-epic4-license-honesty-mt4.md)
 - Authenticode / SmartScreen policy (no certificate purchase in this hobby project): [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md) — operator smoke [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`](../tests/smoke-epic4-authenticode-smartscreen-mt4.md)

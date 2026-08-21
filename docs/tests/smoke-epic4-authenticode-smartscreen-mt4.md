@@ -1,4 +1,4 @@
----
+﻿---
 organization: Ten Square Software
 project: unitor-win64-driver
 title: Smoke Epic 4.4 — Authenticode policy and SmartScreen honesty
@@ -55,8 +55,8 @@ A musician downloading Setup from the official project channel is not silently a
 
 | # | Verification | Win10 x64 | Win11 x64 | Notes |
 |---|---|---|---|---|
-| 1 | User docs (EN) explain SmartScreen behavior + mitigation if public Setup is unsigned / unrecognized (AD-19) | N/A | N/A | Docs-only any-checkout 2026-08-10: [`unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md) Installation + Troubleshooting SmartScreen — **Pass** |
-| 2 | FR user peer covers the same SmartScreen facts (not a stale EN-only island) | N/A | N/A | Docs-only any-checkout 2026-08-10: [`unitor-mt4-bridge-guide-utilisateur.md`](../user/unitor-mt4-bridge-guide-utilisateur.md) — **Pass** |
+| 1 | User docs (EN) explain SmartScreen behavior + mitigation if public Setup is unsigned / unrecognized (AD-19) | N/A | N/A | Docs-only: [`unitor-mt4-bridge-win11-wms-user-guide.md`](../user/unitor-mt4-bridge-win11-wms-user-guide.md) + [`unitor-mt4-bridge-win10-virtualmidi-user-guide.md`](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md) SmartScreen sections — **Pass** (re-check after 6.2) |
+| 2 | FR user peer covers the same SmartScreen facts (not a stale EN-only island) | N/A | N/A | Docs-only: [`unitor-mt4-bridge-win11-wms-guide-utilisateur.md`](../user/unitor-mt4-bridge-win11-wms-guide-utilisateur.md) + [`unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md`](../user/unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md) — **Pass** (re-check after 6.2) |
 | 3 | Public/contributor surface states certificate purchase **no certificate purchase** / unsigned + SmartScreen docs is the hobby plan (FR-15 / NFR-S1 course-corrected) | N/A | N/A | Re-verify after Correct Course 2026-08-10 — README + authenticode-and-smartscreen.md |
 | 4 | Optional “if a certificate ever appears” path (if documented) does not contradict no certificate in this line as the default | N/A | N/A | Re-verify after Correct Course 2026-08-10 |
 | 5 | OQ-3 is explicitly **no certificate purchase / out of scope hobby** (not “deferred purchase decision”) | N/A | N/A | Re-verify after Correct Course 2026-08-10 |

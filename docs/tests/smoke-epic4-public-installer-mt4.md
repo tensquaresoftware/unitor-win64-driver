@@ -9,18 +9,18 @@ updated: 2026-08-10
 
 # Smoke guide — Epic 4.1 Public Installer (MT4 on Windows)
 
-Operator guide for **Story 4.1**: Public Installer packaging that binds WinUSB when trust allows, installs the Bridge, wires Auto-Start, and checks virtualMIDI.
+Operator guide for **Story 4.1** (updated for Story **6.2** dual flavors): Public Installer packaging that binds WinUSB when trust allows, installs the Bridge, wires Auto-Start, and applies flavor-specific MIDI gates.
 
-**Course correction (2026-08-10):** hobby / hobby install — Setup-alone WinUSB on clean PC **Fail** without trusted catalog is **expected** (no certificate in this line). Guided WinUSB (Zadig) is the supported clean-PC path. Community VirtualMIDI-linked Releases are **out of scope** (Epic 6 = WMS). See root README + user guides.
+**Course correction + 6.2:** hobby install — Setup-alone WinUSB on clean PC **Fail** without trusted catalog is **expected**. Guided WinUSB (Zadig) is the supported clean-PC path. Dual community Setups: **win11-wms** (Windows MIDI Services; no virtualMIDI) and **win10-virtualmidi** (user self-installs virtualMIDI; never embed MSI/DLL). See root README + [`docs/user/README.md`](../user/README.md).
 
-**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the lab claim; Win11 x64 when available. Physical MT4 is required for bind rows. Do **not** claim polished commercial same-evening Setup-alone success on clean PC.
+**Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** for the virtualMIDI flavor claim; Win11 x64 for the WMS flavor. Physical MT4 is required for bind rows. Do **not** claim polished commercial same-evening Setup-alone success on clean PC.
 
 ## Lab session — 2026-08-10 (clean Win10 x64)
 
 | Field | Value |
 |---|---|
 | Machine | Clean Win10 x64 (restore point taken before smoke) |
-| Artifact | `builds/installer/UnitorMt4Bridge-Setup.exe` (Release Bridge; AppVersion 0.1.0; Explorer File version was `0.0.0.0` on the build under test — fixed in packaging after the session) |
+| Artifact | Dual flavored Setups under `builds/installer/` — e.g. `UnitorMt4Bridge-Setup-win10-virtualmidi-0.1.0.exe` / `UnitorMt4Bridge-Setup-win11-wms-0.1.0.exe` (lab session 2026-08-10 used the then-unflavored name; packaging now ships dual names) |
 | Operator | Guillaume |
 | Sequence | virtualMIDI-absent block → loopMIDI install → Setup with MT4 → WinUSB fail → reboot + retry (same Fail) → lab stopped; restore point recommended |
 | WinUSB | `pnputil` exit `-536870353` (`0xE000022F` — third-party INF lacks digital signature information) |
@@ -38,25 +38,25 @@ The packaging path should stay short and clear. On clean PCs without a paid cata
 |---|---|
 | Technology | **Inno Setup 6** (pin: **6.7.3**; build with `ISCC.exe`) |
 | Rationale | Fast progress + clear success UI, straightforward custom `pnputil` / prerequisite checks, single community EXE; avoids centering on MSIX while INF / Driver Store association is required; WiX remains viable if an MSI-first ARP story is needed later — **not** reopened as a product decision here |
-| Output | `builds/installer/UnitorMt4Bridge-Setup.exe` (via `scripts/packaging/build-public-installer.ps1`) |
+| Output | Dual: `builds/installer/UnitorMt4Bridge-Setup-win11-wms-{version}.exe` and `…-win10-virtualmidi-{version}.exe` (via `scripts/packaging/build-public-installer.ps1 -Flavor both`) |
 | Sources | `installer/public-installer.iss` + helpers under `installer/` |
 
 ## Contract (AD-12 checklist)
 
 | # | AD-12 item | Contract |
 |---|---|---|
-| 1 | Few steps | One elevated wizard; virtualMIDI gate → copy Bridge → WinUSB bind → unelevated Auto-Start register → success |
+| 1 | Few steps | One elevated wizard; flavor gate (Win10: virtualMIDI DLL / Win11: Win11+midisrv) → copy Bridge → WinUSB bind → unelevated Auto-Start register → success |
 | 2 | Visible progress | Inno modern wizard progress during file copy and bind |
-| 3 | Clear success screen | Success text **only** when virtualMIDI present **and** WinUSB association reported OK **and** Auto-Start registration reported OK |
-| 4 | virtualMIDI prerequisite explicit | Block before success if `teVirtualMIDI.dll` missing from System32; English fix path (loopMIDI / rtpMIDI). Empty port list ≠ success |
+| 3 | Clear success screen | Success text **only** when flavor gates + WinUSB + Auto-Start reported OK (Win10 includes virtualMIDI; Win11 does **not**) |
+| 4 | MIDI prerequisite explicit | **Win10:** block if `teVirtualMIDI.dll` missing (loopMIDI / rtpMIDI self-install; never embed). **Win11:** block if not Win11 or midisrv missing. Empty port list ≠ success |
 | 5 | WinUSB association | Elevated `pnputil /add-driver … /install` on project INF; HWID `USB\VID_086A&PID_0003&MI_02`; GUID `{aa209017-cf8a-49ad-a0e7-701187ff7e05}` |
-| 6 | Auto-Start wired | `"<install>\Bridge.exe" --register-auto-start` in **interactive user** context (`runasoriginaluser` / equivalent) — not the elevated admin profile |
+| 6 | Auto-Start wired | `"<install>\Bridge.exe" --register-auto-start --midi-backend=…` in **interactive user** context — flavor bakes wms or virtualmidi |
 | 7 | One-time admin | UAC once for Program Files + bind; daily Bridge / Auto-Start must not require admin (`asInvoker`) |
 | 8 | Minimal jargon | Ten Square Software facade; short English UI strings |
 
-### OQ-1 (out of community scope)
+### OQ-1 (unchanged)
 
-Do **not** embed virtualMIDI MSI. Do **not** claim community redistribution of VirtualMIDI-linked binaries. Community ready-to-run binaries wait on Epic 6 (Windows MIDI Services / Win11).
+Do **not** embed virtualMIDI MSI/DLL. Win10 community path = **user self-install**. Win11 community comfort path = Windows MIDI Services (no virtualMIDI prerequisite).
 
 ## Scope fences
 
@@ -65,7 +65,7 @@ Do **not** embed virtualMIDI MSI. Do **not** claim community redistribution of V
 | Polished end-user docs (first MIDI / SysEx / troubleshooting) | **4.2** — [`docs/user/README.md`](../user/README.md); close via [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Three-way MIT vs virtualMIDI vs Windows MIDI Services honesty | **4.3** — [`docs/dev/license-and-backends.md`](../dev/license-and-backends.md); close via [`smoke-epic4-license-honesty-mt4.md`](smoke-epic4-license-honesty-mt4.md) |
 | Authenticode / public catalog signing / SmartScreen honesty | **4.4** — [`docs/dev/authenticode-and-smartscreen.md`](../dev/authenticode-and-smartscreen.md); close via [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md) |
-| Tobias MSI **embed** / VirtualMIDI-linked community binaries | **OQ-1 out of community scope** — Epic 6 WMS path |
+| Tobias MSI **embed** / DLL redistribution | **OQ-1** — never embed; Win10 = self-install; Win11 WMS = comfort path (**6.2**) |
 | WinUSB bind materials / GUID open policy | **1.3** (reuse; do not rewrite transport) |
 | Auto-Start runtime CLI | **3.1** (wire; no second mechanism / no Session-0 service) |
 | MIDI Path harness | Epic **5** |

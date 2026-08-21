@@ -1,6 +1,6 @@
-# WinUSB bind path for Emagic MT4 (086A:0003)
+﻿# WinUSB bind path for Emagic MT4 (086A:0003)
 
-**Community readers:** start with the user guide ([Installation](../user/unitor-mt4-bridge-user-guide.md#installation) and [USB association failed](../user/unitor-mt4-bridge-user-guide.md#usb-association-winusb-failed)). This page is the **contributor / detailed bind** reference.
+**Community readers:** start with [`docs/user/README.md`](../user/README.md), then the path guide ([Win11 Installation](../user/unitor-mt4-bridge-win11-wms-user-guide.md#installation) / [WinUSB failed](../user/unitor-mt4-bridge-win11-wms-user-guide.md#usb-association-winusb-failed) · [Win10 Installation](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#installation-bridge-setup)). This page is the **contributor / detailed bind** reference.
 
 **Hobby posture (2026-08-10):** no paid INF catalog. On a clean PC, Setup-alone association often fails (`0xE000022F`). The supported **hobby install** USB path is **guided WinUSB** — typically **Zadig** for musicians, or the INF / Device Manager steps below for contributors.
 
@@ -133,12 +133,12 @@ Zadig fallback refuses to open when **more than one** USB device matches the MT4
 
 Two separate trust domains — do not conflate them:
 
-1. **Authenticode** on `Bridge.exe` / `UnitorMt4Bridge-Setup.exe` (SmartScreen / publisher trust)
+1. **Authenticode** on `Bridge.exe` / dual flavored Setups (`UnitorMt4Bridge-Setup-win11-wms-*.exe`, `UnitorMt4Bridge-Setup-win10-virtualmidi-*.exe`) (SmartScreen / publisher trust)
 2. **WinUSB INF catalog** (`.cat`) for clean-machine Driver Store association (`CatalogFile=mt4-winusb.cat`)
 
 **Lab only:** [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1) builds a self-signed catalog and stages LocalMachine Root / TrustedPublisher. That is **not** public Authenticode.
 
-**Public / hobby policy:** no code-signing certificate in this project line. Unsigned Setup + SmartScreen docs; clean-PC WinUSB via **guided** association (Zadig / INF browse). Full runbook: [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md). Musician-facing steps: [user guide](../user/unitor-mt4-bridge-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup).
+**Public / hobby policy:** no code-signing certificate in this project line. Unsigned Setup + SmartScreen docs; clean-PC WinUSB via **guided** association (Zadig / INF browse). Full runbook: [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md). Musician-facing steps: [Win11](../user/unitor-mt4-bridge-win11-wms-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup).
 
 ## Daily use after bind (Auto-Start)
 
@@ -150,7 +150,7 @@ One-time INF bind / Zadig / test-signing may still need Administrator. Daily `--
 
 ## Public Installer (packaging path)
 
-Story **4.1** packages the INF into the Public Installer (progress UI, virtualMIDI presence gate, Auto-Start wiring). On clean PCs without a trusted catalog, expect WinUSB association to **fail** inside Setup — then use guided WinUSB. End-user prose: [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md). Operator smokes:
+Story **4.1** / **6.2** packages the INF into dual Public Installer flavors (progress UI, Win10 virtualMIDI presence gate or Win11 WMS path, Auto-Start wiring). On clean PCs without a trusted catalog, expect WinUSB association to **fail** inside Setup — then use guided WinUSB. End-user prose: [`docs/user/README.md`](../user/README.md). Operator smokes:
 
 - [`docs/tests/smoke-epic4-public-installer-mt4.md`](../tests/smoke-epic4-public-installer-mt4.md)
 - [`docs/tests/smoke-epic4-user-docs-mt4.md`](../tests/smoke-epic4-user-docs-mt4.md)
