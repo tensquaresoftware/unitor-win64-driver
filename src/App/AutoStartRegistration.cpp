@@ -17,8 +17,10 @@
 
 std::string buildAutoStartActionArguments()
 {
-    // Bake the resolved MidiBackend into Auto-Start so Win11 WMS vs Win10
-    // virtualMIDI flavors keep their installer defaults across logon.
+    // Freeze resolveMidiBackendKind() (CLI override → env → WMS) into the
+    // logon command so Setup-registered flavors keep that choice across logon.
+    // Re-run --register-auto-start (or Setup) to change it; this helper does not
+    // know Win11 vs Win10 packaging by itself.
     std::string args = kAutoSessionFlag;
     args += " --midi-backend=";
     args += midiBackendKindLabel(resolveMidiBackendKind());

@@ -9,6 +9,8 @@
 inline constexpr const char* kAutoStartTaskName = "UnitorMt4BridgeAutoStart";
 
 // Flag written into the registered action arguments (must match Main.cpp).
+// buildAutoStartActionArguments() also appends --midi-backend=wms|virtualmidi
+// from resolveMidiBackendKind() at register time (frozen until re-register).
 inline constexpr const char* kAutoSessionFlag = "--auto-session";
 
 // Wait/rescan bound when MT4 is absent at Auto-Start launch (plug-after-login).

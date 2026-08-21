@@ -1,4 +1,6 @@
-// Lab/community MidiBackend selection (WMS default; virtualMIDI via CLI/env/Setup).
+// Lab/community MidiBackend selection (CLI override, else env, else WMS).
+// Setup flavors bake the choice by calling --register-auto-start with the
+// resolved backend (see buildAutoStartActionArguments) — not a separate resolve path.
 
 #pragma once
 

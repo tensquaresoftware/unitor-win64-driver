@@ -371,6 +371,31 @@ int dispatchBridgeFlags(int argc, char* argv[])
     }
     return dispatchSessionFlags(argc, argv);
 }
+
+void printUsageHelp()
+{
+    std::cout
+        << kBridgeProductName << " " << kBridgeVersionString << "\n"
+        << "Usage (selected flags):\n"
+        << "  --version\n"
+        << "  --help\n"
+        << "  --start-session | --run-midi | --auto-session\n"
+        << "  --dev-zadig\n"
+        << "  --soft-echo | --no-soft-echo   Lab software-loop only;\n"
+        << "      default OFF. Env UNITOR_MIDI_SOFT_ECHO=1|true|yes also enables\n"
+        << "      unless --no-soft-echo. --auto-session always forces OFF (ignores env).\n"
+        << "  --midi-backend=wms|virtualmidi\n"
+        << "      Default wms (Win11 community / fail closed if WMS missing).\n"
+        << "      Win10 Setup passes --midi-backend=virtualmidi when registering Auto-Start.\n"
+        << "      Lab: pass the flag (or UNITOR_MIDI_BACKEND) before --register-auto-start.\n"
+        << "      Env UNITOR_MIDI_BACKEND=wms|virtualmidi also selects when flag omitted.\n"
+        << "  --register-auto-start | --unregister-auto-start\n"
+        << "      Register freezes the currently resolved backend into the logon command\n"
+        << "      (--auto-session --midi-backend=…). Later env changes do not affect logon\n"
+        << "      until you re-register (or re-run Setup). Old entries with only --auto-session\n"
+        << "      need a fresh register after upgrade.\n"
+        << "  --probe-usb | --test-mapper | --test-port-names | --test-wms-ports\n";
+}
 } // namespace
 
 int main(int argc, char* argv[])
@@ -383,22 +408,7 @@ int main(int argc, char* argv[])
     }
     if (hasFlag(argc, argv, "--help") || hasFlag(argc, argv, "-h"))
     {
-        std::cout
-            << kBridgeProductName << " " << kBridgeVersionString << "\n"
-            << "Usage (selected flags):\n"
-            << "  --version\n"
-            << "  --help\n"
-            << "  --start-session | --run-midi | --auto-session\n"
-            << "  --dev-zadig\n"
-            << "  --soft-echo | --no-soft-echo   Lab software-loop only;\n"
-            << "      default OFF. Env UNITOR_MIDI_SOFT_ECHO=1|true|yes also enables\n"
-            << "      unless --no-soft-echo. --auto-session always forces OFF (ignores env).\n"
-            << "  --midi-backend=wms|virtualmidi\n"
-            << "      Default wms (Win11 community / fail closed if WMS missing).\n"
-            << "      Win10 Setup registers --midi-backend=virtualmidi via Auto-Start.\n"
-            << "      Env UNITOR_MIDI_BACKEND=wms|virtualmidi also selects when flag omitted.\n"
-            << "  --register-auto-start | --unregister-auto-start\n"
-            << "  --probe-usb | --test-mapper | --test-port-names | --test-wms-ports\n";
+        printUsageHelp();
         return 0;
     }
 

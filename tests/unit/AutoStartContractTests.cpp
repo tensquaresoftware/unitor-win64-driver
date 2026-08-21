@@ -5,11 +5,51 @@
 #include "App/AutoStartRegistration.h"
 #include "Midi/MidiBackendSelect.h"
 
+#include <cstdlib>
 #include <string>
+
+namespace
+{
+void clearMidiBackendEnv() noexcept
+{
+#if defined(_WIN32)
+    _putenv("UNITOR_MIDI_BACKEND=");
+#else
+    unsetenv("UNITOR_MIDI_BACKEND");
+#endif
+}
+
+void setMidiBackendEnv(const char* value) noexcept
+{
+#if defined(_WIN32)
+    std::string entry = "UNITOR_MIDI_BACKEND=";
+    entry += value != nullptr ? value : "";
+    _putenv(entry.c_str());
+#else
+    if (value == nullptr || value[0] == '\0')
+    {
+        unsetenv("UNITOR_MIDI_BACKEND");
+        return;
+    }
+    setenv("UNITOR_MIDI_BACKEND", value, 1);
+#endif
+}
+
+struct MidiBackendOverrideGuard
+{
+    ~MidiBackendOverrideGuard()
+    {
+        clearMidiBackendKindOverride();
+        clearMidiBackendEnv();
+    }
+};
+} // namespace
 
 TEST_CASE("Auto-Start action arguments bake midi-backend (default WMS)", "[autostart]")
 {
+    MidiBackendOverrideGuard guard;
     clearMidiBackendKindOverride();
+    clearMidiBackendEnv();
     REQUIRE(
         buildAutoStartActionArguments()
         == "--auto-session --midi-backend=wms");
@@ -20,6 +60,8 @@ TEST_CASE(
     "Auto-Start action arguments bake midi-backend after virtualMIDI override",
     "[autostart]")
 {
+    MidiBackendOverrideGuard guard;
+    clearMidiBackendEnv();
     setMidiBackendKindOverride(MidiBackendKind::VirtualMidi);
     REQUIRE(
         buildAutoStartActionArguments()
@@ -28,6 +70,18 @@ TEST_CASE(
     REQUIRE(
         buildAutoStartActionArguments()
         == "--auto-session --midi-backend=wms");
+}
+
+TEST_CASE(
+    "Auto-Start action arguments bake midi-backend from UNITOR_MIDI_BACKEND env",
+    "[autostart]")
+{
+    MidiBackendOverrideGuard guard;
+    clearMidiBackendKindOverride();
+    setMidiBackendEnv("virtualmidi");
+    REQUIRE(
+        buildAutoStartActionArguments()
+        == "--auto-session --midi-backend=virtualmidi");
 }
 
 TEST_CASE("Auto-Start task name is stable and non-empty", "[autostart]")
