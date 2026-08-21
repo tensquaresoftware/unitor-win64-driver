@@ -171,7 +171,7 @@ Bonne revue.
 
 #### Patch
 
-- [x] [Review][Patch] Guides EN+FR : ne plus survenir l’install WinUSB clean ; expliquer frein catalogue / INF ; dépannage ≠ « juste relancer » ; nuancer « What works » / accroche soir même [`docs/user/unitor-mt4-bridge-user-guide.md` / `unitor-mt4-bridge-guide-utilisateur.md`]
+- [x] [Review][Patch] Guides EN+FR : ne plus survenir l’install WinUSB clean ; expliquer frein catalogue / INF ; dépannage ≠ « juste relancer » ; nuancer « What works » / accroche soir même [`docs/user/` path guides]
 - [x] [Review][Patch] Guides : corriger l’étape inventée « branchez quand l’assistant le demande » (Setup n’invite pas) [`docs/user/*`]
 - [x] [Review][Patch] Avant `Abort` si Auto-Start déjà enregistré : `--unregister-auto-start` best-effort [`installer/public-installer.iss`]
 - [x] [Review][Patch] Messages rollback honnêtes (fichiers/ARP vs résidu Driver Store possible) [`installer/public-installer.iss`]

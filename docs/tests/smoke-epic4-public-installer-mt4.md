@@ -4,7 +4,7 @@ project: unitor-win64-driver
 title: Smoke Epic 4.1 — Public Installer (AD-12 UX bar)
 author: Guillaume DUPONT
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-21
 ---
 
 # Smoke guide — Epic 4.1 Public Installer (MT4 on Windows)
@@ -20,7 +20,7 @@ Operator guide for **Story 4.1** (updated for Story **6.2** dual flavors): Publi
 | Field | Value |
 |---|---|
 | Machine | Clean Win10 x64 (restore point taken before smoke) |
-| Artifact | Dual flavored Setups under `builds/installer/` — e.g. `UnitorMt4Bridge-Setup-win10-virtualmidi-0.1.0.exe` / `UnitorMt4Bridge-Setup-win11-wms-0.1.0.exe` (lab session 2026-08-10 used the then-unflavored name; packaging now ships dual names) |
+| Artifact | Dual flavored Setups under `dist/` — e.g. `unitor-mt4-bridge-0.1.0-win10-virtualmidi-setup.exe` / `unitor-mt4-bridge-0.1.0-win11-wms-setup.exe` (lab session 2026-08-10 used older names under `builds/installer/`; packaging now ships kebab names in `dist/`) |
 | Operator | Guillaume |
 | Sequence | virtualMIDI-absent block → loopMIDI install → Setup with MT4 → WinUSB fail → reboot + retry (same Fail) → lab stopped; restore point recommended |
 | WinUSB | `pnputil` exit `-536870353` (`0xE000022F` — third-party INF lacks digital signature information) |
@@ -38,7 +38,7 @@ The packaging path should stay short and clear. On clean PCs without a paid cata
 |---|---|
 | Technology | **Inno Setup 6** (pin: **6.7.3**; build with `ISCC.exe`) |
 | Rationale | Fast progress + clear success UI, straightforward custom `pnputil` / prerequisite checks, single community EXE; avoids centering on MSIX while INF / Driver Store association is required; WiX remains viable if an MSI-first ARP story is needed later — **not** reopened as a product decision here |
-| Output | Dual: `builds/installer/UnitorMt4Bridge-Setup-win11-wms-{version}.exe` and `…-win10-virtualmidi-{version}.exe` (via `scripts/packaging/build-public-installer.ps1 -Flavor both`) |
+| Output | Dual: `dist/unitor-mt4-bridge-{version}-win11-wms-setup.exe` and `dist/unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` (via `scripts/packaging/build-public-installer.ps1 -Flavor both`) |
 | Sources | `installer/public-installer.iss` + helpers under `installer/` |
 
 ## Contract (AD-12 checklist)
@@ -111,12 +111,13 @@ Do **not** embed virtualMIDI MSI/DLL. Win10 community path = **user self-install
 
 ```powershell
 # From repo root on Windows, after Bridge is built (prefer a Release layout):
-.\scripts\packaging\build-public-installer.ps1
+.\scripts\packaging\build-public-installer.ps1 -Flavor both
 # Optional:
 #   -BridgeDir builds\release\Release
 #   -AppVersion 0.2.0   # override only; default resolves from CMake project(VERSION) / bridge-version.txt
 # Auto-detect prefers Release over Debug; invalid -BridgeDir fails closed (no silent fallback).
 # AppVersion defaults from the same SSOT as Bridge --version (not a hard-coded second number).
+# Outputs land in dist/ as unitor-mt4-bridge-{ver}-{flavor}-setup.exe
 
 # Offline contract check (no Inno / no hardware):
 python scripts\packaging\verify-installer-contract.py
@@ -128,10 +129,11 @@ Install path (stable absolute):
 C:\Program Files\Ten Square Software\Unitor MT4 Bridge\Bridge.exe
 ```
 
-Auto-Start registration (must be interactive user, not elevated admin profile):
+Auto-Start registration (must be interactive user, not elevated admin profile; flavor bakes the backend):
 
 ```text
-"<install>\Bridge.exe" --register-auto-start
+"<install>\Bridge.exe" --register-auto-start --midi-backend=wms
+"<install>\Bridge.exe" --register-auto-start --midi-backend=virtualmidi
 ```
 
 ## Uninstall / upgrade hygiene
@@ -151,10 +153,10 @@ Clean machines may reject an unsigned INF / missing `.cat`. Lab-only: [`installe
 
 - Claiming SM-5 fully closed (needs [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) Pass on top of this installer matrix)
 - Claiming polished commercial Setup-alone clean-PC WinUSB success without a shipped certificate
-- Embedding Tobias virtualMIDI MSI / shipping VirtualMIDI-linked community Releases (OQ-1 out of community scope)
+- Embedding Tobias virtualMIDI MSI / DLL inside either community Setup (OQ-1 — Win10 flavor = user self-install only)
 - Treating row 5 Fail (`0xE000022F`) as a temporary “until we buy a cert” gap — it is the **known hobby contract**
 - Session-0 Windows Service
-- Zadig as primary community UX
+- Treating Zadig as the only install story (Setup still tries WinUSB first; Zadig is the guided clean-PC fallback)
 - MIDI Path latency proof (Epic **5**)
 
 ## Related docs

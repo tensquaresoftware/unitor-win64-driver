@@ -4,7 +4,7 @@ project: unitor-win64-driver
 title: Guide opérateur — Smoke 4.1 sur PC Win10 propre
 author: Guillaume DUPONT
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-21
 ---
 
 # Guide opérateur — valider l’installateur public (Story 4.1) sur un PC Win10 propre
@@ -32,7 +32,7 @@ Sur PC propre, le Setup **échoue honnêtement** à l’association WinUSB sans 
 |---|---|
 | PC **Windows 10 x64** « propre » | Claim lab obligatoire pour la 4.1 |
 | **MT4** USB + alimentation | Lignes WinUSB / ports |
-| Clé USB (ou autre transfert) | Apporter le fichier `UnitorMt4Bridge-Setup.exe` |
+| Clé USB (ou autre transfert) | Apporter le fichier `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` |
 | Installateur **loopMIDI** ou **rtpMIDI** (Tobias) | Installe le pilote virtualMIDI (`teVirtualMIDI.dll`) |
 | MIDI-OX ou une DAW (Live, etc.) | Voir les ports après install (optionnel mais utile pour la ligne 6) |
 | Droits **Administrateur** une fois | Créer / restaurer un point de restauration ; UAC de l’installateur Unitor |
@@ -57,13 +57,13 @@ Sur ta machine de lab / de build Windows (celle qui a déjà le dépôt et Inno 
 
 ```powershell
 python scripts\packaging\verify-installer-contract.py
-.\scripts\packaging\build-public-installer.ps1
+.\scripts\packaging\build-public-installer.ps1 -Flavor both
 ```
 
 3. Récupère le fichier :
 
 ```text
-builds\installer\UnitorMt4Bridge-Setup.exe
+dist\unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe
 ```
 
 4. Copie-le sur la clé USB (avec ce guide si tu veux).
@@ -113,7 +113,7 @@ But : figer un Windows **sans** Unitor, **sans** association WinUSB MT4 faite pa
 ### Limites (honnêteté lab)
 
 - Un point de restauration annule surtout **fichiers système, pilotes, réglages Windows** liés à la protection système. Ce n’est pas une image disque complète (pas un clone BitLocker / pas un « reset usine »).
-- Les **fichiers personnels** dans Documents / Bureau ne sont en général **pas** effacés par une restauration — pratique pour garder notes et `UnitorMt4Bridge-Setup.exe` sur le Bureau ou une clé USB.
+- Les **fichiers personnels** dans Documents / Bureau ne sont en général **pas** effacés par une restauration — pratique pour garder notes et `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` sur le Bureau ou une clé USB.
 - Après restauration, vérifie quand même Applications + `teVirtualMIDI.dll` + absence d’Unitor (voir contrôle ci-dessous). Si quelque chose reste, note-le ; au pire, désinstalle à la main ou refais un point plus tôt la prochaine fois.
 - La **protection système** doit être **activée** sur le disque système (souvent `C:`). Sinon Windows refuse de créer un point.
 
@@ -166,7 +166,7 @@ Sur une machine dédiée lab : **machine virtuelle** + instantané (snapshot) Hy
 
 **Prérequis :** `teVirtualMIDI.dll` **absent** de `C:\Windows\System32\` (PC vraiment propre = souvent déjà le cas).
 
-1. Lance `UnitorMt4Bridge-Setup.exe` (double-clic).
+1. Lance `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` (double-clic).
 2. Windows / SmartScreen peut avertir (binaire non signé public) : note-le, continue seulement si tu acceptes le risque lab — ce n’est **pas** le smoke Authenticode (story 4.4). (GD : modale "Voulez-vous autoriser cette application provenant d'un éduteur inconnu à apporter des modifications à votre ordinateur" - en-tête fond jaune)
 3. **Attendu :** une boîte d’erreur **en anglais** qui explique d’installer loopMIDI ou rtpMIDI, puis l’installateur **s’arrête**.  
    Pas d’écran de succès. Pas de « Unitor MT4 Bridge » dans Applications. (GD : OK)
@@ -189,7 +189,7 @@ GD : OK
 ## Étape 3 — Lignes 1, 2, 3, 5, 7 : parcours succès avec MT4
 
 1. Branche le **MT4** (alimentation + USB).
-2. Relance `UnitorMt4Bridge-Setup.exe`.
+2. Relance `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe`.
 3. Accepte l’**UAC** une fois (admin pour Program Files + association pilote) — c’est normal.
 4. Parcours le wizard en observant :
    - peu d’étapes, peu de jargon → ligne **1**
@@ -289,7 +289,7 @@ Dans [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md
 | 8 | Désinstall retire Auto-Start |
 | 9 | Commandes lab OK depuis l’install |
 
-Ajoute en Notes : date, build (`UnitorMt4Bridge-Setup.exe` / version si connue), et tout écart (SmartScreen, INF refusé, reboot demandé par `pnputil`, etc.).
+Ajoute en Notes : date, build (`unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` / version si connue), et tout écart (SmartScreen, INF refusé, reboot demandé par `pnputil`, etc.).
 
 **Win11 :** laisse vide ou N/A si tu n’as pas testé aujourd’hui — ce n’est pas bloquant pour clore le claim Win10.
 

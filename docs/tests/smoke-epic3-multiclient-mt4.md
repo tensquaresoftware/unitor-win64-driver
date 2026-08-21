@@ -38,7 +38,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 | Sujet | Story |
 |---|---|
 | Noms / persistance pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
-| Chapitre multi-client poli dans `docs/user/` | **4.2** / **6.2** — note ≤8 clients in [Win10 guide — Use several applications](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#use-several-applications-at-once) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
+| Chapitre multi-client poli dans `docs/user/` | **4.2** / **6.2** — [Win11 — several applications](../user/unitor-mt4-bridge-win11-wms-user-guide.md#use-several-applications-at-once) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#use-several-applications-at-once) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Installateur public / redistribuable virtualMIDI | **4.1** / OQ-1 |
 | Mesures de latence MIDI | Epic **5** |
 | Boucle de recréation hot-plug | **3.2** (ne pas rouvrir) |

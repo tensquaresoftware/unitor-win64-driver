@@ -4,12 +4,12 @@ project: unitor-win64-driver
 title: Smoke Epic 4.2 — End-user documentation (first MIDI / SysEx)
 author: Guillaume DUPONT
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-21
 ---
 
 # Smoke guide — Epic 4.2 user docs (MT4 on Windows)
 
-Operator guide for **Story 4.2** (updated for Story **6.2** dual manuals): prove a new MT4 owner can complete first MIDI (**UJ-1**) and first SysEx (**UJ-2**) using **only** the shipped path guide from [`docs/user/README.md`](../user/README.md) — Win10 → [`unitor-mt4-bridge-win10-virtualmidi-user-guide.md`](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md); Win11 → [`unitor-mt4-bridge-win11-wms-user-guide.md`](../user/unitor-mt4-bridge-win11-wms-user-guide.md) — plus **named** external prerequisites (virtualMIDI via loopMIDI/rtpMIDI on the Win10 path; Ableton Live 12 or MIDI-OX; Matrix-Control or documented SysEx equivalent).
+Operator guide for **Story 4.2** (updated for Story **6.2** dual manuals): prove a new MT4 owner can complete first MIDI (**UJ-1**) and first SysEx (**UJ-2**) using **only** the shipped path guide from [`docs/user/README.md`](../user/README.md) — Win10 → [`unitor-mt4-bridge-win10-virtualmidi-user-guide.md`](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md); Win11 → [`unitor-mt4-bridge-win11-wms-user-guide.md`](../user/unitor-mt4-bridge-win11-wms-user-guide.md) — plus **named** external prerequisites (virtualMIDI via loopMIDI/rtpMIDI **on the Win10 path only**; your usual DAW for notes; Matrix-Control or another SysEx-capable editor).
 
 **Honesty bar:** a blank cell is **not** Pass. Win10 x64 is **mandatory** to close the Win10 virtualMIDI claim; Win11 x64 when available for the WMS path. Physical MT4 is required for MIDI / SysEx rows. Do **not** claim SM-5 closed until this matrix Passes **and** Story **4.1** / **6.2** installer path is credible. Do **not** claim FR-14 under this story ID. Authenticode / SmartScreen honesty is Story **4.4** — [`smoke-epic4-authenticode-smartscreen-mt4.md`](smoke-epic4-authenticode-smartscreen-mt4.md).
 
@@ -17,7 +17,7 @@ Operator guide for **Story 4.2** (updated for Story **6.2** dual manuals): prove
 
 A musician who never saw the French lab smokes under `docs/tests/` can reach first MIDI and first SysEx using shipped docs — including **guided WinUSB** when Setup-alone fails on a clean PC (hobby / hobby install). Not a polished commercial Setup-alone promise.
 
-**Course correction (2026-08-10):** Zadig / guided WinUSB is the supported clean-PC path; OQ-1 out of community scope; OQ-3 no certificate purchase.
+**Course correction (2026-08-10) + 6.2:** Zadig / guided WinUSB is the supported clean-PC path; OQ-1 never embed virtualMIDI (Win10 = user self-install); OQ-3 no certificate purchase; dual path manuals via [`docs/user/README.md`](../user/README.md).
 
 ## Scope fences
 
@@ -44,39 +44,40 @@ Verifier instructions come from the OS path guide chosen via [`docs/user/README.
 
 ## Prerequisites
 
-- Clean or representative Win10 x64 (mandatory) or Win11 x64
+- Clean or representative Win10 x64 (mandatory for Win10 claim) **and/or** Win11 x64 (for WMS claim)
 - Physical MT4 for rows 2–3
-- virtualMIDI via loopMIDI or rtpMIDI
-- Public Installer available **or** Bridge already installed from Story 4.1 (row 1 may confirm “already installed”)
-- Ableton Live 12 **or** MIDI-OX for UJ-1
-- Matrix-Control **or** MIDI-OX SysEx equivalent for UJ-2
+- **Win10 path only:** virtualMIDI via loopMIDI or rtpMIDI
+- **Win11 path:** Windows MIDI Services available (no virtualMIDI)
+- Public Installer available **or** Bridge already installed from Story 4.1 / 6.2 (row 1 may confirm “already installed”)
+- Your usual DAW (or any note/CC MIDI app) for UJ-1
+- Matrix-Control **or** another SysEx-capable editor for UJ-2
 
 ## How to score
 
 - **Pass** / **Fail** / **N/A** (+ short reason)
 - Blank = not run (**does not** count as Pass)
-- Win10 x64 column mandatory to close the claim
+- Win10 x64 column mandatory to close the Win10 claim; fill Win11 when closing the WMS claim
 - Content-only rows (4–8) may Pass from reading shipped markdown when wording matches the contract; MIDI/SysEx rows need hardware
+- After Story 6.2 dual-manual rewrite, **re-run** content rows 4–8 against the four path guides (do not keep 2026-08-10 single-guide Pass stamps)
 
 ## Pass / Fail matrix (UJ-1 + UJ-2 from user guide)
 
 | # | Verification | Win10 x64 | Win11 x64 | Notes |
 |---|---|---|---|---|
-| 1 | Fresh reader follows the user guide only → completes install + Auto-Start expectations (or confirms already installed from 4.1) without lab smoke tribal knowledge | | | |
-| 2 | First MIDI (UJ-1): notes/CC visible in Ableton Live 12 **or** MIDI-OX on named `MT4 In` / `MT4 Out` | | | Physical MT4 |
-| 3 | First SysEx (UJ-2): Matrix-Control **or** documented equivalent completes dump/restore (or short SysEx exchange) without Bridge restart for normal completion | | | Physical MT4; Computer Mode CC wake |
-| 4 | Troubleshooting section matches at least one deliberate negative (e.g. virtualMIDI missing messaging aligns with installer/docs) | Pass | | Content check 2026-08-10: Troubleshooting + Install + installer virtualMIDI fix path aligned |
-| 5 | Works / does-not-work list present and consistent with PRD non-goals | Pass | | Content check 2026-08-10: `# What works / what does not` (works + V1 non-goals) |
-| 6 | Hot-plug expectations stated (rescan / supervised restart OK; reboot = fail) | Pass | | `# Unplug and replug the MT4` states OK recovery vs Windows reboot = fail |
-| 7 | Multi-MT4 honesty stated (proven dual-unit **or** explicit “single-unit proven” wording) | Pass | | `# Two MT4 interfaces` validation honesty: single MT4 proven path; dual naming implemented, dual lab not claimed closed here |
-| 8 | Discoverability: root README and installer support/success pointer reach `docs/user/` | Pass | | README → `docs/user/README.md`; `AppSupportURL` / FinishedLabel / success MsgBox → GitHub `docs/user/README.md` |
+| 1 | Fresh reader follows the path guide only → completes install + Auto-Start expectations (or confirms already installed) without lab smoke tribal knowledge | | | |
+| 2 | First MIDI (UJ-1): notes/CC visible in the usual DAW on named `MT4 In` / `MT4 Out` | | | Physical MT4 |
+| 3 | First SysEx (UJ-2): Matrix-Control **or** documented equivalent completes dump/restore (or short SysEx exchange) without Bridge restart for normal completion | | | Physical MT4; Computer Mode wake |
+| 4 | Troubleshooting section matches at least one deliberate negative (Win10: virtualMIDI missing; Win11: WMS / midisrv missing) | | | Re-check after 6.2 dual manuals |
+| 5 | Works / does-not-work list present (`# Know what works and what does not`) and consistent with PRD non-goals | | | Re-check after 6.2 |
+| 6 | Hot-plug expectations stated (rescan / supervised restart OK; reboot = fail for normal unplug) | | | `# Unplug and replug the MT4` |
+| 7 | Multi-MT4 honesty stated (`# Use two MT4 interfaces` — single-unit proven; dual naming not a closed dual lab) | | | Re-check after 6.2 |
+| 8 | Discoverability: root README and installer support/success pointer reach `docs/user/` | | | README → `docs/user/README.md` |
 
 ## Shipped user guides
 
 Landing / OS router: [`docs/user/README.md`](../user/README.md).  
 Win11 WMS: [EN](../user/unitor-mt4-bridge-win11-wms-user-guide.md) · [FR](../user/unitor-mt4-bridge-win11-wms-guide-utilisateur.md).  
-Win10 virtualMIDI: [EN](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md) · [FR](../user/unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md).  
-Obsolete single-guide filenames (`unitor-mt4-bridge-user-guide.md` / `unitor-mt4-bridge-guide-utilisateur.md`) were **removed** in Story 6.2 — use the router above.
+Win10 virtualMIDI: [EN](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md) · [FR](../user/unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md).
 
 ## Out of scope for this smoke
 

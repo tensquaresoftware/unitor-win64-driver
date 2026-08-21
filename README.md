@@ -103,7 +103,7 @@ A KMDF / PortCls stack needs the WDK, Microsoft attestation signing for Secure B
 - Paid code signing
 - Marketing this as a polished commercial installer product
 
-Capabilities overview: [Win11 what works](docs/user/unitor-mt4-bridge-win11-wms-user-guide.md#what-works--what-does-not) · [Win10 what works](docs/user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#what-works--what-does-not) (start at [`docs/user/README.md`](docs/user/README.md)).
+Capabilities overview: [Win11 what works](docs/user/unitor-mt4-bridge-win11-wms-user-guide.md#know-what-works-and-what-does-not) · [Win10 what works](docs/user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#know-what-works-and-what-does-not) (start at [`docs/user/README.md`](docs/user/README.md)).
 
 User-facing Unitor8 / AMT8 manual (functional reference):  
 https://www.deepsonic.ch/deep/docs_manuals/emagic_unitor8_mkII_amt8_manual.pdf

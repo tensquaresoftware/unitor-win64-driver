@@ -1,6 +1,6 @@
 ﻿# WinUSB bind path for Emagic MT4 (086A:0003)
 
-**Community readers:** start with [`docs/user/README.md`](../user/README.md), then the path guide ([Win11 Installation](../user/unitor-mt4-bridge-win11-wms-user-guide.md#install-the-bridge) / [WinUSB failed](../user/unitor-mt4-bridge-win11-wms-user-guide.md#associate-the-mt4-with-winusb) · [Win10 Installation](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#install-the-bridge)). This page is the **contributor / detailed bind** reference.
+**Community readers:** start with [`docs/user/README.md`](../user/README.md), then the path guide ([Win11 Installation](../user/unitor-mt4-bridge-win11-wms-user-guide.md#install-the-bridge) / [WinUSB failed](../user/unitor-mt4-bridge-win11-wms-user-guide.md#associate-the-mt4-with-winusb) · [Win10 Installation](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#install-the-bridge) / [WinUSB failed](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#associate-the-mt4-with-winusb)). This page is the **contributor / detailed bind** reference.
 
 **Hobby posture (2026-08-10):** no paid INF catalog. On a clean PC, Setup-alone association often fails (`0xE000022F`). The supported **hobby install** USB path is **guided WinUSB** — typically **Zadig** for musicians, or the INF / Device Manager steps below for contributors.
 

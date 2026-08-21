@@ -93,7 +93,7 @@ builds\debug\Bridge.exe --test-port-names
 
 - Politique multi-client / exclusive-open → **3.3** ([`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md))
 - Stabilité des noms hot-plug pour deux MT4 → **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md)
-- Installateur public / doc utilisateur polie → **4.1** / **4.2** / **6.2** ([Win11 hot-plug](../user/unitor-mt4-bridge-win11-wms-user-guide.md#unplug-and-replug-the-mt4), [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md))
+- Installateur public / doc utilisateur polie → **4.1** / **4.2** / **6.2** ([Win11 hot-plug](../user/unitor-mt4-bridge-win11-wms-user-guide.md#unplug-and-replug-the-mt4) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#unplug-and-replug-the-mt4), [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md))
 - UAT GUI Matrix-Control
 - Longévité Epic 2 ~4 h (un redémarrage supervisé OK pour hot-plug **n’excuse pas** un Fail longévité)
 
