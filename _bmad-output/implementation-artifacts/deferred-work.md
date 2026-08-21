@@ -445,3 +445,17 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-wms-midisrv-restart-robustness.md`
   summary: BridgeSession.wait_until_ready still ignores READY_MARKERS (port-name presence only).
   evidence: Pre-existing; `_ = READY_MARKERS` was not introduced by this Build.
+
+## Deferred from: build spec-6-2-community-binary-and-install-0eur-honesty-win11.md (2026-08-21)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-6-2-community-binary-and-install-0eur-honesty-win11.md`
+  summary: Same Inno AppId for both flavors — no side-by-side Win11+Win10 Setup install on one PC.
+  evidence: Ask First left unanswered; docs warn overwrite; separate AppIds need Guillaume.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-6-2-community-binary-and-install-0eur-honesty-win11.md`
+  summary: GUI helper “Réparer MIDI Windows” for midisrv sticky cases remains a nice-to-have.
+  evidence: Spec Never / Ask First — Win11 manuals use reboot recovery only.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-6-2-community-binary-and-install-0eur-honesty-win11.md`
+  summary: First live dual Inno build + tag-push release.yml path still unproven on a real GitHub tag.
+  evidence: Lab had no ISCC for real Setup EXEs; publish gated Ask First; CI choco Inno untested end-to-end.
