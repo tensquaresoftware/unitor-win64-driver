@@ -34,7 +34,8 @@ void Midi1StreamAssembler::appendSysexByte(uint8_t value, const EmitFn& emit)
 bool Midi1StreamAssembler::consumeSysexHoldByte(uint8_t value, const EmitFn& emit)
 {
     // Interrupted SysEx: channel/system-common aborts hold (realtime already handled).
-    if (value >= 0x80 && value < 0xF8)
+    // 0xF7 (EOX) completes the held message via appendSysexByte — not an abort.
+    if (value >= 0x80 && value < 0xF8 && value != 0xF7)
     {
         Clear();
         return false;
