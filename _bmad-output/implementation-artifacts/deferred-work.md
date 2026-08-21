@@ -423,3 +423,11 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-scripts-quality-overnight-matrix-stress.md`
   summary: Module docstring claims Ctrl+C terminates the current child; `_run_child` only catches KeyboardInterrupt and returns 130 without terminate/kill.
   evidence: Blind Hunter; pre-existing overclaim; structural refactor did not change interrupt handling.
+
+## Deferred from: code review of spec-6-1-windows-midi-services-midibackend-win11.md (2026-08-21)
+
+- SendToHost BufferFull sleep/retry up to ~200 ms — paced WMS send by design for this story; smoke skips SendToHost for the same stall risk.
+- Non-SysEx fragmentation across Midi1StreamAssembler Append calls — code documents assumption that non-SysEx arrives as one complete message per Append.
+- Host sink lifetime race after mutex copy in SetHostToDeviceSink/forwardHostToDevice — same callback lifetime pattern as VirtualMidiBackend; not uniquely introduced as a WMS-only contract break.
+- NuGet MIDI App SDK download without checksum — configure-time fetch with version pin; checksum hardening is a later supply-chain chore.
+- No automated CreatePortSet fail-closed beyond `rejectMissingWmsTransport` helper — lab `--test-wms-ports` covers Create/Destroy; full WinRT mock of CreatePortSet stays out of 6.1.
