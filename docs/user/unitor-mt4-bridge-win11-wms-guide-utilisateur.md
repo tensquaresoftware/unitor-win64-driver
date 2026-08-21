@@ -11,7 +11,7 @@ product_version: "0.1.0"
 
 # Unitor MT4 Bridge — Windows 11
 
-**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Emagic ne propose plus de pilote officiel pour Windows moderne : le dernier pilote Windows Emagic ne prenait en charge que les systèmes **32 bits**.
+**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Emagic ne propose plus de pilote officiel pour Windows moderne : le dernier pilote Windows Emagic ne prenait en charge que les systèmes **32 bits** (Windows 98 / 2000 / XP).
 
 Ce projet open source (Ten Square Software) est un effort **hobby** communautaire : sources gratuites sur GitHub, **pas** de certificat de signature payant, et **pas** de promesse que l’installation seule réussit toujours sur un PC tout neuf.
 
@@ -27,7 +27,7 @@ Ce projet open source (Ten Square Software) est un effort **hobby** communautair
 | **Ce guide** | **Windows 11** | **Windows MIDI Services** (intégré) | Relativement simple |
 | Autre guide | **Windows 10** | **virtualMIDI** (développé par Tobias Erichsen) — à installer soi-même | Plus technique |
 
-Cette édition Windows 11 est en général la plus simple si votre PC le permet. virtualMIDI **n’est jamais** redistribué avec le Bridge (pour des questions de droits & licence). Le guide Windows 10 explique pourquoi et comment.
+Cette édition Windows 11 est en général la plus simple si votre PC le permet. virtualMIDI **n’est jamais** redistribué avec le Bridge (pour des questions de droits & licence). Le guide Windows 10 explique pourquoi et comment (voir ce guide pour le téléchargement).
 
 Vous souhaitez installer et utiliser le Bridge sous Windows 10 ? Ouvrez le [guide Windows 10](unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md). English: [`unitor-mt4-bridge-win11-wms-user-guide.md`](unitor-mt4-bridge-win11-wms-user-guide.md). Choix : [`README.md`](README.md).
 
@@ -61,11 +61,11 @@ Si Windows MIDI Services manque, le Bridge **refuse** de présenter des ports vi
 
 ## Logiciels utiles ensuite
 
-Pour les essais du quotidien, ouvrez **votre logiciel de musique habituel** (votre DAW) — par exemple Ableton Live, Cubase, Reaper ou Bitwig. Tout éditeur capable d’envoyer et recevoir des notes MIDI, des CC ou même des messages SysEx convient pour un premier essai avec votre home studio.
+Pour les essais du quotidien, ouvrez **votre logiciel de musique habituel** (votre DAW) — par exemple Ableton Live, Cubase, Reaper, Bitwig, etc. Tout éditeur capable d’envoyer et recevoir des notes MIDI, des CC ou même des messages SysEx convient pour un premier essai avec votre home studio.
 
 # Installer le Bridge
 
-Le fichier téléchargé ressemble à : `unitor-mt4-bridge-{version}-win11-wms-setup.exe` (page **Releases** du projet — pas un miroir au hasard).
+Le fichier téléchargé ressemble à : `unitor-mt4-bridge-{version}-win11-wms-setup.exe` (page **Releases** de GitHub — pas un miroir au hasard).
 
 1. Branchez la **MT4** (alimentation + USB) **avant** ou pendant l’installation — l’assistant **ne s’arrête pas** pour vous le demander.
 2. Lancez le programme d’installation téléchargé.

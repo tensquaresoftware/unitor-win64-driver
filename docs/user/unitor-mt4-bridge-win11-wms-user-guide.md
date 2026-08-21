@@ -11,7 +11,7 @@ product_version: "0.1.0"
 
 # Unitor MT4 Bridge — Windows 11
 
-**Unitor MT4 Bridge** lets you use an **Emagic MT4** MIDI interface on **Windows 64-bit**. Emagic no longer ships an official driver for modern Windows: the last Emagic Windows driver only supports **32-bit** systems.
+**Unitor MT4 Bridge** lets you use an **Emagic MT4** MIDI interface on **Windows 64-bit**. Emagic no longer ships an official driver for modern Windows: the last Emagic Windows driver only supports **32-bit** systems (Windows 98 / 2000 / XP).
 
 This open-source project (Ten Square Software) is a community **hobby** effort: free sources on GitHub, **no** paid code-signing certificate, and **no** promise that installation alone always succeeds on every brand-new PC.
 
@@ -61,11 +61,11 @@ If Windows MIDI Services is missing, the Bridge **refuses** to pretend that empt
 
 ## Software you may use later
 
-For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Reaper, or Bitwig. Any editor that can send and receive MIDI notes, controllers (CC), or even SysEx is fine for a first try in your home studio.
+For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Reaper, Bitwig, etc. Any editor that can send and receive MIDI notes, controllers (CC), or even SysEx is fine for a first try in your home studio.
 
 # Install the Bridge
 
-Download name looks like: `unitor-mt4-bridge-{version}-win11-wms-setup.exe` (from this project’s **Releases** page — not a random mirror).
+Download name looks like: `unitor-mt4-bridge-{version}-win11-wms-setup.exe` (from this project’s GitHub **Releases** page — not a random mirror).
 
 1. Plug in the **MT4** (power + USB) **before** or while running the installer — the wizard does **not** pause to ask you to plug it in.
 2. Run the installer you downloaded.

@@ -11,7 +11,7 @@ product_version: "0.1.0"
 
 # Unitor MT4 Bridge — Windows 10
 
-**Unitor MT4 Bridge** lets you use an **Emagic MT4** MIDI interface on **Windows 64-bit**. Emagic no longer ships an official driver for modern Windows: the last Emagic Windows driver only supports **32-bit** systems.
+**Unitor MT4 Bridge** lets you use an **Emagic MT4** MIDI interface on **Windows 64-bit**. Emagic no longer ships an official driver for modern Windows: the last Emagic Windows driver only supports **32-bit** systems (Windows 98 / 2000 / XP).
 
 This open-source project (Ten Square Software) is a community **hobby** effort: free sources on GitHub, **no** paid code-signing certificate, and **no** promise that installation alone always succeeds on every brand-new PC.
 
@@ -29,7 +29,7 @@ This open-source project (Ten Square Software) is a community **hobby** effort: 
 
 This Windows 10 guide is for people who stay on Windows 10 (or who deliberately choose virtualMIDI). It is **not** the simplest edition: on Windows 11, prefer the **Windows MIDI Services** edition if you can.
 
-virtualMIDI is **never** redistributed with the Bridge (rights & licence). You download and install it yourself from Tobias Erichsen’s website.
+virtualMIDI is **never** redistributed with the Bridge (rights & licence). You download and install it yourself from Tobias Erichsen’s website (see below).
 
 Want to install and use the Bridge on Windows 11? Open the [Windows 11 guide](unitor-mt4-bridge-win11-wms-user-guide.md). French: [`unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md`](unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md). Choice page: [`README.md`](README.md).
 
@@ -61,7 +61,7 @@ Want to install and use the Bridge on Windows 11? Open the [Windows 11 guide](un
 
 ## Software you may use later
 
-For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Reaper, or Bitwig. Any editor that can send and receive MIDI notes, controllers (CC), or even SysEx is fine for a first try in your home studio.
+For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Reaper, Bitwig, etc. Any editor that can send and receive MIDI notes, controllers (CC), or even SysEx is fine for a first try in your home studio.
 
 # Install virtualMIDI
 
@@ -78,7 +78,7 @@ Without the DLL, the Bridge installer **fails clearly** — an empty MIDI port l
 
 # Install the Bridge
 
-Download name looks like: `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` (from this project’s **Releases**).
+Download name looks like: `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` (from this project’s GitHub **Releases**).
 
 1. Plug in the **MT4** before or while running the installer — the wizard does **not** pause to ask you to plug it in.
 2. Run the installer you downloaded.
@@ -166,7 +166,7 @@ If a program refuses to open a port that is already in use, or shows an error su
 2. Look for an option often named **Exclusive**, **Exclusive Mode**, or **Exclusive access** on the `MT4 In` / `MT4 Out` input or output.
 3. **Clear** that checkbox, confirm, then reopen the ports or restart the application.
 
-The exact menu depends on the software (Ableton Live, Cubase, Reaper, Bitwig, …), but the idea is always the same: do not reserve the port for a single application only.
+The exact menu depends on the software (Ableton Live, Cubase, Reaper, Bitwig, etc.), but the idea is always the same: do not reserve the port for a single application only.
 
 # Try your first SysEx transfer
 
@@ -178,7 +178,7 @@ The exact menu depends on the software (Ableton Live, Cubase, Reaper, Bitwig, �
 
 ## virtualMIDI missing
 
-Install loopMIDI or rtpMIDI, confirm `teVirtualMIDI.dll` in System32, re-run the Bridge installer. This project will **never** embed the DLL.
+Install loopMIDI or rtpMIDI, confirm `teVirtualMIDI.dll` in System32, re-run the Bridge installer. This project will **never** embed the DLL owned by Tobias Erichsen.
 
 ## SmartScreen, WinUSB, no ports, no SysEx
 

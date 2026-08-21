@@ -11,7 +11,7 @@ product_version: "0.1.0"
 
 # Unitor MT4 Bridge — Windows 10
 
-**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Emagic ne propose plus de pilote officiel pour Windows moderne : le dernier pilote Windows Emagic ne prenait en charge que les systèmes **32 bits**.
+**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Emagic ne propose plus de pilote officiel pour Windows moderne : le dernier pilote Windows Emagic ne prenait en charge que les systèmes **32 bits** (Windows 98 / 2000 / XP).
 
 Ce projet open source (Ten Square Software) est un effort **hobby** communautaire : sources gratuites sur GitHub, **pas** de certificat de signature payant, et **pas** de promesse que l’installation seule réussit toujours sur un PC tout neuf.
 
@@ -29,7 +29,7 @@ Ce projet open source (Ten Square Software) est un effort **hobby** communautair
 
 Ce guide Windows 10 s’adresse à ceux qui restent sous Windows 10 (ou qui choisissent volontairement virtualMIDI). Ce n’est **pas** l’édition la plus simple : sous Windows 11, préférez l’édition **Windows MIDI Services** si vous le pouvez.
 
-virtualMIDI **n’est jamais** redistribué avec le Bridge (pour des questions de droits & licence). Vous le téléchargez et l’installez vous-même depuis le site internet de Tobias Erichsen.
+virtualMIDI **n’est jamais** redistribué avec le Bridge (pour des questions de droits & licence). Vous le téléchargez et l’installez vous-même depuis le site internet de Tobias Erichsen (voir ci-dessous).
 
 Vous souhaitez installer et utiliser le bridge sous Windows 11 ? Ouvrez le [guide Windows 11](unitor-mt4-bridge-win11-wms-guide-utilisateur.md). English: [`unitor-mt4-bridge-win10-virtualmidi-user-guide.md`](unitor-mt4-bridge-win10-virtualmidi-user-guide.md). Choix : [`README.md`](README.md).
 
@@ -61,7 +61,7 @@ Vous souhaitez installer et utiliser le bridge sous Windows 11 ? Ouvrez le [guid
 
 ## Logiciels utiles ensuite
 
-Pour les essais du quotidien, ouvrez **votre logiciel de musique habituel** (votre DAW) — par exemple Ableton Live, Cubase, Reaper ou Bitwig. Tout éditeur capable d’envoyer et recevoir des notes MIDI, des CC ou même des messages SysEx convient pour un premier essai avec votre home studio.
+Pour les essais du quotidien, ouvrez **votre logiciel de musique habituel** (votre DAW) — par exemple Ableton Live, Cubase, Reaper, Bitwig, etc. Tout éditeur capable d’envoyer et recevoir des notes MIDI, des CC ou même des messages SysEx convient pour un premier essai avec votre home studio.
 
 # Installer virtualMIDI
 
@@ -78,7 +78,7 @@ Sans la DLL, l’installateur du Bridge **échoue clairement** — une liste de 
 
 # Installer le Bridge
 
-Le fichier téléchargé ressemble à : `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` (page **Releases**).
+Le fichier téléchargé ressemble à : `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` (page **Releases** de GitHub).
 
 1. Branchez la **MT4** avant ou pendant l’installation — l’assistant **ne s’arrête pas** pour vous le demander.
 2. Lancez le programme d’installation téléchargé.
@@ -166,7 +166,7 @@ Si un logiciel refuse d’ouvrir un port déjà utilisé, ou affiche une erreur 
 2. Cherchez une option nommée souvent **Exclusive**, **Exclusive Mode**, **Mode exclusif** ou **Accès exclusif** sur l’entrée / la sortie `MT4 In` / `MT4 Out`.
 3. **Décochez** cette option, validez, puis rouvrez les ports ou redémarrez l’application.
 
-L’emplacement exact dépend du logiciel (Ableton Live, Cubase, Reaper, Bitwig, …), mais l’idée est toujours la même : ne pas réserver le port à une seule application.
+L’emplacement exact dépend du logiciel (Ableton Live, Cubase, Reaper, Bitwig, etc.), mais l’idée est toujours la même : ne pas réserver le port à une seule application.
 
 # Faire un premier essai SysEx
 
@@ -178,7 +178,7 @@ L’emplacement exact dépend du logiciel (Ableton Live, Cubase, Reaper, Bitwig,
 
 ## virtualMIDI manquant
 
-Installez loopMIDI ou rtpMIDI, confirmez la présence du fichier `teVirtualMIDI.dll`, relancez l’installateur du Bridge. Ce projet **n’embarquera jamais** la DLL.
+Installez loopMIDI ou rtpMIDI, confirmez la présence du fichier `teVirtualMIDI.dll`, relancez l’installateur du Bridge. Ce projet **n’embarquera jamais** la DLL dont la propriété revient à Tobias Erichsen.
 
 ## SmartScreen, WinUSB, pas de ports, pas de SysEx
 
