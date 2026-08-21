@@ -1,5 +1,7 @@
 # Build outputs (official trees live under builds/)
 builds/
+# Distributable Setup EXEs (Inno output; Luthier-style dist/ at repo root)
+dist/
 # Safety net: CMake Tools defaults to repo-root build/ unless presets/.vscode win
 build/
 out/

@@ -4,36 +4,36 @@
 
 <!-- Operators: replace this block before finalize/publish. Keep honesty bullets below. -->
 
-- Dual community Setups for this version (Win11 WMS + Win10 virtualMIDI self-install).
+- Dual Setups for this version (Windows 11 WMS + Windows 10 virtualMIDI self-install).
 - _(Add notable Bridge / docs / installer changes here.)_
 
 ### Known limits
 
 - No Authenticode certificate in this hobby line (SmartScreen “Run anyway” / “Exécuter quand même”).
 - Clean-PC WinUSB often needs guided Zadig association (no trusted catalog shipped).
-- Same AppId: installing one flavor Setup replaces the other under Program Files + Auto-Start backend.
+- Same Windows product identity: installing one Setup replaces the other under Program Files + automatic start.
 - _(Add version-specific limits here.)_
 
-### Dual community assets
+### Download assets
 
-| Flavor | Asset | Who it is for |
+| Edition | Asset | Who it is for |
 | --- | --- | --- |
-| **win11-wms** | `UnitorMt4Bridge-Setup-win11-wms-{{VERSION}}.exe` | Windows 11 musicians — **Windows MIDI Services**; no virtualMIDI install |
-| **win10-virtualmidi** | `UnitorMt4Bridge-Setup-win10-virtualmidi-{{VERSION}}.exe` | Windows 10 motivated users — **self-install** virtualMIDI (Tobias Erichsen); this project never redistributes the DLL/MSI |
+| **win11-wms** | `Unitor-MT4-Bridge-{{VERSION}}-win11-wms-setup.exe` | Windows 11 — **Windows MIDI Services**; no virtualMIDI install |
+| **win10-virtualmidi** | `Unitor-MT4-Bridge-{{VERSION}}-win10-virtualmidi-setup.exe` | Windows 10 — **self-install** virtualMIDI (Tobias Erichsen); this project never redistributes the DLL/MSI |
 
-Also attached: `UnitorMt4Bridge-{{VERSION}}-docs.zip` (four manuals + README router + shared honesty pages `license-and-backends.md` and `authenticode-and-smartscreen.md`) and `SHA256SUMS.txt`.
+Also attached: `Unitor-MT4-Bridge-{{VERSION}}-docs.zip` (four manuals + README router + honesty pages) and `SHA256SUMS.txt`.
 
 ### Before you install
 
-1. Pick your OS path in ~20 seconds: [docs/user/README.md](https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md)
-2. Expect SmartScreen on unsigned builds — **More info → Run anyway** / **Exécuter quand même** (no Authenticode cert in this hobby line; OQ-3)
-3. Clean PCs often need **guided WinUSB** (Zadig) when Setup-alone association fails — not a Setup-alone promise
-4. Win10 flavor: install virtualMIDI yourself first and confirm `teVirtualMIDI.dll` in System32
+1. Pick your Windows edition in ~20 seconds: [docs/user/README.md](https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md)
+2. Expect SmartScreen on unsigned builds — **More info → Run anyway** / **Exécuter quand même** (no Authenticode cert; OQ-3)
+3. Clean PCs often need **guided WinUSB** (Zadig) when installer-alone association fails
+4. Windows 10 edition: install virtualMIDI yourself first and confirm `teVirtualMIDI.dll` in System32
 
 ### Honesty (do not collapse)
 
-- **MIT** = this repository’s Bridge/Setup sources and docs
-- **virtualMIDI** = proprietary, separate; community Win10 path = user self-install only (OQ-1 — no redistribution clearance)
-- **Windows MIDI Services** = Win11 community comfort backend
+- **MIT** = this repository’s Bridge/installer sources and docs
+- **virtualMIDI** = proprietary, separate; Windows 10 edition = user self-install only (OQ-1 — no redistribution clearance)
+- **Windows MIDI Services** = Windows 11 simpler edition backend
 
 See [license-and-backends.md](https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/dev/license-and-backends.md).

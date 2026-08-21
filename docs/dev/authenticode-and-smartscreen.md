@@ -27,7 +27,7 @@ This page is the contributor / releaser runbook for **code-signing trust** on Un
 
 | Domain | What it protects | Typical artifacts |
 |---|---|---|
-| **A) Authenticode (binaries)** | Publisher trust / SmartScreen reputation for the Setup and Bridge EXEs | `UnitorMt4Bridge-Setup-win11-wms-*.exe`, `UnitorMt4Bridge-Setup-win10-virtualmidi-*.exe`, `Bridge.exe` |
+| **A) Authenticode (binaries)** | Publisher trust / SmartScreen reputation for the Setup and Bridge EXEs | `Unitor-MT4-Bridge-*-setup.exe`, `Bridge.exe` |
 | **B) WinUSB INF catalog** | Driver-package trust for clean-machine association (`CatalogFile=mt4-winusb.cat` in `installer/mt4-winusb.inf`) | `mt4-winusb.cat` next to the INF |
 
 A valid binary signature does **not** automatically produce a production INF catalog, and a lab self-signed `.cat` is **not** public Authenticode. Without a shipped certificate, domain B for community trust is replaced by **guided WinUSB association**, not a paid `.cat`.
@@ -63,7 +63,7 @@ Only if a certificate is introduced later — document under **Ten Square Softwa
 1. **Subject** — match the public facade (**Ten Square Software**)
 2. **Tooling** — Windows SDK **SignTool** (`signtool.exe`)
 3. **Timestamping** — always timestamp signed public artifacts
-4. **Artifacts** — at minimum both flavored Setups (`UnitorMt4Bridge-Setup-win11-wms-*.exe` and `UnitorMt4Bridge-Setup-win10-virtualmidi-*.exe`); prefer also `Bridge.exe`
+4. **Artifacts** — at minimum both flavored Setups (`Unitor-MT4-Bridge-*-win11-wms-setup.exe` and `…-win10-virtualmidi-setup.exe`); prefer also `Bridge.exe`
 5. **Secrets** — never commit PFX files, private keys, or CI secrets
 
 ### Example SignTool shape (only if a cert exists)
@@ -72,8 +72,8 @@ Only if a certificate is introduced later — document under **Ten Square Softwa
 # Illustrative only — wire through scripts/packaging/sign-public-artifacts.ps1
 signtool sign /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 `
   /n "Ten Square Software" `
-  path\to\UnitorMt4Bridge-Setup-win11-wms-0.1.0.exe
-# Also sign UnitorMt4Bridge-Setup-win10-virtualmidi-0.1.0.exe when shipping dual flavors
+  path\to\Unitor-MT4-Bridge-0.1.0-win11-wms-setup.exe
+# Also sign Unitor-MT4-Bridge-0.1.0-win10-virtualmidi-setup.exe when shipping dual flavors
 ```
 
 ## When shipping unsigned (default hobby path)

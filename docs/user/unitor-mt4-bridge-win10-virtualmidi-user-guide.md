@@ -27,7 +27,7 @@ This open-source project (Ten Square Software) is a community **hobby** effort: 
 | **This guide** | **Windows 10** | **virtualMIDI** (by Tobias Erichsen) — install it yourself | More technical |
 | Other guide | **Windows 11** | **Windows MIDI Services** (built in) | Relatively simple |
 
-This Windows 10 path is a **parallel** offer for people who stay on Windows 10. It is **not** the “comfort” community promise (that is the Windows 11 edition).
+This Windows 10 guide is for people who stay on Windows 10 (or who deliberately choose virtualMIDI). It is **not** the simplest edition: on Windows 11, prefer the **Windows MIDI Services** edition if you can.
 
 virtualMIDI is **never** redistributed with the Bridge (rights & licence). You download and install it yourself from Tobias Erichsen’s website.
 
@@ -40,13 +40,14 @@ Want to install and use the Bridge on Windows 11? Open the [Windows 11 guide](un
 3. [Install the Bridge](#install-the-bridge)
 4. [Pass the Windows SmartScreen warning](#pass-the-windows-smartscreen-warning)
 5. [Use automatic start](#use-automatic-start)
-6. [Try your first MIDI notes](#try-your-first-midi-notes)
-7. [Try your first SysEx transfer](#try-your-first-sysex-transfer)
-8. [Fix common problems](#fix-common-problems)
-9. [Unplug and replug the MT4](#unplug-and-replug-the-mt4)
-10. [Know what works and what does not](#know-what-works-and-what-does-not)
-11. [Use two MT4 interfaces](#use-two-mt4-interfaces)
-12. [Glossary](#glossary)
+6. [Read the MT4 front-panel lights](#read-the-mt4-front-panel-lights)
+7. [Try your first MIDI notes](#try-your-first-midi-notes)
+8. [Try your first SysEx transfer](#try-your-first-sysex-transfer)
+9. [Fix common problems](#fix-common-problems)
+10. [Unplug and replug the MT4](#unplug-and-replug-the-mt4)
+11. [Know what works and what does not](#know-what-works-and-what-does-not)
+12. [Use two MT4 interfaces](#use-two-mt4-interfaces)
+13. [Glossary](#glossary)
 
 ---
 
@@ -54,8 +55,8 @@ Want to install and use the Bridge on Windows 11? Open the [Windows 11 guide](un
 
 | Need | Detail |
 |---|---|
-| Computer | **Windows 10**, **64-bit** (this edition also runs on Windows 11 if you choose the virtualMIDI installer) |
-| Hardware | An **Emagic MT4** |
+| Computer | **Windows 10**, **64-bit** (this edition of the Bridge also runs on Windows 11 if you choose the virtualMIDI installer) |
+| Hardware | An **Emagic MT4** MIDI interface |
 | Extra MIDI driver | **virtualMIDI**, installed **by you** — see below |
 
 ## Software you may use later
@@ -64,7 +65,7 @@ For everyday checks, open **your usual music software** (your DAW) — for examp
 
 # Install virtualMIDI
 
-On this path, the Bridge talks to your DAW through **virtualMIDI**. Install it from Tobias Erichsen’s website **before** the Bridge installer, for example by downloading:
+In this Windows 10 edition, the Bridge talks to your DAW through **virtualMIDI**. Install it from Tobias Erichsen’s website **before** the Bridge installer, for example by downloading:
 
 - **[loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html)** (most common), or
 - **[rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html)**
@@ -73,11 +74,11 @@ Then confirm that the file `teVirtualMIDI.dll` exists in `C:\Windows\System32\`.
 
 **Why install this software yourself?** virtualMIDI is proprietary. This MIT repository does **not** have redistribution clearance and will **never** ship the DLL or installer package inside the Bridge download.
 
-Without the DLL, the Bridge installer **fails closed** — an empty MIDI port list is not a successful install.
+Without the DLL, the Bridge installer **fails clearly** — an empty MIDI port list is not a successful install.
 
 # Install the Bridge
 
-Download name looks like: `UnitorMt4Bridge-Setup-win10-virtualmidi-{version}.exe` (from this project’s **Releases**).
+Download name looks like: `Unitor-MT4-Bridge-{version}-win10-virtualmidi-setup.exe` (from this project’s **Releases**).
 
 1. Plug in the **MT4** before or while running the installer — the wizard does **not** pause to ask you to plug it in.
 2. Run the installer you downloaded.
@@ -85,19 +86,22 @@ Download name looks like: `UnitorMt4Bridge-Setup-win10-virtualmidi-{version}.exe
 4. Allow Administrator **once**.
 5. Wait for success — or incomplete if a check failed.
 
-Install succeeds when:
-
-- `teVirtualMIDI.dll` is present,
-- USB association (WinUSB) is OK,
-- automatic start is registered.
+Success = DLL present + WinUSB OK + automatic start registered.
 
 **One installer at a time:** the Windows 11 and Windows 10 installers share the **same Windows product identity**. Installing one **replaces** the other under Program Files and rewires automatic start to that edition.
 
-**WinUSB** is already in Windows. On a clean PC, association often fails without a **trusted catalog**. Guided **[Zadig](https://zadig.akeo.ie/)** for **MI_02** (`USB\VID_086A&PID_0003&MI_02`) is the supported hobby fix.
+**WinUSB** is already in Windows. On a brand-new PC, Windows often refuses to associate the MT4 with that driver on its own, because there is no signed **trusted catalog** — this project does not provide one.
+
+In that case, use the free tool **[Zadig](https://zadig.akeo.ie/)**:
+
+1. Plug in the MT4 and launch Zadig.
+2. In the list, select the MT4 composite MIDI interface named **MI_02** (USB id `VID_086A&PID_0003&MI_02`) — not some other random USB line.
+3. Choose the **WinUSB** driver, then confirm the install.
+4. Re-run the Bridge installer if needed.
 
 # Pass the Windows SmartScreen warning
 
-Windows may show **Microsoft Defender SmartScreen** (“Windows protected your PC”). That can happen when a community build is **unsigned**, or signed but **not yet trusted by reputation**. A warning does **not** automatically mean malware.
+Windows may show **Microsoft Defender SmartScreen** (“Windows protected your PC”). That can happen when a file is **unsigned**, or signed but **not yet trusted by reputation**. A warning does **not** automatically mean malware.
 
 **Only continue if you downloaded the installer from this project’s Releases.**
 
@@ -119,6 +123,19 @@ After installation, **Unitor MT4 Bridge** starts on its own when you sign in to 
 Once you are signed in (or after you plug in the MT4), Windows should show ports **`MT4 In 1`**, **`MT4 In 2`**, **`MT4 Out 1`** … **`MT4 Out 4`**. You can also start **Unitor MT4 Bridge** by hand from the Start menu.
 
 To **turn off** automatic start: open the Bridge folder in the Start menu and choose **Unregister Auto-Start**. Uninstalling also removes automatic start, but only for the Windows user who runs the uninstall.
+
+# Read the MT4 front-panel lights
+
+On the front of the MT4, the lights help you see what is going on:
+
+| Light | Colour | What it means in practice |
+|---|---|---|
+| **MIDI In** | Red | Blinks when the MT4 **receives** MIDI (from the computer or a plugged-in device) |
+| **MIDI Out** | Green | Blinks when the MT4 **sends** MIDI |
+| **Patch** | Red | Related to the MT4 Patch mode (outside everyday use of this v1 Bridge) |
+| **USB** | Orange | Usually means the MT4 is powered over USB and the link with the computer / Bridge is active |
+
+If the orange **USB** light stays off while the cable is plugged in, check power, the USB cable, then that the Bridge is running. The **MIDI In** / **MIDI Out** lights are useful during your note or SysEx tests.
 
 # Try your first MIDI notes
 
@@ -155,7 +172,7 @@ The exact menu depends on the software (Ableton Live, Cubase, Reaper, Bitwig, �
 
 1. Bridge running; `MT4 In` / `MT4 Out` visible.
 2. Send a short ordinary MIDI message for Computer Mode.
-3. In **your usual DAW** or synthesizer editor, select the matching ports and complete a short SysEx exchange (for example a patch dump / restore).
+3. In **your usual DAW** or synthesizer editor, select the matching ports and complete a short SysEx exchange (for example a patch dump / restore if you use a MIDI editor such as [Matrix-Control](https://github.com/tensquaresoftware/matrix-control), by Ten Square Software).
 
 # Fix common problems
 
@@ -165,7 +182,14 @@ Install loopMIDI or rtpMIDI, confirm `teVirtualMIDI.dll` in System32, re-run the
 
 ## SmartScreen, WinUSB, no ports, no SysEx
 
-Same ideas as the Windows 11 guide: SmartScreen honesty, Zadig when there is no **trusted catalog**, rescan MIDI, Computer Mode before SysEx. On this more technical path, PowerShell checks (service status, DLL probe) are acceptable if you need them — they are **not** the primary recovery on the Windows 11 comfort path.
+Use the same checks as in the Windows 11 guide, stated simply:
+
+1. SmartScreen warning → **Run anyway** only if the file comes from this project’s Releases.
+2. USB association → Zadig on **MI_02** if Windows refuses the package for lack of a **trusted catalog**.
+3. Ports missing → refresh the MIDI list in the DAW, confirm the Bridge is running.
+4. SysEx with no reply → wake **Computer Mode** first with ordinary MIDI.
+
+On Windows 10, if you are comfortable with the computer, you can also check a few technical details (PowerShell, Windows services). That is **not** required for most musicians, and it is **not** the main recovery recommended on Windows 11 (where a simple PC reboot is often enough).
 
 ## Ports missing after unplug / replug
 
@@ -179,13 +203,13 @@ Unplug → ports for that unit disappear. Replug → Bridge recreates them. Resc
 
 ## What works
 
-- Parallel Windows 10 community path with **user-installed** virtualMIDI
-- Same WinUSB / automatic start / MIDI / SysEx / unplug-replug spine as Windows 11 once prerequisites are met
+- This Windows 10 edition with **user-installed** virtualMIDI
+- Same WinUSB / automatic start / MIDI / SysEx / unplug-replug flow as Windows 11 once prerequisites are met
 
-## What this does not do
+## What this edition does not do
 
 - Ship or embed virtualMIDI packages or DLLs
-- Claim Windows 10 as the **comfort** community promise (that is Windows 11 + Windows MIDI Services)
+- Present Windows 10 as the simplest edition (prefer Windows 11 + Windows MIDI Services if you can)
 - Installer-alone WinUSB on every clean PC without guided steps / **trusted catalog**
 - Authenticode certificate / silent SmartScreen
 - Patch mode, LTC/VITC, Fast Mode / AMT, cascaded topologies, guaranteed AMT8 / Unitor8 / Unitor8 mk2 in v1, custom kernel MIDI driver
@@ -212,7 +236,8 @@ First unit: `MT4 In N` / `MT4 Out N`. Later units: `MT4 #2 …`. Single-unit dai
 | **Trusted catalog** | Signed driver catalog Windows trusts | Missing here (no paid certificate) — guided Zadig is the hobby workaround |
 | **SysEx** | System Exclusive | MIDI messages used for synth dumps / editor sessions |
 | **Computer Mode** | Emagic MT4 behaviour | MT4 “awake for computer” state — wake it with ordinary MIDI before SysEx |
-| **Windows MIDI Services** | Microsoft MIDI stack on Windows 11 | Used by the **other** edition — not required on this Windows 10 path |
+| **Windows MIDI Services** | Microsoft MIDI stack on Windows 11 | Used by the **other** edition — not required on this Windows 10 edition |
+| **MI_02** | USB composite interface | The correct line to pick in Zadig for the MIDI part of the MT4 |
 
 ---
 

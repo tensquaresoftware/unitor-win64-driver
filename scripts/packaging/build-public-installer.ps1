@@ -1,5 +1,5 @@
 # Assemble Public Installer EXE(s) from a builds/ Bridge artifact (Stories 4.1 / 6.2).
-# Requires Inno Setup 6 (ISCC.exe). Output under builds/installer/.
+# Requires Inno Setup 6 (ISCC.exe). Output under dist/ (Luthier-style distributable folder).
 #
 # Dual community flavors (same semantic version; distinct artifact names):
 #   win11-wms          — no teVirtualMIDI.dll gate; --midi-backend=wms
@@ -241,7 +241,7 @@ if ($resolvedBridgeDir -match '(?i)[\\/]debug([\\/]|$)')
     Write-Warning "Packaging Bridge from a Debug layout: $resolvedBridgeDir. Prefer builds\\release for community installs."
 }
 
-$outDir = Join-Path $repoRoot "builds\installer"
+$outDir = Join-Path $repoRoot "dist"
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 # Optional Authenticode (Story 4.4) — strongly recommended, not a hard gate.
@@ -289,7 +289,7 @@ $builtSetups = @()
 foreach ($flavorName in $flavorsToBuild)
 {
     $defs = Get-FlavorDefines -FlavorName $flavorName
-    $setupName = "UnitorMt4Bridge-Setup-$($defs.FlavorToken)-$AppVersion.exe"
+    $setupName = "Unitor-MT4-Bridge-$AppVersion-$($defs.FlavorToken)-setup.exe"
     $setupPath = Join-Path $outDir $setupName
 
     Write-Host "Compiling Public Installer ($flavorName)"

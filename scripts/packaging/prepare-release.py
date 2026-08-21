@@ -42,14 +42,14 @@ class ReleasePaths:
 
     def setup_name(self, flavor: str) -> str:
         # Setup EXE names always use CMake project(VERSION) (no prerelease suffix).
-        return f"UnitorMt4Bridge-Setup-{flavor}-{self.artifact_version}.exe"
+        return f"Unitor-MT4-Bridge-{self.artifact_version}-{flavor}-setup.exe"
 
     def setup_path(self, flavor: str) -> Path:
         return self.release_dir / self.setup_name(flavor)
 
     @property
     def docs_archive(self) -> Path:
-        return self.release_dir / f"UnitorMt4Bridge-{self.version}-docs.zip"
+        return self.release_dir / f"Unitor-MT4-Bridge-{self.version}-docs.zip"
 
     @property
     def checksums(self) -> Path:
@@ -87,7 +87,7 @@ def ensure_release_dir(paths: ReleasePaths) -> None:
 
 
 def default_installer_dir(root: Path = PROJECT_ROOT) -> Path:
-    return root / "builds" / "installer"
+    return root / "dist"
 
 
 def sha256_file(path: Path) -> str:
@@ -482,13 +482,13 @@ def main() -> int:
 
     pack = sub.add_parser(
         "pack",
-        help="Copy both Setup EXEs from builds/installer into the release folder",
+        help="Copy both Setup EXEs from dist/ into the release folder",
     )
     pack.add_argument(
         "--source-dir",
         type=Path,
         default=None,
-        help="Directory containing UnitorMt4Bridge-Setup-*-{version}.exe",
+        help="Directory containing Unitor-MT4-Bridge-*-{flavor}-setup.exe",
     )
 
     sub.add_parser(

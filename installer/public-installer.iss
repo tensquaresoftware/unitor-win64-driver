@@ -53,7 +53,8 @@
 #define InstallDirName "Ten Square Software\Unitor MT4 Bridge"
 #define MyAppPublisherURL "https://github.com/tensquaresoftware/unitor-win64-driver"
 #define MyAppSupportURL "https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md"
-#define SetupBaseName "UnitorMt4Bridge-Setup-" + FlavorToken + "-" + MyAppVersion
+; Luthier-style product-version-flavor naming for GitHub Release assets.
+#define SetupBaseName "Unitor-MT4-Bridge-" + MyAppVersion + "-" + FlavorToken + "-setup"
 #define BridgeSessionParams "--auto-session --midi-backend=" + MidiBackendArg
 #define BridgeRegisterParams "--register-auto-start --midi-backend=" + MidiBackendArg
 
@@ -78,7 +79,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 WizardStyle=modern
 Compression=lzma2
 SolidCompression=yes
-OutputDir=..\builds\installer
+; Compiled Setup EXEs land in dist/ (gitignored), like Luthier dist/ build output.
+OutputDir=..\dist
 OutputBaseFilename={#SetupBaseName}
 SetupLogging=yes
 UninstallDisplayName={#MyAppName}
