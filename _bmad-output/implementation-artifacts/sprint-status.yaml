@@ -52,7 +52,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: "2026-08-04T21:38:31Z"
-last_updated: "2026-08-21T15:50:00Z"
+last_updated: "2026-08-21T16:25:00Z"
 project: unitor-win64-driver
 project_key: NOKEY
 tracking_system: file-system
@@ -105,6 +105,6 @@ development_status:
   # Epic 6: Community MIDI backend on Windows MIDI Services (Win11-only) — after Epic 5
   epic-6: in-progress
   6-1-windows-midi-services-midibackend-win11: done
-  6-2-community-binary-and-install-0eur-honesty-win11: review
+  6-2-community-binary-and-install-0eur-honesty-win11: done
   6-3-win11-validation-matrix-soak-for-wms-path: backlog
   epic-6-retrospective: optional

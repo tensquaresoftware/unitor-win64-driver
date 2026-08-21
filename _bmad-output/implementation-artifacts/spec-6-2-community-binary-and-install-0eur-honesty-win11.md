@@ -219,23 +219,36 @@ context:
 
 *(Code review chunk 2, 2026-08-21)*
 
-- [ ] [Review][Decision] Old single-guide files: add thin redirect stubs to `docs/user/README.md`, or keep hard delete as “equivalent” — Spec AC allows redirect or equivalent; bookmarks currently 404.
-- [ ] [Review][Patch] Root README “what works” links use obsolete anchors [`README.md:106`]
-- [ ] [Review][Patch] Public-installer smoke still teaches PascalCase / `builds/installer/` Setup names [`docs/tests/smoke-epic4-public-installer-mt4.md:23`]
-- [ ] [Review][Patch] Operator Win10 smoke still names `UnitorMt4Bridge-Setup.exe` under `builds\installer\` [`docs/tests/guide-operateur-smoke-4-1-pc-propre-win10.md:66`]
-- [ ] [Review][Patch] Public-installer Build/run omits `-Flavor both` and flavored `--midi-backend=` Auto-Start [`docs/tests/smoke-epic4-public-installer-mt4.md:114`]
-- [ ] [Review][Patch] Public-installer Out of scope still says VirtualMIDI community Releases out of scope / Zadig primary [`docs/tests/smoke-epic4-public-installer-mt4.md:154`]
-- [ ] [Review][Patch] User-docs smoke: clear stale Pass cells, dual-path headings, and Win10-only virtualMIDI prerequisite [`docs/tests/smoke-epic4-user-docs-mt4.md:45`]
-- [ ] [Review][Patch] Authenticode smoke Pass vs “re-check after 6.2” contradiction [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`]
-- [ ] [Review][Patch] Add Win11 multi-client / exclusive-mode guidance (EN+FR) peer to Win10 [`docs/user/unitor-mt4-bridge-win11-wms-user-guide.md`]
-- [ ] [Review][Patch] FR Win11 “Ce qui marche” missing second-MT4 naming bullet present in EN [`docs/user/unitor-mt4-bridge-win11-wms-guide-utilisateur.md:208`]
-- [ ] [Review][Patch] User README suggested order omit MT4 lights + stuck-MIDI recovery [`docs/user/README.md:18`]
-- [ ] [Review][Patch] Carry uninstall multi-account Auto-Start + Driver Store residual honesty into path manuals
-- [ ] [Review][Patch] Wrong-flavor Setup tip on user README router [`docs/user/README.md`]
-- [ ] [Review][Patch] Win10 SmartScreen enterprise-block honesty (mirror Win11) [`docs/user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md`]
-- [ ] [Review][Patch] Restore brief mid-SysEx unplug recovery in path manuals
-- [ ] [Review][Patch] Smoke epic3 hotplug/multiclient: add Win10 peer links where only Win11 remains
+- [x] [Review][Decision] Old single-guide files: keep hard delete; scrub remaining references — decided: option 2 (pre-release, no redirect stubs)
+- [x] [Review][Patch] Scrub remaining references to deleted single-guide filenames across live docs
+- [x] [Review][Patch] Root README “what works” links use obsolete anchors [`README.md:106`]
+- [x] [Review][Patch] Public-installer smoke still teaches PascalCase / `builds/installer/` Setup names [`docs/tests/smoke-epic4-public-installer-mt4.md:23`]
+- [x] [Review][Patch] Operator Win10 smoke still names `UnitorMt4Bridge-Setup.exe` under `builds\installer\` [`docs/tests/guide-operateur-smoke-4-1-pc-propre-win10.md:66`]
+- [x] [Review][Patch] Public-installer Build/run omits `-Flavor both` and flavored `--midi-backend=` Auto-Start [`docs/tests/smoke-epic4-public-installer-mt4.md:114`]
+- [x] [Review][Patch] Public-installer Out of scope still says VirtualMIDI community Releases out of scope / Zadig primary [`docs/tests/smoke-epic4-public-installer-mt4.md:154`]
+- [x] [Review][Patch] User-docs smoke: clear stale Pass cells, dual-path headings, and Win10-only virtualMIDI prerequisite [`docs/tests/smoke-epic4-user-docs-mt4.md:45`]
+- [x] [Review][Patch] Authenticode smoke Pass vs “re-check after 6.2” contradiction [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`]
+- [x] [Review][Patch] Add Win11 multi-client / exclusive-mode guidance (EN+FR) peer to Win10 [`docs/user/unitor-mt4-bridge-win11-wms-user-guide.md`]
+- [x] [Review][Patch] FR Win11 “Ce qui marche” missing second-MT4 naming bullet present in EN [`docs/user/unitor-mt4-bridge-win11-wms-guide-utilisateur.md:208`]
+- [x] [Review][Patch] User README suggested order omit MT4 lights + stuck-MIDI recovery [`docs/user/README.md:18`]
+- [x] [Review][Patch] Carry uninstall multi-account Auto-Start + Driver Store residual honesty into path manuals
+- [x] [Review][Patch] Wrong-flavor Setup tip on user README router [`docs/user/README.md`]
+- [x] [Review][Patch] Win10 SmartScreen enterprise-block honesty (mirror Win11) [`docs/user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md`]
+- [x] [Review][Patch] Restore brief mid-SysEx unplug recovery in path manuals
+- [x] [Review][Patch] Smoke epic3 hotplug/multiclient: add Win10 peer links where only Win11 remains
 - [x] [Review][Defer] `epic-6-context.md` still says Win10 is dropped as community claim — deferred, planning artifact vs shipping honesty
 - [x] [Review][Defer] Optional Win11→win10-virtualmidi Setup fallback when WMS stays unavailable — deferred, nice-to-have
 - [x] [Review][Defer] French peer for `docs/user/README.md` router — deferred, EN router + FR guide links satisfies 20s AC
 - [x] [Review][Defer] Lot1 smoke-name deferral closed into patches above
+
+### Review Findings (chunk 3 — Bridge Auto-Start / midi-backend)
+
+*(Code review chunk 3, 2026-08-21)*
+
+- [x] [Review][Decision] Upgrade path: old Auto-Start without `--midi-backend` — decided: option 1 (re-run Setup / `--register-auto-start`; no auto-rewrite)
+- [x] [Review][Patch] AutoStartContractTests: clear `UNITOR_MIDI_BACKEND`, RAII clear override, add env-only bake case [`tests/unit/AutoStartContractTests.cpp`]
+- [x] [Review][Patch] Help: `--register-auto-start` freezes the resolved backend into the logon command (env later ignored until re-register) [`src/App/Main.cpp`]
+- [x] [Review][Patch] Comments: AutoStartRegistration / MidiBackendSelect clarify Setup bake is via register-time resolve, not a separate resolve path [`src/App/AutoStartRegistration.cpp`]
+- [x] [Review][Defer] No COM/Task Scheduler put_Arguments unit seam — deferred; offline contract stays on `buildAutoStartActionArguments()`
+- [x] [Review][Defer] `_bstr_t` ANSI vs UTF-8 for Task Scheduler args — deferred; baked tokens are ASCII (`wms` / `virtualmidi`)
+- [x] [Review][Defer] Auto-migrate logon args without re-register — deferred per Decision option 1 (operator re-registers)
