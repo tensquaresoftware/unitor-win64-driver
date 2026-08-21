@@ -189,12 +189,15 @@ The installer reports that it could not associate the MT4 with WinUSB; install i
 ### Steps in Zadig
 
 1. Open the **Options** menu and enable **List All Devices**. Without this, the MT4 may not appear.
-2. Open the device drop-down and select the MT4 composite MIDI interface named **MI_02**.
-   - Expected USB id: `VID_086A` + `PID_0003` + **MI_02** (often shown as `086A 0003 02`, equivalent to `USB\VID_086A&PID_0003&MI_02`).
-   - **Do not** pick another line (mouse, keyboard, hub, or another MT4 `MI_xx`).
-3. To the right of the green arrow, choose target driver **WinUSB** (not libusb-win32 or libusbK).
-4. Click **Install Driver** or **Replace Driver** (whichever label Zadig shows).
-5. Wait for the success message, then close Zadig.
+2. Open the device drop-down. The MT4 often shows as **Unknown Device** (or another generic label) — **do not** trust the name alone.
+3. Look at the **USB ID** area under the list: pick the line whose codes are **`086A`** (Emagic vendor) and **`0003`** (MT4 product).
+   - That is the reliable lab cue. The text `MI_02` does **not** always appear in the device name.
+   - If a third number is shown (often `02`), that is the composite USB interface the Bridge targets — technical jargon: **MI_02** (`USB\VID_086A&PID_0003&MI_02`).
+   - **Do not** pick another line (mouse, keyboard, hub, other device).
+4. (Recommended) Tick **Edit**, replace the generic name with **`MT4`**, then confirm. Device Manager will then show “MT4” instead of “Unknown”.
+5. To the right of the green arrow, choose target driver **WinUSB** (not libusb-win32 or libusbK).
+6. Click **Install Driver** or **Replace Driver** (whichever label Zadig shows).
+7. Wait for the success message, then close Zadig.
 
 ### Afterwards
 
@@ -202,7 +205,7 @@ The installer reports that it could not associate the MT4 with WinUSB; install i
 2. Launch **Unitor MT4 Bridge** (automatic start or Start menu).
 3. Confirm your DAW lists `MT4 In` / `MT4 Out` ports.
 
-If several USB devices look like the MT4, stop and do not force it: select only one **MI_02** line.
+If several lines show `086A` / `0003`, stop: associate only one interface (the one with interface number `02` / **MI_02** if visible).
 
 ## No ports visible
 
@@ -284,7 +287,7 @@ Deeper licence notes for contributors: [license-and-backends.md](../dev/license-
 | **Computer Mode** | Emagic MT4 behaviour | MT4 “awake for computer” state — wake it with ordinary MIDI before SysEx |
 | **Automatic start** | Auto-Start | Bridge launches with your Windows user session |
 | **virtualMIDI** | Tobias Erichsen driver | Used on the **Windows 10** edition only — not part of this Windows 11 edition |
-| **MI_02** | USB composite interface | The correct line to pick in Zadig for the MIDI part of the MT4 |
+| **MI_02** | USB interface #02 | Technical id for the correct composite interface; in Zadig, trust **`086A` / `0003` first**, not a “MI_02” label |
 
 ---
 

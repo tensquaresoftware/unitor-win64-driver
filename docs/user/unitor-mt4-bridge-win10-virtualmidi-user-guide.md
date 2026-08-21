@@ -180,7 +180,7 @@ Install loopMIDI or rtpMIDI, confirm `teVirtualMIDI.dll` in System32, re-run the
 ## SmartScreen, WinUSB, no ports, no SysEx
 
 1. SmartScreen warning → **Run anyway** only if the file comes from this project’s Releases. On managed PCs, policy may block the override — try a personal machine or ask your admin.
-2. USB association failed → [Associate the MT4 with WinUSB](#associate-the-mt4-with-winusb) (Zadig on **MI_02**).
+2. USB association failed → [Associate the MT4 with WinUSB](#associate-the-mt4-with-winusb) (Zadig: codes **`086A` / `0003`**).
 3. Ports missing → refresh the MIDI list in the DAW, confirm the Bridge is running, confirm `teVirtualMIDI.dll` is present.
 4. SysEx with no reply → wake **Computer Mode** first with ordinary MIDI.
 
@@ -200,12 +200,15 @@ When the installer could not associate the MT4 with WinUSB (common on a brand-ne
 ### Steps in Zadig
 
 1. Open the **Options** menu and enable **List All Devices**. Without this, the MT4 may not appear.
-2. Open the device drop-down and select the MT4 composite MIDI interface named **MI_02**.
-   - Expected USB id: `VID_086A` + `PID_0003` + **MI_02** (often shown as `086A 0003 02`, equivalent to `USB\VID_086A&PID_0003&MI_02`).
-   - **Do not** pick another line (mouse, keyboard, hub, or another MT4 `MI_xx`).
-3. To the right of the green arrow, choose target driver **WinUSB** (not libusb-win32 or libusbK).
-4. Click **Install Driver** or **Replace Driver** (whichever label Zadig shows).
-5. Wait for the success message, then close Zadig.
+2. Open the device drop-down. The MT4 often shows as **Unknown Device** (or another generic label) — **do not** trust the name alone.
+3. Look at the **USB ID** area under the list: pick the line whose codes are **`086A`** (Emagic vendor) and **`0003`** (MT4 product).
+   - That is the reliable lab cue. The text `MI_02` does **not** always appear in the device name.
+   - If a third number is shown (often `02`), that is the composite USB interface the Bridge targets — technical jargon: **MI_02** (`USB\VID_086A&PID_0003&MI_02`).
+   - **Do not** pick another line (mouse, keyboard, hub, other device).
+4. (Recommended) Tick **Edit**, replace the generic name with **`MT4`**, then confirm. Device Manager will then show “MT4” instead of “Unknown”.
+5. To the right of the green arrow, choose target driver **WinUSB** (not libusb-win32 or libusbK).
+6. Click **Install Driver** or **Replace Driver** (whichever label Zadig shows).
+7. Wait for the success message, then close Zadig.
 
 ### Afterwards
 
@@ -213,7 +216,7 @@ When the installer could not associate the MT4 with WinUSB (common on a brand-ne
 2. Launch **Unitor MT4 Bridge**.
 3. Confirm your DAW lists `MT4 In` / `MT4 Out` ports, and that `teVirtualMIDI.dll` is still present.
 
-If several USB devices look like the MT4, stop and do not force it: select only one **MI_02** line.
+If several lines show `086A` / `0003`, stop: associate only one interface (the one with interface number `02` / **MI_02** if visible).
 
 ## Ports missing after unplug / replug
 
@@ -267,7 +270,7 @@ See [license-and-backends.md](../dev/license-and-backends.md).
 | **SysEx** | System Exclusive | MIDI messages used for synth dumps / editor sessions |
 | **Computer Mode** | Emagic MT4 behaviour | MT4 “awake for computer” state — wake it with ordinary MIDI before SysEx |
 | **Windows MIDI Services** | Microsoft MIDI stack on Windows 11 | Used by the **other** edition — not required on this Windows 10 edition |
-| **MI_02** | USB composite interface | The correct line to pick in Zadig for the MIDI part of the MT4 |
+| **MI_02** | USB interface #02 | Technical id for the correct composite interface; in Zadig, trust **`086A` / `0003` first**, not a “MI_02” label |
 
 ---
 

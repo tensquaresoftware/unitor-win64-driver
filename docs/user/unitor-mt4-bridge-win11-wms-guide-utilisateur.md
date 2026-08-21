@@ -189,12 +189,15 @@ L’installateur indique qu’il n’a pas pu associer la MT4 à WinUSB ; l’in
 ### Étapes dans Zadig
 
 1. Menu **Options** → cochez **List All Devices** (lister tous les périphériques). Sans cette case, la MT4 peut rester invisible.
-2. Ouvrez la liste déroulante et cherchez l’interface MIDI composite de la MT4 appelée **MI_02**.
-   - Identifiant USB attendu : `VID_086A` + `PID_0003` + **MI_02** (souvent affiché `086A 0003 02`, équivalent à `USB\VID_086A&PID_0003&MI_02`).
-   - **Ne choisissez pas** une autre ligne (souris, clavier, hub, autre `MI_xx` de la MT4).
-3. À droite de la flèche verte, sélectionnez le pilote cible **WinUSB** (pas libusb-win32 ni libusbK).
-4. Cliquez **Install Driver** ou **Replace Driver** (selon le libellé proposé par Zadig).
-5. Attendez le message de succès, puis fermez Zadig.
+2. Ouvrez la liste déroulante. La MT4 apparaît souvent comme **Périphérique inconnu** / **Unknown Device** (ou un nom générique) — **ne vous fiez pas** au libellé seul.
+3. Regardez la zone **USB ID** sous la liste : choisissez la ligne dont les codes sont **`086A`** (fabricant Emagic) et **`0003`** (produit MT4).
+   - C’est le repère fiable en labo. Le texte `MI_02` n’apparaît **pas** toujours dans le nom du périphérique.
+   - Si un troisième nombre est affiché (souvent `02`), c’est l’interface USB composite ciblée par le Bridge — en jargon technique : **MI_02** (`USB\VID_086A&PID_0003&MI_02`).
+   - **Ne choisissez pas** une autre ligne (souris, clavier, hub, autre périphérique).
+4. (Recommandé) Cochez **Edit**, remplacez le nom générique par **`MT4`**, puis validez. Ainsi le Gestionnaire de périphériques affichera « MT4 » au lieu de « inconnu ».
+5. À droite de la flèche verte, sélectionnez le pilote cible **WinUSB** (pas libusb-win32 ni libusbK).
+6. Cliquez **Install Driver** ou **Replace Driver** (selon le libellé proposé par Zadig).
+7. Attendez le message de succès, puis fermez Zadig.
 
 ### Ensuite
 
@@ -202,7 +205,7 @@ L’installateur indique qu’il n’a pas pu associer la MT4 à WinUSB ; l’in
 2. Lancez **Unitor MT4 Bridge** (démarrage automatique ou menu Démarrer).
 3. Vérifiez que votre DAW propose bien les ports `MT4 In` / `MT4 Out`.
 
-Si vous voyez plusieurs appareils USB qui ressemblent à la MT4, arrêtez-vous et ne forcez pas : une seule **MI_02** doit être sélectionnée.
+Si plusieurs lignes affichent `086A` / `0003`, arrêtez-vous : une seule interface doit être associée (celle avec le numéro d’interface `02` / **MI_02** s’il est visible).
 
 ## Aucun port visible
 
@@ -284,7 +287,7 @@ Notes licence (contributeurs) : [license-and-backends.md](../dev/license-and-bac
 | **Computer Mode** | Comportement Emagic MT4 | État « prêt pour l’ordinateur » — réveillez-le avec du MIDI ordinaire avant le SysEx |
 | **Démarrage automatique** | Auto-Start | Le Bridge se lance avec votre session Windows |
 | **virtualMIDI** | Pilote Tobias Erichsen | Uniquement pour l’édition **Windows 10** — pas dans cette édition Windows 11 |
-| **MI_02** | Interface USB composite | La bonne ligne à choisir dans Zadig pour la partie MIDI de la MT4 |
+| **MI_02** | Interface USB n°02 | Identifiant technique de la bonne interface composite ; dans Zadig, fiez-vous d’abord à **`086A` / `0003`**, pas au libellé « MI_02 » |
 
 ---
 
