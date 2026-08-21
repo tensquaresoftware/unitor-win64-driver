@@ -27,7 +27,7 @@ This open-source project (Ten Square Software) is a community **hobby** effort: 
 | **This guide** | **Windows 11** | **Windows MIDI Services** (built in) | Relatively simple |
 | Other guide | **Windows 10** | **virtualMIDI** (by Tobias Erichsen) — install it yourself | More technical |
 
-This Windows 11 edition is usually the simplest if your PC supports it. virtualMIDI is **never** redistributed with the Bridge (rights & licence). The Windows 10 guide explains why and how.
+This Windows 11 edition is usually the simplest if your PC supports it. virtualMIDI is **never** redistributed with the Bridge (rights & licence). The Windows 10 guide explains why and how (see that guide for the download).
 
 Want to install and use the Bridge on Windows 10? Open the [Windows 10 guide](unitor-mt4-bridge-win10-virtualmidi-user-guide.md). French: [`unitor-mt4-bridge-win11-wms-guide-utilisateur.md`](unitor-mt4-bridge-win11-wms-guide-utilisateur.md). Choice page: [`README.md`](README.md).
 
