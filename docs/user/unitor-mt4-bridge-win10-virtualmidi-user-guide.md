@@ -22,21 +22,21 @@ This open-source project (Ten Square Software) is a community **hobby** effort: 
 
 ## Two editions of the Bridge
 
-| Edition | Windows | How MIDI reaches your software | Install effort |
+| Edition | Windows | How MIDI reaches your software | Installation |
 |---|---|---|---|
-| Other guide | **Windows 11** | Built-in **Windows MIDI Services** | Relatively simple |
-| **This guide** | **Windows 10** | **virtualMIDI** (Tobias Erichsen) — you install it yourself | More technical |
+| **This guide** | **Windows 10** | **virtualMIDI** (by Tobias Erichsen) — install it yourself | More technical |
+| Other guide | **Windows 11** | **Windows MIDI Services** (built in) | Relatively simple |
 
 This Windows 10 path is a **parallel** offer for people who stay on Windows 10. It is **not** the “comfort” community promise (that is the Windows 11 edition).
 
-virtualMIDI is **never** redistributed with the Bridge (licence / rights). You download and install it yourself from Tobias Erichsen.
+virtualMIDI is **never** redistributed with the Bridge (rights & licence). You download and install it yourself from Tobias Erichsen’s website.
 
-Prefer the simpler Windows 11 path? Open the [Windows 11 guide](unitor-mt4-bridge-win11-wms-user-guide.md). French: [`unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md`](unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md). Choice page: [`README.md`](README.md).
+Want to install and use the Bridge on Windows 11? Open the [Windows 11 guide](unitor-mt4-bridge-win11-wms-user-guide.md). French: [`unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md`](unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md). Choice page: [`README.md`](README.md).
 
 ## Contents
 
 1. [Check the prerequisites](#check-the-prerequisites)
-2. [Install virtualMIDI yourself](#install-virtualmidi-yourself)
+2. [Install virtualMIDI](#install-virtualmidi)
 3. [Install the Bridge](#install-the-bridge)
 4. [Pass the Windows SmartScreen warning](#pass-the-windows-smartscreen-warning)
 5. [Use automatic start](#use-automatic-start)
@@ -60,18 +60,18 @@ Prefer the simpler Windows 11 path? Open the [Windows 11 guide](unitor-mt4-bridg
 
 ## Software you may use later
 
-For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Reaper, or Bitwig. Any editor that can send and receive MIDI SysEx with your synthesizer will do for a first SysEx check.
+For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Reaper, or Bitwig. Any editor that can send and receive MIDI notes, controllers (CC), or even SysEx is fine for a first try in your home studio.
 
-# Install virtualMIDI yourself
+# Install virtualMIDI
 
-On this path, the Bridge talks to your DAW through **virtualMIDI**. Install it from Tobias Erichsen **before** the Bridge installer, for example:
+On this path, the Bridge talks to your DAW through **virtualMIDI**. Install it from Tobias Erichsen’s website **before** the Bridge installer, for example by downloading:
 
 - **[loopMIDI](https://www.tobias-erichsen.de/software/loopmidi.html)** (most common), or
 - **[rtpMIDI](https://www.tobias-erichsen.de/software/rtpmidi.html)**
 
-Then confirm `teVirtualMIDI.dll` exists in `C:\Windows\System32\`.
+Then confirm that the file `teVirtualMIDI.dll` exists in `C:\Windows\System32\`.
 
-**Why self-install?** The virtualMIDI software is proprietary. This MIT project does **not** have redistribution clearance and will **never** ship the DLL or installer package inside the Bridge download.
+**Why install this software yourself?** virtualMIDI is proprietary. This MIT repository does **not** have redistribution clearance and will **never** ship the DLL or installer package inside the Bridge download.
 
 Without the DLL, the Bridge installer **fails closed** — an empty MIDI port list is not a successful install.
 
@@ -101,7 +101,7 @@ Windows may show **Microsoft Defender SmartScreen** (“Windows protected your P
 
 **Only continue if you downloaded the installer from this project’s Releases.**
 
-To check whether **this** file is signed: right-click → **Properties** → **Digital Signatures**. If that tab is missing, the file is typically **unsigned**. This project **does not ship** an Authenticode certificate.
+To check whether **this** file is signed: right-click → **Properties** → **Digital Signatures**. If that tab is missing, the file is typically **unsigned**. For this community project, the developer chose **not to buy** an Authenticode certificate, whose yearly cost is very high.
 
 When your PC’s policy allows it:
 
@@ -114,7 +114,11 @@ Do **not** turn SmartScreen off globally or run copies from untrusted mirrors.
 
 # Use automatic start
 
-The Bridge starts with your user session (not a Windows Service). Look for `MT4 In` / `MT4 Out` ports after sign-in or plug-in. Use **Unregister Auto-Start** to disable. Uninstall clears automatic start for the user who uninstalls only.
+After installation, **Unitor MT4 Bridge** starts on its own when you sign in to Windows. It is **not** a Windows service running in the background for every account: it is a program tied to **your user session**.
+
+Once you are signed in (or after you plug in the MT4), Windows should show ports **`MT4 In 1`**, **`MT4 In 2`**, **`MT4 Out 1`** … **`MT4 Out 4`**. You can also start **Unitor MT4 Bridge** by hand from the Start menu.
+
+To **turn off** automatic start: open the Bridge folder in the Start menu and choose **Unregister Auto-Start**. Uninstalling also removes automatic start, but only for the Windows user who runs the uninstall.
 
 # Try your first MIDI notes
 
@@ -129,11 +133,23 @@ The Bridge starts with your user session (not a Windows Service). Look for `MT4 
 4. Enable at least **`MT4 In 1`** and **`MT4 Out 1`**.
 5. Send notes (or controllers) and check the other direction.
 
-Send ordinary MIDI first for **Computer Mode** — SysEx alone does not wake it.
+### Wake Computer Mode
+
+The MT4 has a state called **Computer Mode**: it must “wake up” before it talks cleanly to the computer. To wake it, first send some **ordinary MIDI** — for example a few notes, or a short controller (CC) move — from your DAW to an **`MT4 Out`** port.
+
+Only then start a SysEx exchange. **SysEx alone does not wake** Computer Mode: if you begin with a dump right away, the MT4 may stay silent.
 
 ## Use several applications at once
 
-virtualMIDI typically allows about eight clients per port. Turn off exclusive MIDI mode if a host complains.
+With **virtualMIDI**, the same port can usually be opened by **about eight applications** at once (DAW + editor + MIDI monitor, and so on).
+
+If a program refuses to open a port that is already in use, or shows an error such as “exclusive”, “exclusive mode”, or “device in use”:
+
+1. Open the **MIDI preferences** (or **MIDI devices**) of **each** application involved.
+2. Look for an option often named **Exclusive**, **Exclusive Mode**, or **Exclusive access** on the `MT4 In` / `MT4 Out` input or output.
+3. **Clear** that checkbox, confirm, then reopen the ports or restart the application.
+
+The exact menu depends on the software (Ableton Live, Cubase, Reaper, Bitwig, …), but the idea is always the same: do not reserve the port for a single application only.
 
 # Try your first SysEx transfer
 
@@ -197,3 +213,7 @@ First unit: `MT4 In N` / `MT4 Out N`. Later units: `MT4 #2 …`. Single-unit dai
 | **SysEx** | System Exclusive | MIDI messages used for synth dumps / editor sessions |
 | **Computer Mode** | Emagic MT4 behaviour | MT4 “awake for computer” state — wake it with ordinary MIDI before SysEx |
 | **Windows MIDI Services** | Microsoft MIDI stack on Windows 11 | Used by the **other** edition — not required on this Windows 10 path |
+
+---
+
+Another project successfully completed with [BMad](https://github.com/bmad-code-org/bmad-method)!

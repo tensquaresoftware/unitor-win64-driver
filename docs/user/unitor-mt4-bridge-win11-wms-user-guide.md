@@ -22,14 +22,14 @@ This open-source project (Ten Square Software) is a community **hobby** effort: 
 
 ## Two editions of the Bridge
 
-| Edition | Windows | How MIDI reaches your software | Install effort |
+| Edition | Windows | How MIDI reaches your software | Installation |
 |---|---|---|---|
-| **This guide** | **Windows 11** | Built-in **Windows MIDI Services** | Relatively simple |
-| Other guide | **Windows 10** | **virtualMIDI** (Tobias Erichsen) — you install it yourself | More technical |
+| **This guide** | **Windows 11** | **Windows MIDI Services** (built in) | Relatively simple |
+| Other guide | **Windows 10** | **virtualMIDI** (by Tobias Erichsen) — install it yourself | More technical |
 
-virtualMIDI is **not** redistributed with the Bridge (licence / rights). The Windows 10 guide explains why and how.
+virtualMIDI is **never** redistributed with the Bridge (rights & licence). The Windows 10 guide explains why and how.
 
-**Wrong PC?** On Windows 10, open the [Windows 10 guide](unitor-mt4-bridge-win10-virtualmidi-user-guide.md). French: [`unitor-mt4-bridge-win11-wms-guide-utilisateur.md`](unitor-mt4-bridge-win11-wms-guide-utilisateur.md). Choice page: [`README.md`](README.md).
+Want to install and use the Bridge on Windows 10? Open the [Windows 10 guide](unitor-mt4-bridge-win10-virtualmidi-user-guide.md). French: [`unitor-mt4-bridge-win11-wms-guide-utilisateur.md`](unitor-mt4-bridge-win11-wms-guide-utilisateur.md). Choice page: [`README.md`](README.md).
 
 ## Contents
 
@@ -60,7 +60,7 @@ If Windows MIDI Services is missing, the Bridge **refuses** to pretend that empt
 
 ## Software you may use later
 
-For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Logic (via a Windows host), Reaper, or Bitwig. Any editor that can send and receive MIDI SysEx with your synthesizer will do for a first SysEx check.
+For everyday checks, open **your usual music software** (your DAW) — for example Ableton Live, Cubase, Reaper, or Bitwig. Any editor that can send and receive MIDI notes, controllers (CC), or even SysEx is fine for a first try in your home studio.
 
 # Install the Bridge
 
@@ -98,7 +98,7 @@ Windows may show **Microsoft Defender SmartScreen** (“Windows protected your P
 
 **Only continue if you downloaded the installer from this project’s Releases.**
 
-To check whether **this** file is signed: right-click → **Properties** → **Digital Signatures**. If that tab is missing, the file is typically **unsigned**. This project **does not ship** an Authenticode certificate.
+To check whether **this** file is signed: right-click → **Properties** → **Digital Signatures**. If that tab is missing, the file is typically **unsigned**. For this community project, the developer chose **not to buy** an Authenticode certificate, whose yearly cost is very high.
 
 When your PC’s policy allows it:
 
@@ -111,21 +111,11 @@ Do **not** turn SmartScreen off globally or run copies from untrusted mirrors. O
 
 # Use automatic start
 
-After installation, Unitor MT4 Bridge starts with your Windows session. MIDI ports appear without opening the program every day, and without an Administrator password for daily use.
+After installation, **Unitor MT4 Bridge** starts on its own when you sign in to Windows. It is **not** a Windows service running in the background for every account: it is a program tied to **your user session**.
 
-The Bridge is a **normal user-session program**. It is **not** a Windows Service.
+Once you are signed in (or after you plug in the MT4), Windows should show ports **`MT4 In 1`**, **`MT4 In 2`**, **`MT4 Out 1`** … **`MT4 Out 4`**. You can also start **Unitor MT4 Bridge** by hand from the Start menu.
 
-## How to tell everything is ready
-
-1. Sign in to Windows (or plug in the MT4 if you are already signed in).
-2. Open **your usual DAW**.
-3. Look for ports named **`MT4 In 1`**, **`MT4 In 2`**, **`MT4 Out 1`** … **`MT4 Out 4`**.
-
-You can also start **Unitor MT4 Bridge** from the Start menu.
-
-## Turn off automatic start
-
-In the Start menu, choose **Unregister Auto-Start**. Uninstalling removes automatic start **for the Windows user who runs the uninstall**. Other accounts may still have their own entry.
+To **turn off** automatic start: open the Bridge folder in the Start menu and choose **Unregister Auto-Start**. Uninstalling also removes automatic start, but only for the Windows user who runs the uninstall.
 
 # Try your first MIDI notes
 
@@ -144,7 +134,9 @@ Goal: send and receive notes (and optionally continuous controllers) between the
 
 ### Wake Computer Mode
 
-Send a little ordinary MIDI first (a short controller change or a few notes) to activate **Computer Mode** on the MT4. **SysEx alone does not wake Computer Mode.**
+The MT4 has a state called **Computer Mode**: it must “wake up” before it talks cleanly to the computer. To wake it, first send some **ordinary MIDI** — for example a few notes, or a short controller (CC) move — from your DAW to an **`MT4 Out`** port.
+
+Only then start a SysEx exchange. **SysEx alone does not wake** Computer Mode: if you begin with a dump right away, the MT4 may stay silent.
 
 # Try your first SysEx transfer
 
@@ -255,3 +247,7 @@ Deeper licence notes for contributors: [license-and-backends.md](../dev/license-
 | **Computer Mode** | Emagic MT4 behaviour | MT4 “awake for computer” state — wake it with ordinary MIDI before SysEx |
 | **Automatic start** | Auto-Start | Bridge launches with your Windows user session |
 | **virtualMIDI** | Tobias Erichsen driver | Used on the **Windows 10** edition only — not part of this Windows 11 path |
+
+---
+
+Another project successfully completed with [BMad](https://github.com/bmad-code-org/bmad-method)!
