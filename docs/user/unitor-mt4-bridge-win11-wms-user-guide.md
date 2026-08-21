@@ -256,4 +256,4 @@ Deeper licence notes for contributors: [license-and-backends.md](../dev/license-
 
 ---
 
-Another project successfully completed with [BMad](https://github.com/bmad-code-org/bmad-method)!
+Yet another project successfully completed with [BMad](https://github.com/bmad-code-org/bmad-method)!

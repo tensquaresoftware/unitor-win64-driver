@@ -214,3 +214,28 @@ context:
 - [x] [Review][Defer] prepare-release pack/verify has no merge-gate unit execution — deferred, follow-up test harness
 - [x] [Review][Defer] Smoke/operator guides still teach old Setup path/names — deferred to lot 2 (docs/smoke review)
 - [x] [Review][Defer] CI `choco install innosetup` unpinned — deferred, pre-existing CI drift risk
+
+### Review Findings (chunk 2 — manuals / honesty / smoke)
+
+*(Code review chunk 2, 2026-08-21)*
+
+- [ ] [Review][Decision] Old single-guide files: add thin redirect stubs to `docs/user/README.md`, or keep hard delete as “equivalent” — Spec AC allows redirect or equivalent; bookmarks currently 404.
+- [ ] [Review][Patch] Root README “what works” links use obsolete anchors [`README.md:106`]
+- [ ] [Review][Patch] Public-installer smoke still teaches PascalCase / `builds/installer/` Setup names [`docs/tests/smoke-epic4-public-installer-mt4.md:23`]
+- [ ] [Review][Patch] Operator Win10 smoke still names `UnitorMt4Bridge-Setup.exe` under `builds\installer\` [`docs/tests/guide-operateur-smoke-4-1-pc-propre-win10.md:66`]
+- [ ] [Review][Patch] Public-installer Build/run omits `-Flavor both` and flavored `--midi-backend=` Auto-Start [`docs/tests/smoke-epic4-public-installer-mt4.md:114`]
+- [ ] [Review][Patch] Public-installer Out of scope still says VirtualMIDI community Releases out of scope / Zadig primary [`docs/tests/smoke-epic4-public-installer-mt4.md:154`]
+- [ ] [Review][Patch] User-docs smoke: clear stale Pass cells, dual-path headings, and Win10-only virtualMIDI prerequisite [`docs/tests/smoke-epic4-user-docs-mt4.md:45`]
+- [ ] [Review][Patch] Authenticode smoke Pass vs “re-check after 6.2” contradiction [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`]
+- [ ] [Review][Patch] Add Win11 multi-client / exclusive-mode guidance (EN+FR) peer to Win10 [`docs/user/unitor-mt4-bridge-win11-wms-user-guide.md`]
+- [ ] [Review][Patch] FR Win11 “Ce qui marche” missing second-MT4 naming bullet present in EN [`docs/user/unitor-mt4-bridge-win11-wms-guide-utilisateur.md:208`]
+- [ ] [Review][Patch] User README suggested order omit MT4 lights + stuck-MIDI recovery [`docs/user/README.md:18`]
+- [ ] [Review][Patch] Carry uninstall multi-account Auto-Start + Driver Store residual honesty into path manuals
+- [ ] [Review][Patch] Wrong-flavor Setup tip on user README router [`docs/user/README.md`]
+- [ ] [Review][Patch] Win10 SmartScreen enterprise-block honesty (mirror Win11) [`docs/user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md`]
+- [ ] [Review][Patch] Restore brief mid-SysEx unplug recovery in path manuals
+- [ ] [Review][Patch] Smoke epic3 hotplug/multiclient: add Win10 peer links where only Win11 remains
+- [x] [Review][Defer] `epic-6-context.md` still says Win10 is dropped as community claim — deferred, planning artifact vs shipping honesty
+- [x] [Review][Defer] Optional Win11→win10-virtualmidi Setup fallback when WMS stays unavailable — deferred, nice-to-have
+- [x] [Review][Defer] French peer for `docs/user/README.md` router — deferred, EN router + FR guide links satisfies 20s AC
+- [x] [Review][Defer] Lot1 smoke-name deferral closed into patches above

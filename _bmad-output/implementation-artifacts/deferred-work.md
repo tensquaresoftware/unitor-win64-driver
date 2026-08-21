@@ -464,5 +464,10 @@ Design note already captured in the longevity guide (not an open deferral): afte
 
 - Dual-flavor installer gates are needle-checked only (no compiled Setup / mocked OS outcomes).
 - `prepare-release.py` pack/verify has no unit/merge-gate execution coverage.
-- Smoke/operator guides still name old `builds/installer/UnitorMt4Bridge-Setup*` paths — revisit in lot 2 (docs).
 - CI `choco install innosetup` version unpinned.
+- `epic-6-context.md` still frames Win10 as dropped community claim (shipping honesty pages are dual-path).
+- Optional Win11→win10-virtualmidi Setup fallback when WMS stays unavailable.
+- French peer landing page for `docs/user/README.md` (EN router + FR guide links kept for now).
+
+## Note: lot 2 promoted smoke Setup-name mismatch from deferral into active Review Findings patches (2026-08-21).
+
