@@ -1,4 +1,4 @@
----
+﻿---
 organization: Ten Square Software
 project: unitor-win64-driver
 title: Smoke Epic 3.2 — Hot-plug sans reboot Windows (MT4)
@@ -36,7 +36,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 |---|---|
 | Multi-client DAW + MIDI-OX (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
 | Noms / persistance pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
-| Chapitre hot-plug poli dans `docs/user/` | **4.2** — [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#unplug-and-replug-the-mt4) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
+| Chapitre hot-plug poli dans `docs/user/` | **4.2** / **6.2** — [Win11](../user/unitor-mt4-bridge-win11-wms-user-guide.md#unplug-and-replug-the-mt4) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#unplug-and-replug-the-mt4) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Installateur public | **4.1** |
 | Mesures de latence MIDI | Epic **5** |
 
@@ -93,13 +93,13 @@ builds\debug\Bridge.exe --test-port-names
 
 - Politique multi-client / exclusive-open → **3.3** ([`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md))
 - Stabilité des noms hot-plug pour deux MT4 → **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md)
-- Installateur public / doc utilisateur polie → **4.1** / **4.2** ([`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#unplug-and-replug-the-mt4), [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md))
+- Installateur public / doc utilisateur polie → **4.1** / **4.2** / **6.2** ([Win11 hot-plug](../user/unitor-mt4-bridge-win11-wms-user-guide.md#unplug-and-replug-the-mt4), [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md))
 - UAT GUI Matrix-Control
 - Longévité Epic 2 ~4 h (un redémarrage supervisé OK pour hot-plug **n’excuse pas** un Fail longévité)
 
 ## Docs liées
 
-- Guide utilisateur hot-plug : [`docs/user/unitor-mt4-bridge-user-guide.md`](../user/unitor-mt4-bridge-user-guide.md#unplug-and-replug-the-mt4)
+- Guide utilisateur hot-plug : [Win11](../user/unitor-mt4-bridge-win11-wms-user-guide.md#unplug-and-replug-the-mt4) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#unplug-and-replug-the-mt4)
 - Auto-Start (3.1) : [`smoke-epic3-autostart-mt4.md`](smoke-epic3-autostart-mt4.md)
 - Multi-client DAW + MIDI-OX (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
 - Ownership longévité : [`checklists/smoke-epic2-longevity-mt4.md`](checklists/smoke-epic2-longevity-mt4.md)

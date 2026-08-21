@@ -1,4 +1,4 @@
----
+﻿---
 organization: Ten Square Software
 project: unitor-win64-driver
 title: Smoke Epic 3.3 — Multi-client DAW + MIDI-OX (MT4)
@@ -38,7 +38,7 @@ Il est calqué sur les guides Epic 1–2 : français, résultat **au fil de l’
 | Sujet | Story |
 |---|---|
 | Noms / persistance pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
-| Chapitre multi-client poli dans `docs/user/` | **4.2** — note ≤8 clients in [`user guide — Several applications at once`](../user/unitor-mt4-bridge-user-guide.md#several-applications-at-once) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
+| Chapitre multi-client poli dans `docs/user/` | **4.2** / **6.2** — note ≤8 clients in [Win10 guide — Several applications](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#several-applications-at-once) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Installateur public / redistribuable virtualMIDI | **4.1** / OQ-1 |
 | Mesures de latence MIDI | Epic **5** |
 | Boucle de recréation hot-plug | **3.2** (ne pas rouvrir) |
