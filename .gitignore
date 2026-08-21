@@ -57,6 +57,7 @@ tests/lab-logs/sysex-long-loopback/
 tests/lab-logs/mtc-loopback/
 tests/lab-logs/midi-clock-loopback/
 tests/lab-logs/midi-concurrent-in/
+tests/lab-logs/wms-session-longevity/
 
 # Local review scratch (not product docs)
 _edge_diff.txt
