@@ -16,6 +16,7 @@ void appendHex4(std::ostringstream& stream, uint16_t value)
     std::snprintf(buffer, sizeof(buffer), "%04X", static_cast<unsigned>(value));
     stream << buffer;
 }
+} // namespace
 
 std::string buildParentHardwareId(const DeviceProfile& profile)
 {
@@ -38,6 +39,8 @@ std::string buildCompositeHardwareId(const DeviceProfile& profile)
     return stream.str();
 }
 
+namespace
+{
 struct CandidateContext
 {
     HDEVINFO deviceInfo;
@@ -110,8 +113,8 @@ bool tryOpenMatchedDeviceGuids(MatchedDeviceOpenArgs& args, std::string& errorOu
 
     return false;
 }
+} // namespace
 
-// Returns 1 and fills chosenOut on a unique HWID match; 0 if none; -1 if ambiguous.
 int findUniqueHardwareIdDevice(
     HDEVINFO deviceInfo,
     const std::string& hardwareId,
@@ -138,7 +141,6 @@ int findUniqueHardwareIdDevice(
     }
     return matchCount == 1 ? 1 : 0;
 }
-} // namespace
 
 bool openByDeviceInterfaceGuidFiltered(GuidOpenRequest& request, std::string& errorOut)
 {

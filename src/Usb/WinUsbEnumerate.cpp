@@ -164,4 +164,56 @@ bool enumeratePresentMt4WinUsbInterfaces(
     return true;
 }
 
+bool tryEnumerateZadigLabPresentMt4Interface(
+    const DeviceProfile& profile,
+    Mt4PresentWinUsbInterface& interfaceOut,
+    std::string& errorOut)
+{
+    interfaceOut = Mt4PresentWinUsbInterface{};
+    const std::string compositeId = buildCompositeHardwareId(profile);
+    const std::string parentId = buildParentHardwareId(profile);
+
+    HDEVINFO deviceInfo = SetupDiGetClassDevsW(
+        nullptr, L"USB", nullptr, DIGCF_PRESENT | DIGCF_ALLCLASSES);
+    if (deviceInfo == INVALID_HANDLE_VALUE)
+    {
+        errorOut = formatWin32Error(
+            "Zadig lab presence SetupDiGetClassDevsW failed", GetLastError());
+        return false;
+    }
+
+    SP_DEVINFO_DATA chosenDevInfo = {};
+    chosenDevInfo.cbSize = sizeof(chosenDevInfo);
+    int match = findUniqueHardwareIdDevice(deviceInfo, compositeId, chosenDevInfo);
+    if (match == 0)
+    {
+        match = findUniqueHardwareIdDevice(deviceInfo, parentId, chosenDevInfo);
+    }
+    if (match < 0)
+    {
+        SetupDiDestroyDeviceInfoList(deviceInfo);
+        errorOut =
+            "Multiple USB devices match profile hardware ID for Zadig lab presence; "
+            "refusing ambiguous list";
+        return false;
+    }
+    if (match == 0)
+    {
+        SetupDiDestroyDeviceInfoList(deviceInfo);
+        errorOut.clear();
+        return true;
+    }
+
+    // Empty path: session Open with --dev-zadig uses HWID Zadig fallback (single-unit).
+    if (!resolveInterfaceIdentity(deviceInfo, chosenDevInfo, interfaceOut, errorOut))
+    {
+        SetupDiDestroyDeviceInfoList(deviceInfo);
+        interfaceOut = Mt4PresentWinUsbInterface{};
+        return false;
+    }
+    SetupDiDestroyDeviceInfoList(deviceInfo);
+    errorOut.clear();
+    return true;
+}
+
 #endif // _WIN32

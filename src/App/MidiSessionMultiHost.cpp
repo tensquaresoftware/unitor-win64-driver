@@ -4,6 +4,7 @@
 #include "App/MidiSessionMultiHostDetail.h"
 #include "App/Mt4WinUsbPresence.h"
 #include "Device/DeviceSessionManager.h"
+#include "Midi/MidiBackendSelect.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -77,7 +78,7 @@ bool startLiveUnit(
     bool allowZadigFallback,
     std::string& errorOut)
 {
-    unit.midiBackend = std::make_unique<VirtualMidiBackend>();
+    unit.midiBackend = createMidiBackend(resolveMidiBackendKind());
     unit.session = std::make_unique<DeviceSession>();
     DeviceSessionStartRequest request;
     request.profile = &profile;
@@ -267,7 +268,8 @@ bool startAllPresentUnits(MultiUnitHostContext& ctx, std::vector<LiveUnitSession
     liveOut.clear();
     std::vector<Mt4WinUsbInterfaceInfo> interfaces;
     std::string listError;
-    if (!listMt4WinUsbInterfaces(interfaces, listError) || interfaces.empty())
+    if (!listMt4WinUsbInterfaces(interfaces, listError, ctx.allowZadigFallback)
+        || interfaces.empty())
     {
         std::cerr << (listError.empty() ? "No present MT4 WinUSB interfaces to start"
                                         : listError)
@@ -313,7 +315,8 @@ void stopAllLiveUnits(std::vector<LiveUnitSession>& live) noexcept
 void printMultiUnitSessionBanner(std::size_t unitCount)
 {
     std::cout << "DeviceSession started for " << unitCount
-              << " MT4 unit(s) with Virtual Ports\n";
+              << " MT4 unit(s) with Virtual Ports ("
+              << midiBackendKindLabel(resolveMidiBackendKind()) << ")\n";
     std::cout << "MIDI I/O running - notes/CC smoke ready (Ctrl+C to stop)\n";
     std::cout << "device-host counters will print in this window on USB IN activity"
                  " (same thread as this message)\n";

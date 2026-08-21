@@ -94,11 +94,15 @@ bool appendPresentInterface(
     std::string& errorOut)
 {
     Mt4WinUsbInterfaceInfo info;
-    info.devicePathUtf8 = wideToUtf8Lossy(entry.devicePath);
-    if (info.devicePathUtf8.empty())
+    // Zadig lab presence may leave devicePath empty (Open uses HWID fallback).
+    if (!entry.devicePath.empty())
     {
-        errorOut = "MT4 device path UTF-8 conversion failed";
-        return false;
+        info.devicePathUtf8 = wideToUtf8Lossy(entry.devicePath);
+        if (info.devicePathUtf8.empty())
+        {
+            errorOut = "MT4 device path UTF-8 conversion failed";
+            return false;
+        }
     }
     info.identityKey = entry.identityKey;
     info.identityKind = toRegistryKind(entry.identityKind);
@@ -124,9 +128,46 @@ Mt4WinUsbPresence queryMt4WinUsbPresence(std::string& detailOut)
 #endif
 }
 
-bool listMt4WinUsbInterfaces(
+#ifdef _WIN32
+static bool appendZadigLabIfAbsent(
+    const DeviceProfile& mt4,
+    std::vector<Mt4PresentWinUsbInterface>& raw,
+    std::string& errorOut)
+{
+    Mt4PresentWinUsbInterface zadigLab;
+    if (!tryEnumerateZadigLabPresentMt4Interface(mt4, zadigLab, errorOut))
+    {
+        return false;
+    }
+    if (!zadigLab.identityKey.empty())
+    {
+        raw.push_back(std::move(zadigLab));
+    }
+    return true;
+}
+
+static bool copyPresentInterfaces(
+    const std::vector<Mt4PresentWinUsbInterface>& raw,
     std::vector<Mt4WinUsbInterfaceInfo>& interfacesOut,
     std::string& errorOut)
+{
+    interfacesOut.reserve(raw.size());
+    for (const Mt4PresentWinUsbInterface& entry : raw)
+    {
+        if (!appendPresentInterface(entry, interfacesOut, errorOut))
+        {
+            interfacesOut.clear();
+            return false;
+        }
+    }
+    return true;
+}
+#endif
+
+bool listMt4WinUsbInterfaces(
+    std::vector<Mt4WinUsbInterfaceInfo>& interfacesOut,
+    std::string& errorOut,
+    bool allowZadigFallback)
 {
     interfacesOut.clear();
 #ifdef _WIN32
@@ -146,18 +187,19 @@ bool listMt4WinUsbInterfaces(
     {
         return false;
     }
-    interfacesOut.reserve(raw.size());
-    for (const Mt4PresentWinUsbInterface& entry : raw)
+    if (raw.empty() && allowZadigFallback
+        && !appendZadigLabIfAbsent(*mt4, raw, errorOut))
     {
-        if (!appendPresentInterface(entry, interfacesOut, errorOut))
-        {
-            interfacesOut.clear();
-            return false;
-        }
+        return false;
+    }
+    if (!copyPresentInterfaces(raw, interfacesOut, errorOut))
+    {
+        return false;
     }
     errorOut.clear();
     return true;
 #else
+    (void)allowZadigFallback;
     errorOut = "MT4 WinUSB interface listing requires Windows";
     return false;
 #endif

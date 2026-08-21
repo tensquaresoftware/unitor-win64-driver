@@ -100,4 +100,13 @@ bool bindUtf8SelectedDevicePath(
     const wchar_t*& selectedPathOut,
     std::string& errorOut);
 
+std::string buildParentHardwareId(const DeviceProfile& profile);
+std::string buildCompositeHardwareId(const DeviceProfile& profile);
+
+// Returns 1 and fills chosenOut on a unique HWID match; 0 if none; -1 if ambiguous.
+int findUniqueHardwareIdDevice(
+    HDEVINFO deviceInfo,
+    const std::string& hardwareId,
+    SP_DEVINFO_DATA& chosenOut);
+
 #endif // _WIN32

@@ -78,4 +78,13 @@ bool enumeratePresentMt4WinUsbInterfaces(
     std::vector<Mt4PresentWinUsbInterface>& interfacesOut,
     std::string& errorOut);
 
+// Lab --dev-zadig only: when the project GUID has no interfaces, detect one unique
+// HWID-matched USB node (composite MI_xx preferred, else parent). Fills identity;
+// leaves devicePath empty so Open uses Zadig fallback (single-unit). Returns false
+// on SetupAPI failure or ambiguous multi-match; true with empty identityKey = Absent.
+bool tryEnumerateZadigLabPresentMt4Interface(
+    const DeviceProfile& profile,
+    Mt4PresentWinUsbInterface& interfaceOut,
+    std::string& errorOut);
+
 #endif // _WIN32

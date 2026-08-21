@@ -31,6 +31,9 @@ Mt4WinUsbPresence queryMt4WinUsbPresence(std::string& detailOut);
 
 // List all present MT4 WinUSB interfaces (paths + identity keys). Empty list = Absent.
 // Returns false on API failure (errorOut set); true with empty list means Absent.
+// When allowZadigFallback is true and the project GUID list is empty, may append one
+// lab HWID-matched unit (empty device path; Open uses Zadig fallback).
 bool listMt4WinUsbInterfaces(
     std::vector<Mt4WinUsbInterfaceInfo>& interfacesOut,
-    std::string& errorOut);
+    std::string& errorOut,
+    bool allowZadigFallback = false);

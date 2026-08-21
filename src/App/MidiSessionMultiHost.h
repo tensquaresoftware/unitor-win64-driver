@@ -4,7 +4,8 @@
 
 #include "Device/DeviceSession.h"
 #include "Device/UnitIdentityRegistry.h"
-#include "Midi/VirtualMidiBackend.h"
+#include "Midi/MidiBackend.h"
+#include "Midi/MidiBackendSelect.h"
 #include "Profile/DeviceProfile.h"
 
 #include <atomic>
@@ -19,7 +20,7 @@ struct LiveUnitSession
     std::string devicePathUtf8;
     unsigned unitOrdinalK = 0;
     PortNameSet names;
-    std::unique_ptr<VirtualMidiBackend> midiBackend;
+    std::unique_ptr<MidiBackend> midiBackend;
     std::unique_ptr<DeviceSession> session;
 };
 

@@ -216,7 +216,7 @@ void reconcileLiveUnits(
 {
     std::vector<Mt4WinUsbInterfaceInfo> interfaces;
     std::string listError;
-    if (!listMt4WinUsbInterfaces(interfaces, listError))
+    if (!listMt4WinUsbInterfaces(interfaces, listError, ctx.allowZadigFallback))
     {
         std::cerr << "MT4 interface list failed (keeping live units): " << listError
                   << '\n';

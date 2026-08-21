@@ -4,8 +4,10 @@
 #include "App/BridgeVersion.h"
 #include "App/MapperSmoke.h"
 #include "App/MidiSessionCli.h"
+#include "App/WmsBackendSmoke.h"
 #include "Device/DeviceSessionManager.h"
 #include "Midi/MidiBackend.h"
+#include "Midi/MidiBackendSelect.h"
 #include "Midi/SoftEchoGate.h"
 #include "Profile/DeviceProfile.h"
 #include "Usb/WinUsbBulkProbe.h"
@@ -62,6 +64,43 @@ bool hasFlag(int argc, char* argv[], const char* flag) noexcept
         }
     }
     return false;
+}
+
+const char* flagValueAfterEquals(const char* arg, const char* prefix) noexcept
+{
+    const std::size_t prefixLen = std::strlen(prefix);
+    if (std::strncmp(arg, prefix, prefixLen) != 0)
+    {
+        return nullptr;
+    }
+    return arg + prefixLen;
+}
+
+bool applyMidiBackendFlag(int argc, char* argv[], std::string& errorOut)
+{
+    const char* selected = nullptr;
+    for (int index = 1; index < argc; ++index)
+    {
+        const char* value = flagValueAfterEquals(argv[index], "--midi-backend=");
+        if (value == nullptr)
+        {
+            continue;
+        }
+        selected = value;
+    }
+    if (selected == nullptr)
+    {
+        return true;
+    }
+    MidiBackendKind kind = MidiBackendKind::Wms;
+    if (!parseMidiBackendKind(selected, kind))
+    {
+        errorOut =
+            "Invalid --midi-backend value (expected wms or virtualmidi)";
+        return false;
+    }
+    setMidiBackendKindOverride(kind);
+    return true;
 }
 
 int runProfileSmoke()
@@ -314,6 +353,10 @@ int dispatchBridgeFlags(int argc, char* argv[])
     {
         return runPortNameTests();
     }
+    if (hasFlag(argc, argv, "--test-wms-ports"))
+    {
+        return runWmsBackendLifecycleSmoke();
+    }
     if (hasFlag(argc, argv, "--probe-usb"))
     {
         return runProbeUsbCommand();
@@ -350,11 +393,21 @@ int main(int argc, char* argv[])
             << "  --soft-echo | --no-soft-echo   Lab software-loop only;\n"
             << "      default OFF. Env UNITOR_MIDI_SOFT_ECHO=1|true|yes also enables\n"
             << "      unless --no-soft-echo. --auto-session always forces OFF (ignores env).\n"
+            << "  --midi-backend=wms|virtualmidi\n"
+            << "      Default wms (fail closed at session start if WMS transport missing).\n"
+            << "      Lab override to virtualMIDI. Env UNITOR_MIDI_BACKEND=wms|virtualmidi\n"
+            << "      also selects when flag omitted.\n"
             << "  --register-auto-start | --unregister-auto-start\n"
-            << "  --probe-usb | --test-mapper | --test-port-names\n";
+            << "  --probe-usb | --test-mapper | --test-port-names | --test-wms-ports\n";
         return 0;
     }
 
+    std::string backendError;
+    if (!applyMidiBackendFlag(argc, argv, backendError))
+    {
+        std::cerr << backendError << '\n';
+        return 1;
+    }
     const int profileResult = runProfileSmoke();
     if (profileResult != 0)
     {
