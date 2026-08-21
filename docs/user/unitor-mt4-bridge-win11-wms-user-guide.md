@@ -57,7 +57,7 @@ Want to install and use the Bridge on Windows 10? Open the [Windows 10 guide](un
 | Hardware | An **Emagic MT4** MIDI interface |
 | Extra MIDI driver | **Not required** in this edition — you do **not** install virtualMIDI |
 
-If Windows MIDI Services is missing, the Bridge **refuses** to pretend that empty ports are a success. Update Windows, or use the Windows 10 edition if that is your machine.
+If Windows MIDI Services is missing, the Bridge **refuses** to pretend everything is fine when no MIDI ports appear. Update Windows, or use the Windows 10 edition if that is your machine.
 
 ## Software you may use later
 
@@ -76,13 +76,7 @@ Download name looks like: `unitor-mt4-bridge-{version}-win11-wms-setup.exe` (fro
 4. Allow the Administrator prompt **once** (Program Files and USB association).
 5. Wait for a clear success message — or an incomplete install if a check failed (that is **not** a successful install).
 
-Install succeeds when:
-
-- Windows 11 with Windows MIDI Services is available,
-- USB association (WinUSB) is OK,
-- automatic start is registered for your Windows user account.
-
-virtualMIDI is **not** checked on this edition. An empty MIDI port list after install is **not** success.
+Install succeeds when Windows 11 with Windows MIDI Services is available, USB association (WinUSB) is OK, and automatic start is registered for your Windows user account. If after install your DAW shows no `MT4 In` / `MT4 Out` ports, that is **not** a successful install: the Bridge or the MIDI link is not really in place. Fix the problem instead of treating an empty port list as OK.
 
 **One installer at a time:** the Windows 11 and Windows 10 installers share the **same Windows product identity**. Installing one **replaces** the other under Program Files and rewires automatic start to that edition. Do not expect both editions side-by-side on one PC.
 

@@ -74,7 +74,7 @@ Vérifiez ensuite la présence du fichier `teVirtualMIDI.dll` dans `C:\Windows\S
 
 **Pourquoi installer ce logiciel soi-même ?** virtualMIDI est propriétaire. Ce dépôt MIT **n’a pas** d’autorisation de redistribution et **n’embarquera jamais** la DLL ni le paquet d’installation dans le téléchargement du Bridge.
 
-Sans la DLL, l’installateur du Bridge **échoue clairement** — une liste de ports vide n’est pas une installation réussie.
+Sans la DLL, l’installateur du Bridge **échoue clairement**. Si votre DAW ne propose ensuite aucun port `MT4 In` / `MT4 Out`, ce n’est **pas** une installation réussie : les ports MIDI n’ont pas été créés (souvent faute de virtualMIDI). Corrigez le prérequis plutôt que d’ignorer une liste vide.
 
 # Installer le Bridge
 
@@ -86,7 +86,7 @@ Le fichier téléchargé ressemble à : `unitor-mt4-bridge-{version}-win10-virtu
 4. Autorisez Administrateur **une fois**.
 5. Attendez le succès — ou l’échec si un contrôle a manqué.
 
-Succès = DLL présente + WinUSB OK + démarrage automatique enregistré.
+Succès = DLL présente + WinUSB OK + démarrage automatique enregistré. Si, après installation, votre DAW ne propose aucun port `MT4 In` / `MT4 Out`, ce n’est **pas** un succès : le Bridge ou le lien MIDI n’est pas réellement en place. Reprenez le dépannage plutôt que d’ignorer une liste vide.
 
 **Un seul programme d’installation à la fois :** les éditions Windows 11 et Windows 10 partagent la **même identité produit Windows**. En installer une **remplace** l’autre sous `Program Files` et réécrit le démarrage automatique.
 
