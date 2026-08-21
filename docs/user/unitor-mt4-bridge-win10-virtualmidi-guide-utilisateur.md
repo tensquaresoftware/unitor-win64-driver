@@ -90,14 +90,7 @@ Succès = DLL présente + WinUSB OK + démarrage automatique enregistré. Si, ap
 
 **Un seul programme d’installation à la fois :** les éditions Windows 11 et Windows 10 partagent la **même identité produit Windows**. En installer une **remplace** l’autre sous `Program Files` et réécrit le démarrage automatique.
 
-**WinUSB** est déjà installé dans Windows. Sur un PC neuf, Windows refuse souvent d’associer tout seul la MT4 à ce pilote, faute de **catalogue de confiance** (*trusted catalog*) signé — ce projet n’en fournit pas.
-
-Dans ce cas, utilisez l’outil gratuit **[Zadig](https://zadig.akeo.ie/)** :
-
-1. Branchez la MT4 et lancez Zadig.
-2. Dans la liste, sélectionnez l’interface MIDI composite de la MT4 appelée **MI_02** (identifiant USB `VID_086A&PID_0003&MI_02`) — pas une autre ligne USB au hasard.
-3. Choisissez le pilote **WinUSB**, puis validez l’installation.
-4. Relancez ensuite l’installateur du Bridge si besoin.
+**WinUSB** est déjà installé dans Windows. Sur un PC neuf, Windows refuse souvent d’associer tout seul la MT4 à ce pilote, faute de **catalogue de confiance** (*trusted catalog*) signé — ce projet n’en fournit pas. Dans ce cas, suivez [Associer la MT4 à WinUSB](#associer-la-mt4-a-winusb) (procédure détaillée avec **Zadig**).
 
 # Passer l’avertissement Windows SmartScreen
 
@@ -195,12 +188,32 @@ Sous Windows 10, si vous êtes à l’aise avec l’ordinateur, vous pouvez auss
 
 ## Associer la MT4 à WinUSB
 
-1. Branchez la MT4 et lancez **[Zadig](https://zadig.akeo.ie/)**.
-2. Sélectionnez l’interface MIDI composite **MI_02** (id USB `VID_086A&PID_0003&MI_02`).
-3. Choisissez le pilote **WinUSB**, puis validez.
-4. Relancez l’installateur du Bridge s’il a annulé, puis lancez **Unitor MT4 Bridge**.
+Quand l’installateur n’a pas pu associer la MT4 à WinUSB (fréquent sur un PC neuf, faute de **catalogue de confiance** / *trusted catalog*), utilisez l’outil gratuit **[Zadig](https://zadig.akeo.ie/)**.
 
-Sur PC propre, Windows refuse souvent le paquet faute de catalogue de confiance — Zadig est le contournement supporté.
+### Avant de commencer
+
+1. Branchez la **MT4** (alimentation + USB).
+2. Si possible, débranchez temporairement d’autres périphériques USB peu utiles pour limiter les lignes dans la liste.
+3. Téléchargez Zadig depuis le site officiel ci-dessus (fichier `.exe`).
+4. Lancez Zadig. Windows peut demander une confirmation Administrateur — acceptez.
+
+### Étapes dans Zadig
+
+1. Menu **Options** → cochez **List All Devices** (lister tous les périphériques). Sans cette case, la MT4 peut rester invisible.
+2. Ouvrez la liste déroulante et cherchez l’interface MIDI composite de la MT4 appelée **MI_02**.
+   - Identifiant USB attendu : `VID_086A` + `PID_0003` + **MI_02** (souvent affiché `086A 0003 02`, équivalent à `USB\VID_086A&PID_0003&MI_02`).
+   - **Ne choisissez pas** une autre ligne (souris, clavier, hub, autre `MI_xx` de la MT4).
+3. À droite de la flèche verte, sélectionnez le pilote cible **WinUSB** (pas libusb-win32 ni libusbK).
+4. Cliquez **Install Driver** ou **Replace Driver** (selon le libellé proposé par Zadig).
+5. Attendez le message de succès, puis fermez Zadig.
+
+### Ensuite
+
+1. Relancez l’installateur du Bridge s’il avait annulé.
+2. Lancez **Unitor MT4 Bridge**.
+3. Vérifiez que votre DAW propose bien les ports `MT4 In` / `MT4 Out`, et que `teVirtualMIDI.dll` est toujours présent.
+
+Si vous voyez plusieurs appareils USB qui ressemblent à la MT4, arrêtez-vous et ne forcez pas : une seule **MI_02** doit être sélectionnée.
 
 ## Ports absents après débranchement / rebranchement
 
@@ -230,7 +243,12 @@ Voir [license-and-backends.md](../dev/license-and-backends.md).
 
 # Utiliser deux interfaces MT4
 
-Première : `MT4 In N` / `MT4 Out N`. Suivantes : `MT4 #2 …`. L’usage quotidien d’une seule MT4 est le chemin prouvé ici.
+| Interface | Noms de ports |
+|---|---|
+| Première | `MT4 In N` / `MT4 Out N` |
+| Deuxième et suivantes | `MT4 #2 In N` / `MT4 #2 Out N`, etc. |
+
+**À savoir :** ce guide décrit surtout l’usage quotidien d’**une** seule MT4. Les noms de ports pour une deuxième unité existent, mais cela ne signifie pas que le développeur a tout validé en labo avec deux MT4 branchées en même temps. Pour le parcours prouvé, comptez d’abord sur **une** interface.
 
 # Lexique
 

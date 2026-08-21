@@ -82,7 +82,7 @@ Install succeeds when Windows 11 with Windows MIDI Services is available, USB as
 
 **WinUSB** is already in Windows. On a brand-new PC, Windows often refuses to associate the MT4 with that driver on its own, because there is no signed **trusted catalog** — this project does not provide one.
 
-If the installer’s WinUSB step **succeeds**, you are done for USB. If that step **fails** (common on a clean PC), follow [Associate the MT4 with WinUSB](#associate-the-mt4-with-winusb) — guided association with **Zadig** is the supported fix.
+If the installer’s WinUSB step **succeeds**, you are done for USB. If that step **fails** (common on a clean PC), follow [Associate the MT4 with WinUSB](#associate-the-mt4-with-winusb) — detailed **Zadig** steps.
 
 # Pass the Windows SmartScreen warning
 
@@ -177,14 +177,32 @@ Still on Windows 10 hardware? Use the [Windows 10 guide](unitor-mt4-bridge-win10
 
 ## Associate the MT4 with WinUSB
 
-The installer reports that it could not associate the MT4 with WinUSB; install is often rolled back.
+The installer reports that it could not associate the MT4 with WinUSB; install is often rolled back. On a brand-new PC, Windows often refuses the package for lack of a **trusted catalog** — this project does not provide one. In that case, use the free tool **[Zadig](https://zadig.akeo.ie/)**.
 
-1. Plug in the MT4 and launch **[Zadig](https://zadig.akeo.ie/)**.
-2. In the list, select the MT4 composite MIDI interface named **MI_02** (USB id `VID_086A&PID_0003&MI_02`) — not some other random USB line.
-3. Choose the **WinUSB** driver, then confirm the install.
-4. Re-run the Bridge installer if it rolled back, then launch **Unitor MT4 Bridge**.
+### Before you start
 
-On a clean PC, Windows often refuses the package for lack of a **trusted catalog** — Zadig is the supported workaround.
+1. Plug in the **MT4** (power + USB).
+2. If practical, temporarily unplug other unused USB devices so the list stays shorter.
+3. Download Zadig from the official site above (a single `.exe`).
+4. Launch Zadig. Windows may ask for Administrator confirmation — accept.
+
+### Steps in Zadig
+
+1. Open the **Options** menu and enable **List All Devices**. Without this, the MT4 may not appear.
+2. Open the device drop-down and select the MT4 composite MIDI interface named **MI_02**.
+   - Expected USB id: `VID_086A` + `PID_0003` + **MI_02** (often shown as `086A 0003 02`, equivalent to `USB\VID_086A&PID_0003&MI_02`).
+   - **Do not** pick another line (mouse, keyboard, hub, or another MT4 `MI_xx`).
+3. To the right of the green arrow, choose target driver **WinUSB** (not libusb-win32 or libusbK).
+4. Click **Install Driver** or **Replace Driver** (whichever label Zadig shows).
+5. Wait for the success message, then close Zadig.
+
+### Afterwards
+
+1. Re-run the Bridge installer if it rolled back.
+2. Launch **Unitor MT4 Bridge** (automatic start or Start menu).
+3. Confirm your DAW lists `MT4 In` / `MT4 Out` ports.
+
+If several USB devices look like the MT4, stop and do not force it: select only one **MI_02** line.
 
 ## No ports visible
 
@@ -248,7 +266,7 @@ Deeper licence notes for contributors: [license-and-backends.md](../dev/license-
 | First | `MT4 In N` / `MT4 Out N` |
 | Second and later | `MT4 #2 In N` / `MT4 #2 Out N`, and so on |
 
-**Honesty:** daily use for a **single** physical MT4 is the proven path documented here. Dual naming exists; do not assume a closed dual-unit lab claim from this guide alone.
+**Note:** this guide mainly covers daily use of **one** MT4. Port names for a second unit exist, but that does **not** mean the developer fully validated two MT4s plugged in at once in the lab. For the proven path, start with a **single** interface.
 
 # Glossary
 
