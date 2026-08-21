@@ -4,6 +4,7 @@
 
 #include "App/AutoStartRunKey.h"
 #include "App/AutoStartTaskScheduler.h"
+#include "Midi/MidiBackendSelect.h"
 
 #include <string>
 
@@ -16,7 +17,12 @@
 
 std::string buildAutoStartActionArguments()
 {
-    return std::string(kAutoSessionFlag);
+    // Bake the resolved MidiBackend into Auto-Start so Win11 WMS vs Win10
+    // virtualMIDI flavors keep their installer defaults across logon.
+    std::string args = kAutoSessionFlag;
+    args += " --midi-backend=";
+    args += midiBackendKindLabel(resolveMidiBackendKind());
+    return args;
 }
 
 #ifdef _WIN32

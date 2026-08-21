@@ -394,9 +394,9 @@ int main(int argc, char* argv[])
             << "      default OFF. Env UNITOR_MIDI_SOFT_ECHO=1|true|yes also enables\n"
             << "      unless --no-soft-echo. --auto-session always forces OFF (ignores env).\n"
             << "  --midi-backend=wms|virtualmidi\n"
-            << "      Default wms (fail closed at session start if WMS transport missing).\n"
-            << "      Lab override to virtualMIDI. Env UNITOR_MIDI_BACKEND=wms|virtualmidi\n"
-            << "      also selects when flag omitted.\n"
+            << "      Default wms (Win11 community / fail closed if WMS missing).\n"
+            << "      Win10 Setup registers --midi-backend=virtualmidi via Auto-Start.\n"
+            << "      Env UNITOR_MIDI_BACKEND=wms|virtualmidi also selects when flag omitted.\n"
             << "  --register-auto-start | --unregister-auto-start\n"
             << "  --probe-usb | --test-mapper | --test-port-names | --test-wms-ports\n";
         return 0;

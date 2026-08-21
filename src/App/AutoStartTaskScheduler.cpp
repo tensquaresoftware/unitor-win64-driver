@@ -135,7 +135,8 @@ bool bindExecPathArgs(IExecAction* exec, const std::wstring& exePath, std::strin
     HRESULT hr = exec->put_Path(_bstr_t(exePath.c_str()));
     if (SUCCEEDED(hr))
     {
-        hr = exec->put_Arguments(_bstr_t(kAutoSessionFlag));
+        const std::string argsUtf8 = buildAutoStartActionArguments();
+        hr = exec->put_Arguments(_bstr_t(argsUtf8.c_str()));
     }
     if (SUCCEEDED(hr))
     {

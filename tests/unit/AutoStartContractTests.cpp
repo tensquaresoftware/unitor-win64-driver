@@ -3,13 +3,31 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "App/AutoStartRegistration.h"
+#include "Midi/MidiBackendSelect.h"
 
 #include <string>
 
-TEST_CASE("Auto-Start action arguments are auto-session only", "[autostart]")
+TEST_CASE("Auto-Start action arguments bake midi-backend (default WMS)", "[autostart]")
 {
-    REQUIRE(buildAutoStartActionArguments() == "--auto-session");
+    clearMidiBackendKindOverride();
+    REQUIRE(
+        buildAutoStartActionArguments()
+        == "--auto-session --midi-backend=wms");
     REQUIRE(std::string(kAutoSessionFlag) == "--auto-session");
+}
+
+TEST_CASE(
+    "Auto-Start action arguments bake midi-backend after virtualMIDI override",
+    "[autostart]")
+{
+    setMidiBackendKindOverride(MidiBackendKind::VirtualMidi);
+    REQUIRE(
+        buildAutoStartActionArguments()
+        == "--auto-session --midi-backend=virtualmidi");
+    clearMidiBackendKindOverride();
+    REQUIRE(
+        buildAutoStartActionArguments()
+        == "--auto-session --midi-backend=wms");
 }
 
 TEST_CASE("Auto-Start task name is stable and non-empty", "[autostart]")

@@ -1,4 +1,4 @@
-// Lab/community MidiBackend selection (WMS default; virtualMIDI override).
+// Lab/community MidiBackend selection (WMS default; virtualMIDI via CLI/env/Setup).
 
 #pragma once
 
