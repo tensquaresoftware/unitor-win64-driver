@@ -9,7 +9,7 @@ updated: 2026-08-21
 
 # Authenticode and SmartScreen
 
-This page is the contributor / releaser runbook for **code-signing trust** on Unitor MT4 Bridge. It is **not** the musician-facing install guide — SmartScreen steps for downloaders live in the path-specific user guides ([Win11 WMS](../user/unitor-mt4-bridge-win11-wms-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [Win10 virtualMIDI](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup); start at [`docs/user/README.md`](../user/README.md)).
+This page is the contributor / releaser runbook for **code-signing trust** on Unitor MT4 Bridge. It is **not** the musician-facing install guide — SmartScreen steps for downloaders live in the path-specific user guides ([Win11 WMS](../user/unitor-mt4-bridge-win11-wms-user-guide.md#pass-the-windows-smartscreen-warning) · [Win10 virtualMIDI](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#pass-the-windows-smartscreen-warning); start at [`docs/user/README.md`](../user/README.md)).
 
 **Course correction (2026-08-10):** hobby posture — **no certificate purchase**. See [`sprint-change-proposal-2026-08-10.md`](../../_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-10.md).
 
@@ -78,7 +78,7 @@ signtool sign /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 `
 
 ## When shipping unsigned (default hobby path)
 
-1. Ship unsigned public builds **only** with SmartScreen user guidance in the path-specific manuals ([Win11](../user/unitor-mt4-bridge-win11-wms-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup)) present
+1. Ship unsigned public builds **only** with SmartScreen user guidance in the path-specific manuals ([Win11](../user/unitor-mt4-bridge-win11-wms-user-guide.md#pass-the-windows-smartscreen-warning) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#pass-the-windows-smartscreen-warning)) present
 2. Do **not** claim a certificate is “coming soon” as the community trust plan
 3. Do **not** claim “unsigned = malware” or “signed = never SmartScreen”
 
@@ -96,7 +96,7 @@ See also: [`windows-ci-toolchain.md`](windows-ci-toolchain.md) “omitted on pur
 
 ## Related
 
-- User SmartScreen: [Win11 EN](../user/unitor-mt4-bridge-win11-wms-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [Win11 FR](../user/unitor-mt4-bridge-win11-wms-guide-utilisateur.md#windows-smartscreen-setup-non-signé-ou-non-reconnu) · [Win10 EN](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [Win10 FR](../user/unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md#windows-smartscreen-setup-non-signé-ou-non-reconnu)
+- User SmartScreen: [Win11 EN](../user/unitor-mt4-bridge-win11-wms-user-guide.md#pass-the-windows-smartscreen-warning) · [Win11 FR](../user/unitor-mt4-bridge-win11-wms-guide-utilisateur.md#passer-lavertissement-windows-smartscreen) · [Win10 EN](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#pass-the-windows-smartscreen-warning) · [Win10 FR](../user/unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md#passer-lavertissement-windows-smartscreen)
 - WinUSB bind: [`winusb-bind.md`](winusb-bind.md)
 - License / backends fence: [`license-and-backends.md`](license-and-backends.md)
 - Operator smoke: [`docs/tests/smoke-epic4-authenticode-smartscreen-mt4.md`](../tests/smoke-epic4-authenticode-smartscreen-mt4.md)

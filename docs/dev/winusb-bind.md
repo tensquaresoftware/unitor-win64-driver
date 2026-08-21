@@ -1,6 +1,6 @@
 ﻿# WinUSB bind path for Emagic MT4 (086A:0003)
 
-**Community readers:** start with [`docs/user/README.md`](../user/README.md), then the path guide ([Win11 Installation](../user/unitor-mt4-bridge-win11-wms-user-guide.md#installation) / [WinUSB failed](../user/unitor-mt4-bridge-win11-wms-user-guide.md#usb-association-winusb-failed) · [Win10 Installation](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#installation-bridge-setup)). This page is the **contributor / detailed bind** reference.
+**Community readers:** start with [`docs/user/README.md`](../user/README.md), then the path guide ([Win11 Installation](../user/unitor-mt4-bridge-win11-wms-user-guide.md#install-the-bridge) / [WinUSB failed](../user/unitor-mt4-bridge-win11-wms-user-guide.md#associate-the-mt4-with-winusb) · [Win10 Installation](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#install-the-bridge)). This page is the **contributor / detailed bind** reference.
 
 **Hobby posture (2026-08-10):** no paid INF catalog. On a clean PC, Setup-alone association often fails (`0xE000022F`). The supported **hobby install** USB path is **guided WinUSB** — typically **Zadig** for musicians, or the INF / Device Manager steps below for contributors.
 
@@ -138,7 +138,7 @@ Two separate trust domains — do not conflate them:
 
 **Lab only:** [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1) builds a self-signed catalog and stages LocalMachine Root / TrustedPublisher. That is **not** public Authenticode.
 
-**Public / hobby policy:** no code-signing certificate in this project line. Unsigned Setup + SmartScreen docs; clean-PC WinUSB via **guided** association (Zadig / INF browse). Full runbook: [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md). Musician-facing steps: [Win11](../user/unitor-mt4-bridge-win11-wms-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#windows-smartscreen-unsigned-or-unrecognized-setup).
+**Public / hobby policy:** no code-signing certificate in this project line. Unsigned Setup + SmartScreen docs; clean-PC WinUSB via **guided** association (Zadig / INF browse). Full runbook: [`authenticode-and-smartscreen.md`](authenticode-and-smartscreen.md). Musician-facing steps: [Win11](../user/unitor-mt4-bridge-win11-wms-user-guide.md#pass-the-windows-smartscreen-warning) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#pass-the-windows-smartscreen-warning).
 
 ## Daily use after bind (Auto-Start)
 

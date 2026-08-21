@@ -1,33 +1,34 @@
 ﻿# Unitor MT4 Bridge — Start here
 
-Community end-user docs for **Unitor MT4 Bridge** (Ten Square Software) and the **Emagic MT4**.
+**Unitor MT4 Bridge** lets an **Emagic MT4** MIDI interface work on **Windows 64-bit**. There is no official Emagic driver for modern Windows (the last one was **32-bit** only).
 
-## Choose your Windows path (~20 seconds)
+This hobby / open-source project (Ten Square Software) ships **two editions** of the same version:
 
-| Your PC | Path | English | Français |
+| Your PC | Edition | Effort | Guide |
 |---|---|---|---|
-| **Windows 11** (comfort) | **Windows MIDI Services** — no virtualMIDI install | [Win11 WMS guide](unitor-mt4-bridge-win11-wms-user-guide.md) | [Guide Win11 WMS](unitor-mt4-bridge-win11-wms-guide-utilisateur.md) |
-| **Windows 10** (motivated parallel) | **virtualMIDI** — you self-install Tobias Erichsen’s driver | [Win10 virtualMIDI guide](unitor-mt4-bridge-win10-virtualmidi-user-guide.md) | [Guide Win10 virtualMIDI](unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md) |
+| **Windows 11** | **Windows MIDI Services** — no virtualMIDI install | Relatively simple | [English](unitor-mt4-bridge-win11-wms-user-guide.md) · [Français](unitor-mt4-bridge-win11-wms-guide-utilisateur.md) |
+| **Windows 10** | **virtualMIDI** — you install Tobias Erichsen’s driver yourself | More technical | [English](unitor-mt4-bridge-win10-virtualmidi-user-guide.md) · [Français](unitor-mt4-bridge-win10-virtualmidi-guide-utilisateur.md) |
 
-**Win11 tip:** prefer the WMS Setup (`…-win11-wms-…`). You should not need virtualMIDI.  
-**Win10 tip:** install virtualMIDI yourself first; confirm `teVirtualMIDI.dll` in System32. This project never ships that DLL/MSI.
+**v1** guarantees the **MT4** only (tested and documented). Later support for **AMT8** / **Unitor8** / **Unitor8 mk2** may come in a **v2**, depending on community interest — not promised today.
 
-**Same AppId:** both Setups share one Windows product id. Installing one **replaces** the other under Program Files and rewires Auto-Start to that flavor’s MIDI backend — not a side-by-side dual install.
+**One installer at a time:** installing the Windows 11 edition **replaces** the Windows 10 edition on the same PC (and the other way around). They share the same Windows product identity — not a side-by-side dual install.
 
-Wrong guide? Each manual cross-links the other path. Old bookmarks to the former single guides redirect here via stubs.
+**Windows tip:** prefer Windows 11 when you can. Stay on Windows 10 only if you accept the more technical virtualMIDI self-install (this project never ships that driver).
 
-## Suggested reading order (inside your chosen guide)
+## Suggested reading order
 
-1. Prerequisites  
-2. Installation (SmartScreen + WinUSB / Zadig honesty)  
-3. Auto-Start  
-4. First MIDI test  
-5. First SysEx test  
-6. Troubleshooting (Win11: non-geek sticky-MIDI reboot path; Win10: technical checks allowed)  
-7. Unplug / replug (**hot-plug**)  
-8. What works / what does not  
-9. **Two MT4** interfaces (when you have a second unit)  
+1. Check the prerequisites  
+2. Install the Bridge (and virtualMIDI first on Windows 10)  
+3. Pass the Windows SmartScreen warning if it appears  
+4. Use automatic start  
+5. Try your first MIDI notes  
+6. Try your first SysEx transfer  
+7. Fix common problems  
+8. Unplug / replug the MT4  
+9. Know what works and what does not  
+10. Use two MT4 interfaces (if you have a second unit)  
+11. Glossary at the end of each guide  
 
-**SmartScreen:** unsigned or low-reputation builds — **Run anyway** / **Exécuter quand même**. No Authenticode certificate in this hobby line (OQ-3). Clean-PC WinUSB often needs **guided** association (Zadig), not Setup-alone success.
+**SmartScreen:** unsigned or little-known builds — **Run anyway** / **Exécuter quand même**. No Authenticode certificate in this hobby line. Clean-PC USB association often needs **guided** help (**Zadig**), not installer-alone success.
 
-**License honesty:** MIT ≠ virtualMIDI ≠ Windows MIDI Services — [`docs/dev/license-and-backends.md`](../dev/license-and-backends.md).
+**Licence honesty:** MIT ≠ virtualMIDI ≠ Windows MIDI Services — [`docs/dev/license-and-backends.md`](../dev/license-and-backends.md).

@@ -40,7 +40,7 @@ Il est calqué sur [`smoke-epic1-mt4.md`](smoke-epic1-mt4.md) / [`smoke-epic2-mt
 | Multi-client DAW + MIDI-OX (SM-7) | **3.3** — [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md) |
 | Noms stables pour deux MT4 | **3.4** — [`smoke-epic3-dual-mt4-mt4.md`](smoke-epic3-dual-mt4-mt4.md) |
 | Packaging Auto-Start dans l’installeur public | **4.1** — [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md) |
-| Doc utilisateur polie | **4.2** / **6.2** — [Win11 Auto-Start](../user/unitor-mt4-bridge-win11-wms-user-guide.md#auto-start) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#auto-start) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
+| Doc utilisateur polie | **4.2** / **6.2** — [Win11 Auto-Start](../user/unitor-mt4-bridge-win11-wms-user-guide.md#use-automatic-start) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#use-automatic-start) ; smoke [`smoke-epic4-user-docs-mt4.md`](smoke-epic4-user-docs-mt4.md) |
 | Mesures de latence MIDI | Epic **5** |
 
 ### Références (fichier source de vérité)
@@ -94,7 +94,7 @@ builds\debug\Bridge.exe --test-port-names
 
 ## Docs liées
 
-- Guide utilisateur : [Win11 Auto-Start](../user/unitor-mt4-bridge-win11-wms-user-guide.md#auto-start) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#auto-start)
+- Guide utilisateur : [Win11 Auto-Start](../user/unitor-mt4-bridge-win11-wms-user-guide.md#use-automatic-start) · [Win10](../user/unitor-mt4-bridge-win10-virtualmidi-user-guide.md#use-automatic-start)
 - Hot-plug (3.2) : [`smoke-epic3-hotplug-mt4.md`](smoke-epic3-hotplug-mt4.md)
 - Multi-client DAW + MIDI-OX (3.3) : [`smoke-epic3-multiclient-mt4.md`](smoke-epic3-multiclient-mt4.md)
 - Installateur public (4.1) : [`smoke-epic4-public-installer-mt4.md`](smoke-epic4-public-installer-mt4.md)
