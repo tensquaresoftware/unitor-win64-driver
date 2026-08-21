@@ -459,3 +459,10 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - source_spec: `_bmad-output/implementation-artifacts/spec-6-2-community-binary-and-install-0eur-honesty-win11.md`
   summary: First live dual Inno build + tag-push release.yml path still unproven on a real GitHub tag.
   evidence: Lab had no ISCC for real Setup EXEs; publish gated Ask First; CI choco Inno untested end-to-end.
+
+## Deferred from: code review of spec-6-2-community-binary-and-install-0eur-honesty-win11.md (2026-08-21)
+
+- Dual-flavor installer gates are needle-checked only (no compiled Setup / mocked OS outcomes).
+- `prepare-release.py` pack/verify has no unit/merge-gate execution coverage.
+- Smoke/operator guides still name old `builds/installer/UnitorMt4Bridge-Setup*` paths — revisit in lot 2 (docs).
+- CI `choco install innosetup` version unpinned.

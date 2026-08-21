@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Offline contract checks for dual-flavor Public Installer (Stories 4.1 / 6.2)."""
 
 from __future__ import annotations
@@ -170,6 +170,7 @@ def _assert_iss_dual_flavor_gates(iss_text: str) -> None:
         ("FlavorConsistency", "RequireVirtualMidi vs MidiBackendArg guard"),
         ("IsWindows11OrNewer", "Win11 OS gate"),
         ("WmsServicePresent", "midisrv gate"),
+        ('find /I "RUNNING"', "midisrv must be RUNNING"),
         ("EmptyPortsNotSuccess", "empty MIDI port honesty"),
         ("A7C3E91F-4B2D-4E8A-9F1C-6D5E8A3B2C10", "single AppId"),
         ("unitor-mt4-bridge-", "lowercase SetupBaseName prefix"),

@@ -95,25 +95,43 @@ jobs:
       - name: Pack, finalize, verify (no local tag create)
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           python scripts/packaging/prepare-release.py --version $env:VERSION --force pack
+          if ($LASTEXITCODE -ne 0) { throw "prepare-release pack failed: $LASTEXITCODE" }
           python scripts/packaging/prepare-release.py --version $env:VERSION --force finalize
+          if ($LASTEXITCODE -ne 0) { throw "prepare-release finalize failed: $LASTEXITCODE" }
           python scripts/packaging/prepare-release.py --version $env:VERSION verify
+          if ($LASTEXITCODE -ne 0) { throw "prepare-release verify failed: $LASTEXITCODE" }
           python scripts/packaging/prepare-release.py --version $env:VERSION status
+          if ($LASTEXITCODE -ne 0) { throw "prepare-release status failed: $LASTEXITCODE" }
 
       - name: Ensure GitHub Release shell exists (tag already pushed)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $tag = $env:VERSION
+          $repo = '${{ github.repository }}'
           $notes = "_local\releases\$tag\RELEASE_NOTES.md"
-          gh release view $tag --repo tensquaresoftware/unitor-win64-driver 2>$null
+          if (-not (Test-Path -LiteralPath $notes)) {
+            throw "Missing notes: $notes (run finalize before creating the Release shell)"
+          }
+          $isPrerelease = $tag -match '-'
+          gh release view $tag --repo $repo 2>$null
           if ($LASTEXITCODE -ne 0) {
-            Write-Host "Creating empty Release shell for tag $tag (assets uploaded next)"
-            gh release create $tag `
-              --repo tensquaresoftware/unitor-win64-driver `
-              --title "Unitor MT4 Bridge $tag" `
-              --notes-file $notes
+            Write-Host "Creating Release shell for tag $tag (assets uploaded next)"
+            $createArgs = @(
+              'release', 'create', $tag,
+              '--repo', $repo,
+              '--title', "Unitor MT4 Bridge $tag",
+              '--notes-file', $notes
+            )
+            if ($isPrerelease) {
+              $createArgs += '--prerelease'
+            }
+            gh @createArgs
+            if ($LASTEXITCODE -ne 0) { throw "gh release create failed: $LASTEXITCODE" }
           } else {
             Write-Host "Release $tag already exists — publish-ci will upload assets only"
           }
@@ -124,3 +142,4 @@ jobs:
         shell: pwsh
         run: |
           python scripts/packaging/prepare-release.py --version $env:VERSION publish-ci --yes
+          if ($LASTEXITCODE -ne 0) { throw "prepare-release publish-ci failed: $LASTEXITCODE" }

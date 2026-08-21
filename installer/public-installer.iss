@@ -3,7 +3,7 @@
 ; Branding: Ten Square Software (AD-19). Guided WinUSB (Zadig) when Setup-alone bind fails — not Zadig-primary UX.
 ; Operator helpers under installer/*.ps1 are not invoked by this script (SSOT = this .iss).
 ;
-; Dual community flavors (same AppId; same Program Files tree — Ask First left unanswered = no side-by-side AppIds):
+; Dual community flavors share one AppId / Program Files tree (installing one replaces the other — no side-by-side):
 ;   win11-wms          — Windows MIDI Services comfort path (default); no teVirtualMIDI.dll gate
 ;   win10-virtualmidi  — virtualMIDI self-install path; DLL presence gate; never embed MSI/DLL
 
@@ -145,9 +145,9 @@ const
     '(and self-install virtualMIDI). See docs/user/README.md.';
   WmsUnavailable =
     'Windows MIDI Services does not appear to be available on this PC '#13#10 +
-    '(midisrv service not found).'#13#10#13#10 +
+    '(midisrv service missing or not running).'#13#10#13#10 +
     'An empty MIDI port list after install is not a successful community install.'#13#10 +
-    'Enable or install Windows MIDI Services on Windows 11, then run this Setup again.'#13#10#13#10 +
+    'Start or enable the midisrv service (Windows MIDI Services) on Windows 11, then run this Setup again.'#13#10#13#10 +
     'Or use the win10-virtualmidi Setup with a user-installed virtualMIDI driver.';
   EmptyPortsNotSuccess =
     'An empty MIDI port list is never a successful install for this project.';
@@ -189,11 +189,11 @@ function WmsServicePresent: Boolean;
 var
   ResultCode: Integer;
 begin
-  { Fail closed when midisrv is absent — better than “success” then empty ports at logon. }
+  { Fail closed unless midisrv exists AND is RUNNING — registered-but-stopped is not enough. }
   Result :=
     Exec(
       ExpandConstant('{cmd}'),
-      '/C sc query midisrv >NUL 2>&1',
+      '/C sc query midisrv | find /I "RUNNING" >NUL',
       '',
       SW_HIDE,
       ewWaitUntilTerminated,

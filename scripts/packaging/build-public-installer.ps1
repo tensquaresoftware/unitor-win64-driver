@@ -1,4 +1,4 @@
-﻿# Assemble Public Installer EXE(s) from a builds/ Bridge artifact (Stories 4.1 / 6.2).
+# Assemble Public Installer EXE(s) from a builds/ Bridge artifact (Stories 4.1 / 6.2).
 # Requires Inno Setup 6 (ISCC.exe). Output under dist/ (Luthier-style distributable folder).
 #
 # Dual community flavors (same semantic version; distinct artifact names):
@@ -340,7 +340,22 @@ foreach ($flavorName in $flavorsToBuild)
         throw "Expected output missing: $setupPath"
     }
 
-    Invoke-PublicSign -ArtifactPaths @($setupPath)
+    try
+    {
+        Invoke-PublicSign -ArtifactPaths @($setupPath)
+    }
+    catch
+    {
+        foreach ($prior in ($builtSetups + @($setupPath)))
+        {
+            if (Test-Path -LiteralPath $prior)
+            {
+                Remove-Item -LiteralPath $prior -Force -ErrorAction SilentlyContinue
+                Write-Warning "Removed Setup after sign failure: $prior"
+            }
+        }
+        throw
+    }
     Write-Host "OK: $setupPath"
     $builtSetups += $setupPath
 }

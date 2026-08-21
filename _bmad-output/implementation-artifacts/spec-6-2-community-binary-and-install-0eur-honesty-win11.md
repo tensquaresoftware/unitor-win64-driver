@@ -192,3 +192,25 @@ context:
 
 - Offline dual-flavor honesty needles for ISS + manuals.
   [`verify-installer-contract.py:1`](../../scripts/packaging/verify-installer-contract.py#L1)
+
+### Review Findings
+
+*(Code review chunk 1 — packaging / Setup / CI / release guide, 2026-08-21)*
+
+- [x] [Review][Patch] WMS gate must require midisrv RUNNING (not mere registration) — decided: option 2 [`installer/public-installer.iss:188`]
+- [x] [Review][Patch] Prerelease notes/docs interpolate full tag into Setup filenames while EXEs use CMake bare version [`scripts/packaging/prepare-release.py:195`]
+- [x] [Review][Patch] release.yml pack/finalize/verify does not fail-fast on non-zero Python exit [`/.github/workflows/release.yml:98`]
+- [x] [Review][Patch] Release shell create omits `--prerelease` for RC tags (stable until publish-ci edit) [`/.github/workflows/release.yml:113`]
+- [x] [Review][Patch] UTF-8 BOM on packaging entrypoints breaks Unix shebang [`scripts/packaging/prepare-release.py:1`]
+- [x] [Review][Patch] Hardcoded `tensquaresoftware/unitor-win64-driver` instead of `github.repository` [`/.github/workflows/release.yml:110`]
+- [x] [Review][Patch] Missing `RELEASE_NOTES.md` existence check before `gh release create` [`/.github/workflows/release.yml:109`]
+- [x] [Review][Patch] Release guide incomplete: `-BridgeDir`, publish flags, SHA256SUMS/notes assets, AppId overwrite, optional Authenticode, prerelease naming split [`docs/dev/release-guide.md:1`]
+- [x] [Review][Patch] ISS header still says Ask First unanswered for shared AppId [`installer/public-installer.iss:6`]
+- [x] [Review][Patch] Existing Release path never refreshes body from staged `RELEASE_NOTES.md` [`scripts/packaging/prepare-release.py:368`]
+- [x] [Review][Patch] `git ls-remote` / `gh release view` treat infra failures like “missing” [`scripts/packaging/prepare-release.py:298`]
+- [x] [Review][Patch] Partial docs zip not removed if ZipFile write fails [`scripts/packaging/prepare-release.py:181`]
+- [x] [Review][Patch] Sign failure after ISCC leaves orphan Setup EXEs in dist/ [`scripts/packaging/build-public-installer.ps1:343`]
+- [x] [Review][Defer] Dual-flavor installer gates are needle-checked only, never executed — deferred, pre-existing offline-contract design
+- [x] [Review][Defer] prepare-release pack/verify has no merge-gate unit execution — deferred, follow-up test harness
+- [x] [Review][Defer] Smoke/operator guides still teach old Setup path/names — deferred to lot 2 (docs/smoke review)
+- [x] [Review][Defer] CI `choco install innosetup` unpinned — deferred, pre-existing CI drift risk

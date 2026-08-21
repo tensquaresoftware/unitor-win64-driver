@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Prepare and publish Unitor MT4 Bridge dual-flavor GitHub releases.
 
 Inspired by sibling Luthier publish/prepare-release.py — adapted for two Inno
@@ -75,11 +75,15 @@ def read_cmake_version(root: Path = PROJECT_ROOT) -> str:
     return match.group(1)
 
 
-def render_template(name: str, version: str) -> str:
+def render_template(name: str, *, version: str, artifact_version: str) -> str:
     path = TEMPLATE_DIR / name
     if not path.is_file():
         raise SystemExit(f"Missing template: {path}")
-    return path.read_text(encoding="utf-8").replace("{{VERSION}}", version)
+    return (
+        path.read_text(encoding="utf-8")
+        .replace("{{VERSION}}", version)
+        .replace("{{ARTIFACT_VERSION}}", artifact_version)
+    )
 
 
 def ensure_release_dir(paths: ReleasePaths) -> None:
@@ -178,11 +182,20 @@ def create_docs_archive(paths: ReleasePaths, *, force: bool) -> None:
             raise SystemExit(f"Missing release doc: {path}")
 
     ensure_release_dir(paths)
-    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        for arcname, path in manuals:
-            zf.write(path, arcname=arcname)
-        readme_txt = render_template("README-docs.template.txt", paths.version)
-        zf.writestr("README.txt", readme_txt)
+    try:
+        with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            for arcname, path in manuals:
+                zf.write(path, arcname=arcname)
+            readme_txt = render_template(
+                "README-docs.template.txt",
+                version=paths.version,
+                artifact_version=paths.artifact_version,
+            )
+            zf.writestr("README.txt", readme_txt)
+    except Exception:
+        if archive.is_file():
+            archive.unlink()
+        raise
     print(f"Created {archive.name}")
 
 
@@ -192,7 +205,11 @@ def write_release_notes(paths: ReleasePaths, *, force: bool) -> None:
         return
     ensure_release_dir(paths)
     paths.notes.write_text(
-        render_template("RELEASE_NOTES.template.md", paths.version),
+        render_template(
+            "RELEASE_NOTES.template.md",
+            version=paths.version,
+            artifact_version=paths.artifact_version,
+        ),
         encoding="utf-8",
     )
     print(f"Created {paths.notes.name}")
@@ -300,8 +317,26 @@ def _gh_release_exists(tag: str) -> bool:
         ["gh", "release", "view", tag, "--repo", GITHUB_REPO],
         cwd=PROJECT_ROOT,
         capture_output=True,
+        text=True,
     )
-    return result.returncode == 0
+    if result.returncode == 0:
+        return True
+    combined = f"{result.stdout}\n{result.stderr}".lower()
+    # gh typically exits 1 when the release is missing; other failures are infra.
+    if result.returncode == 1 and (
+        "could not find" in combined
+        or "not found" in combined
+        or "no release found" in combined
+        or "release not found" in combined
+    ):
+        return False
+    if result.returncode == 1 and not combined.strip():
+        # Some gh builds return 1 with empty stderr for missing releases.
+        return False
+    raise SystemExit(
+        f"gh release view failed for {tag} (exit {result.returncode}): "
+        f"{(result.stderr or result.stdout).strip() or 'unknown error'}"
+    )
 
 
 def confirm_or_abort(*, yes: bool, prompt: str) -> None:
@@ -322,7 +357,25 @@ def _remote_tag_exists(tag: str) -> bool:
         capture_output=True,
         text=True,
     )
+    if remote_tag.returncode != 0:
+        err = (remote_tag.stderr or remote_tag.stdout).strip() or "unknown error"
+        raise SystemExit(f"git ls-remote failed for tag {tag}: {err}")
     return bool(remote_tag.stdout.strip())
+
+
+def _gh_release_edit_metadata(tag: str, *, notes: Path, prerelease: bool) -> None:
+    edit_cmd = [
+        "gh",
+        "release",
+        "edit",
+        tag,
+        "--repo",
+        GITHUB_REPO,
+        "--notes-file",
+        str(notes),
+    ]
+    edit_cmd.append("--prerelease" if prerelease else "--prerelease=false")
+    _run(edit_cmd, cwd=PROJECT_ROOT)
 
 
 def gh_release_upload_only(paths: ReleasePaths, *, prerelease: bool) -> None:
@@ -350,9 +403,7 @@ def gh_release_upload_only(paths: ReleasePaths, *, prerelease: bool) -> None:
         ["gh", "release", "upload", tag, "--repo", GITHUB_REPO, *assets, "--clobber"],
         cwd=paths.release_dir,
     )
-    edit_cmd = ["gh", "release", "edit", tag, "--repo", GITHUB_REPO]
-    edit_cmd.append("--prerelease" if prerelease else "--prerelease=false")
-    _run(edit_cmd, cwd=paths.release_dir)
+    _gh_release_edit_metadata(tag, notes=paths.notes, prerelease=prerelease)
     print()
     print(f"Uploaded: https://github.com/{GITHUB_REPO}/releases/tag/{tag}")
 
@@ -371,9 +422,7 @@ def gh_release_create(paths: ReleasePaths, *, prerelease: bool) -> None:
             ["gh", "release", "upload", tag, "--repo", GITHUB_REPO, *assets, "--clobber"],
             cwd=paths.release_dir,
         )
-        edit_cmd = ["gh", "release", "edit", tag, "--repo", GITHUB_REPO]
-        edit_cmd.append("--prerelease" if prerelease else "--prerelease=false")
-        _run(edit_cmd, cwd=paths.release_dir)
+        _gh_release_edit_metadata(tag, notes=paths.notes, prerelease=prerelease)
     else:
         cmd = [
             "gh",

@@ -18,8 +18,8 @@
 
 | Edition | Asset | Who it is for |
 | --- | --- | --- |
-| **win11-wms** | `unitor-mt4-bridge-{{VERSION}}-win11-wms-setup.exe` | Windows 11 — **Windows MIDI Services**; no virtualMIDI install |
-| **win10-virtualmidi** | `unitor-mt4-bridge-{{VERSION}}-win10-virtualmidi-setup.exe` | Windows 10 — **self-install** virtualMIDI (Tobias Erichsen); this project never redistributes the DLL/MSI |
+| **win11-wms** | `unitor-mt4-bridge-{{ARTIFACT_VERSION}}-win11-wms-setup.exe` | Windows 11 — **Windows MIDI Services**; no virtualMIDI install |
+| **win10-virtualmidi** | `unitor-mt4-bridge-{{ARTIFACT_VERSION}}-win10-virtualmidi-setup.exe` | Windows 10 — **self-install** virtualMIDI (Tobias Erichsen); this project never redistributes the DLL/MSI |
 
 Also attached: `unitor-mt4-bridge-{{VERSION}}-docs.zip` (four manuals + README router + honesty pages) and `SHA256SUMS.txt`.
 
