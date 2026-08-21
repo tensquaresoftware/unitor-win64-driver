@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import time
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -28,6 +29,46 @@ BRIDGE_FAIL_NEEDLES = (
     "Device→host SendToHost",
 )
 
+# Fresh-process mido enum timeout (post-stop WMS hangs often exceed this).
+MIDI_ENUM_TIMEOUT_S = 20.0
+
+WMS_BRIDGE_EXTRA_ARGS = ("--dev-zadig", "--midi-backend=wms")
+
+MIDISRV_SUSPECT_MESSAGE = (
+    "midisrv suspect: MIDI port enumeration timed out. "
+    "Windows MIDI Services / midisrv may be unhealthy after a Bridge WMS stop. "
+    "Do not spin aggressive Bridge relaunches."
+)
+
+MIDISRV_RESET_PROCEDURE = """\
+Documented midisrv reset (lab, admin shell if needed) — one shot only:
+  1. Close DAW / MIDI-OX / Matrix-Control on MT4 ports.
+  2. Ensure no Bridge.exe is running.
+  3. In an elevated PowerShell:
+       Restart-Service midisrv
+     If that fails:
+       Stop-Process -Name MidiSrv -Force -ErrorAction SilentlyContinue
+       Start-Service midisrv
+  4. Confirm: Get-Service midisrv  → Status Running
+  5. Start exactly ONE clean Bridge session
+       (--start-session --dev-zadig --midi-backend=wms), then re-enum ports.
+  6. If enum still hangs after that single reset + one Bridge start, stop and
+     report (do not loop Bridge restarts).
+"""
+
+
+@dataclass
+class MidiEnumResult:
+    """Outcome of a bounded fresh-process MIDI port enumeration."""
+
+    ok: bool
+    outputs: list[str] = field(default_factory=list)
+    inputs: list[str] = field(default_factory=list)
+    error: str = ""
+    timed_out: bool = False
+    elapsed_s: float = 0.0
+    returncode: int | None = None
+
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
@@ -48,7 +89,118 @@ def hex_bytes(data: bytes, limit: int | None = None) -> str:
     return " ".join(f"{byte:02X}" for byte in data)
 
 
-def fresh_midi_port_names() -> tuple[list[str], list[str]]:
+def midisrv_status() -> tuple[bool, str]:
+    """Lightweight midisrv liveness (process and/or service Running).
+
+    Returns (ok, detail). Non-Windows always reports ok/skipped.
+    """
+    if sys.platform != "win32":
+        return True, "skipped (non-Windows)"
+
+    script = (
+        "$proc = Get-Process midisrv -ErrorAction SilentlyContinue; "
+        "if ($proc) { Write-Output ('process pid=' + $proc.Id); exit 0 }; "
+        "$svc = Get-Service -ErrorAction SilentlyContinue | "
+        "Where-Object { $_.Name -match 'midi' -or $_.DisplayName -match 'MIDI' }; "
+        "$running = @($svc | Where-Object { $_.Status -eq 'Running' }); "
+        "if ($running.Count -gt 0) { "
+        "  Write-Output ('service ' + (($running | ForEach-Object { $_.Name }) -join ',')); "
+        "  exit 0 "
+        "}; "
+        "Write-Output 'midisrv process missing and no Running MIDI-related service'; "
+        "exit 1"
+    )
+    try:
+        completed = subprocess.run(
+            [
+                "powershell",
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                script,
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, f"midisrv probe failed: {exc}"
+
+    detail = (completed.stdout or completed.stderr or "").strip() or "(no detail)"
+    return completed.returncode == 0, detail
+
+
+def midisrv_suspect_exit_message(timeout_s: float = MIDI_ENUM_TIMEOUT_S) -> str:
+    return (
+        f"MIDI port enumeration timed out after {timeout_s:g}s — "
+        f"{MIDISRV_SUSPECT_MESSAGE}\n\n{MIDISRV_RESET_PROCEDURE}"
+    )
+
+
+def apply_midisrv_reset_once() -> tuple[bool, str]:
+    """One-shot elevated midisrv reset (explicit lab opt-in only).
+
+    Tries Restart-Service midisrv, then Stop-Process + Start-Service fallback.
+    Never call from automatic loops. Requires admin.
+    """
+    if sys.platform != "win32":
+        return False, "midisrv reset skipped (non-Windows)"
+
+    script = (
+        "function Assert-Running { "
+        "  $s = Get-Service midisrv -ErrorAction Stop; "
+        "  Write-Output ('midisrv Status=' + $s.Status); "
+        "  if ($s.Status -ne 'Running') { exit 2 }; "
+        "  exit 0 "
+        "} "
+        "try { "
+        "  Restart-Service midisrv -Force -ErrorAction Stop; "
+        "  Write-Output 'Restart-Service midisrv ok'; "
+        "  Assert-Running "
+        "} catch { "
+        "  Write-Output ('Restart-Service midisrv failed: ' + $_.Exception.Message); "
+        "  try { "
+        "    Stop-Process -Name midisrv -Force -ErrorAction SilentlyContinue; "
+        "    Stop-Process -Name MidiSrv -Force -ErrorAction SilentlyContinue; "
+        "    Start-Service midisrv -ErrorAction Stop; "
+        "    Write-Output 'Fallback Stop-Process + Start-Service midisrv ok'; "
+        "    Assert-Running "
+        "  } catch { "
+        "    Write-Output ('Fallback midisrv reset failed: ' + $_.Exception.Message); "
+        "    exit 1 "
+        "  } "
+        "}"
+    )
+    try:
+        completed = subprocess.run(
+            [
+                "powershell",
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                script,
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=60,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, f"midisrv reset failed: {exc}"
+
+    detail = (completed.stdout or completed.stderr or "").strip() or "(no detail)"
+    return completed.returncode == 0, detail
+
+
+def enumerate_midi_ports(
+    timeout_s: float = MIDI_ENUM_TIMEOUT_S,
+) -> MidiEnumResult:
+    """Bounded fresh-process mido enum; never hangs silently past timeout_s."""
     code = (
         "import mido\n"
         "print('OUT')\n"
@@ -56,31 +208,79 @@ def fresh_midi_port_names() -> tuple[list[str], list[str]]:
         "print('IN')\n"
         "print('\\n'.join(mido.get_input_names()))\n"
     )
-    completed = subprocess.run(
-        [sys.executable, "-c", code],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        timeout=20,
-        check=False,
-    )
-    if completed.returncode != 0:
-        raise SystemExit(
-            "Failed to enumerate MIDI ports in a fresh process:\n"
-            + (completed.stderr or completed.stdout or "(no output)")
+    started = time.monotonic()
+    try:
+        completed = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout_s,
+            check=False,
         )
+    except subprocess.TimeoutExpired as exc:
+        elapsed = time.monotonic() - started
+        return MidiEnumResult(
+            ok=False,
+            timed_out=True,
+            elapsed_s=elapsed,
+            error=(
+                f"TimeoutExpired after {timeout_s:g}s "
+                f"(partial stdout={((exc.stdout or '')[:200])!r})"
+            ),
+        )
+    except OSError as exc:
+        elapsed = time.monotonic() - started
+        return MidiEnumResult(
+            ok=False,
+            elapsed_s=elapsed,
+            error=f"MIDI enum spawn failed: {exc}",
+        )
+
+    elapsed = time.monotonic() - started
+    if completed.returncode != 0:
+        return MidiEnumResult(
+            ok=False,
+            elapsed_s=elapsed,
+            returncode=completed.returncode,
+            error=(completed.stderr or completed.stdout or "(no output)"),
+        )
+
     lines = completed.stdout.splitlines()
     try:
         out_idx = lines.index("OUT")
         in_idx = lines.index("IN")
-    except ValueError as exc:
-        raise SystemExit(
-            "Unexpected MIDI port enumeration output:\n" + completed.stdout
-        ) from exc
+    except ValueError:
+        return MidiEnumResult(
+            ok=False,
+            elapsed_s=elapsed,
+            returncode=completed.returncode,
+            error="Unexpected MIDI port enumeration output:\n" + completed.stdout,
+        )
+
     outputs = [line for line in lines[out_idx + 1 : in_idx] if line.strip()]
     inputs = [line for line in lines[in_idx + 1 :] if line.strip()]
-    return outputs, inputs
+    return MidiEnumResult(
+        ok=True,
+        outputs=outputs,
+        inputs=inputs,
+        elapsed_s=elapsed,
+        returncode=completed.returncode,
+    )
+
+
+def fresh_midi_port_names(
+    timeout_s: float = MIDI_ENUM_TIMEOUT_S,
+) -> tuple[list[str], list[str]]:
+    result = enumerate_midi_ports(timeout_s=timeout_s)
+    if result.timed_out:
+        raise SystemExit(midisrv_suspect_exit_message(timeout_s))
+    if not result.ok:
+        raise SystemExit(
+            "Failed to enumerate MIDI ports in a fresh process:\n" + result.error
+        )
+    return result.outputs, result.inputs
 
 
 def normalize_port_label(name: str) -> str:
@@ -247,7 +447,9 @@ class BridgeSession:
             time.sleep(0.25)
         raise SystemExit(
             "Timed out waiting for Bridge MIDI ports "
-            f"{out_needle!r} / {in_needle!r}. See {self.bridge_log}"
+            f"{out_needle!r} / {in_needle!r}. See {self.bridge_log}\n"
+            f"If fresh mido enum also hangs, treat as midisrv suspect:\n"
+            f"{MIDISRV_RESET_PROCEDURE}"
         )
 
     def stop(self, grace_s: float = 8.0) -> None:
@@ -273,3 +475,39 @@ class BridgeSession:
         if self._reader is not None:
             self._reader.join(timeout=2)
         print(f"Bridge stopped (code={self.proc.returncode})")
+
+
+@dataclass(frozen=True)
+class CleanWmsBridgeStart:
+    """Options for exactly one clean Bridge WMS session (no relaunch loops)."""
+
+    bridge_exe: Path
+    bridge_log: Path
+    out_needle: str = "MT4 Out 1"
+    in_needle: str = "MT4 In 1"
+    ready_timeout_s: float = 45.0
+    extra_args: tuple[str, ...] = WMS_BRIDGE_EXTRA_ARGS
+
+
+def start_one_clean_wms_bridge(options: CleanWmsBridgeStart) -> BridgeSession:
+    """Start exactly one Bridge WMS session and wait until ports are ready.
+
+    Callers must not wrap this in aggressive restart loops after enum failure —
+    reset midisrv first (documented), then call this once.
+    """
+    session = BridgeSession(
+        options.bridge_exe,
+        options.bridge_log,
+        list(options.extra_args),
+    )
+    session.start()
+    try:
+        session.wait_until_ready(
+            options.out_needle,
+            options.in_needle,
+            options.ready_timeout_s,
+        )
+    except BaseException:
+        session.stop()
+        raise
+    return session

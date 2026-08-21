@@ -128,64 +128,23 @@ class LongevityContext:
     bridge: lab_midi.BridgeSession | None = None
 
 
-def _midisrv_status() -> tuple[bool, str]:
-    """Lightweight midisrv liveness (process and/or service Running).
-
-    Returns (ok, detail). Non-Windows always reports ok/skipped.
-    """
-    if sys.platform != "win32":
-        return True, "skipped (non-Windows)"
-
-    # Prefer a single PowerShell probe: process OR a Running *midi* service.
-    script = (
-        "$proc = Get-Process midisrv -ErrorAction SilentlyContinue; "
-        "if ($proc) { Write-Output ('process pid=' + $proc.Id); exit 0 }; "
-        "$svc = Get-Service -ErrorAction SilentlyContinue | "
-        "Where-Object { $_.Name -match 'midi' -or $_.DisplayName -match 'MIDI' }; "
-        "$running = @($svc | Where-Object { $_.Status -eq 'Running' }); "
-        "if ($running.Count -gt 0) { "
-        "  Write-Output ('service ' + (($running | ForEach-Object { $_.Name }) -join ',')); "
-        "  exit 0 "
-        "}; "
-        "Write-Output 'midisrv process missing and no Running MIDI-related service'; "
-        "exit 1"
-    )
-    try:
-        completed = subprocess.run(
-            [
-                "powershell",
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                script,
-            ],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=20,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        return False, f"midisrv probe failed: {exc}"
-
-    detail = (completed.stdout or completed.stderr or "").strip() or "(no detail)"
-    return completed.returncode == 0, detail
-
-
 def _preflight_midisrv(stats: CycleStats) -> None:
-    ok, detail = _midisrv_status()
+    ok, detail = lab_midi.midisrv_status()
     if ok:
         stats.note(f"PREFLIGHT midisrv OK ({detail})")
         return
     raise SystemExit(
         "PREFLIGHT FAIL: midisrv / Windows MIDI Services not running "
-        f"({detail}). Reset midisrv or reboot the MIDI stack, then re-run."
+        f"({detail}).\n\n{lab_midi.MIDISRV_RESET_PROCEDURE}"
+        "After reset, start exactly one clean Bridge session "
+        "(see lab_midi_common.start_one_clean_wms_bridge / "
+        "wms-midisrv-restart-repro.py --apply-midisrv-reset --one-clean-bridge), "
+        "then re-run longevity. Do not loop aggressive Bridge restarts."
     )
 
 
 def _check_midisrv_alive(stats: CycleStats, where: str) -> bool:
-    ok, detail = _midisrv_status()
+    ok, detail = lab_midi.midisrv_status()
     if ok:
         return True
     stats.abort(f"midisrv died mid-run at {where}: {detail}")

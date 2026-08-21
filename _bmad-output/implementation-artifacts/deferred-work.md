@@ -431,3 +431,17 @@ Design note already captured in the longevity guide (not an open deferral): afte
 - Host sink lifetime race after mutex copy in SetHostToDeviceSink/forwardHostToDevice — same callback lifetime pattern as VirtualMidiBackend; not uniquely introduced as a WMS-only contract break.
 - NuGet MIDI App SDK download without checksum — configure-time fetch with version pin; checksum hardening is a later supply-chain chore.
 - No automated CreatePortSet fail-closed beyond `rejectMissingWmsTransport` helper — lab `--test-wms-ports` covers Create/Destroy; full WinRT mock of CreatePortSet stays out of 6.1.
+
+## Deferred from: build spec-wms-midisrv-restart-robustness.md (2026-08-21)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-wms-midisrv-restart-robustness.md`
+  summary: Longevity midisrv preflight still treats a live midisrv process as healthy while MIDI enum can already be hung.
+  evidence: Path A evidence shows process pid Running during TimeoutExpired enum; enum-health preflight is a follow-up, not required by this Build’s OR wiring clause.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-wms-midisrv-restart-robustness.md`
+  summary: Other lab scripts still keep private `_fresh_midi_port_names` copies without the shared midisrv-suspect timeout path.
+  evidence: Blind Hunter; expanding every lab script is out of this Build’s single goal.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-wms-midisrv-restart-robustness.md`
+  summary: BridgeSession.wait_until_ready still ignores READY_MARKERS (port-name presence only).
+  evidence: Pre-existing; `_ = READY_MARKERS` was not introduced by this Build.
