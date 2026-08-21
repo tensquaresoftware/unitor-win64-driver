@@ -16,9 +16,11 @@ struct HostOutboundItem
 class HostOutboundQueue
 {
 public:
-    // Design target: librarian bursts + long DIN loopback fixture (~14708 B).
-    static constexpr std::size_t kMaxMessages = 128;
-    static constexpr std::size_t kMaxQueuedBytes = 128 * 512;
+    // Story 6.1 WMS prerequisite: librarian bursts + concurrent long DIN fixtures
+    // (~14708 B) while Emagic USB OUT still drains prior frames (WMS + virtualMIDI).
+    // Raised from 128 / (128*512) so fragmented WMS SysEx does not trip the queue early.
+    static constexpr std::size_t kMaxMessages = 256;
+    static constexpr std::size_t kMaxQueuedBytes = 8 * 16384;
 
     bool TryPush(std::size_t outPortIndex, const uint8_t* midi, std::size_t byteCount);
     bool TryCopyFront(HostOutboundItem& out) const;

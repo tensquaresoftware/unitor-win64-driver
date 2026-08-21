@@ -62,6 +62,7 @@ add_executable(Bridge
     src/App/MidiSessionMultiHostHotPlug.cpp
     src/App/MidiSessionMultiHostMatch.cpp
     src/App/MidiSessionDiagnostics.cpp
+    src/App/WmsBackendSmoke.cpp
     src/Device/DeviceSession.cpp
     src/Device/DeviceSessionDeviceHost.cpp
     src/Device/DeviceSessionHostOutbound.cpp
@@ -75,6 +76,10 @@ add_executable(Bridge
     src/Device/HostOutboundQueue.cpp
     src/Midi/VirtualMidiBackend.cpp
     src/Midi/VirtualMidiBackendPorts.cpp
+    src/Midi/MidiBackendSelect.cpp
+    src/Midi/MidiBackendFactory.cpp
+    src/Midi/WmsMidiBackend.cpp
+    src/Midi/Midi1StreamAssembler.cpp
     src/Midi/SoftEchoGate.cpp
     src/Profile/DeviceProfile.cpp
     src/Protocol/EmagicCableMapper.cpp
@@ -115,6 +120,8 @@ if(WIN32)
             taskschd
             comsuppw
     )
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/FetchMicrosoftMidiAppSdk.cmake")
+    unitor_setup_microsoft_midi_app_sdk(Bridge)
 endif()
 
 # --- BridgeTests: Profile + Protocol only (no WinUSB / VirtualMIDI) ---
@@ -134,6 +141,7 @@ add_executable(BridgeTests
     tests/unit/MidiMessageFramerTests.cpp
     tests/unit/MidiMessageFramerSysexTests.cpp
     tests/unit/HostOutboundQueueTests.cpp
+    tests/unit/Midi1StreamAssemblerTests.cpp
     tests/unit/TeVirtualMidiLimitsTests.cpp
     tests/unit/AutoStartContractTests.cpp
     tests/unit/HotPlugContractTests.cpp
@@ -141,8 +149,11 @@ add_executable(BridgeTests
     tests/unit/UnitIdentityRegistryTests.cpp
     tests/unit/MidiPathStatsTests.cpp
     tests/unit/SoftEchoGateTests.cpp
+    tests/unit/MidiBackendSelectTests.cpp
     tools/midi-path-harness/MidiPathStats.cpp
     src/Midi/SoftEchoGate.cpp
+    src/Midi/MidiBackendSelect.cpp
+    src/Midi/Midi1StreamAssembler.cpp
     src/App/AutoStartRegistration.cpp
     src/App/AutoStartTaskScheduler.cpp
     src/App/AutoStartRunKey.cpp
