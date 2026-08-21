@@ -1,11 +1,11 @@
-# Assemble Public Installer EXE(s) from a builds/ Bridge artifact (Stories 4.1 / 6.2).
+﻿# Assemble Public Installer EXE(s) from a builds/ Bridge artifact (Stories 4.1 / 6.2).
 # Requires Inno Setup 6 (ISCC.exe). Output under dist/ (Luthier-style distributable folder).
 #
 # Dual community flavors (same semantic version; distinct artifact names):
-#   win11-wms          — no teVirtualMIDI.dll gate; --midi-backend=wms
-#   win10-virtualmidi  — DLL presence gate; --midi-backend=virtualmidi
+#   win11-wms          â€” no teVirtualMIDI.dll gate; --midi-backend=wms
+#   win10-virtualmidi  â€” DLL presence gate; --midi-backend=virtualmidi
 #
-# Version SSOT: CMake project(VERSION) → BridgeVersion*.in / bridge-version.txt /
+# Version SSOT: CMake project(VERSION) â†’ BridgeVersion*.in / bridge-version.txt /
 # Bridge --version. This script defaults MyAppVersion from that same source
 # (bridge-version.txt beside the build tree, else parse CMakeLists.txt).
 # Pass -AppVersion only to override deliberately.
@@ -244,7 +244,7 @@ if ($resolvedBridgeDir -match '(?i)[\\/]debug([\\/]|$)')
 $outDir = Join-Path $repoRoot "dist"
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
-# Optional Authenticode (Story 4.4) — strongly recommended, not a hard gate.
+# Optional Authenticode (Story 4.4) â€” strongly recommended, not a hard gate.
 # Without UNITOR_CODE_SIGNING_CERT_SUBJECT the helper SKIPs (exit 0).
 # When the env is set, Bridge is signed before packaging and Setup after.
 $signHelper = Join-Path $repoRoot "scripts\packaging\sign-public-artifacts.ps1"
@@ -289,7 +289,7 @@ $builtSetups = @()
 foreach ($flavorName in $flavorsToBuild)
 {
     $defs = Get-FlavorDefines -FlavorName $flavorName
-    $setupName = "Unitor-MT4-Bridge-$AppVersion-$($defs.FlavorToken)-setup.exe"
+    $setupName = "unitor-mt4-bridge-$AppVersion-$($defs.FlavorToken)-setup.exe"
     $setupPath = Join-Path $outDir $setupName
 
     Write-Host "Compiling Public Installer ($flavorName)"

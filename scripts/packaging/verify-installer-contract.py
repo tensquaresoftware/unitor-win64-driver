@@ -172,7 +172,7 @@ def _assert_iss_dual_flavor_gates(iss_text: str) -> None:
         ("WmsServicePresent", "midisrv gate"),
         ("EmptyPortsNotSuccess", "empty MIDI port honesty"),
         ("A7C3E91F-4B2D-4E8A-9F1C-6D5E8A3B2C10", "single AppId"),
-        ("Unitor-MT4-Bridge-", "Luthier-style SetupBaseName prefix"),
+        ("unitor-mt4-bridge-", "lowercase SetupBaseName prefix"),
         ("OutputDir=..\\dist", "dist/ Inno output"),
     )
     for needle, label in needles:
@@ -299,7 +299,7 @@ def check_prepare_release(prepare_py: Path) -> None:
     for needle, label in (
         ("win11-wms", "Win11 flavor"),
         ("win10-virtualmidi", "Win10 flavor"),
-        ("Unitor-MT4-Bridge-", "Luthier-style asset name prefix"),
+        ("unitor-mt4-bridge-", "lowercase asset name prefix"),
         ("publish-ci", "CI publish command"),
         ("SHA256SUMS", "checksums"),
         ("_local", "gitignored staging"),

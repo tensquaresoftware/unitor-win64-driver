@@ -54,7 +54,7 @@
 #define MyAppPublisherURL "https://github.com/tensquaresoftware/unitor-win64-driver"
 #define MyAppSupportURL "https://github.com/tensquaresoftware/unitor-win64-driver/blob/main/docs/user/README.md"
 ; Luthier-style product-version-flavor naming for GitHub Release assets.
-#define SetupBaseName "Unitor-MT4-Bridge-" + MyAppVersion + "-" + FlavorToken + "-setup"
+#define SetupBaseName "unitor-mt4-bridge-" + MyAppVersion + "-" + FlavorToken + "-setup"
 #define BridgeSessionParams "--auto-session --midi-backend=" + MidiBackendArg
 #define BridgeRegisterParams "--register-auto-start --midi-backend=" + MidiBackendArg
 

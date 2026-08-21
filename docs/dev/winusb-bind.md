@@ -133,7 +133,7 @@ Zadig fallback refuses to open when **more than one** USB device matches the MT4
 
 Two separate trust domains — do not conflate them:
 
-1. **Authenticode** on `Bridge.exe` / dual flavored Setups (`UnitorMt4Bridge-Setup-win11-wms-*.exe`, `UnitorMt4Bridge-Setup-win10-virtualmidi-*.exe`) (SmartScreen / publisher trust)
+1. **Authenticode** on `Bridge.exe` / dual flavored Setups (`unitor-mt4-bridge-*-win11-wms-setup.exe`, `unitor-mt4-bridge-*-win10-virtualmidi-setup.exe`) (SmartScreen / publisher trust)
 2. **WinUSB INF catalog** (`.cat`) for clean-machine Driver Store association (`CatalogFile=mt4-winusb.cat`)
 
 **Lab only:** [`installer/sign-lab-package.ps1`](../../installer/sign-lab-package.ps1) builds a self-signed catalog and stages LocalMachine Root / TrustedPublisher. That is **not** public Authenticode.

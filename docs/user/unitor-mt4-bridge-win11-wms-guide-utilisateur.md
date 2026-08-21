@@ -65,7 +65,7 @@ Pour les essais du quotidien, ouvrez **votre logiciel de musique habituel** (vot
 
 # Installer le Bridge
 
-Le fichier téléchargé ressemble à : `Unitor-MT4-Bridge-{version}-win11-wms-setup.exe` (page **Releases** du projet — pas un miroir au hasard).
+Le fichier téléchargé ressemble à : `unitor-mt4-bridge-{version}-win11-wms-setup.exe` (page **Releases** du projet — pas un miroir au hasard).
 
 1. Branchez la **MT4** (alimentation + USB) **avant** ou pendant l’installation — l’assistant **ne s’arrête pas** pour vous le demander.
 2. Lancez le programme d’installation téléchargé.

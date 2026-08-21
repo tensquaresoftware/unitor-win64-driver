@@ -78,7 +78,7 @@ Sans la DLL, l’installateur du Bridge **échoue clairement** — une liste de 
 
 # Installer le Bridge
 
-Le fichier téléchargé ressemble à : `Unitor-MT4-Bridge-{version}-win10-virtualmidi-setup.exe` (page **Releases**).
+Le fichier téléchargé ressemble à : `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` (page **Releases**).
 
 1. Branchez la **MT4** avant ou pendant l’installation — l’assistant **ne s’arrête pas** pour vous le demander.
 2. Lancez le programme d’installation téléchargé.

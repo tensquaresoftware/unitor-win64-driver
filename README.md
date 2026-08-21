@@ -84,7 +84,7 @@ A KMDF / PortCls stack needs the WDK, Microsoft attestation signing for Secure B
 - End-user docs: [`docs/user/README.md`](docs/user/README.md)
 - Contributor docs: WinUSB bind, license honesty, Authenticode/SmartScreen policy (no certificate in this line), dual-machine loop, [release guide](docs/dev/release-guide.md)
 
-**Community download shape:** `Unitor-MT4-Bridge-{version}-win11-wms-setup.exe` and `Unitor-MT4-Bridge-{version}-win10-virtualmidi-setup.exe` for the same version (plus docs zip). Win10 still requires **user-installed** virtualMIDI — never an embedded DLL from this project.
+**Community download shape:** `unitor-mt4-bridge-{version}-win11-wms-setup.exe` and `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` for the same version (plus docs zip). Win10 still requires **user-installed** virtualMIDI — never an embedded DLL from this project.
 
 ## Scope
 

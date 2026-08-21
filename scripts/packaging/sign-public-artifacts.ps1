@@ -6,7 +6,7 @@
 #
 # Usage:
 #   $env:UNITOR_CODE_SIGNING_CERT_SUBJECT = 'Ten Square Software'
-#   .\scripts\packaging\sign-public-artifacts.ps1 -Paths @('dist\Unitor-MT4-Bridge-0.1.0-win11-wms-setup.exe','dist\Unitor-MT4-Bridge-0.1.0-win10-virtualmidi-setup.exe')
+#   .\scripts\packaging\sign-public-artifacts.ps1 -Paths @('dist\unitor-mt4-bridge-0.1.0-win11-wms-setup.exe','dist\unitor-mt4-bridge-0.1.0-win10-virtualmidi-setup.exe')
 #   .\scripts\packaging\sign-public-artifacts.ps1 -Paths @('builds\release\Release\Bridge.exe') -CertSubject 'Ten Square Software'
 
 [CmdletBinding()]

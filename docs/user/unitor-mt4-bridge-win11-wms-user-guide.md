@@ -65,7 +65,7 @@ For everyday checks, open **your usual music software** (your DAW) — for examp
 
 # Install the Bridge
 
-Download name looks like: `Unitor-MT4-Bridge-{version}-win11-wms-setup.exe` (from this project’s **Releases** page — not a random mirror).
+Download name looks like: `unitor-mt4-bridge-{version}-win11-wms-setup.exe` (from this project’s **Releases** page — not a random mirror).
 
 1. Plug in the **MT4** (power + USB) **before** or while running the installer — the wizard does **not** pause to ask you to plug it in.
 2. Run the installer you downloaded.

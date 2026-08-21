@@ -28,9 +28,9 @@ There is **no** root `installers/` folder. Do not confuse `installer/` (sources)
 |---|---|---|
 | GitHub Release title | `Unitor MT4 Bridge X.Y.Z` | `Unitor MT4 Bridge 0.1.0` |
 | Tag | bare `X.Y.Z` | `0.1.0` |
-| Win11 Setup | `Unitor-MT4-Bridge-{ver}-win11-wms-setup.exe` | `Unitor-MT4-Bridge-0.1.0-win11-wms-setup.exe` |
-| Win10 Setup | `Unitor-MT4-Bridge-{ver}-win10-virtualmidi-setup.exe` | `Unitor-MT4-Bridge-0.1.0-win10-virtualmidi-setup.exe` |
-| Docs zip | `Unitor-MT4-Bridge-{ver}-docs.zip` | `Unitor-MT4-Bridge-0.1.0-docs.zip` |
+| Win11 Setup | `unitor-mt4-bridge-{ver}-win11-wms-setup.exe` | `unitor-mt4-bridge-0.1.0-win11-wms-setup.exe` |
+| Win10 Setup | `unitor-mt4-bridge-{ver}-win10-virtualmidi-setup.exe` | `unitor-mt4-bridge-0.1.0-win10-virtualmidi-setup.exe` |
+| Docs zip | `unitor-mt4-bridge-{ver}-docs.zip` | `unitor-mt4-bridge-0.1.0-docs.zip` |
 
 ## One primary publish path per tag (important)
 
@@ -45,8 +45,8 @@ Pick **one** vehicle for a given tag — do **not** race both:
 
 | Flavor | Setup name pattern | Default MIDI backend | virtualMIDI gate |
 |---|---|---|---|
-| **win11-wms** | `Unitor-MT4-Bridge-{version}-win11-wms-setup.exe` | Windows MIDI Services | No |
-| **win10-virtualmidi** | `Unitor-MT4-Bridge-{version}-win10-virtualmidi-setup.exe` | virtualMIDI | Yes — user must already have `teVirtualMIDI.dll` |
+| **win11-wms** | `unitor-mt4-bridge-{version}-win11-wms-setup.exe` | Windows MIDI Services | No |
+| **win10-virtualmidi** | `unitor-mt4-bridge-{version}-win10-virtualmidi-setup.exe` | virtualMIDI | Yes — user must already have `teVirtualMIDI.dll` |
 
 Never embed or redistribute teVirtualMIDI / virtualMIDI MSI/SDK (OQ-1). No Authenticode certificate purchase in this hobby line (OQ-3).
 
@@ -65,7 +65,7 @@ cmake -S . -B builds/release -A x64
 cmake --build builds/release --config Release
 
 .\scripts\packaging\build-public-installer.ps1 -Flavor both
-# → dist/Unitor-MT4-Bridge-*-setup.exe
+# → dist/unitor-mt4-bridge-*-setup.exe
 
 python scripts/packaging/prepare-release.py pack
 python scripts/packaging/prepare-release.py finalize
