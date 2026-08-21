@@ -1,0 +1,126 @@
+name: release
+
+# Semver tags without v prefix (0.1.0, 0.2.0-rc1, …). Tag push is the only trigger.
+# Matches CMake project(VERSION). Local tag create stays on prepare-release.py publish
+# (Ask First / --yes). This workflow: build → finalize → ensure Release shell → publish-ci upload-only.
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate semver tag and CMake version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "Unsupported tag: $TAG (expected X.Y.Z or X.Y.Z-prerelease)"
+            exit 1
+          fi
+          CMAKE_VERSION=$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+          text = Path("CMakeLists.txt").read_text(encoding="utf-8")
+          m = re.search(r"project\s*\(\s*unitor-win64-driver\s+VERSION\s+(\d+\.\d+\.\d+)", text)
+          if not m:
+              raise SystemExit("Could not read CMake project VERSION")
+          print(m.group(1))
+          PY
+          )
+          BASE="${TAG%%-*}"
+          if [ "$CMAKE_VERSION" != "$BASE" ]; then
+            echo "Tag base $BASE does not match CMakeLists.txt VERSION ($CMAKE_VERSION)"
+            exit 1
+          fi
+          echo "Release version: $TAG (CMake $CMAKE_VERSION)"
+
+      - name: Dual-flavor installer contract (offline)
+        run: python3 scripts/packaging/verify-installer-contract.py
+
+  build-and-publish:
+    needs: validate-tag
+    runs-on: windows-2022
+    timeout-minutes: 60
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dual-flavor installer contract (offline)
+        shell: pwsh
+        run: python scripts/packaging/verify-installer-contract.py
+
+      - name: Configure and build Bridge (Release)
+        shell: pwsh
+        run: |
+          cmake -S . -B builds/ci -A x64
+          cmake --build builds/ci --config Release
+          if (-not (Test-Path -LiteralPath "builds\ci\Release\Bridge.exe")) {
+            throw "Bridge.exe missing after CI Release build"
+          }
+
+      - name: Install Inno Setup 6
+        shell: pwsh
+        run: |
+          choco install innosetup --yes --no-progress
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path -LiteralPath $iscc)) {
+            throw "ISCC.exe not found after Inno Setup install"
+          }
+
+      - name: Build both Setup flavors
+        shell: pwsh
+        run: |
+          .\scripts\packaging\build-public-installer.ps1 `
+            -BridgeDir builds\ci\Release `
+            -Flavor both
+
+      - name: Pack, finalize, verify (no local tag create)
+        shell: pwsh
+        run: |
+          python scripts/packaging/prepare-release.py --version $env:VERSION --force pack
+          python scripts/packaging/prepare-release.py --version $env:VERSION --force finalize
+          python scripts/packaging/prepare-release.py --version $env:VERSION verify
+          python scripts/packaging/prepare-release.py --version $env:VERSION status
+
+      - name: Ensure GitHub Release shell exists (tag already pushed)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $tag = $env:VERSION
+          $notes = "_local\releases\$tag\RELEASE_NOTES.md"
+          gh release view $tag --repo tensquaresoftware/unitor-win64-driver 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Creating empty Release shell for tag $tag (assets uploaded next)"
+            gh release create $tag `
+              --repo tensquaresoftware/unitor-win64-driver `
+              --title "Unitor MT4 Bridge $tag" `
+              --notes-file $notes
+          } else {
+            Write-Host "Release $tag already exists — publish-ci will upload assets only"
+          }
+
+      - name: Publish GitHub Release assets (publish-ci upload-only)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          python scripts/packaging/prepare-release.py --version $env:VERSION publish-ci --yes
