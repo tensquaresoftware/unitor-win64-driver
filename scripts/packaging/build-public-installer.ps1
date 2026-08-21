@@ -1,5 +1,9 @@
-# Assemble the Public Installer EXE from a builds/ Bridge artifact (Story 4.1).
+# Assemble Public Installer EXE(s) from a builds/ Bridge artifact (Stories 4.1 / 6.2).
 # Requires Inno Setup 6 (ISCC.exe). Output under builds/installer/.
+#
+# Dual community flavors (same semantic version; distinct artifact names):
+#   win11-wms          — no teVirtualMIDI.dll gate; --midi-backend=wms
+#   win10-virtualmidi  — DLL presence gate; --midi-backend=virtualmidi
 #
 # Version SSOT: CMake project(VERSION) → BridgeVersion*.in / bridge-version.txt /
 # Bridge --version. This script defaults MyAppVersion from that same source
@@ -8,6 +12,8 @@
 #
 # Usage:
 #   .\scripts\packaging\build-public-installer.ps1
+#   .\scripts\packaging\build-public-installer.ps1 -Flavor both
+#   .\scripts\packaging\build-public-installer.ps1 -Flavor win11-wms
 #   .\scripts\packaging\build-public-installer.ps1 -BridgeDir builds\release\Release
 #   .\scripts\packaging\build-public-installer.ps1 -AppVersion 0.2.0
 
@@ -15,7 +21,9 @@
 param(
     [string]$BridgeDir = "",
     [string]$IsccPath = "",
-    [string]$AppVersion = ""
+    [string]$AppVersion = "",
+    [ValidateSet("win11-wms", "win10-virtualmidi", "both")]
+    [string]$Flavor = "both"
 )
 
 $ErrorActionPreference = "Stop"
@@ -113,6 +121,32 @@ function Get-FourPartVersion
         $parts += "0"
     }
     return ($parts[0..3] -join ".")
+}
+
+function Get-FlavorDefines
+{
+    param([string]$FlavorName)
+
+    switch ($FlavorName)
+    {
+        "win11-wms" {
+            return @{
+                FlavorToken = "win11-wms"
+                RequireVirtualMidi = "0"
+                MidiBackendArg = "wms"
+            }
+        }
+        "win10-virtualmidi" {
+            return @{
+                FlavorToken = "win10-virtualmidi"
+                RequireVirtualMidi = "1"
+                MidiBackendArg = "virtualmidi"
+            }
+        }
+        default {
+            throw "Unknown flavor '$FlavorName' (expected win11-wms or win10-virtualmidi)."
+        }
+    }
 }
 
 $resolvedBridgeDir = Resolve-BridgeDir -Preferred $BridgeDir
@@ -241,29 +275,75 @@ if ($wantPublicSign)
     Invoke-PublicSign -ArtifactPaths @($bridgeExe)
 }
 
-Write-Host "Compiling Public Installer"
-Write-Host "  BridgeSource:   $resolvedBridgeDir"
-Write-Host "  AppVersion:     $AppVersion (CMake SSOT unless -AppVersion override)"
-Write-Host "  VersionInfo:    $AppVersionInfo"
-Write-Host "  ISCC:           $IsccPath"
-
-& $IsccPath `
-    "/DBridgeSource=$resolvedBridgeDir" `
-    "/DMyAppVersion=$AppVersion" `
-    "/DMyAppVersionInfo=$AppVersionInfo" `
-    $iss
-if ($LASTEXITCODE -ne 0)
+$flavorsToBuild = @()
+if ($Flavor -eq "both")
 {
-    throw "ISCC exited $LASTEXITCODE"
+    $flavorsToBuild = @("win11-wms", "win10-virtualmidi")
+}
+else
+{
+    $flavorsToBuild = @($Flavor)
 }
 
-$setup = Join-Path $outDir "UnitorMt4Bridge-Setup.exe"
-if (-not (Test-Path -LiteralPath $setup))
+$builtSetups = @()
+foreach ($flavorName in $flavorsToBuild)
 {
-    throw "Expected output missing: $setup"
+    $defs = Get-FlavorDefines -FlavorName $flavorName
+    $setupName = "UnitorMt4Bridge-Setup-$($defs.FlavorToken)-$AppVersion.exe"
+    $setupPath = Join-Path $outDir $setupName
+
+    Write-Host "Compiling Public Installer ($flavorName)"
+    Write-Host "  BridgeSource:   $resolvedBridgeDir"
+    Write-Host "  AppVersion:     $AppVersion (CMake SSOT unless -AppVersion override)"
+    Write-Host "  VersionInfo:    $AppVersionInfo"
+    Write-Host "  FlavorToken:    $($defs.FlavorToken)"
+    Write-Host "  RequireVM:      $($defs.RequireVirtualMidi)"
+    Write-Host "  MidiBackend:    $($defs.MidiBackendArg)"
+    Write-Host "  ISCC:           $IsccPath"
+
+    & $IsccPath `
+        "/DBridgeSource=$resolvedBridgeDir" `
+        "/DMyAppVersion=$AppVersion" `
+        "/DMyAppVersionInfo=$AppVersionInfo" `
+        "/DFlavorToken=$($defs.FlavorToken)" `
+        "/DRequireVirtualMidi=$($defs.RequireVirtualMidi)" `
+        "/DMidiBackendArg=$($defs.MidiBackendArg)" `
+        $iss
+    if ($LASTEXITCODE -ne 0)
+    {
+        foreach ($prior in $builtSetups)
+        {
+            if (Test-Path -LiteralPath $prior)
+            {
+                Remove-Item -LiteralPath $prior -Force
+                Write-Warning "Removed sibling Setup from this failed dual build: $prior"
+            }
+        }
+        if (Test-Path -LiteralPath $setupPath)
+        {
+            Remove-Item -LiteralPath $setupPath -Force
+            Write-Warning "Removed partial Setup after ISCC failure: $setupPath"
+        }
+        throw "ISCC exited $LASTEXITCODE for flavor $flavorName (sibling Setups from this run were removed)"
+    }
+
+    if (-not (Test-Path -LiteralPath $setupPath))
+    {
+        foreach ($prior in $builtSetups)
+        {
+            if (Test-Path -LiteralPath $prior)
+            {
+                Remove-Item -LiteralPath $prior -Force
+                Write-Warning "Removed sibling Setup after missing output: $prior"
+            }
+        }
+        throw "Expected output missing: $setupPath"
+    }
+
+    Invoke-PublicSign -ArtifactPaths @($setupPath)
+    Write-Host "OK: $setupPath"
+    $builtSetups += $setupPath
 }
 
-Invoke-PublicSign -ArtifactPaths @($setup)
-
-Write-Host "OK: $setup"
+Write-Host "Built $($builtSetups.Count) Setup artifact(s)."
 exit 0
