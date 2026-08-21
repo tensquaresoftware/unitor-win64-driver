@@ -11,7 +11,7 @@ product_version: "0.1.0"
 
 # Unitor MT4 Bridge — Windows 10
 
-**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Emagic ne propose plus de pilote officiel pour Windows moderne : le dernier pilote Windows Emagic ne prenait en charge que les systèmes **32 bits** (Windows 98 / 2000 / XP).
+**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Suite au rachat de la société Emagic par Apple en juillet 2002, aucun pilote officiel n’est disponible pour un fonctionnement sous Windows moderne 64 bits (Windows 10/11). Le dernier pilote Windows fourni par Emagic ne prenait en charge que les systèmes **32 bits** (Windows 98 / 2000 / XP).
 
 Ce projet open source (Ten Square Software) est un effort **hobby** communautaire : sources gratuites sur GitHub, **pas** de certificat de signature payant, et **pas** de promesse que l’installation seule réussit toujours sur un PC tout neuf.
 
@@ -114,7 +114,7 @@ Quand la politique du PC le permet :
 
 Autre piste : clic droit → **Propriétés** → cochez **Débloquer** si affiché, puis Appliquer / OK.
 
-Ne désactivez pas SmartScreen globalement.
+Ne désactivez pas SmartScreen globalement. Sur un PC géré, **Exécuter quand même** peut être bloqué — essayez un PC personnel ou demandez à votre admin.
 
 # Utiliser le démarrage automatique
 
@@ -122,7 +122,9 @@ Après l’installation, **Unitor MT4 Bridge** se lance tout seul quand vous ouv
 
 Une fois connecté (ou après avoir branché la MT4), Windows devrait proposer les ports **`MT4 In 1`**, **`MT4 In 2`**, **`MT4 Out 1`** … **`MT4 Out 4`**. Vous pouvez aussi lancer **Unitor MT4 Bridge** à la main depuis le menu Démarrer.
 
-Pour **désactiver** le démarrage automatique : dans le menu Démarrer, ouvrez le dossier du Bridge et choisissez **Unregister Auto-Start**. La désinstallation retire aussi le démarrage automatique, mais seulement pour l’utilisateur Windows qui désinstalle.
+Pour **désactiver** le démarrage automatique : dans le menu Démarrer, ouvrez le dossier du Bridge et choisissez **Unregister Auto-Start**. La désinstallation retire aussi le démarrage automatique, mais seulement pour l’utilisateur Windows qui désinstalle. Sur un autre compte qui avait encore Auto-Start, connectez-vous avec ce compte et choisissez **Unregister Auto-Start** (ou lancez `Bridge.exe --unregister-auto-start`).
+
+L’association WinUSB peut laisser des restes dans le **Driver Store** après désinstallation jusqu’à ce qu’un administrateur les retire avec `pnputil` — résidu Windows, pas un « fantôme » de ports MIDI du Bridge à lui seul.
 
 # Lire les voyants de la MT4
 
@@ -174,6 +176,8 @@ L’emplacement exact dépend du logiciel (Ableton Live, Cubase, Reaper, Bitwig,
 2. Envoyez un court message MIDI ordinaire pour le Computer Mode.
 3. Dans **votre DAW** ou l’éditeur de votre synthé, sélectionnez les ports et terminez un court échange SysEx (par exemple une sauvegarde / restauration de presets si vous utilisez un éditeur MIDI comme [Matrix-Control](https://github.com/tensquaresoftware/matrix-control), développé par Ten Square Software).
 
+Si vous **débranchez la MT4 au milieu** d’un dump/restauration : rebranchez, rescanner le MIDI, relancez le Bridge si besoin, puis recommencez la session SysEx. Un redémarrage Windows **n’est pas** le correctif normal pour cette interruption.
+
 # Résoudre les problèmes courants
 
 ## virtualMIDI manquant
@@ -182,14 +186,21 @@ Installez loopMIDI ou rtpMIDI, confirmez la présence du fichier `teVirtualMIDI.
 
 ## SmartScreen, WinUSB, pas de ports, pas de SysEx
 
-Reprenez les mêmes contrôles que dans le guide Windows 11, formulés simplement :
-
-1. Avertissement SmartScreen → **Exécuter quand même** uniquement si le fichier vient des Releases de ce projet.
-2. Association USB → Zadig sur **MI_02** si Windows refuse le paquet faute de catalogue de confiance (*trusted catalog*).
-3. Ports invisibles → actualisez la liste MIDI dans le DAW, vérifiez que le Bridge tourne.
+1. Avertissement SmartScreen → **Exécuter quand même** uniquement si le fichier vient des Releases de ce projet. Sur un PC géré, la politique peut bloquer l’override — essayez un PC personnel ou demandez à votre admin.
+2. Association USB échouée → [Associer la MT4 à WinUSB](#associer-la-mt4-a-winusb) (Zadig sur **MI_02**).
+3. Ports invisibles → actualisez la liste MIDI dans le DAW, vérifiez que le Bridge tourne, confirmez `teVirtualMIDI.dll`.
 4. SysEx sans réponse → réveillez d’abord le **Computer Mode** avec du MIDI ordinaire.
 
-Sous Windows 10, si vous êtes à l’aise avec l’ordinateur, vous pouvez aussi vérifier des détails techniques (PowerShell, services Windows). Ce n’est **pas** obligatoire pour la plupart des musiciens, et ce n’est **pas** la méthode principale recommandée sous Windows 11 (où un simple redémarrage du PC suffit souvent).
+Sous Windows 10, si vous êtes à l’aise avec l’ordinateur, vous pouvez aussi vérifier des détails techniques (PowerShell, services Windows). Ce n’est **pas** obligatoire pour la plupart des musiciens.
+
+## Associer la MT4 à WinUSB
+
+1. Branchez la MT4 et lancez **[Zadig](https://zadig.akeo.ie/)**.
+2. Sélectionnez l’interface MIDI composite **MI_02** (id USB `VID_086A&PID_0003&MI_02`).
+3. Choisissez le pilote **WinUSB**, puis validez.
+4. Relancez l’installateur du Bridge s’il a annulé, puis lancez **Unitor MT4 Bridge**.
+
+Sur PC propre, Windows refuse souvent le paquet faute de catalogue de confiance — Zadig est le contournement supporté.
 
 ## Ports absents après débranchement / rebranchement
 
@@ -205,6 +216,7 @@ Débrancher → ports de cette unité disparaissent. Rebrancher → le Bridge le
 
 - Édition Windows 10 avec virtualMIDI **installé par vous**
 - Même enchaînement WinUSB / démarrage automatique / MIDI / SysEx / débranchement une fois les prérequis OK
+- Nommage pour une **deuxième** MT4 quand vous en avez une (voir plus bas)
 
 ## Ce que cette édition ne fait pas
 

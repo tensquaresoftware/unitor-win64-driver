@@ -11,7 +11,7 @@ product_version: "0.1.0"
 
 # Unitor MT4 Bridge — Windows 11
 
-**Unitor MT4 Bridge** lets you use an **Emagic MT4** MIDI interface on **Windows 64-bit**. Emagic no longer ships an official driver for modern Windows: the last Emagic Windows driver only supports **32-bit** systems (Windows 98 / 2000 / XP).
+**Unitor MT4 Bridge** lets you use an **Emagic MT4** MIDI interface on **Windows 64-bit**. After Apple acquired Emagic in July 2002, no official driver remained for modern 64-bit Windows (Windows 10/11). The last Windows driver Emagic shipped only supported **32-bit** systems (Windows 98 / 2000 / XP).
 
 This open-source project (Ten Square Software) is a community **hobby** effort: free sources on GitHub, **no** paid code-signing certificate, and **no** promise that installation alone always succeeds on every brand-new PC.
 
@@ -107,7 +107,9 @@ After installation, **Unitor MT4 Bridge** starts on its own when you sign in to 
 
 Once you are signed in (or after you plug in the MT4), Windows should show ports **`MT4 In 1`**, **`MT4 In 2`**, **`MT4 Out 1`** … **`MT4 Out 4`**. You can also start **Unitor MT4 Bridge** by hand from the Start menu.
 
-To **turn off** automatic start: open the Bridge folder in the Start menu and choose **Unregister Auto-Start**. Uninstalling also removes automatic start, but only for the Windows user who runs the uninstall.
+To **turn off** automatic start: open the Bridge folder in the Start menu and choose **Unregister Auto-Start**. Uninstalling also removes automatic start, but only for the Windows user who runs the uninstall. On another Windows account that still had Auto-Start, sign in as that user and choose **Unregister Auto-Start** (or run `Bridge.exe --unregister-auto-start`) before you expect logon to stay quiet.
+
+WinUSB association may leave **Driver Store** leftovers after uninstall until an administrator removes them with `pnputil` — that is a Windows residual, not a Bridge “ghost” MIDI port by itself.
 
 # Read the MT4 front-panel lights
 
@@ -141,11 +143,23 @@ The MT4 has a state called **Computer Mode**: it must “wake up” before it ta
 
 Only then start a SysEx exchange. **SysEx alone does not wake** Computer Mode: if you begin with a dump right away, the MT4 may stay silent.
 
+## Use several applications at once
+
+Several programs can open the same `MT4 In` / `MT4 Out` ports together (typically up to about **eight** clients). That is normal for this Windows MIDI Services path.
+
+If a program refuses to open a port that is already in use, or shows an error such as “exclusive”, “exclusive mode”, or “device in use”:
+
+1. Close the other DAW / editor that still holds the port.
+2. Rescan MIDI devices in the program you want to use.
+3. If needed, quit and relaunch **Unitor MT4 Bridge**, then rescan again.
+
 # Try your first SysEx transfer
 
 1. Bridge running; `MT4 In` / `MT4 Out` visible.
 2. Send a short ordinary MIDI message for Computer Mode.
 3. In **your usual DAW** or synthesizer editor, select the matching ports and complete a short SysEx exchange (for example a patch dump / restore if you use a MIDI editor such as [Matrix-Control](https://github.com/tensquaresoftware/matrix-control), by Ten Square Software).
+
+If you **unplug the MT4 in the middle** of a dump/restore: plug it back in, rescan MIDI, relaunch the Bridge if needed, then restart the SysEx session. A Windows reboot is **not** the normal recovery for that interruption.
 
 # Fix common problems
 

@@ -11,7 +11,7 @@ product_version: "0.1.0"
 
 # Unitor MT4 Bridge — Windows 11
 
-**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Emagic ne propose plus de pilote officiel pour Windows moderne : le dernier pilote Windows Emagic ne prenait en charge que les systèmes **32 bits** (Windows 98 / 2000 / XP).
+**Unitor MT4 Bridge** permet d’utiliser une interface MIDI **Emagic MT4** sous **Windows 64 bits**. Suite au rachat de la société Emagic par Apple en juillet 2002, aucun pilote officiel n’est disponible pour un fonctionnement sous Windows moderne 64 bits (Windows 10/11). Le dernier pilote Windows fourni par Emagic ne prenait en charge que les systèmes **32 bits** (Windows 98 / 2000 / XP).
 
 Ce projet open source (Ten Square Software) est un effort **hobby** communautaire : sources gratuites sur GitHub, **pas** de certificat de signature payant, et **pas** de promesse que l’installation seule réussit toujours sur un PC tout neuf.
 
@@ -107,7 +107,9 @@ Après l’installation, **Unitor MT4 Bridge** se lance tout seul quand vous ouv
 
 Une fois connecté (ou après avoir branché la MT4), Windows devrait proposer les ports **`MT4 In 1`**, **`MT4 In 2`**, **`MT4 Out 1`** … **`MT4 Out 4`**. Vous pouvez aussi lancer **Unitor MT4 Bridge** à la main depuis le menu Démarrer.
 
-Pour **désactiver** le démarrage automatique : dans le menu Démarrer, ouvrez le dossier du Bridge et choisissez **Unregister Auto-Start**. La désinstallation retire aussi le démarrage automatique, mais seulement pour l’utilisateur Windows qui désinstalle.
+Pour **désactiver** le démarrage automatique : dans le menu Démarrer, ouvrez le dossier du Bridge et choisissez **Unregister Auto-Start**. La désinstallation retire aussi le démarrage automatique, mais seulement pour l’utilisateur Windows qui désinstalle. Sur un autre compte qui avait encore Auto-Start, connectez-vous avec ce compte et choisissez **Unregister Auto-Start** (ou lancez `Bridge.exe --unregister-auto-start`).
+
+L’association WinUSB peut laisser des restes dans le **Driver Store** après désinstallation jusqu’à ce qu’un administrateur les retire avec `pnputil` — résidu Windows, pas un « fantôme » de ports MIDI du Bridge à lui seul.
 
 # Lire les voyants de la MT4
 
@@ -141,11 +143,23 @@ La MT4 a un état appelé **Computer Mode** : elle doit « se réveiller » pour
 
 Ensuite seulement, lancez un échange SysEx. **Le SysEx seul ne réveille pas** le Computer Mode : si vous commencez directement par un dump, la MT4 peut rester muette.
 
+## Plusieurs applications à la fois
+
+Plusieurs programmes peuvent ouvrir les mêmes ports `MT4 In` / `MT4 Out` en même temps (en pratique jusqu’à environ **huit** clients). C’est normal sur ce chemin Windows MIDI Services.
+
+Si un programme refuse d’ouvrir un port déjà pris, ou affiche une erreur du type « exclusive », « exclusive mode » ou « device in use » :
+
+1. Fermez l’autre DAW / éditeur qui tient encore le port.
+2. Relancez un rescan MIDI dans le programme que vous voulez utiliser.
+3. Au besoin, quittez et relancez **Unitor MT4 Bridge**, puis rescanner à nouveau.
+
 # Faire un premier essai SysEx
 
 1. Bridge en cours ; ports visibles.
 2. Envoyez un court message MIDI ordinaire pour le Computer Mode.
 3. Dans **votre DAW** ou l’éditeur de votre synthé, sélectionnez les ports et terminez un court échange SysEx (par exemple une sauvegarde / restauration de presets si vous utilisez un éditeur MIDI comme [Matrix-Control](https://github.com/tensquaresoftware/matrix-control), développé par Ten Square Software).
+
+Si vous **débranchez la MT4 au milieu** d’un dump/restauration : rebranchez, rescanner le MIDI, relancez le Bridge si besoin, puis recommencez la session SysEx. Un redémarrage Windows **n’est pas** le correctif normal pour cette interruption.
 
 # Résoudre les problèmes courants
 
@@ -213,6 +227,7 @@ Si le MIDI semble bloqué après un arrêt du Bridge ou une fermeture malpropre,
 - Notes, contrôleurs, horloge / transport, MTC, SysEx
 - Démarrage automatique sans Admin quotidien
 - Débranchement / rebranchement avec rescan / relance du Bridge
+- Nommage pour une **deuxième** MT4 quand vous en avez une (voir plus bas)
 
 ## Ce que cette édition ne fait pas
 
